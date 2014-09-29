@@ -1,3 +1,3 @@
-# Sly Mob
+# Untext
 
 Symbolic editor for code and more.
