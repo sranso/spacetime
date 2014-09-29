@@ -1,5 +1,10 @@
 body {
-  font-family: Helevetica;
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
 }
 
 .symbol-list {
@@ -55,13 +60,4 @@ body {
   width: 500px;
   padding: 10px;
   margin-left: 10px;
-}
-
-#the-overflow {
-  position: fixed;
-  bottom: 50px;
-}
-
-#the-overflow .symbol-list {
-  width: 490px;
 }
