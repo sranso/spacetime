@@ -1,54 +1,23 @@
 body {
-  padding: 50px;
+  padding: 20px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 a {
-  color: #00B7FF;
+  color: #00b7ff;
 }
 
-.symbol-list {
-  border-style: solid;
-  border-color: #aaaaaa;
-  border-width: 0px;
-  border-top-width: 2px;
-  border-bottom-width: 2px;
-  padding: 5px;
-  overflow: hidden;
+.token rect {
+  fill: #ddd;
 }
 
-.symbol {
-  float: left;
-  padding-left: 2px;
-  padding-right: 2px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  border-style: solid;
-  border-color: #ffffff;
-  border-width: 1px;
-  border-radius: 3px;
-  min-height: 18px;
-  min-width: 7px;
-  text-align: center;
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-top: 1px;
-  margin-bottom: 1px;
-}
-
-.show-borders .symbol {
-  border-color: #eeeeee;
-}
-
-.symbol:hover {
-  cursor: pointer;
-  border-color: #555555;
-  background-color: #ffff88;
+.token text {
+  text-anchor: middle;
 }
 
 #panel {
   float: left;
-  width: 180px;
+  width: 150px;
   min-height: 700px;
   border-right: solid 2px #aaaaaa;
   padding: 10px;
@@ -57,7 +26,6 @@ a {
 
 #workspace {
   float: left;
-  width: 500px;
   padding: 10px;
   margin-left: 10px;
 }
