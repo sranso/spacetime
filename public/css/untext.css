@@ -7,15 +7,20 @@ a {
   color: #00B7FF;
 }
 
-.token rect {
+.symbol .mouse {
+  opacity: 0.0;
+}
+
+
+.token rect.tower {
   fill: #C0DCFF;
 }
 
-.token.barrier rect {
+.token.barrier rect.tower {
   fill: #A9B8CC;
 }
 
-.token.empty rect {
+.token.empty rect.tower {
   fill: #D5E0EE;
 }
 
@@ -23,8 +28,27 @@ a {
   text-anchor: middle;
 }
 
-.bar rect {
-  fill: #ddd;
+
+.bar rect.top-bar {
+  fill: #EBDEDE;
+}
+
+.bar rect.background-bar {
+  fill: #fafafa;
+}
+
+
+.token.hovered rect.tower {
+  fill: #A0FA2D;
+}
+
+.bar.hovered rect.top-bar {
+  fill: #A0FA2D;
+}
+
+.bar.hovered rect.background-bar {
+  fill: #A0FA2D;
+  opacity: 0.4;
 }
 
 #panel {
@@ -40,4 +64,8 @@ a {
   float: left;
   padding: 10px;
   margin-left: 10px;
+}
+
+svg#string {
+  cursor: pointer;
 }

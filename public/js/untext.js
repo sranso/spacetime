@@ -15,7 +15,7 @@ var init = function () {
 var stringSetup = function () {
     var width = 800;
     var height = 800;
-    var levelHeight = 20;
+    var levelHeight = 26;
     var gapWidth = 8;
 
     var svg = d3.select('svg#string')
@@ -29,6 +29,8 @@ var stringSetup = function () {
 
     var camera = svg.append('g');
 
+
+    ///// tokens compute
 
     var x = 0;
     _.each(tokens, function (t, i) {
@@ -48,32 +50,7 @@ var stringSetup = function () {
     });
 
 
-    var ts = camera.selectAll('g.token')
-        .data(tokens) ;
-
-    var t = ts.enter().append('g')
-        .attr('class', function (t) {
-            return 'token ' + (t.barrier ? 'barrier' : '') + (t.empty ? 'empty' : '');
-        })
-        .attr('transform', function (t) {
-            return 'translate(' + t.x + ',' + t.y + ')';
-        }) ;
-
-    t.append('rect')
-        .attr('x', gapWidth / 2)
-        .attr('y', 10)
-        .attr('width', function (t) { return t.w - gapWidth })
-        .attr('height', function (t) {
-            return 10 * levelHeight - t.y
-        }) ;
-
-    t.append('text')
-        .attr('y', 30)
-        .attr('x', function (t) { return t.w / 2 })
-        .text(function (d) { return d.text }) ;
-
-    ts.exit().remove();
-
+    ////// bars compute
 
     var depth = 0;
     var bars = [];
@@ -82,7 +59,7 @@ var stringSetup = function () {
         var currentBar = {
             depth: depth,
             start: tokensBelowDepth[0],
-            stop: tokensBelowDepth[0],
+            stop: {i: tokensBelowDepth[0].i - 1},
         };
         var nextTokensBelowDepth = [];
         var nextDepth = depth + 1;
@@ -114,22 +91,89 @@ var stringSetup = function () {
         _.extend(b, pos);
     });
 
+    bars.reverse();
+
+
+    ///// tokens draw
+
+    var ts = camera.selectAll('g.token')
+        .data(tokens) ;
+
+    var t = ts.enter().append('g')
+        .attr('class', function (t) {
+            return 'symbol token ' + (t.barrier ? 'barrier' : '') + (t.empty ? 'empty' : '');
+        })
+        .attr('transform', function (t) {
+            return 'translate(' + t.x + ',' + t.y + ')';
+        }) ;
+
+    t.append('rect')
+        .classed('tower', true)
+        .attr('x', gapWidth / 2)
+        .attr('y', function (t) { return t.barrier ? 0 : 6 })
+        .attr('width', function (t) { return t.w - gapWidth })
+        .attr('height', function (t) {
+            return 10 * levelHeight - t.y - (t.barrier ? 0 : 6);
+        }) ;
+
+    t.append('text')
+        .attr('y', 30)
+        .attr('x', function (t) { return t.w / 2 })
+        .text(_.property('text')) ;
+
+    t.append('rect')
+        .classed('mouse', true)
+        .on('mouseenter', function () { d3.select(this.parentNode).classed('hovered', true) })
+        .on('mouseleave', function () { d3.select(this.parentNode).classed('hovered', false) })
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', _.property('w'))
+        .attr('height', function (t) { return 10 * levelHeight - t.y }) ;
+
+    ts.exit().remove();
+
+
+    ////// bars draw
+
     var bs = camera.selectAll('g.bar')
         .data(bars) ;
 
     var b = bs.enter().append('g')
-        .classed('token', true)
+        .classed('symbol bar', true)
         .attr('transform', function (b) {
             return 'translate(' + b.x + ',' + b.y + ')';
         }) ;
 
     b.append('rect')
+        .classed('background-bar', true)
         .attr('x', gapWidth / 2)
-        .attr('y', 10)
+        .attr('y', 6)
         .attr('width', function (b) { return b.w - gapWidth })
-        .attr('height', function (b) {
-            return 5;
-        }) ;
+        .attr('height', levelHeight - 5) ;
+
+    b.append('rect')
+        .classed('top-bar', true)
+        .attr('x', gapWidth / 2)
+        .attr('y', 6)
+        .attr('width', function (b) { return b.w - gapWidth })
+        .attr('height', 5) ;
+
+    b.append('rect')
+        .classed('mouse', true)
+        .on('mouseenter', function () {
+            d3.select(this.parentNode).classed('hovered', true)
+                .select('.background-bar').attr('height', function (b) {
+                    return 10 * levelHeight - b.y - 6;
+                }) ;
+        })
+        .on('mouseleave', function () {
+            d3.select(this.parentNode).classed('hovered', false)
+                .select('.background-bar').attr('height', levelHeight - 5) ;
+        })
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', _.property('w'))
+        .attr('height', levelHeight) ;
 
     bs.exit().remove();
 };
@@ -137,7 +181,7 @@ var stringSetup = function () {
 //////
 
 var Token = function (token) {
-    this.text = token.text || "";
+    this.text = token.text || '';
     this.depth = token.depth;
     this.barrier = token.barrier || false;
     this.empty = token.empty || false;
