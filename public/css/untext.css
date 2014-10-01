@@ -4,15 +4,27 @@ body {
 }
 
 a {
-  color: #00b7ff;
+  color: #00B7FF;
 }
 
 .token rect {
-  fill: #ddd;
+  fill: #C0DCFF;
+}
+
+.token.barrier rect {
+  fill: #A9B8CC;
+}
+
+.token.empty rect {
+  fill: #D5E0EE;
 }
 
 .token text {
   text-anchor: middle;
+}
+
+.bar rect {
+  fill: #ddd;
 }
 
 #panel {

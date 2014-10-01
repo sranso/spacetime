@@ -15,6 +15,8 @@ var init = function () {
 var stringSetup = function () {
     var width = 800;
     var height = 800;
+    var levelHeight = 20;
+    var gapWidth = 8;
 
     var svg = d3.select('svg#string')
         .attr('width', width)
@@ -27,37 +29,42 @@ var stringSetup = function () {
 
     var camera = svg.append('g');
 
-    var ts = camera.selectAll('g.token')
-        .data(tokens) ;
 
     var x = 0;
-    _.each(tokens, function (t) {
+    _.each(tokens, function (t, i) {
         var w;
         if (t.barrier) {
-            w = 30;
+            w = 5;
         } else if (t.empty) {
-            w = 50;
+            w = 30;
         } else {
-            w = t.textWidth() + 30;
+            w = t.textWidth() + 15;
         }
-        var y = t.depth * 20 + 10;
-        var pos = {x: x, y: y, w: w};
+        w += gapWidth;
+        var y = t.depth * levelHeight + 10;
+        var pos = {x: x, y: y, w: w, i: i};
         x += w;
         _.extend(t, pos);
     });
 
+
+    var ts = camera.selectAll('g.token')
+        .data(tokens) ;
+
     var t = ts.enter().append('g')
-        .classed('token', true)
+        .attr('class', function (t) {
+            return 'token ' + (t.barrier ? 'barrier' : '') + (t.empty ? 'empty' : '');
+        })
         .attr('transform', function (t) {
             return 'translate(' + t.x + ',' + t.y + ')';
         }) ;
 
     t.append('rect')
-        .attr('x', 7)
+        .attr('x', gapWidth / 2)
         .attr('y', 10)
-        .attr('width', function (t) { return t.w - 14 })
+        .attr('width', function (t) { return t.w - gapWidth })
         .attr('height', function (t) {
-            return 120 - t.y
+            return 10 * levelHeight - t.y
         }) ;
 
     t.append('text')
@@ -66,6 +73,65 @@ var stringSetup = function () {
         .text(function (d) { return d.text }) ;
 
     ts.exit().remove();
+
+
+    var depth = 0;
+    var bars = [];
+    var tokensBelowDepth = tokens.slice();
+    while (tokensBelowDepth.length) {
+        var currentBar = {
+            depth: depth,
+            start: tokensBelowDepth[0],
+            stop: tokensBelowDepth[0],
+        };
+        var nextTokensBelowDepth = [];
+        var nextDepth = depth + 1;
+        _.each(tokensBelowDepth, function (token) {
+            if (token.i === currentBar.stop.i + 1) {
+                currentBar.stop = token;
+            } else {
+                bars.push(currentBar);
+                currentBar = {
+                    depth: depth,
+                    start: token,
+                    stop: token,
+                };
+            }
+
+            if (token.depth > nextDepth) {
+                nextTokensBelowDepth.push(token);
+            }
+        });
+        bars.push(currentBar);
+        tokensBelowDepth = nextTokensBelowDepth;
+        depth = nextDepth;
+    }
+
+    _.each(bars, function (b, i) {
+        var x = b.start.x;
+        var w = b.stop.x + b.stop.w - x;
+        var pos = {x: x, y: b.start.y - levelHeight, w: w, i: i};
+        _.extend(b, pos);
+    });
+
+    var bs = camera.selectAll('g.bar')
+        .data(bars) ;
+
+    var b = bs.enter().append('g')
+        .classed('token', true)
+        .attr('transform', function (b) {
+            return 'translate(' + b.x + ',' + b.y + ')';
+        }) ;
+
+    b.append('rect')
+        .attr('x', gapWidth / 2)
+        .attr('y', 10)
+        .attr('width', function (b) { return b.w - gapWidth })
+        .attr('height', function (b) {
+            return 5;
+        }) ;
+
+    bs.exit().remove();
 };
 
 //////
