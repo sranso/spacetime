@@ -6,17 +6,25 @@ var width = '100%';
 var height = 300;
 var levelHeight = 26;
 var gapWidth = 8;
+var gapHeight = 6;
 
-var untext, allSymbols, symbolIdSequence, offCameraToken, camera, moving;
+var untext, allSymbols, symbolIdSequence, offCameraToken, camera, moving, hovered, mouse;
 
 var init = function () {
     untext = {};
     allSymbols = [];
     symbolIdSequence = 0;
     moving = null;
+    hovered = null;
+    mouse = [0, 0];
 };
 
 //////
+
+var movingDiff = function () {
+    var startMouse = moving.startMouse;
+    return [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
+};
 
 var stringSetup = function () {
 
@@ -33,25 +41,36 @@ var stringSetup = function () {
         .classed('camera', true)
         .on('mousemove', function () {
             if (moving) {
-                var mouse = d3.mouse(camera.node());
-                var startMouse = moving.startMouse;
-                var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
+                mouse = d3.mouse(camera.node());
                 var currentPos = {x: moving.x, y: moving.y};
-
+                var diff = movingDiff();
                 var depthChange = Math.round(diff[1] / levelHeight);
+
                 moving.depth += depthChange;
-                if (depthChange !== 0) {
-                    draw(allSymbols);
+
+                if (depthChange === 0) {
+                    draw([moving]);
+                } else {
+                    var sel = selection(allSymbols);
+                    compute(sel);
                     moving.startMouse = [
-                        startMouse[0] + moving.x - currentPos.x,
-                        startMouse[1] + moving.y - currentPos.y,
+                        moving.startMouse[0] + moving.x - currentPos.x,
+                        moving.startMouse[1] + moving.y - currentPos.y,
                     ];
+                    compute([moving]);
+                    render(sel);
                 }
             }
         }) ;
 
     d3.select(document)
-        .on('mouseup', function () { moving = null })
+        .on('mouseup', function () {
+            if (moving && (Date.now() - moving.startTime > 100)) {
+                var last = moving;
+                moving = null;
+                draw(allSymbols);
+            }
+        })
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -64,11 +83,9 @@ var stringSetup = function () {
 };
 
 var draw = function (symbolsOrEls, removeSymbols) {
-    var selection = getSelection(symbolsOrEls, removeSymbols);
-    console.log("selection: ");
-    console.log(selection);
-    computePositions.call(selection);
-    render.call(selection);
+    var sel = selection(symbolsOrEls, removeSymbols);
+    compute(sel);
+    render(sel);
 };
 
 var symbolId = function () {
@@ -98,6 +115,7 @@ var recomputeSymbols = function () {
                 }
                 currentBar = {
                     id: symbolId(),
+                    symbol: true,
                     bar: true,
                     depth: depth,
                     start: token,
@@ -121,8 +139,9 @@ var recomputeSymbols = function () {
 
 var key = function (s) { return s.id };
 
-var getSelection = function (symbolsOrEls, removeSymbols) {
-    var symbols, tokens, bars,
+var selection = function (symbolsOrEls, removeSymbols) {
+    var order,
+        symbols, tokens, bars,
         symbolEls, tokenEls, barEls,
         symbolEnterEls, tokenEnterEls, barEnterEls,
         symbolExitEls, tokenExitEls, barExitEls;
@@ -130,24 +149,37 @@ var getSelection = function (symbolsOrEls, removeSymbols) {
     if (symbolsOrEls instanceof d3.selection) {
         symbolEls = symbolsOrEls;
         symbols = symbolEls.data();
+        order = true;
     } else if (symbolsOrEls === allSymbols) {
         symbols = recomputeSymbols();
         symbolEls = camera.selectAll('.symbol').data(symbols, key);
+        order = true;
     } else {
         symbols = symbolsOrEls;
-        var combinedSymbols = symbols.concat(removeSymbols || []);
-        symbolEls = _.filter(_.pluck(combinedSymbols, '__el__'));
-        symbolEls = d3.selectAll(symbolEls).data(symbols, key);
+        order = false;
+
+        removeSymbols = removeSymbols || [];
+        symbolExitEls = d3.selectAll(_.pluck(removeSymbols, '__el__'));
+        _.each(removeSymbols, function (s) { s.__el__ = null })
+
+        var enter = _.filter(symbols, function (s) { return !s.__el__ });
+        _.each(enter, function (s) {
+            s.__el__ = camera.append('g').datum(s).node();
+        });
+        symbolEnterEls = d3.selectAll(_.pluck(enter, '__el__'));
+        symbolEls = d3.selectAll(_.pluck(symbols, '__el__'));
+    }
+
+    if (order) {
+        symbolEnterEls = symbolEls.enter().append('g');
+        symbolExitEls = symbolEls.exit();
+        //symbolEls.order();
     }
 
     tokens = _.where(symbols, {token: true});
     bars = _.where(symbols, {bar: true});
 
-    symbolEnterEls = symbolEls.enter().append('g')
-        .classed('symbol', true)
-        .each(function (s) { s.__el__ = this }) ;
-
-    symbolExitEls = symbolEls.exit();
+    symbolEnterEls.each(function (s) { s.__el__ = this });
 
     tokenEls = symbolEls.filter(_.property('token'));
     barEls = symbolEls.filter(_.property('bar'));
@@ -158,8 +190,11 @@ var getSelection = function (symbolsOrEls, removeSymbols) {
     tokenExitEls = symbolExitEls.filter(_.property('token'));
     barExitEls = symbolExitEls.filter(_.property('bar'));
 
+    console.log('symbols: ' + symbols.length + '; symbol els: ' + symbolEls.size() + '; enter: ' + symbolEnterEls.size() + '; exit: ' + symbolExitEls.size() + '');
+
     return {
         all: symbols.length === allSymbols.length,
+        order: order,
         symbols: symbols,
         tokens: tokens,
         bars: bars,
@@ -175,13 +210,13 @@ var getSelection = function (symbolsOrEls, removeSymbols) {
     };
 };
 
-var computePositions = function () {
+var compute = function (sel) {
 
     ///// tokens compute
 
-    if (this.all) {
+    if (sel.all) {
         var x = 0;
-        _.each(this.tokens, function (t) {
+        _.each(sel.tokens, function (t) {
             var w;
             if (t.barrier) {
                 w = 5;
@@ -191,18 +226,32 @@ var computePositions = function () {
                 w = textWidth(t) + 15;
             }
             w += gapWidth;
-            var y = yFromDepth(t.depth);
-            var pos = {x: x, y: y, w: w};
+            var pos = {x: x, w: w};
             x += w;
             _.extend(t, pos);
         });
+    }
 
-        _.each(this.bars, function (b) {
-            var x = b.start.x;
-            var w = b.stop.x + b.stop.w - x;
-            var pos = {x: x, y: yFromDepth(b.depth), w: w};
-            _.extend(b, pos);
-        });
+    _.each(sel.tokens, function (t) {
+        var y = yFromDepth(t.depth);
+        var pos = {y: y, offsetX: 0, offsetY: 0, h: 100 * levelHeight};
+        _.extend(t, pos);
+    });
+
+    _.each(sel.bars, function (b) {
+        var x = b.start.x;
+        var w = b.stop.x + b.stop.w - x;
+        var y = yFromDepth(b.depth);
+        var pos = {x: x, y: y, offsetX: 0, offsetY: 0, w: w, h: levelHeight};
+        _.extend(b, pos);
+    });
+
+    if (moving) {
+        var diff = movingDiff();
+        var dir = [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1];
+        var amp = [diff[0] * dir[0], diff[1] * dir[1]];
+        moving.offsetX = 0;
+        moving.offsetY = dir[1] * Math.min(amp[1] / 3, 2);
     }
 };
 
@@ -210,108 +259,107 @@ var yFromDepth = function (depth) {
     return depth * levelHeight + 10;
 };
 
-var hover = function (el, symbol, hovered) {
-    symbol.hovered = hovered;
-    return d3.select(el.parentNode).classed('hovered', hovered);
-};
 
-var render = function () {
+var render = function (sel) {
+
+    ////// symbols draw
+
+    sel.symbolEls.attr('class', function (s) {
+            var classes = _.filter([
+                'symbol', 'token', 'bar',
+                'barrier', 'empty',
+            ], function (c) { return s[c] });
+            if (s === hovered && !moving) {
+                classes.push('hovered');
+            }
+            if (s === moving) {
+                classes.push('moving');
+            }
+            return classes.join(' ');
+        })
+        .attr('transform', function (s) {
+            return 'translate(' + (s.x + s.offsetX) + ',' + (s.y + s.offsetY) + ')';
+        }) ;
 
     ///// tokens draw
 
-    this.tokenEnterEls
-        .classed('token', true) ;
-
-    this.tokenEnterEls.append('rect')
+    sel.tokenEnterEls.append('rect')
         .classed('tower', true) ;
 
-    this.tokenEnterEls.append('text')
+    sel.tokenEnterEls.append('text')
         .attr('y', 30) ;
 
-    this.tokenEnterEls.append('rect')
-        .classed('mouse', true)
-        .on('mouseenter', function (t) { hover(this, t, true) })
-        .on('mouseleave', function (t) { hover(this, t, false) })
-        .on('mousedown', function (t) {
-            moving = t;
-            moving.startOffset = d3.mouse(this.parentNode);
-            moving.startMouse = d3.mouse(camera.node());
-        })
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('height', 100 * levelHeight) ;
+    sel.tokenExitEls.remove();
 
-    this.tokenExitEls.remove();
-
-    this.tokenEls.attr('class', function (t) {
-            return 'symbol token ' + (t.barrier ? 'barrier' : '') + (t.empty ? 'empty' : '');
-        }) ;
-
-    this.tokenEls.transition()
-        .duration(80)
-        .attr('transform', function (t) {
-            return 'translate(' + t.x + ',' + t.y + ')';
-        }) ;
-
-    this.tokenEls.select('rect.tower')
+    sel.tokenEls.select('rect.tower')
         .attr('x', gapWidth / 2)
-        .attr('y', function (t) { return t.barrier ? 0 : 6 })
+        .attr('y', function (t) { return t.barrier ? 0 : gapHeight / 2 })
         .attr('width', function (t) { return t.w - gapWidth })
         .attr('height', 100 * levelHeight) ;
 
-    this.tokenEls.select('text')
+    sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
         .text(_.property('text')) ;
-
-    this.tokenEls.select('rect.mouse')
-        .attr('width', _.property('w')) ;
 
 
     ////// bars draw
 
-    this.barEnterEls
-        .classed('bar', true) ;
-
-    this.barEnterEls.append('rect')
+    sel.barEnterEls.append('rect')
         .classed('background-bar', true)
         .attr('x', gapWidth / 2)
-        .attr('y', 6)
-        .attr('height', levelHeight - 5) ;
+        .attr('y', gapHeight / 2)
 
-    this.barEnterEls.append('rect')
+    sel.barEnterEls.append('rect')
         .classed('top-bar', true)
         .attr('x', gapWidth / 2)
-        .attr('y', 6)
+        .attr('y', gapHeight / 2)
         .attr('height', 5) ;
 
-    this.barEnterEls.append('rect')
-        .classed('mouse', true)
-        .on('mouseenter', function (b) {
-            hover(this, b, true)
-                .select('.background-bar').attr('height', 100 * levelHeight) ;
-        })
-        .on('mouseleave', function (b) {
-            hover(this, b, false)
-                .select('.background-bar').attr('height', levelHeight - 5) ;
-        })
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('height', levelHeight) ;
+    sel.barExitEls.remove();
 
-    this.barExitEls.remove();
-
-    this.barEls.attr('transform', function (b) {
-            return 'translate(' + b.x + ',' + b.y + ')';
+    sel.barEls.select('rect.background-bar')
+        .attr('width', function (b) { return b.w - gapWidth })
+        .attr('height', function (b) {
+            if (b === hovered) {
+                return 100 * levelHeight;
+            } else {
+                return levelHeight - gapHeight;
+            }
         }) ;
 
-    this.barEls.select('rect.background-bar')
+    sel.barEls.select('rect.top-bar')
         .attr('width', function (b) { return b.w - gapWidth }) ;
 
-    this.barEls.select('rect.top-bar')
-        .attr('width', function (b) { return b.w - gapWidth }) ;
+    ///// mouse
 
-    this.barEls.select('rect.mouse')
+    sel.symbolEnterEls.append('rect')
+        .classed('mouse', true)
+        .on('mouseenter', function (t) {
+            hovered = t;
+            draw([t]);
+        })
+        .on('mouseleave', function (t) {
+            var last = hovered;
+            if (t === last) { hovered = null }
+            if (last) { draw([last]) }
+        })
+        .attr('x', 0)
+        .attr('y', 0) ;
+
+    sel.symbolEls.select('rect.mouse')
         .attr('width', _.property('w'))
+        .attr('height', _.property('h')) ;
+
+    sel.tokenEnterEls.select('rect.mouse')
+        .on('mousedown', function (t) {
+            if (!moving) {
+                moving = t;
+                mouse = d3.mouse(camera.node());
+                moving.startMouse = mouse;
+                moving.startTime = Date.now();
+                draw([t], [t]);
+            }
+        })
 };
 
 
@@ -341,6 +389,7 @@ var setupExample = function (example) {
         tokens: _.map(example.tokens, function (config, i) {
             return {
                 id: i,
+                symbol: true,
                 token: true,
                 text: _.isString(config[0]) ? config[0] : '',
                 barrier: config[0] === BARRIER,
