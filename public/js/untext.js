@@ -8,22 +8,53 @@ var levelHeight = 26;
 var gapWidth = 8;
 var gapHeight = 6;
 
-var untext, allSymbols, symbolIdSequence, offCameraToken, camera, moving, hovered, mouse;
+var keyboardConfigurations = {
+    qwerty: {
+        move: 'v',
+    },
+    dvorak: {
+        move: 'k',
+    },
+};
+
+var untext, allSymbols, symbolIdSequence, offCameraToken, camera,
+    moving, hovering, mouse, keyboardLayout;
 
 var init = function () {
     untext = {};
     allSymbols = [];
     symbolIdSequence = 0;
     moving = null;
-    hovered = null;
+    hovering = null;
     mouse = [0, 0];
+    keyboardLayout = 'dvorak';
 };
 
 //////
 
+var keyFor = function (action) {
+    return keyboardConfigurations[keyboardLayout][action];
+};
+
 var movingDiff = function () {
     var startMouse = moving.startMouse;
     return [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
+};
+
+var startMoving = function (s) {
+    if (!moving) {
+        moving = s;
+        moving.startMouse = mouse;
+        moving.startTime = Date.now();
+        draw([s], [s]);
+    }
+};
+
+var stopMoving = function (s) {
+    if (moving) {
+        moving = null;
+        draw(allSymbols);
+    }
 };
 
 var stringSetup = function () {
@@ -40,8 +71,8 @@ var stringSetup = function () {
     camera = svg.append('g')
         .classed('camera', true)
         .on('mousemove', function () {
+            mouse = d3.mouse(camera.node());
             if (moving) {
-                mouse = d3.mouse(camera.node());
                 var currentPos = {x: moving.x, y: moving.y};
                 var diff = movingDiff();
                 var depthChange = Math.round(diff[1] / levelHeight);
@@ -64,13 +95,12 @@ var stringSetup = function () {
         }) ;
 
     d3.select(document)
-        .on('mouseup', function () {
-            if (moving && (Date.now() - moving.startTime > 100)) {
-                var last = moving;
-                moving = null;
-                draw(allSymbols);
-            }
-        })
+        .on('mouseup', stopMoving) ;
+
+    Mousetrap.bind(keyFor('move'), function (e) {
+        if (hovering) { startMoving(hovering) }
+    }, 'keydown');
+    Mousetrap.bind(keyFor('move'), stopMoving, 'keyup');
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -194,6 +224,7 @@ var selection = function (symbolsOrEls, removeSymbols) {
 
     return {
         all: symbols.length === allSymbols.length,
+        target: moving || hovering,
         order: order,
         symbols: symbols,
         tokens: tokens,
@@ -269,8 +300,8 @@ var render = function (sel) {
                 'symbol', 'token', 'bar',
                 'barrier', 'empty',
             ], function (c) { return s[c] });
-            if (s === hovered && !moving) {
-                classes.push('hovered');
+            if (s === sel.target) {
+                classes.push('target');
             }
             if (s === moving) {
                 classes.push('moving');
@@ -320,7 +351,7 @@ var render = function (sel) {
     sel.barEls.select('rect.background-bar')
         .attr('width', function (b) { return b.w - gapWidth })
         .attr('height', function (b) {
-            if (b === hovered) {
+            if (b === hovering) {
                 return 100 * levelHeight;
             } else {
                 return levelHeight - gapHeight;
@@ -335,12 +366,12 @@ var render = function (sel) {
     sel.symbolEnterEls.append('rect')
         .classed('mouse', true)
         .on('mouseenter', function (t) {
-            hovered = t;
+            hovering = t;
             draw([t]);
         })
         .on('mouseleave', function (t) {
-            var last = hovered;
-            if (t === last) { hovered = null }
+            var last = hovering;
+            if (t === last) { hovering = null }
             if (last) { draw([last]) }
         })
         .attr('x', 0)
@@ -352,14 +383,9 @@ var render = function (sel) {
 
     sel.tokenEnterEls.select('rect.mouse')
         .on('mousedown', function (t) {
-            if (!moving) {
-                moving = t;
-                mouse = d3.mouse(camera.node());
-                moving.startMouse = mouse;
-                moving.startTime = Date.now();
-                draw([t], [t]);
-            }
-        })
+            mouse = d3.mouse(camera.node());
+            startMoving(t);
+        }) ;
 };
 
 

@@ -42,29 +42,16 @@ a {
 }
 
 
-.token.hovered rect.tower {
+.token.target rect.tower {
   fill: #A0FA2D;
 }
 
-.bar.hovered rect.top-bar {
+.bar.target rect.top-bar {
   fill: #A0FA2D;
 }
 
-.bar.hovered rect.background-bar {
+.bar.target rect.background-bar {
   fill: #A0FA2D;
-  opacity: 0.4;
-}
-
-.token.moving rect.tower {
-  fill: #F7E62D;
-}
-
-.bar.moving rect.top-bar {
-  fill: #F7E62D;
-}
-
-.bar.moving rect.background-bar {
-  fill: #F7E62D;
   opacity: 0.4;
 }
 
