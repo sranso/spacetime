@@ -1,4 +1,4 @@
-window.untext = (function () {
+//window.untext = (function () {
 
 var BARRIER = 1;
 var EMPTY = 2;
@@ -17,12 +17,13 @@ var keyboardConfigurations = {
     },
 };
 
-var untext, allSymbols, symbolIdSequence, offCameraToken, camera,
+var untext, allSymbols, allTokens, symbolIdSequence, offCameraToken, camera,
     moving, hovering, mouse, keyboardLayout;
 
 var init = function () {
     untext = {};
     allSymbols = [];
+    allTokens = [];
     symbolIdSequence = 0;
     moving = null;
     hovering = null;
@@ -36,9 +37,14 @@ var keyFor = function (action) {
     return keyboardConfigurations[keyboardLayout][action];
 };
 
-var movingDiff = function () {
+var movingInfo = function () {
     var startMouse = moving.startMouse;
-    return [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
+    var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
+    return {
+        diff: diff,
+        direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
+        absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
+    };
 };
 
 var startMoving = function (s) {
@@ -46,7 +52,7 @@ var startMoving = function (s) {
         moving = s;
         moving.startMouse = mouse;
         moving.startTime = Date.now();
-        draw([s], [s]);
+        draw([s]);
     }
 };
 
@@ -54,6 +60,48 @@ var stopMoving = function (s) {
     if (moving) {
         moving = null;
         draw(allSymbols);
+    }
+};
+
+var dragMoving = function () {
+    if (!moving) {
+        return;
+    }
+
+    var info = movingInfo();
+
+    var depthChange = Math.round(info.diff[1] / levelHeight);
+    moving.depth += depthChange;
+
+    var swap = false;
+    var diffX = info.absDiff[0];
+    while (true) {
+        var neighborI = moving.i + info.direction[0];
+        var neighborSymbol = allTokens[neighborI];
+        if (neighborSymbol && diffX >= neighborSymbol.w / 2) {
+            swap = true;
+            allTokens[moving.i] = neighborSymbol;
+            allTokens[neighborSymbol.i] = moving;
+            neighborSymbol.i = moving.i;
+            moving.i = neighborI;
+            diffX -= neighborSymbol.w;
+        } else {
+            break;
+        }
+    }
+
+    if (depthChange === 0 && !swap) {
+        draw([moving]);
+    } else {
+        var currentPos = {x: moving.x, y: moving.y};
+        var sel = sel || selection(allSymbols);
+        compute(sel);
+        moving.startMouse = [
+            moving.startMouse[0] + moving.x - currentPos.x,
+            moving.startMouse[1] + moving.y - currentPos.y,
+        ];
+        compute([moving]);
+        render(sel);
     }
 };
 
@@ -72,26 +120,7 @@ var stringSetup = function () {
         .classed('camera', true)
         .on('mousemove', function () {
             mouse = d3.mouse(camera.node());
-            if (moving) {
-                var currentPos = {x: moving.x, y: moving.y};
-                var diff = movingDiff();
-                var depthChange = Math.round(diff[1] / levelHeight);
-
-                moving.depth += depthChange;
-
-                if (depthChange === 0) {
-                    draw([moving]);
-                } else {
-                    var sel = selection(allSymbols);
-                    compute(sel);
-                    moving.startMouse = [
-                        moving.startMouse[0] + moving.x - currentPos.x,
-                        moving.startMouse[1] + moving.y - currentPos.y,
-                    ];
-                    compute([moving]);
-                    render(sel);
-                }
-            }
+            dragMoving();
         }) ;
 
     d3.select(document)
@@ -101,6 +130,7 @@ var stringSetup = function () {
         if (hovering) { startMoving(hovering) }
     }, 'keydown');
     Mousetrap.bind(keyFor('move'), stopMoving, 'keyup');
+    Mousetrap.bind('e', function () { debugger; });
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -127,10 +157,9 @@ var symbolId = function () {
 var recomputeSymbols = function () {
     var depth = 0;
     var bars = [];
-    var tokens = _.where(allSymbols, {token: true});
-    var tokensBelowDepth = tokens;
+    var tokensBelowDepth = allTokens;
 
-    _.each(tokens, function (t, i) { t.i = i });
+    _.each(allTokens, function (t, i) { t.i = i });
 
     while (tokensBelowDepth.length) {
         var currentBar = null;
@@ -163,7 +192,7 @@ var recomputeSymbols = function () {
     }
     bars.reverse();
 
-    allSymbols = tokens.concat(bars);
+    allSymbols = allTokens.concat(bars);
     return allSymbols;
 };
 
@@ -185,10 +214,10 @@ var selection = function (symbolsOrEls, removeSymbols) {
         symbolEls = camera.selectAll('.symbol').data(symbols, key);
         order = true;
     } else {
-        symbols = symbolsOrEls;
+        symbols = _.filter(symbolsOrEls);
         order = false;
 
-        removeSymbols = removeSymbols || [];
+        removeSymbols = _.filter(removeSymbols || []);
         symbolExitEls = d3.selectAll(_.pluck(removeSymbols, '__el__'));
         _.each(removeSymbols, function (s) { s.__el__ = null })
 
@@ -278,11 +307,9 @@ var compute = function (sel) {
     });
 
     if (moving) {
-        var diff = movingDiff();
-        var dir = [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1];
-        var amp = [diff[0] * dir[0], diff[1] * dir[1]];
-        moving.offsetX = 0;
-        moving.offsetY = dir[1] * Math.min(amp[1] / 3, 2);
+        var info = movingInfo();
+        moving.offsetX = info.direction[0] * Math.min(info.absDiff[0] / 3, 2);
+        moving.offsetY = info.direction[1] * Math.min(info.absDiff[1] / 3, 2);
     }
 };
 
@@ -403,7 +430,7 @@ var textWidth = function (token, recompute) {
 
 var setup = function (data) {
     init();
-    allSymbols = data.tokens;
+    allSymbols = allTokens = data.tokens;
     symbolIdSequence = data.symbolIdSequence;
     stringSetup();
 
@@ -431,6 +458,6 @@ setupExample({
     tokens: [['function', 1], ['addSym', 1], ['list', 2], ['symbol', 2], [BARRIER, 1], ['list', 2], ['.', 2], ['append', 2], ['symbol', 3], ['.', 3], ['createEl', 3], [EMPTY, 3]],
 });
 
-return untext;
+//return untext;
 
-})();
+//})();
