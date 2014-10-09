@@ -7,25 +7,29 @@ a {
   color: #00B7FF;
 }
 
-.symbol .mouse {
-  opacity: 0.0;
-}
-
 .camera > .background {
   fill: #ffffff;
 }
 
+.symbol rect.top-bar {
+  fill: #555;
+  opacity: 0.1;
+}
+
+.symbol.barrier rect.top-bar {
+  opacity: 0.0;
+}
+
+.symbol .mouse {
+  opacity: 0.0;
+}
 
 .token rect.tower {
-  fill: #C0DCFF;
+  fill: #EDF5FF;
 }
 
 .token.barrier rect.tower {
-  fill: #A9B8CC;
-}
-
-.token.empty rect.tower {
-  fill: #D5E0EE;
+  fill: #F8F8F8;
 }
 
 .token text {
@@ -33,20 +37,12 @@ a {
 }
 
 
-.bar rect.top-bar {
-  fill: #EBDEDE;
-}
-
 .bar rect.background-bar {
   fill: #fafafa;
 }
 
 
 .token.target rect.tower {
-  fill: #A0FA2D;
-}
-
-.bar.target rect.top-bar {
   fill: #A0FA2D;
 }
 

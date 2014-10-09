@@ -320,6 +320,46 @@ var yFromDepth = function (depth) {
 
 var render = function (sel) {
 
+    ///// tokens draw
+
+    sel.tokenEnterEls.append('rect')
+        .classed('tower', true) ;
+
+    sel.tokenEnterEls.append('text')
+        .attr('y', 30) ;
+
+    sel.tokenExitEls.remove();
+
+    sel.tokenEls.select('rect.tower')
+        .attr('x', gapWidth / 2)
+        .attr('y', function (t) { return t.barrier ? 0 : gapHeight / 2 })
+        .attr('width', function (t) { return t.w - gapWidth })
+        .attr('height', 100 * levelHeight) ;
+
+    sel.tokenEls.select('text')
+        .attr('x', function (t) { return t.w / 2 })
+        .text(function (t) { return t.empty ? "∅" : t.text }) ;
+
+
+    ////// bars draw
+
+    sel.barEnterEls.append('rect')
+        .classed('background-bar', true)
+        .attr('x', gapWidth / 2)
+        .attr('y', gapHeight / 2)
+
+    sel.barExitEls.remove();
+
+    sel.barEls.select('rect.background-bar')
+        .attr('width', function (b) { return b.w - gapWidth })
+        .attr('height', function (b) {
+            if (b === hovering) {
+                return 100 * levelHeight;
+            } else {
+                return levelHeight - gapHeight;
+            }
+        }) ;
+
     ////// symbols draw
 
     sel.symbolEls.attr('class', function (s) {
@@ -339,56 +379,14 @@ var render = function (sel) {
             return 'translate(' + (s.x + s.offsetX) + ',' + (s.y + s.offsetY) + ')';
         }) ;
 
-    ///// tokens draw
-
-    sel.tokenEnterEls.append('rect')
-        .classed('tower', true) ;
-
-    sel.tokenEnterEls.append('text')
-        .attr('y', 30) ;
-
-    sel.tokenExitEls.remove();
-
-    sel.tokenEls.select('rect.tower')
-        .attr('x', gapWidth / 2)
-        .attr('y', function (t) { return t.barrier ? 0 : gapHeight / 2 })
-        .attr('width', function (t) { return t.w - gapWidth })
-        .attr('height', 100 * levelHeight) ;
-
-    sel.tokenEls.select('text')
-        .attr('x', function (t) { return t.w / 2 })
-        .text(_.property('text')) ;
-
-
-    ////// bars draw
-
-    sel.barEnterEls.append('rect')
-        .classed('background-bar', true)
-        .attr('x', gapWidth / 2)
-        .attr('y', gapHeight / 2)
-
-    sel.barEnterEls.append('rect')
+    sel.symbolEnterEls.append('rect')
         .classed('top-bar', true)
         .attr('x', gapWidth / 2)
         .attr('y', gapHeight / 2)
         .attr('height', 5) ;
 
-    sel.barExitEls.remove();
-
-    sel.barEls.select('rect.background-bar')
-        .attr('width', function (b) { return b.w - gapWidth })
-        .attr('height', function (b) {
-            if (b === hovering) {
-                return 100 * levelHeight;
-            } else {
-                return levelHeight - gapHeight;
-            }
-        }) ;
-
-    sel.barEls.select('rect.top-bar')
+    sel.symbolEls.select('rect.top-bar')
         .attr('width', function (b) { return b.w - gapWidth }) ;
-
-    ///// mouse
 
     sel.symbolEnterEls.append('rect')
         .classed('mouse', true)
