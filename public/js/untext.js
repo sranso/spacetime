@@ -7,6 +7,7 @@ var height = 300;
 var levelHeight = 26;
 var gapWidth = 8;
 var gapHeight = 6;
+var minMoveX = 15;
 
 var keyboardConfigurations = {
     qwerty: {
@@ -17,11 +18,12 @@ var keyboardConfigurations = {
     },
 };
 
-var untext, allSymbols, allTokens, symbolIdSequence, offCameraToken, camera,
+var untext, allSymbolTree, allSymbols, allTokens, symbolIdSequence, offCameraToken, camera,
     moving, hovering, mouse, keyboardLayout;
 
 var init = function () {
     untext = {};
+    allSymbolTree = null;
     allSymbols = [];
     allTokens = [];
     symbolIdSequence = 0;
@@ -70,15 +72,20 @@ var dragMoving = function () {
 
     var info = movingInfo();
 
+    var previousDepth = moving.depth;
     var depthChange = Math.round(info.diff[1] / levelHeight);
     moving.depth += depthChange;
+    if (moving.depth <= 0) {
+        moving.depth = 1;
+        depthChange = moving.depth - previousDepth;
+    }
 
     var swap = false;
     var diffX = info.absDiff[0];
     while (true) {
         var neighborI = moving.i + info.direction[0];
         var neighborSymbol = allTokens[neighborI];
-        if (neighborSymbol && diffX >= neighborSymbol.w / 2) {
+        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
             swap = true;
             allTokens[moving.i] = neighborSymbol;
             allTokens[neighborSymbol.i] = moving;
@@ -94,14 +101,14 @@ var dragMoving = function () {
         draw(movingSelection());
     } else {
         var currentPos = {x: moving.x, y: moving.y};
-        recomputeSymbols();
+        computeStructure();
         var sel = fullSelection();
-        compute(sel);
+        computePositions(sel);
         moving.startMouse = [
             moving.startMouse[0] + moving.x - currentPos.x,
             moving.startMouse[1] + moving.y - currentPos.y,
         ];
-        compute(movingSelection());
+        computePositions(movingSelection());
         render(sel);
     }
 };
@@ -145,11 +152,11 @@ var stringSetup = function () {
 
 var draw = function (sel) {
     if (sel === true || sel == null) {
-        recomputeSymbols();
+        computeStructure();
         sel = null;
     }
     sel = sel || fullSelection();
-    compute(sel);
+    computePositions(sel);
     render(sel);
 };
 
@@ -159,46 +166,71 @@ var symbolId = function () {
     return id;
 };
 
-var recomputeSymbols = function () {
-    var depth = 0;
-    var bars = [];
-    var tokensBelowDepth = allTokens;
+var createBar = function (bar) {
+    return _.extend({
+        id: symbolId(),
+        symbol: true,
+        bar: true,
+        children: [],
+        begin: null,
+        end: null,
+    }, bar);
+};
 
+var computeStructure = function () {
     _.each(allTokens, function (t, i) { t.i = i });
 
-    while (tokensBelowDepth.length) {
-        var currentBar = null;
-        var nextTokensBelowDepth = [];
-        var nextDepth = depth + 1;
-        _.each(tokensBelowDepth, function (token) {
-            if (currentBar && token.i === currentBar.stop.i + 1) {
-                currentBar.stop = token;
-            } else {
-                if (currentBar) {
-                    bars.push(currentBar);
-                }
-                currentBar = {
-                    id: symbolId(),
-                    symbol: true,
-                    bar: true,
-                    depth: depth,
-                    start: token,
-                    stop: token,
-                };
-            }
+    var root = createBar({
+        depth: 0,
+        begin: allTokens[0],
+        end: allTokens[allTokens.length - 1],
+    });
+    var bars = [root];
 
-            if (token.depth > nextDepth) {
-                nextTokensBelowDepth.push(token);
-            }
-        });
-        bars.push(currentBar);
-        tokensBelowDepth = nextTokensBelowDepth;
-        depth = nextDepth;
-    }
+    computeTree(root, allTokens, bars);
+    allSymbolTree = root;
+    console.log(allSymbolTree);
+
     bars.reverse();
-
     allSymbols = allTokens.concat(bars);
-    return allSymbols;
+};
+
+var computeTree = function (node, tokens, bars) {
+    var child = null;
+    var attachChild = function (child) {
+        child.parent = node;
+        node.children.push(child);
+    };
+    _.each(tokens, function (token) {
+        var startChild;
+        if (token.depth === node.depth + 1) {
+            if (child) {
+                attachChild(child);
+                child = null;
+            }
+            attachChild(token);
+        } else {
+            if (!child) {
+                child = createBar({
+                    depth: node.depth + 1,
+                    begin: token,
+                });
+            }
+        }
+        if (child) {
+            child.end = token;
+        }
+    });
+    if (child) {
+        attachChild(child);
+    }
+    _.each(node.children, function (child) {
+        if (child.bar) {
+            bars.push(child);
+            var childTokens = allTokens.slice(child.begin.i, child.end.i + 1);
+            computeTree(child, childTokens, bars);
+        }
+    });
 };
 
 var key = function (s) { return s.id };
@@ -215,7 +247,7 @@ var movingSelection = function () {
 
 var selection = function (symbols, symbolEls, dataSelection) {
     var all,
-        target,
+        target, targetSiblings,
         tokens, bars,
         tokenEls, barEls,
         symbolEnterEls, tokenEnterEls, barEnterEls,
@@ -225,6 +257,11 @@ var selection = function (symbols, symbolEls, dataSelection) {
 
     target = moving || hovering;
     target = _.find(symbols, function (s) { return s === target });
+    if (target) {
+        targetSiblings = (target.parent && target.parent.children) || [target];
+    } else {
+        targetSiblings = [];
+    }
 
     tokens = _.where(symbols, {token: true});
     bars = _.where(symbols, {bar: true});
@@ -249,6 +286,7 @@ var selection = function (symbols, symbolEls, dataSelection) {
     return {
         all: all,
         target: target,
+        targetSiblings: targetSiblings,
         symbols: symbols,
         tokens: tokens,
         bars: bars,
@@ -264,7 +302,7 @@ var selection = function (symbols, symbolEls, dataSelection) {
     };
 };
 
-var compute = function (sel) {
+var computePositions = function (sel) {
     if (sel.all) {
         var x = 0;
         _.each(sel.tokens, function (t) {
@@ -290,8 +328,8 @@ var compute = function (sel) {
     });
 
     _.each(sel.bars, function (b) {
-        var x = b.start.x;
-        var w = b.stop.x + b.stop.w - x;
+        var x = b.begin.x;
+        var w = b.end.x + b.end.w - x;
         var y = yFromDepth(b.depth);
         var pos = {x: x, y: y, offsetX: 0, offsetY: 0, w: w, h: levelHeight};
         _.extend(b, pos);
@@ -344,7 +382,7 @@ var render = function (sel) {
     sel.barEls.select('rect.background-bar')
         .attr('width', function (b) { return b.w - gapWidth })
         .attr('height', function (b) {
-            if (b === hovering) {
+            if (b === sel.target) {
                 return 100 * levelHeight;
             } else {
                 return levelHeight - gapHeight;
@@ -361,6 +399,9 @@ var render = function (sel) {
             if (s === sel.target) {
                 classes.push('target');
             }
+            if (_.contains(sel.targetSiblings, s)) {
+                classes.push('target-sibling');
+            }
             if (s === moving) {
                 classes.push('moving');
             }
@@ -372,12 +413,12 @@ var render = function (sel) {
 
     sel.symbolEnterEls.append('rect')
         .classed('top-bar', true)
-        .attr('x', gapWidth / 2)
+        .attr('x', gapWidth / 2 + 4)
         .attr('y', gapHeight / 2)
         .attr('height', 5) ;
 
     sel.symbolEls.select('rect.top-bar')
-        .attr('width', function (b) { return b.w - gapWidth }) ;
+        .attr('width', function (b) { return b.w - gapWidth - 8 }) ;
 
     sel.symbolEnterEls.append('rect')
         .classed('mouse', true)

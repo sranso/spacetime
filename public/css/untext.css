@@ -16,6 +16,10 @@ a {
   opacity: 0.1;
 }
 
+.symbol.target-sibling rect.top-bar {
+  opacity: 0.5;
+}
+
 .symbol.barrier rect.top-bar {
   opacity: 0.0;
 }
