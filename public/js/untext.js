@@ -52,14 +52,14 @@ var startMoving = function (s) {
         moving = s;
         moving.startMouse = mouse;
         moving.startTime = Date.now();
-        draw([s]);
+        draw(movingSelection());
     }
 };
 
 var stopMoving = function (s) {
     if (moving) {
         moving = null;
-        draw(allSymbols);
+        draw();
     }
 };
 
@@ -91,16 +91,17 @@ var dragMoving = function () {
     }
 
     if (depthChange === 0 && !swap) {
-        draw([moving]);
+        draw(movingSelection());
     } else {
         var currentPos = {x: moving.x, y: moving.y};
-        var sel = sel || selection(allSymbols);
+        recomputeSymbols();
+        var sel = fullSelection();
         compute(sel);
         moving.startMouse = [
             moving.startMouse[0] + moving.x - currentPos.x,
             moving.startMouse[1] + moving.y - currentPos.y,
         ];
-        compute([moving]);
+        compute(movingSelection());
         render(sel);
     }
 };
@@ -139,11 +140,15 @@ var stringSetup = function () {
         .attr('width', 20000)
         .attr('height', 20000) ;
 
-    draw(allSymbols);
+    draw();
 };
 
-var draw = function (symbolsOrEls, removeSymbols) {
-    var sel = selection(symbolsOrEls, removeSymbols);
+var draw = function (sel) {
+    if (sel === true || sel == null) {
+        recomputeSymbols();
+        sel = null;
+    }
+    sel = sel || fullSelection();
     compute(sel);
     render(sel);
 };
@@ -198,47 +203,39 @@ var recomputeSymbols = function () {
 
 var key = function (s) { return s.id };
 
-var selection = function (symbolsOrEls, removeSymbols) {
-    var order,
-        symbols, tokens, bars,
-        symbolEls, tokenEls, barEls,
+var fullSelection = function () {
+    var symbolEls = camera.selectAll('.symbol').data(allSymbols, key);
+    return selection(allSymbols, symbolEls, true);
+};
+
+var movingSelection = function () {
+    var symbolEls = camera.select('.symbol.moving');
+    return selection([moving], symbolEls, false);
+};
+
+var selection = function (symbols, symbolEls, dataSelection) {
+    var all,
+        target,
+        tokens, bars,
+        tokenEls, barEls,
         symbolEnterEls, tokenEnterEls, barEnterEls,
         symbolExitEls, tokenExitEls, barExitEls;
 
-    if (symbolsOrEls instanceof d3.selection) {
-        symbolEls = symbolsOrEls;
-        symbols = symbolEls.data();
-        order = true;
-    } else if (symbolsOrEls === allSymbols) {
-        symbols = recomputeSymbols();
-        symbolEls = camera.selectAll('.symbol').data(symbols, key);
-        order = true;
-    } else {
-        symbols = _.filter(symbolsOrEls);
-        order = false;
+    all = symbols.length === allSymbols.length;
 
-        removeSymbols = _.filter(removeSymbols || []);
-        symbolExitEls = d3.selectAll(_.pluck(removeSymbols, '__el__'));
-        _.each(removeSymbols, function (s) { s.__el__ = null })
-
-        var enter = _.filter(symbols, function (s) { return !s.__el__ });
-        _.each(enter, function (s) {
-            s.__el__ = camera.append('g').datum(s).node();
-        });
-        symbolEnterEls = d3.selectAll(_.pluck(enter, '__el__'));
-        symbolEls = d3.selectAll(_.pluck(symbols, '__el__'));
-    }
-
-    if (order) {
-        symbolEnterEls = symbolEls.enter().append('g');
-        symbolExitEls = symbolEls.exit();
-        //symbolEls.order();
-    }
+    target = moving || hovering;
+    target = _.find(symbols, function (s) { return s === target });
 
     tokens = _.where(symbols, {token: true});
     bars = _.where(symbols, {bar: true});
 
-    symbolEnterEls.each(function (s) { s.__el__ = this });
+    if (dataSelection) {
+        symbolEnterEls = symbolEls.enter().append('g');
+        symbolExitEls = symbolEls.exit();
+        //symbolEls.order();
+    } else {
+        symbolEnterEls = symbolExitEls = d3.selectAll([]);
+    }
 
     tokenEls = symbolEls.filter(_.property('token'));
     barEls = symbolEls.filter(_.property('bar'));
@@ -249,12 +246,9 @@ var selection = function (symbolsOrEls, removeSymbols) {
     tokenExitEls = symbolExitEls.filter(_.property('token'));
     barExitEls = symbolExitEls.filter(_.property('bar'));
 
-    console.log('symbols: ' + symbols.length + '; symbol els: ' + symbolEls.size() + '; enter: ' + symbolEnterEls.size() + '; exit: ' + symbolExitEls.size() + '');
-
     return {
-        all: symbols.length === allSymbols.length,
-        target: moving || hovering,
-        order: order,
+        all: all,
+        target: target,
         symbols: symbols,
         tokens: tokens,
         bars: bars,
@@ -271,15 +265,12 @@ var selection = function (symbolsOrEls, removeSymbols) {
 };
 
 var compute = function (sel) {
-
-    ///// tokens compute
-
     if (sel.all) {
         var x = 0;
         _.each(sel.tokens, function (t) {
             var w;
             if (t.barrier) {
-                w = 5;
+                w = 8;
             } else if (t.empty) {
                 w = 30;
             } else {
@@ -390,14 +381,14 @@ var render = function (sel) {
 
     sel.symbolEnterEls.append('rect')
         .classed('mouse', true)
-        .on('mouseenter', function (t) {
-            hovering = t;
-            draw([t]);
+        .on('mouseenter', function (s) {
+            hovering = s;
+            draw(false);
         })
-        .on('mouseleave', function (t) {
+        .on('mouseleave', function (s) {
             var last = hovering;
-            if (t === last) { hovering = null }
-            if (last) { draw([last]) }
+            if (s === last) { hovering = null }
+            if (last) { draw(false) }
         })
         .attr('x', 0)
         .attr('y', 0) ;
