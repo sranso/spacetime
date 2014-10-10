@@ -16,7 +16,6 @@
   ],
   "dependencies": {
     "underscore": "~1.7.0",
-    "d3": "~3.4.11",
-    "mousetrap": "~1.4.6"
+    "d3": "~3.4.11"
   }
 }
