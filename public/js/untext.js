@@ -150,13 +150,19 @@ var dvorakKeyMap = _.extend({}, qwertyKeyMap, {
     189: "'",
 });
 
+var keyRemaps = {
+    'default': {
+        'B': 'left mouse',
+    },
+};
+
 var keyMap = {
     qwerty: qwertyKeyMap,
     dvorak: dvorakKeyMap,
 };
 
 var untext, allSymbolTree, allSymbols, allTokens, symbolIdSequence, offCameraToken, camera,
-    moving, hovering, mouse, keyboardLayout, keysDown, lastKey;
+    moving, hovering, mouse, keyboardLayout, keysDown, lastKeysDown;
 
 var init = function () {
     untext = {};
@@ -168,62 +174,64 @@ var init = function () {
     hovering = null;
     mouse = [0, 0];
     keyboardLayout = 'dvorak';
-    keysDown = {'$trig': false, '$down': false, '$up': false, '$:V': true};
-    lastKey = 'V';
+    keyRemap = 'default';
+    keysDown = {'$firing': false, '$key': 'left mouse', '$down': false, '$up': false, '$:left mouse': true};
+    lastKeysDown = keysDown;
 };
 
 var keyAssignments = {
-    startMoving: ['$down', '$:V', 'V'],
-    stopMoving: ['$up', '$:V', 'V'],
-    oppositeMoving: ['shift', 'V'],
+    startMoving: ['$down', '$:left mouse'],
+    stopMoving: ['$up', '$:left mouse'],
+    oppositeMoving: ['shift', 'left mouse'],
+    oppositeMovingToggle: ['$:shift', 'shift', 'left mouse'],
 };
+
 
 //////
 
 var keyForEvent = function () {
-    return keyMap[keyboardLayout][d3.event.keyCode];
+    var key = keyMap[keyboardLayout][d3.event.keyCode];
+    var remapped = keyRemaps[keyRemap][key];
+    return remapped == null ? key : remapped;
 };
 
-var keyDown = function () {
-    var key = keyForEvent();
-    keysDown['$down'] = true;
-    keyEvent(key);
-    keysDown['$down'] = false;
-};
-
-var keyUp = function () {
-    var key = keyForEvent();
-    keysDown['$up'] = true;
-    keyEvent(key);
-    keysDown['$up'] = false;
+var inputEvent = function (key, eventType) {
+    lastKeysDown = keysDown;
+    var pressed = _.filter(_.pairs(lastKeysDown), function (p) {
+        return p[1] && p[0][0] !== '$';
+    })
+    keysDown = _.object(pressed);
+    keysDown['$' + eventType] = true;
     if (key) {
-        delete keysDown[key];
-    }
-};
-
-var keyEvent = function (key) {
-    if (lastKey) {
-        delete keysDown['$:' + lastKey];
-    }
-    lastKey = key;
-    if (key) {
-        keysDown[key] = true;
         keysDown['$:' + key] = true;
+        keysDown[key] = eventType === 'down';
     }
-    keysDown['$trig'] = true;
+    keysDown['$firing'] = true;
 
     if (active('startMoving')) {
         if (hovering) { startMoving(hovering) }
     } else if (active('stopMoving')) {
         stopMoving();
     }
+    if (toggled('oppositeMovingToggle')) {
+        dragMoving(true);
+    }
 
-    keysDown['$trig'] = false;
+    keysDown['$firing'] = false;
 };
 
-var active = function (action) {
+var active = function (action, keys) {
+    keys = keys || keysDown;
     var combo = keyAssignments[action];
-    return _.every(combo, function (key) { return keysDown[key]; });
+    return _.every(combo, function (key) { return keys[key]; });
+};
+
+var triggered = function (action) {
+    return active(action, keysDown) && !active(action, lastKeysDown);
+};
+
+var toggled = function (action) {
+    return active(action, keysDown) != active(action, lastKeysDown);
 };
 
 var movingInfo = function () {
@@ -233,7 +241,15 @@ var movingInfo = function () {
         diff: diff,
         direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
         absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
+        mode: movingMode(),
     };
+};
+
+var movingMode = function () {
+    if (!moving) {
+        return '';
+    }
+    return moving.bar === active('oppositeMoving') ? 'token' : 'symbol';
 };
 
 var startMoving = function (s) {
@@ -252,39 +268,45 @@ var stopMoving = function (s) {
     }
 };
 
-var dragMoving = function () {
+var dragMoving = function (toggleMode) {
     if (!moving) {
         return;
     }
 
     var info = movingInfo();
+    var moved;
 
-    var previousDepth = moving.depth;
-    var depthChange = Math.round(info.diff[1] / levelHeight);
-    moving.depth += depthChange;
-    if (moving.depth <= 0) {
-        moving.depth = 1;
-        depthChange = moving.depth - previousDepth;
-    }
-
-    var swap = false;
-    var diffX = info.absDiff[0];
-    while (true) {
-        var neighborI = moving.i + info.direction[0];
-        var neighborSymbol = allTokens[neighborI];
-        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
-            swap = true;
-            allTokens[moving.i] = neighborSymbol;
-            allTokens[neighborSymbol.i] = moving;
-            neighborSymbol.i = moving.i;
-            moving.i = neighborI;
-            diffX -= neighborSymbol.w;
-        } else {
-            break;
+    if (info.mode === 'token') {
+        var previousDepth = moving.depth;
+        var depthChange = Math.round(info.diff[1] / levelHeight);
+        moving.depth += depthChange;
+        if (moving.depth <= 0) {
+            moving.depth = 1;
+            depthChange = moving.depth - previousDepth;
         }
+
+        var swap = false;
+        var diffX = info.absDiff[0];
+        while (true) {
+            var neighborI = moving.i + info.direction[0];
+            var neighborSymbol = allTokens[neighborI];
+            if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
+                swap = true;
+                allTokens[moving.i] = neighborSymbol;
+                allTokens[neighborSymbol.i] = moving;
+                neighborSymbol.i = moving.i;
+                moving.i = neighborI;
+                diffX -= neighborSymbol.w;
+            } else {
+                break;
+            }
+        }
+        moved = depthChange !== 0 || swap;
+    } else {
+        moved = false;
     }
 
-    if (depthChange === 0 && !swap) {
+    if (!moved && !toggleMode) {
         draw(movingSelection());
     } else {
         var currentPos = {x: moving.x, y: moving.y};
@@ -319,9 +341,9 @@ var stringSetup = function () {
         }) ;
 
     d3.select(document)
-        .on('mouseup', stopMoving)
-        .on('keydown', keyDown)
-        .on('keyup', keyUp) ;
+        .on('mouseup', function () { inputEvent('left mouse', 'up') })
+        .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
+        .on('keyup', function () { inputEvent(keyForEvent(), 'up') }) ;
 
 
     var background = camera.append('rect')
@@ -355,6 +377,7 @@ var createBar = function (bar) {
         id: symbolId(),
         symbol: true,
         bar: true,
+        token: false,
         children: [],
         begin: null,
         end: null,
@@ -625,6 +648,8 @@ var render = function (sel) {
     sel.tokenEnterEls.select('rect.mouse')
         .on('mousedown', function (t) {
             mouse = d3.mouse(camera.node());
+            hovering = t;
+            inputEvent('left mouse', 'down');
             startMoving(t);
         }) ;
 };
@@ -657,6 +682,7 @@ var setupExample = function (example) {
             return {
                 id: i,
                 symbol: true,
+                bar: false,
                 token: true,
                 text: _.isString(config[0]) ? config[0] : '',
                 barrier: config[0] === BARRIER,
