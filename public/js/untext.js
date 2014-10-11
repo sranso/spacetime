@@ -161,13 +161,23 @@ var keyMap = {
     dvorak: dvorakKeyMap,
 };
 
-var untext, allSymbolTree, allSymbols, allTokens, symbolIdSequence, offCameraToken, camera,
+var keyAssignments = {
+    startMoving: ['$down', '$:left mouse'],
+    stopMoving: ['$up', '$:left mouse'],
+    oppositeMoving: ['shift', 'left mouse'],
+    oppositeMovingToggle: ['$:shift', 'shift', 'left mouse'],
+    debug: ['$down', 'D'],
+};
+
+
+var untext, allSymbolTree, allSymbols, allBars, allTokens, symbolIdSequence, offCameraToken, camera,
     moving, hovering, mouse, keyboardLayout, keysDown, lastKeysDown;
 
 var init = function () {
     untext = {};
     allSymbolTree = null;
     allSymbols = [];
+    allBars = [];
     allTokens = [];
     symbolIdSequence = 0;
     moving = null;
@@ -178,14 +188,6 @@ var init = function () {
     keysDown = {'$firing': false, '$key': 'left mouse', '$down': false, '$up': false, '$:left mouse': true};
     lastKeysDown = keysDown;
 };
-
-var keyAssignments = {
-    startMoving: ['$down', '$:left mouse'],
-    stopMoving: ['$up', '$:left mouse'],
-    oppositeMoving: ['shift', 'left mouse'],
-    oppositeMovingToggle: ['$:shift', 'shift', 'left mouse'],
-};
-
 
 //////
 
@@ -212,6 +214,8 @@ var inputEvent = function (key, eventType) {
         if (hovering) { startMoving(hovering) }
     } else if (active('stopMoving')) {
         stopMoving();
+    } else if (active('debug')) {
+        debugger;
     }
     if (toggled('oppositeMovingToggle')) {
         dragMoving(true);
@@ -277,49 +281,95 @@ var dragMoving = function (toggleMode) {
     var moved;
 
     if (info.mode === 'token') {
-        var previousDepth = moving.depth;
-        var depthChange = Math.round(info.diff[1] / levelHeight);
-        moving.depth += depthChange;
-        if (moving.depth <= 0) {
-            moving.depth = 1;
-            depthChange = moving.depth - previousDepth;
-        }
-
-        var swap = false;
-        var diffX = info.absDiff[0];
-        while (true) {
-            var neighborI = moving.i + info.direction[0];
-            var neighborSymbol = allTokens[neighborI];
-            if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
-                swap = true;
-                allTokens[moving.i] = neighborSymbol;
-                allTokens[neighborSymbol.i] = moving;
-                neighborSymbol.i = moving.i;
-                moving.i = neighborI;
-                diffX -= neighborSymbol.w;
-            } else {
-                break;
-            }
-        }
-        moved = depthChange !== 0 || swap;
+        moved = dragToken(info);
     } else {
-        moved = false;
+        moved = dragSymbol(info);
     }
 
     if (!moved && !toggleMode) {
         draw(movingSelection());
     } else {
-        var currentPos = {x: moving.x, y: moving.y};
-        computeStructure();
-        var sel = fullSelection();
-        computePositions(sel);
-        moving.startMouse = [
-            moving.startMouse[0] + moving.x - currentPos.x,
-            moving.startMouse[1] + moving.y - currentPos.y,
-        ];
-        computePositions(movingSelection());
-        render(sel);
+        drawAfterMove(info);
     }
+};
+
+var drawAfterMove = function (info) {
+    var currentPos = {x: moving.x, y: moving.y};
+    computeStructure(info.mode);
+    var sel = fullSelection();
+    computePositions(sel);
+    moving.startMouse = [
+        moving.startMouse[0] + moving.x - currentPos.x,
+        moving.startMouse[1] + moving.y - currentPos.y,
+    ];
+    computePositions(movingSelection());
+    render(sel);
+};
+
+var dragToken = function (info) {
+    var depths = dragDepth(info);
+    moving.depth = depths[0];
+
+    var swap = false;
+    var diffX = info.absDiff[0];
+    while (true) {
+        var neighborI = moving.tokenI + info.direction[0];
+        var neighborSymbol = allTokens[neighborI];
+        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
+            swap = true;
+            allTokens[moving.tokenI] = neighborSymbol;
+            allTokens[neighborSymbol.tokenI] = moving;
+            diffX -= neighborSymbol.w;
+        } else {
+            break;
+        }
+    }
+    return moved = (depths[0] !== depths[1]) || swap;
+};
+
+var dragSymbol = function (info) {
+    var depths = dragDepth(info);
+
+    // TEMP
+    depths[0] = Math.min(depths[0], depths[1]);
+    var up = depths[1] - depths[0];
+    if (up >= 1) {
+        moving.parent.children.splice(moving.treeI, 1);
+        var insertBefore = _.reduce(new Array(up), _.property('parent'), moving);
+        var siblings = insertBefore.parent.children;
+        var before = siblings.slice(0, insertBefore.treeI);
+        var after = siblings.slice(insertBefore.treeI);
+        siblings = before.concat([moving]).concat(after);
+        insertBefore.parent.children = siblings;
+        drawAfterMove(info);
+    }
+
+    var swap = false;
+    var diffX = info.absDiff[0];
+    var siblings = moving.parent.children;
+    while (true) {
+        var neighborI = moving.treeI + info.direction[0];
+        var neighborSymbol = siblings[neighborI];
+        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
+            swap = true;
+            siblings[moving.treeI] = neighborSymbol;
+            siblings[neighborSymbol.treeI] = moving;
+            diffX -= neighborSymbol.w;
+        } else {
+            break;
+        }
+    }
+    return up >= 1 || swap;
+};
+
+var dragDepth = function (info) {
+    var previousDepth = moving.depth;
+    var depthChange = Math.round(info.diff[1] / levelHeight);
+    var newDepth = previousDepth + depthChange;
+    if (newDepth <= 0) {
+        newDepth = 1;
+    }
+    return [newDepth, previousDepth];
 };
 
 var stringSetup = function () {
@@ -353,12 +403,13 @@ var stringSetup = function () {
         .attr('width', 20000)
         .attr('height', 20000) ;
 
-    draw();
+    computeStructure('token');
+    draw(false);
 };
 
 var draw = function (sel) {
     if (sel === true || sel == null) {
-        computeStructure();
+        computeStructure(movingMode());
         sel = null;
     }
     sel = sel || fullSelection();
@@ -384,29 +435,39 @@ var createBar = function (bar) {
     }, bar);
 };
 
-var computeStructure = function () {
-    _.each(allTokens, function (t, i) { t.i = i });
+var computeStructure = function (mode) {
+    if (mode === 'token') {
+        treeFromTokens();
+    }
+    if (mode === 'symbol') {
+        tokensFromTree();
+    }
+    barsFromTree();
+    allSymbols = allTokens.concat(allBars);
+};
 
-    var root = createBar({
+var treeFromTokens = function () {
+    _.each(allTokens, function (t, i) { t.tokenI = i });
+
+    allSymbolTree = createBar({
         depth: 0,
         begin: allTokens[0],
         end: allTokens[allTokens.length - 1],
     });
-    var bars = [root];
 
-    computeTree(root, allTokens, bars);
-    allSymbolTree = root;
-    console.log(allSymbolTree);
-
-    bars.reverse();
-    allSymbols = allTokens.concat(bars);
+    _treeFromTokens(allSymbolTree, allTokens);
 };
 
-var computeTree = function (node, tokens, bars) {
+var _treeFromTokens = function (node, tokens) {
     var child = null;
     var attachChild = function (child) {
         child.parent = node;
+        child.treeI = node.children.length;
         node.children.push(child);
+        if (child.bar) {
+            var childTokens = allTokens.slice(child.begin.tokenI, child.end.tokenI + 1);
+            _treeFromTokens(child, childTokens);
+        }
     };
     _.each(tokens, function (token) {
         var startChild;
@@ -431,12 +492,60 @@ var computeTree = function (node, tokens, bars) {
     if (child) {
         attachChild(child);
     }
-    _.each(node.children, function (child) {
-        if (child.bar) {
-            bars.push(child);
-            var childTokens = allTokens.slice(child.begin.i, child.end.i + 1);
-            computeTree(child, childTokens, bars);
+};
+
+var tokensFromTree = function () {
+    allTokens = [];
+    var endI = _tokensFromTree(allSymbolTree, 0, 1);
+    console.log(endI);
+    console.log(allTokens);
+    var tokenIs = _.pluck(allTokens, 'tokenI');
+    var indeces = _.map(allTokens, function (t, i) { return i });
+    if (!_.isEqual(tokenIs, indeces)) {
+        debugger;
+    }
+    console.log(tokenIs);
+};
+
+var _tokensFromTree = function (node, tokenI, depth) {
+    var begin = node.children[0];
+    var end = node.children[node.children.length - 1];
+    node.children = _.filter(node.children, function (child, i) {
+        if (child.token) {
+            child.tokenI = tokenI;
+            tokenI += 1;
+            allTokens.push(child);
+            return true;
+        } else {
+            var ret = _tokensFromTree(child, tokenI, depth + 1);
+            tokenI = ret[0];
+            if (i === 0) { begin = ret[1] }
+            if (i === node.children.length) { end = ret[2] }
+            return child.children.length > 0;
         }
+    });
+    _.each(node.children, function (child, i) {
+        child.parent = node;
+        child.depth = depth;
+        child.treeI = i;
+    });
+    node.begin = begin;
+    node.end = end;
+    return [tokenI, begin, end];
+};
+
+var barsFromTree = function () {
+    allBars = [allSymbolTree];
+    _barsFromTree(allSymbolTree);
+    allBars.reverse();
+};
+
+var _barsFromTree = function (node) {
+    _.each(node.children, function (child) {
+        if (child.bar) { allBars.push(child) }
+    });
+    _.each(node.children, function (child) {
+        if (child.bar) { _barsFromTree(child) }
     });
 };
 

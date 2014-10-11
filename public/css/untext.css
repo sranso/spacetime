@@ -40,6 +40,9 @@ a {
   text-anchor: middle;
 }
 
+.token.empty text {
+  fill: #aaaaaa;
+}
 
 .bar rect.background-bar {
   fill: #fafafa;
