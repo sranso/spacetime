@@ -330,23 +330,41 @@ var dragToken = function (info) {
 var dragSymbol = function (info) {
     var depths = dragDepth(info);
 
-    // TEMP
-    depths[0] = Math.min(depths[0], depths[1]);
-    var up = depths[1] - depths[0];
-    if (up >= 1) {
-        moving.parent.children.splice(moving.treeI, 1);
-        var insertBefore = _.reduce(new Array(up), _.property('parent'), moving);
-        var siblings = insertBefore.parent.children;
-        var before = siblings.slice(0, insertBefore.treeI);
-        var after = siblings.slice(insertBefore.treeI);
-        siblings = before.concat([moving]).concat(after);
-        insertBefore.parent.children = siblings;
+    var siblings = moving.parent.children;
+    var depthChange = depths[0] - depths[1];
+    if (depthChange <= -1) {
+        siblings.splice(moving.treeI, 1);
+        var n = new Array(-depthChange);
+        var insertBefore = _.reduce(n, _.property('parent'), moving);
+        var newSiblings = insertBefore.parent.children;
+        var before = newSiblings.slice(0, insertBefore.treeI);
+        var after = newSiblings.slice(insertBefore.treeI);
+        newSiblings = before.concat([moving]).concat(after);
+        insertBefore.parent.children = newSiblings;
         drawAfterMove(info);
+    } else if (depthChange >= 1) {
+        var neighborI = moving.treeI + info.direction[0];
+        var firstNeighbor = siblings[neighborI];
+        neighborI = moving.treeI - info.direction[0];
+        var secondNeighbor = siblings[neighborI];
+        var descendNeighbor = _.find([firstNeighbor, secondNeighbor], function (n) {
+            return n && n.bar;
+        });
+        if (descendNeighbor) {
+            siblings.splice(moving.treeI, 1);
+            if (descendNeighbor.treeI > moving.treeI) {
+                descendNeighbor.children.unshift(moving);
+            } else {
+                descendNeighbor.children.push(moving);
+            }
+            drawAfterMove(info);
+        } else {
+            depthChange = 0;
+        }
     }
 
     var swap = false;
     var diffX = info.absDiff[0];
-    var siblings = moving.parent.children;
     while (true) {
         var neighborI = moving.treeI + info.direction[0];
         var neighborSymbol = siblings[neighborI];
@@ -359,7 +377,7 @@ var dragSymbol = function (info) {
             break;
         }
     }
-    return up >= 1 || swap;
+    return depthChange !== 0 || swap;
 };
 
 var dragDepth = function (info) {
@@ -496,15 +514,7 @@ var _treeFromTokens = function (node, tokens) {
 
 var tokensFromTree = function () {
     allTokens = [];
-    var endI = _tokensFromTree(allSymbolTree, 0, 1);
-    console.log(endI);
-    console.log(allTokens);
-    var tokenIs = _.pluck(allTokens, 'tokenI');
-    var indeces = _.map(allTokens, function (t, i) { return i });
-    if (!_.isEqual(tokenIs, indeces)) {
-        debugger;
-    }
-    console.log(tokenIs);
+    _tokensFromTree(allSymbolTree, 0, 1);
 };
 
 var _tokensFromTree = function (node, tokenI, depth) {
