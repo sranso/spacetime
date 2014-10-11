@@ -289,51 +289,59 @@ var dragMoving = function (toggleMode) {
     if (!moved && !toggleMode) {
         draw(movingSelection());
     } else {
-        drawAfterMove(info);
+        draw();
     }
 };
 
-var drawAfterMove = function (info) {
+var positionAfterMove = function (mode) {
     var currentPos = {x: moving.x, y: moving.y};
-    computeStructure(info.mode);
-    var sel = fullSelection();
+    computeStructure(mode);
+    var sel = fullSelection(false);
     computePositions(sel);
     moving.startMouse = [
         moving.startMouse[0] + moving.x - currentPos.x,
         moving.startMouse[1] + moving.y - currentPos.y,
     ];
-    computePositions(movingSelection());
-    render(sel);
 };
 
 var dragToken = function (info) {
     var depths = dragDepth(info);
     moving.depth = depths[0];
 
-    var swap = false;
+    var swapped = maybeSwap(allTokens, 'tokenI', info);
+    var moved = (depths[0] !== depths[1]) || swapped;
+    if (moved) {
+        positionAfterMove(info.mode);
+    }
+    return moved;
+};
+
+var maybeSwap = function (siblings, index, info) {
+    var swapped = false;
+    var movingI = moving[index];
     var diffX = info.absDiff[0];
     while (true) {
-        var neighborI = moving.tokenI + info.direction[0];
-        var neighborSymbol = allTokens[neighborI];
+        var neighborI = movingI + info.direction[0];
+        var neighborSymbol = siblings[neighborI];
         if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
-            swap = true;
-            allTokens[moving.tokenI] = neighborSymbol;
-            allTokens[neighborSymbol.tokenI] = moving;
+            swapped = true;
+            siblings[movingI] = neighborSymbol;
+            siblings[neighborSymbol[index]] = moving;
+            movingI = neighborI;
             diffX -= neighborSymbol.w;
         } else {
             break;
         }
     }
-    return moved = (depths[0] !== depths[1]) || swap;
-};
+    return swapped;
+}
 
 var dragSymbol = function (info) {
     var depths = dragDepth(info);
 
-    var siblings = moving.parent.children;
     var depthChange = depths[0] - depths[1];
     if (depthChange <= -1) {
-        siblings.splice(moving.treeI, 1);
+        moving.parent.children.splice(moving.treeI, 1);
         var n = new Array(-depthChange);
         var insertBefore = _.reduce(n, _.property('parent'), moving);
         var newSiblings = insertBefore.parent.children;
@@ -341,8 +349,9 @@ var dragSymbol = function (info) {
         var after = newSiblings.slice(insertBefore.treeI);
         newSiblings = before.concat([moving]).concat(after);
         insertBefore.parent.children = newSiblings;
-        drawAfterMove(info);
+        positionAfterMove(info.mode);
     } else if (depthChange >= 1) {
+        var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
         var firstNeighbor = siblings[neighborI];
         neighborI = moving.treeI - info.direction[0];
@@ -357,27 +366,17 @@ var dragSymbol = function (info) {
             } else {
                 descendNeighbor.children.push(moving);
             }
-            drawAfterMove(info);
+            positionAfterMove(info.mode);
         } else {
             depthChange = 0;
         }
     }
 
-    var swap = false;
-    var diffX = info.absDiff[0];
-    while (true) {
-        var neighborI = moving.treeI + info.direction[0];
-        var neighborSymbol = siblings[neighborI];
-        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
-            swap = true;
-            siblings[moving.treeI] = neighborSymbol;
-            siblings[neighborSymbol.treeI] = moving;
-            diffX -= neighborSymbol.w;
-        } else {
-            break;
-        }
+    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
+    if (swapped) {
+        positionAfterMove(info.mode);
     }
-    return depthChange !== 0 || swap;
+    return depthChange !== 0 || swapped;
 };
 
 var dragDepth = function (info) {
@@ -514,24 +513,34 @@ var _treeFromTokens = function (node, tokens) {
 
 var tokensFromTree = function () {
     allTokens = [];
+    removeEmptySymbols(allSymbolTree);
     _tokensFromTree(allSymbolTree, 0, 1);
+};
+
+var removeEmptySymbols = function (node) {
+    node.children = _.filter(node.children, function (child) {
+        if (child.bar) {
+            removeEmptySymbols(child);
+            return child.children.length > 0;
+        } else {
+            return true;
+        }
+    });
 };
 
 var _tokensFromTree = function (node, tokenI, depth) {
     var begin = node.children[0];
     var end = node.children[node.children.length - 1];
-    node.children = _.filter(node.children, function (child, i) {
+    _.each(node.children, function (child, i) {
         if (child.token) {
             child.tokenI = tokenI;
             tokenI += 1;
             allTokens.push(child);
-            return true;
         } else {
             var ret = _tokensFromTree(child, tokenI, depth + 1);
             tokenI = ret[0];
             if (i === 0) { begin = ret[1] }
             if (i === node.children.length) { end = ret[2] }
-            return child.children.length > 0;
         }
     });
     _.each(node.children, function (child, i) {
@@ -561,9 +570,13 @@ var _barsFromTree = function (node) {
 
 var key = function (s) { return s.id };
 
-var fullSelection = function () {
-    var symbolEls = camera.selectAll('.symbol').data(allSymbols, key);
-    return selection(allSymbols, symbolEls, true);
+var fullSelection = function (dataSelection) {
+    if (dataSelection == null) { dataSelection = true }
+    var symbolEls = camera.selectAll('.symbol');
+    if (dataSelection) {
+        symbolEls = symbolEls.data(allSymbols, key);
+    }
+    return selection(allSymbols, symbolEls, dataSelection);
 };
 
 var movingSelection = function () {
@@ -764,12 +777,12 @@ var render = function (sel) {
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
 
-    sel.tokenEnterEls.select('rect.mouse')
-        .on('mousedown', function (t) {
+    sel.symbolEls.select('rect.mouse')
+        .on('mousedown', function (s) {
             mouse = d3.mouse(camera.node());
-            hovering = t;
+            hovering = s;
             inputEvent('left mouse', 'down');
-            startMoving(t);
+            startMoving(s);
         }) ;
 };
 
