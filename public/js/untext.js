@@ -164,6 +164,7 @@ var keyMap = {
 var keyAssignments = {
     startMoving: ['$down', '$:left mouse'],
     stopMoving: ['$up', '$:left mouse'],
+    moving: ['left mouse'],
     oppositeMoving: ['shift', 'left mouse'],
     oppositeMovingToggle: ['$:shift', 'shift', 'left mouse'],
     debug: ['$down', 'D'],
@@ -216,8 +217,8 @@ var inputEvent = function (key, eventType) {
         stopMoving();
     } else if (active('debug')) {
         debugger;
-    }
-    if (toggled('oppositeMovingToggle')) {
+    } else if (toggled('oppositeMovingToggle')) {
+        changeMode();
         dragMoving(true);
     }
 
@@ -250,8 +251,8 @@ var movingInfo = function () {
 };
 
 var movingMode = function () {
-    if (!moving) {
-        return '';
+    if (!moving || !active('moving')) {
+        return 'none';
     }
     return moving.bar === active('oppositeMoving') ? 'token' : 'symbol';
 };
@@ -261,14 +262,88 @@ var startMoving = function (s) {
         moving = s;
         moving.startMouse = mouse;
         moving.startTime = Date.now();
-        draw(movingSelection());
+        moving.mode = 'none';
+        changeMode();
+        draw();
     }
 };
 
 var stopMoving = function (s) {
     if (moving) {
+        changeMode();
         moving = null;
         draw();
+    }
+};
+
+var changeMode = function () {
+    var info = movingInfo();
+    console.log('change mode from: ' + moving.mode + ' to: ' + info.mode);
+    if (moving.mode === 'none') {
+        if (info.mode === 'symbol') {
+            beginSymbolMode();
+        }
+    } else if (moving.mode === 'symbol') {
+        if (info.mode === 'none') {
+            endSymbolMode();
+        }
+    } else if (moving.mode === 'token') {
+        if (info.mode === 'symbol') {
+            beginSymbolMode();
+        }
+    }
+    moving.mode = info.mode;
+};
+
+var endSymbolMode = function () {
+    console.log('endSymbolMode');
+    if (moving.token) {
+        return;
+    }
+    var siblings = moving.parent.children;
+    var changed = false;
+    if (moving.treeI !== siblings.length - 1) {
+        if (siblings[moving.treeI + 1].bar) {
+            siblings.splice(moving.treeI + 1, 0, createToken({
+                barrier: true,
+            }));
+        }
+        changed = true;
+    }
+    if (moving.treeI !== 0) {
+        if (siblings[moving.treeI - 1].bar) {
+            siblings.splice(moving.treeI, 0, createToken({
+                barrier: true,
+            }));
+        }
+        changed = true;
+    }
+    if (changed) {
+        computeStructure('symbol');
+    }
+};
+
+var beginSymbolMode = function () {
+    console.log('beginSymbolMode');
+    if (moving.token) {
+        return;
+    }
+    var siblings = moving.parent.children;
+    var changed = false;
+    if (moving.treeI !== siblings.length - 1) {
+        if (siblings[moving.treeI + 1].barrier) {
+            siblings.splice(moving.treeI + 1, 1);
+        }
+        changed = true;
+    }
+    if (moving.treeI !== 0) {
+        if (siblings[moving.treeI - 1].barrier) {
+            siblings.splice(moving.treeI - 1, 1);
+        }
+        changed = true;
+    }
+    if (changed) {
+        computeStructure('symbol');
     }
 };
 
@@ -450,6 +525,18 @@ var createBar = function (bar) {
         begin: null,
         end: null,
     }, bar);
+};
+
+var createToken = function (token) {
+    return _.extend({
+        id: symbolId(),
+        symbol: true,
+        bar: false,
+        token: true,
+        text: "",
+        barrier: false,
+        empty: false,
+    }, token);
 };
 
 var computeStructure = function (mode) {
@@ -809,18 +896,15 @@ var setup = function (data) {
 };
 
 var setupExample = function (example) {
+    symbolIdSequence = 0;
     setup({
         tokens: _.map(example.tokens, function (config, i) {
-            return {
-                id: i,
-                symbol: true,
-                bar: false,
-                token: true,
+            return createToken({
                 text: _.isString(config[0]) ? config[0] : '',
                 barrier: config[0] === BARRIER,
                 empty: config[0] === EMPTY,
                 depth: config[1],
-            };
+            });
         }),
         symbolIdSequence: example.tokens.length,
     });
