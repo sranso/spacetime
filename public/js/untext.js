@@ -4,10 +4,10 @@ var BARRIER = 1;
 var EMPTY = 2;
 var width = '100%';
 var height = 300;
-var levelHeight = 26;
-var gapWidth = 8;
+var levelHeight = 20;
+var gapWidth = 1;
 var gapHeight = 6;
-var minMoveX = 12;
+var minMoveX = 15;
 
 var qwertyKeyMap = {
       8: 'backspace',
@@ -738,7 +738,7 @@ var computePositions = function (sel) {
             } else if (t.empty) {
                 w = 30;
             } else {
-                w = textWidth(t) + 15;
+                w = Math.max(textWidth(t) + 15, 25);
             }
             w += gapWidth;
             var pos = {x: x, w: w};
@@ -781,13 +781,13 @@ var render = function (sel) {
         .classed('tower', true) ;
 
     sel.tokenEnterEls.append('text')
-        .attr('y', 30) ;
+        .attr('y', levelHeight + 7) ;
 
     sel.tokenExitEls.remove();
 
     sel.tokenEls.select('rect.tower')
         .attr('x', gapWidth / 2)
-        .attr('y', function (t) { return t.barrier ? 0 : gapHeight / 2 })
+        .attr('y', function (t) { return t.barrier ? 10 : 35 })
         .attr('width', function (t) { return t.w - gapWidth })
         .attr('height', 100 * levelHeight) ;
 
@@ -837,14 +837,11 @@ var render = function (sel) {
             return 'translate(' + (s.x + s.offsetX) + ',' + (s.y + s.offsetY) + ')';
         }) ;
 
-    sel.symbolEnterEls.append('rect')
-        .classed('top-bar', true)
-        .attr('x', gapWidth / 2 + 4)
-        .attr('y', gapHeight / 2)
-        .attr('height', 5) ;
+    sel.symbolEnterEls.append('g')
+        .call(topBraceEnter) ;
 
-    sel.symbolEls.select('rect.top-bar')
-        .attr('width', function (b) { return b.w - gapWidth - 8 }) ;
+    sel.symbolEls.select('g.top-brace')
+        .call(topBrace) ;
 
     sel.symbolEnterEls.append('rect')
         .classed('mouse', true)
@@ -871,6 +868,51 @@ var render = function (sel) {
             inputEvent('left mouse', 'down');
             startMoving(s);
         }) ;
+};
+
+var topBraceEnter = function (g) {
+    g
+        .classed('top-brace', true)
+
+    g.append('rect')
+        .classed('mid-point', true)
+        .attr('y', 6)
+        .attr('rx', 2)
+        .attr('ry', 2)
+        .attr('width', 6)
+        .attr('height', 6) ;
+
+    g.append('path')
+};
+
+var topBrace = function (g) {
+    g.select('rect.mid-point')
+        .attr('x', function (s) { return s.w / 2 - 3 }) ;
+
+    g.select('path')
+        .attr('d', topBracePath) ;
+};
+
+var topBracePath = function (s) {
+    var midX = s.w / 2;
+    var midY = 9;
+    var startX = gapWidth / 2 + 2;
+    var control1X = gapWidth / 2 + 3;
+    var control2X = Math.min(gapWidth / 2 + 15, midX);
+    var horiz1X = Math.min(gapWidth / 2 + 36, midX);
+    var horiz2X = s.w - horiz1X;
+    var control3X = s.w - control2X;
+    var control4X = s.w - control1X;
+    var controlY = 8;
+    var endX = s.w - startX;
+    var endsY = 25;
+    var vertEndsY = 27;
+    return  'M'+startX+','+vertEndsY+' '+
+            'V'+endsY+' '+
+            'C'+control1X+','+controlY+' '+control2X+','+midY+' '+horiz1X+','+midY+' '+
+            'H'+horiz2X+' '+
+            'C'+control3X+','+midY+' '+control4X+','+controlY+' '+endX+','+endsY+' '+
+            'V'+vertEndsY;
 };
 
 
@@ -910,9 +952,16 @@ var setupExample = function (example) {
     });
 };
 
-setupExample({
+var example1 = {
     tokens: [['function', 1], ['addSym', 1], ['list', 2], ['symbol', 2], [BARRIER, 1], ['list', 2], ['.', 2], ['append', 2], ['symbol', 3], ['.', 3], ['createEl', 3], [EMPTY, 3]],
-});
+};
+
+var example2 = {
+    tokens: [['class', 1], ['Table', 1], ['function', 2], ['fibonaci', 2], ['n', 3], [BARRIER, 2], ['if', 3], ['n', 4], ['<', 4], ['2', 4], [BARRIER, 3], ['return', 4], ['1', 4], [BARRIER, 3], ['return', 4], ['fibonaci', 6], ['n', 7], ['-', 7], ['1', 7], ['+', 5], ['fibonaci', 6], ['n', 7], ['-', 7], ['2', 7]],
+};
+
+setupExample(example2);
+
 
 //return untext;
 

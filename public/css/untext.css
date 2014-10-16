@@ -11,16 +11,33 @@ a {
   fill: #ffffff;
 }
 
-.symbol rect.top-bar {
-  fill: #555;
-  opacity: 0.1;
+.bar .top-brace .mid-point {
+  fill: none;
+}
+.bar .top-brace path {
+  stroke: #C5DFCB;
+}
+.token .top-brace .mid-point {
+  fill: #E2F3E5;
+}
+.token .top-brace path {
+  stroke: none;
 }
 
-.symbol.target-sibling rect.top-bar {
-  opacity: 0.5;
+.symbol .top-brace path {
+  fill: none;
+  stroke-width: 1px;
 }
 
-.symbol.barrier rect.top-bar {
+.symbol.target-sibling .top-brace .mid-point {
+  fill: #5BBD71;
+}
+
+.symbol.target-sibling .top-brace path {
+  stroke: #5BBD71;
+}
+
+.symbol.barrier .top-brace * {
   opacity: 0.0;
 }
 
@@ -29,11 +46,11 @@ a {
 }
 
 .token rect.tower {
-  fill: #EDF5FF;
+  fill: none;
 }
 
 .token.barrier rect.tower {
-  fill: #F8F8F8;
+  fill: none;
 }
 
 .token text {
@@ -45,7 +62,8 @@ a {
 }
 
 .bar rect.background-bar {
-  fill: #fafafa;
+  /*fill: #fafafa;*/
+  fill: white;
 }
 
 
@@ -57,19 +75,10 @@ a {
   fill: #A0FA2D;
   opacity: 0.4;
 }
-
-#panel {
-  float: left;
-  width: 150px;
-  min-height: 700px;
-  border-right: solid 2px #aaaaaa;
-  padding: 10px;
-}
-
 #workspace {
   padding: 10px;
-  margin-left: 200px;
-  margin-right: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 svg#string {
