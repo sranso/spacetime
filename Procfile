@@ -1,1 +1,1 @@
-web: bin/www
+web: DEBUG=untext bin/www
