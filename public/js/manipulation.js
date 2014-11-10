@@ -1,3 +1,5 @@
+var minMoveX = 15;
+
 var movingInfo = function () {
     var startMouse = moving.startMouse;
     var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
@@ -13,7 +15,7 @@ var movingMode = function () {
     if (!moving || !active('moving')) {
         return 'none';
     }
-    return moving.bar === active('oppositeMoving') ? 'token' : 'symbol';
+    return moving.token  ? 'token' : 'symbol';
 };
 
 var startMoving = function (s) {
@@ -21,92 +23,18 @@ var startMoving = function (s) {
         moving = s;
         moving.startMouse = mouse;
         moving.startTime = Date.now();
-        moving.mode = 'none';
-        changeMode();
         draw();
     }
 };
 
 var stopMoving = function (s) {
     if (moving) {
-        changeMode();
         moving = null;
         draw();
     }
 };
 
-var changeMode = function () {
-    var info = movingInfo();
-    console.log('change mode from: ' + moving.mode + ' to: ' + info.mode);
-    if (moving.mode === 'none') {
-        if (info.mode === 'symbol') {
-            beginSymbolMode();
-        }
-    } else if (moving.mode === 'symbol') {
-        if (info.mode === 'none') {
-            endSymbolMode();
-        }
-    } else if (moving.mode === 'token') {
-        if (info.mode === 'symbol') {
-            beginSymbolMode();
-        }
-    }
-    moving.mode = info.mode;
-};
-
-var endSymbolMode = function () {
-    console.log('endSymbolMode');
-    if (moving.token) {
-        return;
-    }
-    var siblings = moving.parent.children;
-    var changed = false;
-    if (moving.treeI !== siblings.length - 1) {
-        if (siblings[moving.treeI + 1].bar) {
-            siblings.splice(moving.treeI + 1, 0, createToken({
-                barrier: true,
-            }));
-        }
-        changed = true;
-    }
-    if (moving.treeI !== 0) {
-        if (siblings[moving.treeI - 1].bar) {
-            siblings.splice(moving.treeI, 0, createToken({
-                barrier: true,
-            }));
-        }
-        changed = true;
-    }
-    if (changed) {
-        computeStructure('symbol');
-    }
-};
-
-var beginSymbolMode = function () {
-    console.log('beginSymbolMode');
-    if (moving.token) {
-        return;
-    }
-    var siblings = moving.parent.children;
-    var changed = false;
-    if (moving.treeI !== siblings.length - 1) {
-        if (siblings[moving.treeI + 1].barrier) {
-            siblings.splice(moving.treeI + 1, 1);
-        }
-        changed = true;
-    }
-    if (moving.treeI !== 0) {
-        if (siblings[moving.treeI - 1].barrier) {
-            siblings.splice(moving.treeI - 1, 1);
-        }
-        changed = true;
-    }
-    if (changed) {
-        computeStructure('symbol');
-    }
-};
-
-var dragMoving = function (toggleMode) {
+var dragMoving = function () {
     if (!moving) {
         return;
     }
@@ -120,7 +48,7 @@ var dragMoving = function (toggleMode) {
         moved = dragSymbol(info);
     }
 
-    if (!moved && !toggleMode) {
+    if (!moved) {
         draw(movingSelection());
     } else {
         draw();

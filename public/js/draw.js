@@ -1,3 +1,10 @@
+var width = '100%';
+var height = 300;
+var levelHeight = 20;
+var gapWidth = 1;
+var gapHeight = 6;
+var separatorWidth = 8;
+
 var drawSetup = function () {
 
     var svg = d3.select('svg#string')
@@ -36,9 +43,11 @@ var drawSetup = function () {
 var draw = function (sel) {
     if (sel === true || sel == null) {
         computeStructure(movingMode());
-        sel = null;
+        sel = false;
     }
-    sel = sel || fullSelection();
+    if (sel === false) {
+        sel = fullSelection();
+    }
     computePositions(sel);
     render(sel);
 };
@@ -119,8 +128,8 @@ var computePositions = function (sel) {
         var x = 0;
         _.each(sel.tokens, function (t) {
             var w;
-            if (t.barrier) {
-                w = 8;
+            if (t.separator) {
+                w = separatorWidth;
             } else if (t.empty) {
                 w = 30;
             } else {
@@ -135,15 +144,23 @@ var computePositions = function (sel) {
 
     _.each(sel.tokens, function (t) {
         var y = yFromLevel(t.level);
-        var pos = {y: y, offsetX: 0, offsetY: 0, h: 100 * levelHeight};
+        var pos = {y: y, offsetX: 0, offsetY: 0, h: 100 * levelHeight, braceW: t.w};
         _.extend(t, pos);
     });
 
     _.each(sel.bars, function (b) {
         var x = b.begin.x;
-        var w = b.end.x + b.end.w - x;
+        var braceW = b.end.x + b.end.w - x;
+        var w = braceW;
+        if (b.separatorLeft) {
+            x -= separatorWidth / 2;
+            w += separatorWidth / 2;
+        }
+        if (b.separatorRight) {
+            w += separatorWidth / 2;
+        }
         var y = yFromLevel(b.level);
-        var pos = {x: x, y: y, offsetX: 0, offsetY: 0, w: w, h: levelHeight};
+        var pos = {x: x, y: y, offsetX: 0, offsetY: 0, w: w, h: levelHeight, braceW: braceW};
         _.extend(b, pos);
     });
 
@@ -172,9 +189,9 @@ var render = function (sel) {
     sel.tokenExitEls.remove();
 
     sel.tokenEls.select('rect.tower')
-        .attr('x', gapWidth / 2)
-        .attr('y', function (t) { return t.barrier ? 10 : 35 })
-        .attr('width', function (t) { return t.w - gapWidth })
+        .attr('x', 2)
+        .attr('y', 35)
+        .attr('width', function (t) { return t.w - 4 })
         .attr('height', 100 * levelHeight) ;
 
     sel.tokenEls.select('text')
@@ -206,10 +223,13 @@ var render = function (sel) {
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
                 'symbol', 'token', 'bar',
-                'barrier', 'empty',
+                'separator', 'empty',
             ], function (c) { return s[c] });
             if (s === sel.target) {
                 classes.push('target');
+            }
+            if (sel.target && sel.target.token && s.token) {
+                classes.push('token_mode');
             }
             if (_.contains(sel.targetSiblings, s)) {
                 classes.push('target-sibling');
@@ -258,7 +278,7 @@ var render = function (sel) {
 
 var topBraceEnter = function (g) {
     g
-        .classed('top-brace', true)
+        .classed('top-brace', true) ;
 
     g.append('rect')
         .classed('mid-point', true)
@@ -268,29 +288,37 @@ var topBraceEnter = function (g) {
         .attr('width', 6)
         .attr('height', 6) ;
 
-    g.append('path')
+    g.append('path');
 };
 
 var topBrace = function (g) {
+    g
+        .attr('transform', function (s) {
+            if (s.separatorLeft) {
+                return 'translate(' + (separatorWidth / 2) + ',0)';
+            }
+            return '';
+        }) ;
+
     g.select('rect.mid-point')
-        .attr('x', function (s) { return s.w / 2 - 3 }) ;
+        .attr('x', function (s) { return s.braceW / 2 - 3 }) ;
 
     g.select('path')
         .attr('d', topBracePath) ;
 };
 
 var topBracePath = function (s) {
-    var midX = s.w / 2;
+    var midX = s.braceW / 2;
     var midY = 9;
     var startX = gapWidth / 2 + 2;
     var control1X = gapWidth / 2 + 3;
     var control2X = Math.min(gapWidth / 2 + 15, midX);
     var horiz1X = Math.min(gapWidth / 2 + 36, midX);
-    var horiz2X = s.w - horiz1X;
-    var control3X = s.w - control2X;
-    var control4X = s.w - control1X;
+    var horiz2X = s.braceW - horiz1X;
+    var control3X = s.braceW - control2X;
+    var control4X = s.braceW - control1X;
     var controlY = 8;
-    var endX = s.w - startX;
+    var endX = s.braceW - startX;
     var endsY = 25;
     var vertEndsY = 27;
     return  'M'+startX+','+vertEndsY+' '+

@@ -154,8 +154,6 @@ var keyAssignments = {
     startMoving: ['$down', '$:left mouse'],
     stopMoving: ['$up', '$:left mouse'],
     moving: ['left mouse'],
-    oppositeMoving: ['shift', 'left mouse'],
-    oppositeMovingToggle: ['$:shift', 'shift', 'left mouse'],
     debug: ['$down', 'D'],
 };
 
@@ -193,9 +191,6 @@ var inputEvent = function (key, eventType) {
         stopMoving();
     } else if (active('debug')) {
         debugger;
-    } else if (toggled('oppositeMovingToggle')) {
-        changeMode();
-        dragMoving(true);
     }
 
     keysDown['$firing'] = false;

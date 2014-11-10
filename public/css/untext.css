@@ -37,7 +37,7 @@ a {
   stroke: #5BBD71;
 }
 
-.symbol.barrier .top-brace * {
+.symbol.separator .top-brace * {
   opacity: 0.0;
 }
 
@@ -49,7 +49,7 @@ a {
   fill: none;
 }
 
-.token.barrier rect.tower {
+.token.separator rect.tower {
   fill: none;
 }
 
@@ -64,6 +64,10 @@ a {
 .bar rect.background-bar {
   /*fill: #fafafa;*/
   fill: white;
+}
+
+.token.token_mode rect.tower {
+  fill: #ddd;
 }
 
 
