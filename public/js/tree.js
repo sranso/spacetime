@@ -11,6 +11,7 @@ var createBar = function (bar) {
         bar: true,
         token: false,
         children: [],
+        _children: [],
         level: 0,
         depth: 0,
         begin: null,
@@ -33,16 +34,16 @@ var createToken = function (token) {
 };
 
 var computeStructure = function (mode) {
-    if (mode === 'token') {
-        treeFromTokens();
+    if (!mode) {
+        return;
     }
-    if (mode === 'symbol') {
+    if (mode === 'tower') {
+        treeFromTokens();
+    } else {
         tokensFromTree();
     }
     linkTokens(allTokens);
     linkTree(allSymbolTree, 0);
-    barsFromTree();
-    allSymbols = allBars.concat(allTokens);
 };
 
 var treeFromTokens = function () {
@@ -56,47 +57,41 @@ var linkTokens = function (tokens) {
 var _treeFromTokens = function (tokens, level) {
     var node = createBar({level: level});
     var childBeginI = null;
-    var maybeAttachBar = function (endI) {
+    var attachBar = function (endI) {
         if (childBeginI != null) {
-            maybeAttach(recurse(childBeginI, endI));
+            attach(recurse(childBeginI, endI));
         }
     };
     var recurse = function (beginI, endI) {
         return _treeFromTokens(tokens.slice(beginI, endI), level + 1);
     };
-    var maybeAttach = function (child) {
+    var attach = function (child) {
         if (child) {
-            if (child.separator) {
-                child.parent = node;
-            } else {
-                node.children.push(child);
-            }
+            node._children.push(child);
         }
     };
 
     _.each(tokens, function (token, i) {
         if (token.level === node.level + 1) {
-            maybeAttachBar(i);
+            attachBar(i);
             childBeginI = null;
-            maybeAttach(token);
+            attach(token);
         } else {
             if (childBeginI == null) {
                 childBeginI = i;
             }
         }
     });
-    maybeAttachBar(tokens.length);
+    attachBar(tokens.length);
 
-    if (!node.children.length) {
-        return null;
-    }
     return node;
 };
 
 var tokensFromTree = function () {
     removeEmptySymbols(allSymbolTree);
-    allTokens = [];
-    _tokensFromTree(allSymbolTree, 0);
+    addSeparatorsToChildren(allSymbolTree, 0);
+    var symbols = symbolsFromTree(allSymbolTree);
+    allTokens = _.filter(symbols, _.property('token'));
 };
 
 var removeEmptySymbols = function (node) {
@@ -110,31 +105,9 @@ var removeEmptySymbols = function (node) {
     });
 };
 
-var linkTree = function (node, level) {
-    var begin = node.children[0];
-    var end = node.children[node.children.length - 1];
-    var depth = 1;
-    markSeparators(node.children);
-    _.each(node.children, function (child, i) {
-        child.parent = node;
-        child.treeI = i;
-        child.level = level + 1;
-        if (child.bar) {
-            var ret = linkTree(child, level + 1);
-            depth = Math.max(depth, ret[2] + 1);
-            if (i === 0) { begin = ret[0]; }
-            if (i === node.children.length - 1) { end = ret[1]; }
-        }
-    });
-    node.begin = begin;
-    node.end = end;
-    node.depth = depth;
-    return [begin, end, depth];
-};
-
 var markSeparators = function (children) {
     var lastChild = null;
-    _.each(children, function (child) {
+    _.each(children, function (child, i) {
         child.separatorLeft = child.separatorRight = false;
         if (lastChild && lastChild.bar && child.bar) {
             lastChild.separatorRight = true;
@@ -142,42 +115,66 @@ var markSeparators = function (children) {
         }
         lastChild = child;
     });
-}
+};
 
-var _tokensFromTree = function (node, level) {
-    markSeparators(node.children);
-    _.each(node.children, function (child, i) {
-        var token;
-        if (child.token) {
-            token = child;
-        } else if (child.separatorLeft) {
-            token = createToken({
-                separator: true,
-                level: level + 1,
-                parent: node,
-            });
-        }
-        if (token) {
-            allTokens.push(token);
-        }
+var linkTree = function (node, level) {
+    var begin = node._children[0];
+    var end = node._children[node._children.length - 1];
+    var depth = 1;
+    node.children = _.filter(node._children, function (child, i) {
+        child.parent = node;
+        child.level = level + 1;
         if (child.bar) {
-            _tokensFromTree(child, level + 1);
+            var ret = linkTree(child, level + 1);
+            depth = Math.max(depth, ret[2] + 1);
+            if (i === 0) { begin = ret[0]; }
+            if (i === node._children.length - 1) { end = ret[1]; }
+        }
+        return !child.separator;
+    });
+    markSeparators(node.children);
+
+    _.each(node.children, function (child, i) {
+        child.treeI = i;
+    });
+    node.begin = begin;
+    node.end = end;
+    node.depth = depth;
+    return [begin, end, depth];
+};
+
+var addSeparatorsToChildren = function (node) {
+    markSeparators(node.children);
+    var _children = [];
+    _.each(node.children, function (child, i) {
+        if (child.separatorLeft) {
+            var token = createToken({separator: true});
+            _children.push(token);
+        }
+        _children.push(child);
+        if (child.bar) {
+            addSeparatorsToChildren(child);
         }
     });
+    node._children = _children;
 };
 
-var barsFromTree = function () {
-    allBars = [allSymbolTree];
-    _barsFromTree(allSymbolTree);
+var symbolsFromTree = function (node) {
+    var symbols = [];
+    _symbolsFromTree(node, symbols);
+    return symbols;
 };
 
-var _barsFromTree = function (node) {
-    _.each(node.children, function (child) {
-        if (child.bar) { allBars.push(child) }
-    });
-    _.each(node.children, function (child) {
-        if (child.bar) { _barsFromTree(child) }
-    });
+var _symbolsFromTree = function (node, symbols) {
+    symbols.push(node);
+    if (node.bar) {
+        _.each(node._children, function (child) {
+            _symbolsFromTree(child, symbols);
+        });
+    }
+};
+
+var predecessor = function (node) {
 };
 
 var key = function (s) { return s.id };

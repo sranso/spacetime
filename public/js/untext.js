@@ -3,26 +3,25 @@
 var SEPARATOR = 1;
 var EMPTY = 2;
 
-var untext, allSymbolTree, allSymbols, allBars, allTokens, symbolIdSequence, offCameraToken, camera,
-    moving, hovering, mouse, hoverMode;
+var untext, allSymbolTree, allTokens, symbolIdSequence, offCameraToken, camera,
+    moving, hovering, mouse, hoveringMode, movingMode;
 
 var init = function () {
     untext = {};
     allSymbolTree = null;
-    allSymbols = [];
-    allBars = [];
     allTokens = [];
     symbolIdSequence = 0;
     moving = null;
     hovering = null;
-    hoverMode = 'tower';
+    hoveringMode = null;
+    movingMode = null;
     mouse = [0, 0];
     keyInit();
 };
 
 var setup = function (data) {
     init();
-    allSymbols = allTokens = data.tokens;
+    allTokens = data.tokens;
     symbolIdSequence = data.symbolIdSequence;
     drawSetup();
 

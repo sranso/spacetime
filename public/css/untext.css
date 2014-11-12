@@ -37,19 +37,11 @@ a {
   stroke: #5BBD71;
 }
 
-.symbol.separator .top-brace * {
-  opacity: 0.0;
-}
-
 .symbol .mouse {
   opacity: 0.0;
 }
 
 .token rect.tower {
-  fill: none;
-}
-
-.token.separator rect.tower {
   fill: none;
 }
 
@@ -66,19 +58,20 @@ a {
   fill: white;
 }
 
-.token.token_mode rect.tower {
+.tower-mode .token rect.tower {
   fill: #ddd;
 }
 
-
-.token.target rect.tower {
+.tower-mode .token.target rect.tower {
   fill: #D3FD9E;
 }
 
-.symbol.target rect.background {
+.symbol-mode .symbol.target rect.background {
   fill: #A0FA2D;
   opacity: 0.4;
 }
+
+
 #workspace {
   padding: 10px;
   margin-left: 10px;

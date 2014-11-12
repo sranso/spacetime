@@ -7,20 +7,14 @@ var movingInfo = function () {
         diff: diff,
         direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
         absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
-        mode: movingMode(),
+        mode: movingMode,
     };
-};
-
-var movingMode = function () {
-    if (!moving || !active('moving')) {
-        return 'none';
-    }
-    return moving.token  ? 'token' : 'symbol';
 };
 
 var startMoving = function (s) {
     if (!moving) {
         moving = s;
+        movingMode = hoveringMode;
         moving.startMouse = mouse;
         moving.startTime = Date.now();
         draw();
@@ -30,6 +24,7 @@ var startMoving = function (s) {
 var stopMoving = function (s) {
     if (moving) {
         moving = null;
+        movingMode = null;
         draw();
     }
 };
@@ -42,8 +37,8 @@ var dragMoving = function () {
     var info = movingInfo();
     var moved;
 
-    if (info.mode === 'token') {
-        moved = dragToken(info);
+    if (info.mode === 'tower') {
+        moved = dragTower(info);
     } else {
         moved = dragSymbol(info);
     }
@@ -66,7 +61,7 @@ var positionAfterMove = function (mode) {
     ];
 };
 
-var dragToken = function (info) {
+var dragTower = function (info) {
     var levels = dragLevel(info);
     moving.level = levels[0];
 
