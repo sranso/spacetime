@@ -61,8 +61,8 @@ a {
   fill: #aaaaaa;
 }
 
-.bar rect.background-bar {
-  /*fill: #fafafa;*/
+.symbol rect.background {
+  opacity: 0.0;
   fill: white;
 }
 
@@ -75,7 +75,7 @@ a {
   fill: #D3FD9E;
 }
 
-.bar.target rect.background-bar {
+.symbol.target rect.background {
   fill: #A0FA2D;
   opacity: 0.4;
 }

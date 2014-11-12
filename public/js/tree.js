@@ -42,7 +42,7 @@ var computeStructure = function (mode) {
     linkTokens(allTokens);
     linkTree(allSymbolTree, 0);
     barsFromTree();
-    allSymbols = allTokens.concat(allBars);
+    allSymbols = allBars.concat(allTokens);
 };
 
 var treeFromTokens = function () {
@@ -113,6 +113,7 @@ var removeEmptySymbols = function (node) {
 var linkTree = function (node, level) {
     var begin = node.children[0];
     var end = node.children[node.children.length - 1];
+    var depth = 1;
     markSeparators(node.children);
     _.each(node.children, function (child, i) {
         child.parent = node;
@@ -120,13 +121,15 @@ var linkTree = function (node, level) {
         child.level = level + 1;
         if (child.bar) {
             var ret = linkTree(child, level + 1);
+            depth = Math.max(depth, ret[2] + 1);
             if (i === 0) { begin = ret[0]; }
-            if (i === node.children.length) { end = ret[1]; }
+            if (i === node.children.length - 1) { end = ret[1]; }
         }
     });
     node.begin = begin;
     node.end = end;
-    return [begin, end];
+    node.depth = depth;
+    return [begin, end, depth];
 };
 
 var markSeparators = function (children) {
@@ -166,7 +169,6 @@ var _tokensFromTree = function (node, level) {
 var barsFromTree = function () {
     allBars = [allSymbolTree];
     _barsFromTree(allSymbolTree);
-    allBars.reverse();
 };
 
 var _barsFromTree = function (node) {

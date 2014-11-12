@@ -4,7 +4,7 @@ var SEPARATOR = 1;
 var EMPTY = 2;
 
 var untext, allSymbolTree, allSymbols, allBars, allTokens, symbolIdSequence, offCameraToken, camera,
-    moving, hovering, mouse;
+    moving, hovering, mouse, hoverMode;
 
 var init = function () {
     untext = {};
@@ -15,6 +15,7 @@ var init = function () {
     symbolIdSequence = 0;
     moving = null;
     hovering = null;
+    hoverMode = 'tower';
     mouse = [0, 0];
     keyInit();
 };
