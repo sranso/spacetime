@@ -3,20 +3,18 @@
 var SEPARATOR = 1;
 var EMPTY = 2;
 
-var untext, allSymbolTree, allTokens, symbolIdSequence, offCameraToken, camera,
-    moving, hovering, mouse, hoveringMode, movingMode;
+var untext, allSymbolTree, allTokens, symbolIdSequence, camera, targeting;
 
 var init = function () {
     untext = {};
     allSymbolTree = null;
     allTokens = [];
     symbolIdSequence = 0;
-    moving = null;
     hovering = null;
     hoveringMode = null;
-    movingMode = null;
     mouse = [0, 0];
     keyInit();
+    targetingInit();
 };
 
 var setup = function (data) {

@@ -1,35 +1,93 @@
 var minMoveX = 15;
 
+var targetingInit = function () {
+    targeting = {
+        target: null,
+        moving: null,
+        hovering: null,
+        mode: null,
+        movingMode: null,
+        hoveringMode: null,
+        lastTarget: null,
+        lastMoving: null,
+        lastHovering: null,
+    };
+};
+
+var updateTarget = function (kind, symbol, mode) {
+    if (kind === 'hovering') {
+        targeting.lastHovering = targeting.hovering;
+        targeting.hovering = symbol;
+        targeting.hoveringMode = mode;
+    }
+    if (kind === 'moving') {
+        targeting.lastMoving = targeting.moving;
+        targeting.moving = symbol
+        targeting.movingMode = mode;
+    }
+    var target = targeting.moving || targeting.hovering;
+    var targetMode = targeting.movingMode || targeting.hoveringMode;
+    var updated = (target !== targeting.target || targetMode !== targeting.mode);
+    targeting.lastTarget = targeting.target;
+    targeting.target = target;
+    targeting.mode = targetMode;
+    return updated;
+};
+
+var deleteTarget = function () {
+    var target = targeting.target;
+    if (!target) {
+        return;
+    }
+    if (target.token) {
+        allTokens.splice(target.tokenI, 1);
+        computeStructure('tower');
+    } else if (target.parent) {
+        target.parent.children.splice(target.treeI, 1);
+        computeStructure('symbol');
+    }
+    if (target === targeting.hovering) {
+        updateTarget('hovering', null, null);
+    }
+    if (target === targeting.moving) {
+        updateTarget('moving', null, null);
+    }
+    draw(false);
+};
+
 var movingInfo = function () {
-    var startMouse = moving.startMouse;
+    var startMouse = targeting.moving.startMouse;
     var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
     return {
         diff: diff,
         direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
         absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
-        mode: movingMode,
+        mode: targeting.movingMode,
     };
 };
 
-var startMoving = function (s) {
-    if (!moving) {
-        moving = s;
-        movingMode = hoveringMode;
-        moving.startMouse = mouse;
-        moving.startTime = Date.now();
+var startMoving = function () {
+    if (targeting.moving) {
+        return;
+    }
+    var moving = targeting.hovering;
+    moving.startMouse = mouse;
+    moving.startTime = Date.now();
+    var updated = updateTarget('moving', moving, targeting.hoveringMode);
+    if (updated) {
         draw();
     }
 };
 
 var stopMoving = function (s) {
-    if (moving) {
-        moving = null;
-        movingMode = null;
+    var updated = updateTarget('moving', null, null);
+    if (updated) {
         draw();
     }
 };
 
 var dragMoving = function () {
+    var moving = targeting.moving;
     if (!moving) {
         return;
     }
@@ -38,9 +96,9 @@ var dragMoving = function () {
     var moved;
 
     if (info.mode === 'tower') {
-        moved = dragTower(info);
+        moved = dragTower(moving, info);
     } else {
-        moved = dragSymbol(info);
+        moved = dragSymbol(moving, info);
     }
 
     if (!moved) {
@@ -50,7 +108,7 @@ var dragMoving = function () {
     }
 };
 
-var positionAfterMove = function (mode) {
+var positionAfterMove = function (moving, mode) {
     var currentPos = {x: moving.x, y: moving.y};
     computeStructure(mode);
     var sel = fullSelection(false);
@@ -61,19 +119,19 @@ var positionAfterMove = function (mode) {
     ];
 };
 
-var dragTower = function (info) {
-    var levels = dragLevel(info);
+var dragTower = function (moving, info) {
+    var levels = dragLevel(moving, info);
     moving.level = levels[0];
 
-    var swapped = maybeSwap(allTokens, 'tokenI', info);
+    var swapped = maybeSwap(moving, allTokens, 'tokenI', info);
     var moved = (levels[0] !== levels[1]) || swapped;
     if (moved) {
-        positionAfterMove(info.mode);
+        positionAfterMove(moving, info.mode);
     }
     return moved;
 };
 
-var maybeSwap = function (siblings, index, info) {
+var maybeSwap = function (moving, siblings, index, info) {
     var swapped = false;
     var movingI = moving[index];
     var diffX = info.absDiff[0];
@@ -93,8 +151,8 @@ var maybeSwap = function (siblings, index, info) {
     return swapped;
 }
 
-var dragSymbol = function (info) {
-    var levels = dragLevel(info);
+var dragSymbol = function (moving, info) {
+    var levels = dragLevel(moving, info);
 
     var levelChange = levels[0] - levels[1];
     if (levelChange <= -1) {
@@ -106,7 +164,7 @@ var dragSymbol = function (info) {
         var after = newSiblings.slice(insertBefore.treeI);
         newSiblings = before.concat([moving]).concat(after);
         insertBefore.parent.children = newSiblings;
-        positionAfterMove(info.mode);
+        positionAfterMove(moving, info.mode);
     } else if (levelChange >= 1) {
         var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
@@ -123,20 +181,20 @@ var dragSymbol = function (info) {
             } else {
                 descendNeighbor.children.push(moving);
             }
-            positionAfterMove(info.mode);
+            positionAfterMove(moving, info.mode);
         } else {
             levelChange = 0;
         }
     }
 
-    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
+    var swapped = maybeSwap(moving, moving.parent.children, 'treeI', movingInfo());
     if (swapped) {
-        positionAfterMove(info.mode);
+        positionAfterMove(moving, info.mode);
     }
     return levelChange !== 0 || swapped;
 };
 
-var dragLevel = function (info) {
+var dragLevel = function (moving, info) {
     var previousLevel = moving.level;
     var levelChange = Math.round(info.diff[1] / levelHeight);
     var newLevel = previousLevel + levelChange;

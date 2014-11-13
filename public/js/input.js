@@ -1,8 +1,9 @@
 var keyAssignments = {
     startMoving: ['$down', '$:left mouse'],
     stopMoving: ['$up', '$:left mouse'],
+    'delete': ['$down', 'R'],
     moving: ['left mouse'],
-    debug: ['$down', 'D'],
+    debug: ['$down', 'G'],
 };
 
 var keyboardLayout, keysDown, lastKeysDown;
@@ -34,9 +35,11 @@ var inputEvent = function (key, eventType) {
     keysDown['$firing'] = true;
 
     if (active('startMoving')) {
-        if (hovering) { startMoving(hovering) }
+        if (targeting.hovering) { startMoving() }
     } else if (active('stopMoving')) {
         stopMoving();
+    } else if (active('delete')) {
+        deleteTarget();
     } else if (active('debug')) {
         debugger;
     }
@@ -201,7 +204,7 @@ var dvorakKeyMap = _.extend({}, qwertyKeyMap, {
 
 var keyRemaps = {
     'default': {
-        'B': 'left mouse',
+        'V': 'left mouse',
     },
 };
 
