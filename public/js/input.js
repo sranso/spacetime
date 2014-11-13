@@ -1,3 +1,63 @@
+var keyAssignments = {
+    startMoving: ['$down', '$:left mouse'],
+    stopMoving: ['$up', '$:left mouse'],
+    moving: ['left mouse'],
+    debug: ['$down', 'D'],
+};
+
+var keyboardLayout, keysDown, lastKeysDown;
+
+var keyInit = function () {
+    keyboardLayout = 'dvorak';
+    keyRemap = 'default';
+    keysDown = {'$firing': false, '$key': 'left mouse', '$down': false, '$up': false, '$:left mouse': true};
+    lastKeysDown = keysDown;
+};
+
+var keyForEvent = function () {
+    var key = keyMap[keyboardLayout][d3.event.keyCode];
+    var remapped = keyRemaps[keyRemap][key];
+    return remapped == null ? key : remapped;
+};
+
+var inputEvent = function (key, eventType) {
+    lastKeysDown = keysDown;
+    var pressed = _.filter(_.pairs(lastKeysDown), function (p) {
+        return p[1] && p[0][0] !== '$';
+    })
+    keysDown = _.object(pressed);
+    keysDown['$' + eventType] = true;
+    if (key) {
+        keysDown['$:' + key] = true;
+        keysDown[key] = eventType === 'down';
+    }
+    keysDown['$firing'] = true;
+
+    if (active('startMoving')) {
+        if (hovering) { startMoving(hovering) }
+    } else if (active('stopMoving')) {
+        stopMoving();
+    } else if (active('debug')) {
+        debugger;
+    }
+
+    keysDown['$firing'] = false;
+};
+
+var active = function (action, keys) {
+    keys = keys || keysDown;
+    var combo = keyAssignments[action];
+    return _.every(combo, function (key) { return keys[key]; });
+};
+
+var triggered = function (action) {
+    return active(action, keysDown) && !active(action, lastKeysDown);
+};
+
+var toggled = function (action) {
+    return active(action, keysDown) != active(action, lastKeysDown);
+};
+
 var qwertyKeyMap = {
       8: 'backspace',
       9: 'tab',
@@ -148,64 +208,4 @@ var keyRemaps = {
 var keyMap = {
     qwerty: qwertyKeyMap,
     dvorak: dvorakKeyMap,
-};
-
-var keyAssignments = {
-    startMoving: ['$down', '$:left mouse'],
-    stopMoving: ['$up', '$:left mouse'],
-    moving: ['left mouse'],
-    debug: ['$down', 'D'],
-};
-
-var keyboardLayout, keysDown, lastKeysDown;
-
-var keyInit = function () {
-    keyboardLayout = 'dvorak';
-    keyRemap = 'default';
-    keysDown = {'$firing': false, '$key': 'left mouse', '$down': false, '$up': false, '$:left mouse': true};
-    lastKeysDown = keysDown;
-};
-
-var keyForEvent = function () {
-    var key = keyMap[keyboardLayout][d3.event.keyCode];
-    var remapped = keyRemaps[keyRemap][key];
-    return remapped == null ? key : remapped;
-};
-
-var inputEvent = function (key, eventType) {
-    lastKeysDown = keysDown;
-    var pressed = _.filter(_.pairs(lastKeysDown), function (p) {
-        return p[1] && p[0][0] !== '$';
-    })
-    keysDown = _.object(pressed);
-    keysDown['$' + eventType] = true;
-    if (key) {
-        keysDown['$:' + key] = true;
-        keysDown[key] = eventType === 'down';
-    }
-    keysDown['$firing'] = true;
-
-    if (active('startMoving')) {
-        if (hovering) { startMoving(hovering) }
-    } else if (active('stopMoving')) {
-        stopMoving();
-    } else if (active('debug')) {
-        debugger;
-    }
-
-    keysDown['$firing'] = false;
-};
-
-var active = function (action, keys) {
-    keys = keys || keysDown;
-    var combo = keyAssignments[action];
-    return _.every(combo, function (key) { return keys[key]; });
-};
-
-var triggered = function (action) {
-    return active(action, keysDown) && !active(action, lastKeysDown);
-};
-
-var toggled = function (action) {
-    return active(action, keysDown) != active(action, lastKeysDown);
 };
