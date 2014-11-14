@@ -35,6 +35,10 @@ var inputEvent = function (key, eventType) {
     }
     keysDown['$firing'] = true;
 
+    if (key === 'backspace' && eventType === 'down') {
+        backspaceInserting();
+        d3.event.preventDefault();
+    }
     if (!targeting.inserting) {
         if (active('startMoving')) {
             startMoving();

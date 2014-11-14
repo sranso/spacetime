@@ -25,7 +25,7 @@ var createToken = function (token) {
         symbol: true,
         bar: false,
         token: true,
-        text: "",
+        text: '',
         level: 0,
         depth: 0,
         separator: false,

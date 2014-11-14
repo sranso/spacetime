@@ -26,7 +26,8 @@ var drawSetup = function () {
     d3.select(document)
         .on('mouseup', mouseUp)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
-        .on('keyup', function () { inputEvent(keyForEvent(), 'up') }) ;
+        .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
+        .on('keypress', function () { insertionEvent(d3.event.keyCode) }) ;
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -291,7 +292,7 @@ var textWidth = function (token, recompute) {
     if (!recompute && token._textWidth) {
         return token._textWidth;
     }
-    _offCameraToken.text(token.text);
+    _offCameraToken.text(token.text || '%');
     var box = _offCameraToken.node().getBBox();
     token._textWidth = Math.ceil(box.width);
     return token._textWidth;

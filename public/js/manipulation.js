@@ -124,31 +124,101 @@ var startInserting = function () {
     if (!target) {
         return;
     }
-    var insert = createToken({level: target.level, text: 'test'});
     var end = target.bar ? target.end : target;
-    var insertI = end.tokenI + 1;
-    allTokens.splice(insertI, 0, insert);
-
-    //updateTarget({
-    //    inserting: insert,
-    //    insertingMode: 'tower',
-    //    startMouse: mouse,
-    //});
+    newInsertingAt(target.level, end.tokenI + 1);
     computeStructure('tower');
     draw();
 };
 
 var maybeStopInserting = function () {
-    if (!targeting.inserting) {
+    var inserting = targeting.inserting;
+    if (!inserting) {
         return;
     }
     var info = movingInfo();
     var diff = info.absDiff[0] + info.absDiff[1];
     if (diff > 5) {
-        // stop inserting
+        if (!inserting.text) {
+            allTokens.splice(inserting.tokenI, 1);
+            computeStructure('tower');
+        }
+        updateTarget({inserting: null, insertingMode: null});
     }
 };
 
+var insertionEvent = function (keyCode) {
+    var inserting = targeting.inserting;
+    if (inserting) {
+        var character = String.fromCharCode(keyCode);
+        if (_.contains([' ', '(', ')'], character)) {
+            var level = inserting.level;
+            if (character === '(') {
+                level += 1;
+            } else if (character === ')') {
+                level -= 1;
+            }
+            if (inserting.text) {
+                newInsertingAt(level, inserting.tokenI + 1);
+            } else {
+                inserting.level = level
+            }
+            computeStructure('tower');
+        } else if (character === ',') {
+            var level = inserting.level;
+            var tokenI = inserting.tokenI;
+            if (!inserting.text) {
+                allTokens.splice(tokenI, 1);
+            } else {
+                tokenI += 1;
+            }
+            var sep = createToken({level: level - 1, separator: true});
+            allTokens.splice(tokenI, 0, sep);
+            newInsertingAt(level, tokenI + 1);
+            computeStructure('tower');
+        } else {
+            var text = inserting.text + character;
+            inserting.text = text;
+            textWidth(inserting, {recompute: true});
+        }
+        draw();
+        d3.event.preventDefault();
+    }
+};
+
+var newInsertingAt = function (level, tokenI) {
+    var insert = createToken({level: level, text: ''});
+    allTokens.splice(tokenI, 0, insert);
+    updateTarget({
+        inserting: insert,
+        insertingMode: 'tower',
+        startMouse: mouse,
+    });
+};
+
+var backspaceInserting = function () {
+    var inserting = targeting.inserting;
+    if (!inserting) {
+        return;
+    }
+
+    var text = inserting.text;
+    if (text) {
+        text = text.slice(0, text.length - 1);
+        inserting.text = text;
+        textWidth(inserting, {recompute: true});
+    } else {
+        allTokens.splice(inserting.tokenI, 1);
+        inserting = allTokens[inserting.tokenI - 1];
+        var insertingMode = inserting ? 'tower' : null;
+        updateTarget({
+            inserting: inserting,
+            insertingMode: insertingMode,
+            startMouse: mouse,
+        });
+        computeStructure('tower');
+    }
+    draw();
+};
 var movingInfo = function () {
     var startMouse = targeting.startMouse;
     var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
