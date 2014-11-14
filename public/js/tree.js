@@ -174,7 +174,39 @@ var _symbolsFromTree = function (node, symbols) {
     }
 };
 
-var predecessor = function (node) {
+var findUnderMouse = function () {
+    return findFromCoordinates(mouse[0], mouse[1]);
 };
 
-var key = function (s) { return s.id };
+var findFromCoordinates = function (x, y) {
+    return _findFromCoordinates({_children: [allSymbolTree]}, x, y);
+};
+
+var _findFromCoordinates = function (node, x, y) {
+    var ifNotFound = null;
+    for (var i = 0; i < node._children.length; i++) {
+        var child = node._children[i];
+        if (child.x <= x && x <= child.x + child.w && y >= child.y) {
+            if (child.token) {
+                if (y >= child.y + child.symbolEndY) {
+                    return [child, 'tower'];
+                } else {
+                    if (child.separator) {
+                        ifNotFound = [child, 'tower'];
+                    } else {
+                        return [child, 'symbol'];
+                    }
+                }
+            } else {
+                if (y < child.y + child.symbolEndY) {
+                    return [child, 'symbol'];
+                }
+                var found = _findFromCoordinates(child, x, y);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+    }
+    return ifNotFound;
+};

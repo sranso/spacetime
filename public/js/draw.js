@@ -18,16 +18,14 @@ var drawSetup = function () {
 
     camera = svg.append('g')
         .classed('camera', true)
-        .on('mousemove', function () {
-            mouse = d3.mouse(camera.node());
-            dragMoving();
-        }) ;
+        .on('mousemove', mouseMove)
+        .on('mouseleave', mouseLeave)
+        .on('mousedown', mouseDown) ;
 
     d3.select(document)
-        .on('mouseup', function () { inputEvent('left mouse', 'up') })
+        .on('mouseup', mouseUp)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') }) ;
-
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -37,17 +35,11 @@ var drawSetup = function () {
         .attr('height', 20000) ;
 
     computeStructure('tower');
-    draw(false);
+    draw();
 };
 
 var draw = function (sel) {
-    if (sel === true || sel == null) {
-        computeStructure(targeting.movingMode);
-        sel = false;
-    }
-    if (sel === false) {
-        sel = fullSelection();
-    }
+    sel = sel || fullSelection();
     computePositions(sel);
     render(sel);
 };
@@ -57,7 +49,7 @@ var fullSelection = function (dataSelection) {
     var symbolEls = camera.selectAll('.symbol');
     if (dataSelection) {
         var symbols = symbolsFromTree(allSymbolTree);
-        symbolEls = symbolEls.data(symbols, key);
+        symbolEls = symbolEls.data(symbols, _.property('id'));
     }
     return selection(allSymbolTree, symbolEls, dataSelection);
 };
@@ -120,7 +112,7 @@ var computePositions = function (sel) {
 };
 
 var _computePositions = function (node) {
-    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, movingTree: false};
+    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, symbolEndY: 0, towerY: 0, movingTree: false};
     var leftI = (node.token ? node.tokenI : node.begin.tokenI) - 1;
     var leftPos = leftI >= 0 ? allTokens[leftI].position : nullPos;
     var abovePos = node.parent ? node.parent.position : nullPos;
@@ -143,15 +135,21 @@ var _computePositions = function (node) {
 
     if (node.token) {
         pos.x = leftPos.x + leftPos.w;
+        pos.tokenY = 35;
         if (node.separator) {
             pos.w = separatorWidth;
-        } else if (node.empty) {
-            pos.w = 30;
+            pos.symbolEndY = levelHeight;
         } else {
-            pos.w = Math.max(textWidth(node) + 15, 25);
+            pos.symbolEndY = pos.tokenY;
+            if (node.empty) {
+                pos.w = 30;
+            } else {
+                pos.w = Math.max(textWidth(node) + 15, 25);
+            }
         }
         pos.braceW = pos.w;
     } else {
+        pos.symbolEndY = levelHeight;
         node.position = pos;
         _.each(node._children, function (child) {
             _computePositions(child);
@@ -188,25 +186,13 @@ var render = function (sel) {
 
     sel.tokenEls.select('rect.tower')
         .attr('x', 2)
-        .attr('y', 35)
+        .attr('y', _.property('tokenY'))
         .attr('width', function (t) { return t.w - 4 })
         .attr('height', 100 * levelHeight) ;
 
     sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
         .text(function (t) { return t.empty ? "∅" : t.text }) ;
-
-    sel.tokenEnterEls.append('rect')
-        .classed('tower-mouse', true)
-        .call(mouseSelEnter('tower'))
-        .attr('y', function (t) {
-            return t.separator ? levelHeight : 35;
-        })
-        .attr('height', 100 * levelHeight) ;
-
-    sel.tokenEls.select('rect.tower-mouse')
-        .attr('width', _.property('w')) ;
-
 
     ////// symbols draw
 
@@ -217,12 +203,7 @@ var render = function (sel) {
 
     sel.symbolEls.select('rect.background')
         .attr('width', _.property('w'))
-        .attr('height', function (b) {
-            if (b === sel.target) {
-                return b.h + 20;
-            }
-            return levelHeight;
-        }) ;
+        .attr('height', function (b) { return b.h + 20 }) ;
 
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
@@ -249,53 +230,6 @@ var render = function (sel) {
 
     sel.symbolEls.select('g.top-brace')
         .call(topBrace) ;
-
-    sel.nonSeparatorEnterEls.append('rect')
-        .classed('symbol-mouse', true)
-        .call(mouseSelEnter('symbol'))
-        .attr('y', 0) ;
-
-    sel.symbolEls.select('rect.symbol-mouse')
-        .attr('width', _.property('w'))
-        .attr('height', function (b) {
-            if (b === sel.target) {
-                return b.h + 20;
-            }
-            return levelHeight;
-        }) ;
-};
-
-var mouseSelEnter = function (mouseAreaKind) {
-    return function (rect) {
-        rect
-            .classed('mouse', true)
-            .on('mouseenter', function (s) {
-                var updated = updateTarget('hovering', s, mouseAreaKind);
-                if (updated) {
-                    draw(false);
-                }
-                d3.event.stopPropagation();
-            })
-            .on('mouseleave', function (s) {
-                if (s === targeting.hovering) {
-                    updateTarget('hovering', null, null);
-                }
-                if (targeting.lastHovering) {
-                    draw(false);
-                }
-                d3.event.stopPropagation();
-            })
-            .on('mousedown', function (s) {
-                updateTarget('hovering', s, mouseAreaKind);
-                mouse = d3.mouse(camera.node());
-                inputEvent('left mouse', 'down');
-                d3.event.stopPropagation();
-            })
-            .on('mouseup', function (s) {
-                updateTarget('hovering', s, mouseAreaKind);
-            })
-            .attr('x', 0) ;
-    };
 };
 
 var topBraceEnter = function (g) {

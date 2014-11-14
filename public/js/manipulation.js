@@ -3,35 +3,84 @@ var minMoveX = 15;
 var targetingInit = function () {
     targeting = {
         target: null,
+        inserting: null,
         moving: null,
         hovering: null,
+        startMouse: null,
         mode: null,
+        kind: null,
         movingMode: null,
         hoveringMode: null,
+        insertingMode: null,
         lastTarget: null,
-        lastMoving: null,
         lastHovering: null,
     };
 };
 
-var updateTarget = function (kind, symbol, mode) {
-    if (kind === 'hovering') {
+var updateTarget = function (update) {
+    if (_.has(update, 'startMouse')) {
+        targeting.startMouse = update.startMouse;
+    }
+    if (_.has(update, 'hovering')) {
         targeting.lastHovering = targeting.hovering;
-        targeting.hovering = symbol;
-        targeting.hoveringMode = mode;
+        targeting.hovering = update.hovering;
+        targeting.hoveringMode = update.hoveringMode;
     }
-    if (kind === 'moving') {
-        targeting.lastMoving = targeting.moving;
-        targeting.moving = symbol
-        targeting.movingMode = mode;
+    if (_.has(update, 'moving')) {
+        targeting.moving = update.moving;
+        targeting.movingMode = update.movingMode;
     }
-    var target = targeting.moving || targeting.hovering;
-    var targetMode = targeting.movingMode || targeting.hoveringMode;
-    var updated = (target !== targeting.target || targetMode !== targeting.mode);
+    if (_.has(update, 'inserting')) {
+        targeting.inserting = update.inserting;
+        targeting.insertingMode = update.insertingMode;
+    }
+    var target = targeting.inserting || targeting.moving || targeting.hovering;
+    var targetMode = targeting.insertingMode || targeting.movingMode || targeting.hoveringMode;
+    var targetKind = (
+        targeting.inserting && 'inserting' ||
+        targeting.moving && 'moving' ||
+        targeting.hovering && 'hovering'
+    );
+    var updated = (target !== targeting.target || targetMode !== targeting.mode || targetKind !== targeting.kind);
     targeting.lastTarget = targeting.target;
     targeting.target = target;
     targeting.mode = targetMode;
+    targeting.kind = targetKind;
     return updated;
+};
+
+var mouseDown = function () {
+    mouse = d3.mouse(camera.node());
+    updateHovering();
+    inputEvent('left mouse', 'down');
+};
+
+var mouseMove = function () {
+    mouse = d3.mouse(camera.node());
+    dragMoving();
+    maybeStopInserting();
+    updateHovering();
+};
+
+var mouseLeave = function () {
+    var updated = updateTarget({hovering: null, hoveringMode: null});
+    if (updated) {
+        draw();
+    }
+};
+
+var mouseUp = function () {
+    mouse = d3.mouse(camera.node());
+    inputEvent('left mouse', 'up');
+    updateHovering();
+};
+
+var updateHovering = function () {
+    var under = findUnderMouse() || [null, null];
+    var updated = updateTarget({hovering: under[0], hoveringMode: under[1]});
+    if (updated) {
+        draw();
+    }
 };
 
 var deleteTarget = function () {
@@ -47,16 +96,46 @@ var deleteTarget = function () {
         computeStructure('symbol');
     }
     if (target === targeting.hovering) {
-        updateTarget('hovering', null, null);
+        updateTarget({hovering: null, hoveringMode: null});
     }
     if (target === targeting.moving) {
-        updateTarget('moving', null, null);
+        updateTarget({moving: null, movingMode: null});
     }
-    draw(false);
+    draw();
+};
+
+var startInserting = function () {
+    var target = targeting.target;
+    if (!target) {
+        return;
+    }
+    var insert = createToken({level: target.level, text: 'test'});
+    var end = target.bar ? target.end : target;
+    var insertI = end.tokenI + 1;
+    allTokens.splice(insertI, 0, insert);
+
+    //updateTarget({
+    //    inserting: insert,
+    //    insertingMode: 'tower',
+    //    startMouse: mouse,
+    //});
+    computeStructure('tower');
+    draw();
+};
+
+var maybeStopInserting = function () {
+    if (!targeting.inserting) {
+        return;
+    }
+    var info = movingInfo();
+    var diff = info.absDiff[0] + info.absDiff[1];
+    if (diff > 5) {
+        // stop inserting
+    }
 };
 
 var movingInfo = function () {
-    var startMouse = targeting.moving.startMouse;
+    var startMouse = targeting.startMouse;
     var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
     return {
         diff: diff,
@@ -71,16 +150,18 @@ var startMoving = function () {
         return;
     }
     var moving = targeting.hovering;
-    moving.startMouse = mouse;
-    moving.startTime = Date.now();
-    var updated = updateTarget('moving', moving, targeting.hoveringMode);
+    var updated = updateTarget({
+        moving: moving,
+        movingMode: targeting.hoveringMode,
+        startMouse: mouse,
+    });
     if (updated) {
         draw();
     }
 };
 
 var stopMoving = function (s) {
-    var updated = updateTarget('moving', null, null);
+    var updated = updateTarget({moving: null, movingMode: null});
     if (updated) {
         draw();
     }
@@ -104,6 +185,7 @@ var dragMoving = function () {
     if (!moved) {
         draw(movingSelection());
     } else {
+        computeStructure(info.mode);
         draw();
     }
 };
@@ -113,9 +195,9 @@ var positionAfterMove = function (moving, mode) {
     computeStructure(mode);
     var sel = fullSelection(false);
     computePositions(sel);
-    moving.startMouse = [
-        moving.startMouse[0] + moving.x - currentPos.x,
-        moving.startMouse[1] + moving.y - currentPos.y,
+    targeting.startMouse = [
+        targeting.startMouse[0] + moving.x - currentPos.x,
+        targeting.startMouse[1] + moving.y - currentPos.y,
     ];
 };
 

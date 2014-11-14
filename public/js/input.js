@@ -2,6 +2,7 @@ var keyAssignments = {
     startMoving: ['$down', '$:left mouse'],
     stopMoving: ['$up', '$:left mouse'],
     'delete': ['$down', 'R'],
+    startInserting: ['$down', 'space'],
     moving: ['left mouse'],
     debug: ['$down', 'G'],
 };
@@ -34,14 +35,18 @@ var inputEvent = function (key, eventType) {
     }
     keysDown['$firing'] = true;
 
-    if (active('startMoving')) {
-        if (targeting.hovering) { startMoving() }
-    } else if (active('stopMoving')) {
-        stopMoving();
-    } else if (active('delete')) {
-        deleteTarget();
-    } else if (active('debug')) {
-        debugger;
+    if (!targeting.inserting) {
+        if (active('startMoving')) {
+            startMoving();
+        } else if (active('stopMoving')) {
+            stopMoving();
+        } else if (active('delete')) {
+            deleteTarget();
+        } else if (active('startInserting')) {
+            startInserting();
+        } else if (active('debug')) {
+            debugger;
+        }
     }
 
     keysDown['$firing'] = false;
@@ -71,6 +76,7 @@ var qwertyKeyMap = {
      19: 'pause/break',
      20: 'caps lock',
      27: 'escape',
+     32: 'space',
      33: 'page up',
      34: 'page down',
      35: 'end',
