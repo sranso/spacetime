@@ -44,6 +44,7 @@ var inputEvent = function (key, eventType) {
             deleteTarget();
         } else if (active('startInserting')) {
             startInserting();
+            d3.event.preventDefault();
         } else if (active('debug')) {
             debugger;
         }

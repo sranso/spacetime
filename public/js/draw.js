@@ -20,6 +20,7 @@ var drawSetup = function () {
         .classed('camera', true)
         .on('mousemove', mouseMove)
         .on('mouseleave', mouseLeave)
+        .on('mouseenter', mouseEnter)
         .on('mousedown', mouseDown) ;
 
     d3.select(document)

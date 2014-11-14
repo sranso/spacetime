@@ -14,10 +14,14 @@ var targetingInit = function () {
         insertingMode: null,
         lastTarget: null,
         lastHovering: null,
+        inCamera: false,
     };
 };
 
 var updateTarget = function (update) {
+    if (_.has(update, 'inCamera')) {
+        targeting.inCamera = update.inCamera;
+    }
     if (_.has(update, 'startMouse')) {
         targeting.startMouse = update.startMouse;
     }
@@ -62,17 +66,27 @@ var mouseMove = function () {
     updateHovering();
 };
 
+var mouseUp = function () {
+    mouse = d3.mouse(camera.node());
+    inputEvent('left mouse', 'up');
+    if (targeting.inCamera) {
+        updateHovering();
+    }
+};
+
 var mouseLeave = function () {
-    var updated = updateTarget({hovering: null, hoveringMode: null});
+    var updated = updateTarget({
+        hovering: null,
+        hoveringMode: null,
+        inCamera: false,
+    });
     if (updated) {
         draw();
     }
 };
 
-var mouseUp = function () {
-    mouse = d3.mouse(camera.node());
-    inputEvent('left mouse', 'up');
-    updateHovering();
+var mouseEnter = function () {
+    updateTarget({inCamera: true});
 };
 
 var updateHovering = function () {
@@ -88,7 +102,7 @@ var deleteTarget = function () {
     if (!target) {
         return;
     }
-    if (target.token) {
+    if (targeting.mode === 'tower') {
         allTokens.splice(target.tokenI, 1);
         computeStructure('tower');
     } else if (target.parent) {
@@ -102,6 +116,7 @@ var deleteTarget = function () {
         updateTarget({moving: null, movingMode: null});
     }
     draw();
+    updateHovering();
 };
 
 var startInserting = function () {
