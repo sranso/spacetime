@@ -3,14 +3,14 @@ var height = 300;
 var levelHeight = 20;
 var separatorWidth = 8;
 var cameraStartX = 90;
+var svgExtraHeight = 115;
 
 var camera, cameraX, cameraStartX, _offCameraToken;
 
 var drawSetup = function () {
 
     var svg = d3.select('svg#string')
-        .attr('width', width)
-        .attr('height', height) ;
+        .attr('width', '100%') ;
 
     _offCameraToken = svg.append('g')
         .classed('token', true)
@@ -108,6 +108,9 @@ var selection = function (symbolTree, symbolEls, dataSelection) {
 
 var computePositions = function (sel) {
     _computePositions(sel.symbolTree);
+    sel.svgHeight = allSymbolTree.h + svgExtraHeight;
+    var lastToken = allTokens[allTokens.length - 1];
+    sel.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
 };
 
 var _computePositions = function (node) {
@@ -170,9 +173,11 @@ var _computePositions = function (node) {
 
 var render = function (sel) {
 
-    var lastToken = allTokens[allTokens.length - 1];
-    var bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
-    d3.select(document.body).style('height', '' + bodyHeight + 'px');
+    var svg = d3.select('svg#string')
+        .attr('height', sel.svgHeight) ;
+
+    d3.select(document.body)
+        .style('height', sel.bodyHeight + 'px') ;
 
     camera
         .classed('tower-mode', sel.mode === 'tower')
@@ -195,7 +200,7 @@ var render = function (sel) {
         .attr('x', 2)
         .attr('y', _.property('tokenY'))
         .attr('width', function (t) { return t.w - 4 })
-        .attr('height', 100 * levelHeight) ;
+        .attr('height', sel.svgHeight) ;
 
     sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })

@@ -199,7 +199,15 @@ var keypressEvent = function (keyCode, key) {
         }
 
     } else if (key === '2') {
-        // Do nothing, but this enables keeping the text there
+        var cloned = cloneTree(inserting);
+        if (!siblings) {
+            return; // TODO
+        }
+        siblings.splice(inserting.treeI + 1, 0, cloned);
+        updateTarget({inserting: cloned});
+        computeStructure(targeting.mode);
+    } else if (key === '6') {
+        // do nothing
     } else {
         var text = firstInserting ? '' : inserting.text;
         text += key;

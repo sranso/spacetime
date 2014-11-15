@@ -210,3 +210,14 @@ var _findFromCoordinates = function (node, x, y) {
     }
     return ifNotFound;
 };
+
+var cloneTree = function (node) {
+    var cNode = _.clone(node);
+    cNode.id = symbolId();
+    if (cNode.bar) {
+        cNode.children = _.map(node.children, function (child) {
+            return cloneTree(child);
+        });
+    }
+    return cNode;
+};
