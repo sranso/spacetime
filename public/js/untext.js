@@ -3,7 +3,7 @@
 var SEPARATOR = 1;
 var EMPTY = 2;
 
-var untext, allSymbolTree, allTokens, symbolIdSequence, camera, targeting;
+var untext, allSymbolTree, allTokens, symbolIdSequence, targeting;
 
 var init = function () {
     untext = {};

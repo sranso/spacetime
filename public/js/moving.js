@@ -69,6 +69,12 @@ var mouseEnter = function () {
     updateTarget({inCamera: true});
 };
 
+var mouseScroll = function () {
+    var scrollX = document.body.scrollTop;
+    cameraX = cameraStartX - scrollX;
+    draw();
+};
+
 var updateHovering = function (forceUpdated) {
     var under = findUnderMouse() || [null, null];
     var updated = updateTarget({hovering: under[0], hoveringMode: under[1]});

@@ -85,8 +85,6 @@ var keypressEvent = function (keyCode, key) {
         if (targeting.mode === 'symbol') {
             if (inserting.token) {
                 updateTarget({insertingMode: 'tower'});
-            } else {
-                return; // TODO
             }
         }
         var level = inserting.level;
@@ -127,6 +125,9 @@ var keypressEvent = function (keyCode, key) {
             allTokens.splice(tokenI, 1);
         } else {
             tokenI += 1;
+        }
+        if (level === 1) {
+            level = 2; // TODO
         }
         var sep = createToken({level: level - 1, separator: true});
         allTokens.splice(tokenI, 0, sep);

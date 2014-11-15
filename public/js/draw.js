@@ -2,8 +2,9 @@ var width = '100%';
 var height = 300;
 var levelHeight = 20;
 var separatorWidth = 8;
+var cameraStartX = 90;
 
-var _offCameraToken;
+var camera, cameraX, cameraStartX, _offCameraToken;
 
 var drawSetup = function () {
 
@@ -23,8 +24,11 @@ var drawSetup = function () {
         .on('mouseenter', mouseEnter)
         .on('mousedown', mouseDown) ;
 
+    cameraX = cameraStartX;
+
     d3.select(document)
         .on('mouseup', mouseUp)
+        .on('scroll', mouseScroll)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
         .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
@@ -63,12 +67,9 @@ var movingSelection = function () {
 
 var selection = function (symbolTree, symbolEls, dataSelection) {
     var targetSiblings,
-        tokens,
         tokenEls, nonSeparatorEnterEls,
         symbolEnterEls, tokenEnterEls,
         symbolExitEls;
-
-    symbols = symbolsFromTree(symbolTree);
 
     var target = targeting.target;
     if (target) {
@@ -76,8 +77,6 @@ var selection = function (symbolTree, symbolEls, dataSelection) {
     } else {
         targetSiblings = [];
     }
-
-    tokens = _.where(symbols, {token: true});
 
     if (dataSelection) {
         symbolEnterEls = symbolEls.enter().append('g');
@@ -96,8 +95,6 @@ var selection = function (symbolTree, symbolEls, dataSelection) {
     var sel = {
         targetSiblings: targetSiblings,
         symbolTree: symbolTree,
-        symbols: symbols,
-        tokens: tokens,
         symbolEls: symbolEls,
         tokenEls: tokenEls,
         nonSeparatorEnterEls: nonSeparatorEnterEls,
@@ -173,8 +170,16 @@ var _computePositions = function (node) {
 
 var render = function (sel) {
 
-    camera.classed('tower-mode', sel.mode === 'tower');
-    camera.classed('symbol-mode', sel.mode === 'symbol');
+    var lastToken = allTokens[allTokens.length - 1];
+    var bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
+    d3.select(document.body).style('height', '' + bodyHeight + 'px');
+
+    camera
+        .classed('tower-mode', sel.mode === 'tower')
+        .classed('symbol-mode', sel.mode === 'symbol')
+        .attr('transform', function () {
+            return 'translate(' + cameraX + ',0)';
+        }) ;
 
     sel.symbolExitEls.remove();
 
