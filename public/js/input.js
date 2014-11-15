@@ -7,16 +7,25 @@ var inputEvent = function (key, eventType) {
         keypressEvent(null, key);
     }
 
-    if (targeting.inserting) {
+    if (key === '\\') {
+        debugger;
+    }
+    if (state.inserting) {
         return;
     }
     if (key === 'left mouse' || key === '6') {
-        if (eventType === 'down') {
-            startMoving();
-            d3.event.preventDefault();
-        } else {
-            stopMoving();
-        }
+        immediateDoStuffAfterStateChanges(function () {
+            if (eventType === 'down') {
+                startMoving();
+                d3.event.preventDefault();
+                updateState({doHovering: true});
+            } else {
+                stopMoving();
+                if (state.inCamera) {
+                    updateState({doHovering: true});
+                }
+            }
+        });
     }
 };
 
@@ -29,7 +38,7 @@ var removeEmptyText = function (inserting) {
 };
 
 var maybeStopInserting = function () {
-    var inserting = targeting.inserting;
+    var inserting = state.inserting;
     if (!inserting) {
         return;
     }
@@ -37,91 +46,90 @@ var maybeStopInserting = function () {
     var diff = info.absDiff[0] + info.absDiff[1];
     if (diff >= 3) {
         removeEmptyText(inserting);
-        updateTarget({inserting: null, insertingMode: null});
+        updateState({inserting: null, insertingMode: null});
         return true;
     }
 };
 
-var keypressEvent = function (keyCode, key) {
+var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     key = key || String.fromCharCode(keyCode);
     d3.event.preventDefault();
-    var inserting = targeting.inserting;
-    var firstInserting = false;
-    if (!inserting) {
-        firstInserting = true;
-        var target = targeting.target;
+    var ins = state.inserting;
+    if (!ins) {
+        var target = state.target;
         if (!target) {
             return;
         }
-        inserting = target;
-        updateTarget({
-            inserting: inserting,
-            insertingMode: targeting.mode,
+        ins = target;
+        updateState({
+            inserting: ins,
+            insertingMode: state.targetMode,
             startMouse: mouse,
         });
     }
-    var siblings = inserting.parent && inserting.parent.children;
+    var siblings = ins.parent && ins.parent.children;
 
     if (key === '3') { // delete
-        if (inserting === targeting.hovering) {
-            updateTarget({hovering: null, hoveringMode: null});
+        if (ins === state.hovering) {
+            updateState({hovering: null, hoveringMode: null});
         }
-        if (inserting === targeting.moving) {
-            updateTarget({moving: null, movingMode: null});
+        if (ins === state.moving) {
+            updateState({moving: null, movingMode: null});
         }
-        if (targeting.mode === 'tower') {
-            allTokens.splice(inserting.tokenI, 1);
-            inserting = allTokens[inserting.tokenI];
-            updateTarget({inserting: inserting});
-            computeStructure('tower');
+        if (state.targetMode === 'tower') {
+            allTokens.splice(ins.tokenI, 1);
+            ins = allTokens[ins.tokenI];
+            updateState({inserting: ins, doStructure: 'tower'});
         } else if (siblings) {
-            siblings.splice(inserting.treeI, 1);
-            inserting = siblings[inserting.treeI];
-            updateTarget({inserting: inserting});
-            computeStructure('symbol');
+            siblings.splice(ins.treeI, 1);
+            ins = siblings[ins.treeI];
+            updateState({inserting: ins, doStructure: 'symbol'});
         }
 
     } else if (_.contains([' ', '(', ')'], key)) {
-        if (targeting.mode === 'symbol') {
-            if (inserting.token) {
-                updateTarget({insertingMode: 'tower'});
+        if (state.targetMode === 'symbol') {
+            if (ins.token) {
+                updateState({insertingMode: 'tower'});
             }
         }
-        var level = inserting.level;
-        if (inserting.bar || inserting.text) {
+        var level = ins.level;
+        if (ins.bar || ins.text) {
             var insert = createToken({level: level, text: ''});
-            if (targeting.mode === 'tower') {
-                allTokens.splice(inserting.tokenI + 1, 0, insert);
+            if (state.targetMode === 'tower') {
+                allTokens.splice(ins.tokenI + 1, 0, insert);
             } else {
-                siblings.splice(inserting.treeI + 1, 0, insert);
+                siblings.splice(ins.treeI + 1, 0, insert);
             }
-            computeStructure(targeting.mode);
-            updateTarget({inserting: insert, insertingMode: 'tower'});
-            inserting = insert;
+            computeStructure(state.targetMode);
+            updateState({inserting: insert, insertingMode: 'tower'});
+            ins = insert;
         } else if (key === '(') {
-            var before = allTokens[inserting.tokenI - 1];
-            if (before.level > inserting.level) {
+            var before = allTokens[ins.tokenI - 1];
+            if (before.level > ins.level) {
                 var insert = createToken({level: level, separator: true});
-                allTokens.splice(inserting.tokenI, 0, insert);
+                allTokens.splice(ins.tokenI, 0, insert);
             }
+            updateState({doStructure: 'tower'});
         }
         if (key === '(') {
             level += 1;
         } else if (key === ')') {
             level = Math.max(1, level - 1);
         }
-        inserting.level = level;
-        computeStructure('tower');
+        if (level !== ins.level) {
+            ins.level = level;
+            updateState({doStructure: 'tower'});
+        }
 
     } else if (key === 'tab') {
-        if (inserting.token) {
-            updateTarget({insertingMode: 'tower'});
+        if (ins.token) {
+            updateState({insertingMode: 'tower'});
         } else {
             return; // TODO
         }
-        var level = inserting.level;
-        var tokenI = inserting.tokenI;
-        if (!inserting.text) {
+        var level = ins.level;
+        var tokenI = ins.tokenI;
+        if (!ins.text) {
             allTokens.splice(tokenI, 1);
         } else {
             tokenI += 1;
@@ -134,88 +142,87 @@ var keypressEvent = function (keyCode, key) {
         tokenI += 1;
         var insert = createToken({level: level, text: ''});
         allTokens.splice(tokenI, 0, insert);
-        updateTarget({inserting: insert});
-        computeStructure('tower');
+        updateState({inserting: insert, doStructure: 'tower'});
 
     } else if (_.contains(['<', '>', '1', '4'], key)) {
-        if (targeting.mode === 'symbol') {
-            if (inserting.token) {
-                updateTarget({insertingMode: 'tower'});
+        if (state.targetMode === 'symbol') {
+            if (ins.token) {
+                updateState({insertingMode: 'tower'});
             } else {
                 return; // TODO
             }
         }
-        var level = inserting.level;
+        var level = ins.level;
         if (key === '<' || key === '1') {
             level += 1;
         } else if (key === '>' || key === '4') {
             level = Math.max(1, level - 1);
         }
-        inserting.level = level;
-        computeStructure('tower');
+        ins.level = level;
+        updateState({doStructure: 'tower'});
 
     } else if (key === '`' || key === '5') {
         var dir = key === '`' ? -1 : +1;
         var insert;
-        if (removeEmptyText(inserting)) {
+        if (removeEmptyText(ins)) {
             dir = 0;
         }
-        if (targeting.mode === 'tower') {
-            insert = allTokens[inserting.tokenI + dir];
+        if (state.targetMode === 'tower') {
+            insert = allTokens[ins.tokenI + dir];
             if (!insert) {
                 // TODO
             }
         } else {
-            insert = siblings[inserting.treeI + dir];
+            insert = siblings[ins.treeI + dir];
             if (!insert) {
                 // TODO
             }
         }
-        updateTarget({inserting: insert});
+        updateState({inserting: insert});
 
     } else if (key === 'backspace') {
-        if (targeting.mode === 'symbol') {
-            if (inserting.token) {
-                updateTarget({insertingMode: 'tower'});
+        if (state.targetMode === 'symbol') {
+            if (ins.token) {
+                updateState({insertingMode: 'tower'});
             } else {
                 return; // TODO
             }
         }
-        var text = inserting.text;
+        var text = ins.text;
         if (text) {
             text = text.slice(0, text.length - 1);
-            inserting.text = text;
-            textWidth(inserting, {recompute: true});
+            ins.text = text;
+            textWidth(ins, {recompute: true});
+            updateState({doPositions: true});
         } else {
-            allTokens.splice(inserting.tokenI, 1);
-            inserting = allTokens[inserting.tokenI - 1];
-            var insertingMode = inserting ? 'tower' : null;
-            updateTarget({
-                inserting: inserting,
+            allTokens.splice(ins.tokenI, 1);
+            ins = allTokens[ins.tokenI - 1];
+            var insertingMode = ins ? 'tower' : null;
+            updateState({
+                inserting: ins,
                 insertingMode: insertingMode,
                 startMouse: mouse,
+                doStructure: 'tower',
             });
-            computeStructure('tower');
         }
 
     } else if (key === '2') {
-        var cloned = cloneTree(inserting);
+        var cloned = cloneTree(ins);
         if (!siblings) {
             return; // TODO
         }
-        siblings.splice(inserting.treeI + 1, 0, cloned);
-        updateTarget({inserting: cloned});
-        computeStructure(targeting.mode);
+        siblings.splice(ins.treeI + 1, 0, cloned);
+        updateState({inserting: cloned, doStructure: state.targetMode});
     } else if (key === '6') {
         // do nothing
     } else {
-        var text = firstInserting ? '' : inserting.text;
+        var text = lastState.inserting ? ins.text : '';
         text += key;
-        inserting.text = text;
-        textWidth(inserting, {recompute: true});
+        ins.text = text;
+        textWidth(ins, {recompute: true});
+        updateState({doPositions: true});
     }
-    draw();
-};
+});
 
 var keyMap = {
       8: 'backspace',

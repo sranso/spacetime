@@ -1,123 +1,166 @@
 var minMoveX = 15;
 
-var targetingInit = function () {
-    targeting = {
+var stateInit = function () {
+    state = {
         target: null,
         inserting: null,
         moving: null,
         hovering: null,
-        startMouse: null,
-        mode: null,
-        kind: null,
+
+        targetMode: null,
         movingMode: null,
         hoveringMode: null,
         insertingMode: null,
-        lastTarget: null,
+
+        doStructure: false,
+        doPositions: false,
+        doHovering: false,
+        doDraw: false,
+        doDataDraw: false,
+
+        targetKind: null,
+        startMouse: null,
         inCamera: false,
+    };
+    lastState = state;
+};
+
+var updateState = function (update) {
+    _.extend(state, update);
+    state.target = state.inserting || state.moving || state.hovering;
+    state.targetMode = state.insertingMode || state.movingMode || state.hoveringMode;
+    state.targetKind = (
+        state.inserting && 'inserting' ||
+        state.moving && 'moving' ||
+        state.hovering && 'hovering'
+    );
+};
+
+var doStuffAfterStateChanges = function () {
+    if (state.doStructure) {
+        computeStructure(state.doStructure);
+    }
+    if (state.doPositions) {
+        computePositions(allSymbolTree);
+    }
+    if (state.doHovering) {
+        computeHovering();
+    }
+    var updatedTarget = (
+        state.target !== lastState.target ||
+        state.targetMode !== lastState.targetMode ||
+        state.targetKind !== lastState.targetKind
+    );
+    if (updatedTarget) {
+        if (state.target) {
+            computePositions(state.target);
+        }
+        if (lastState.target && !state.doDataDraw) {
+            computePositions(lastState.target);
+        }
+    };
+    if (state.doDraw || state.doDataDraw) {
+        var sel = fullSelection(state.doDataDraw);
+        draw(sel);
+    }
+};
+
+var immediateDoStuffAfterStateChanges = function (callback) {
+    lastState = state;
+    state = _.clone(state);
+    callback();
+    doStuffAfterStateChanges();
+};
+
+var doStuffAroundStateChanges = function (callback) {
+    return function () {
+        var args = arguments;
+        immediateDoStuffAfterStateChanges(function () {
+            callback.apply(this, args);
+        });
     };
 };
 
-var updateTarget = function (update) {
-    _.extend(targeting, update);
-    var target = targeting.inserting || targeting.moving || targeting.hovering;
-    var targetMode = targeting.insertingMode || targeting.movingMode || targeting.hoveringMode;
-    var targetKind = (
-        targeting.inserting && 'inserting' ||
-        targeting.moving && 'moving' ||
-        targeting.hovering && 'hovering'
-    );
-    var updated = (target !== targeting.target || targetMode !== targeting.mode || targetKind !== targeting.kind);
-    targeting.lastTarget = targeting.target;
-    targeting.target = target;
-    targeting.mode = targetMode;
-    targeting.kind = targetKind;
-    return updated;
+var computeHovering = function () {
+    var under = findUnderMouse() || [null, null];
+    updateState({
+        doHovering: false,
+        hovering: under[0],
+        hoveringMode: under[1],
+    });
 };
 
 var mouseDown = function () {
     mouse = d3.mouse(camera.node());
-    updateHovering();
     inputEvent('left mouse', 'down');
-};
-
-var mouseMove = function () {
-    mouse = d3.mouse(camera.node());
-    dragMoving();
-    updateHovering(maybeStopInserting());
 };
 
 var mouseUp = function () {
     mouse = d3.mouse(camera.node());
     inputEvent('left mouse', 'up');
-    if (targeting.inCamera) {
-        updateHovering();
-    }
 };
 
-var mouseLeave = function () {
-    var updated = updateTarget({
+var mouseMove = doStuffAroundStateChanges(function () {
+    mouse = d3.mouse(camera.node());
+    dragMoving();
+    maybeStopInserting();
+    updateState({doHovering: true});
+});
+
+var mouseEnter = doStuffAroundStateChanges(function () {
+    mouse = d3.mouse(camera.node());
+    updateState({inCamera: true, doHovering: true});
+});
+
+var mouseLeave = doStuffAroundStateChanges(function () {
+    updateState({
         hovering: null,
         hoveringMode: null,
         inCamera: false,
     });
-    if (updated) {
-        draw();
-    }
-};
-
-var mouseEnter = function () {
-    updateTarget({inCamera: true});
-};
+});
 
 var mouseScroll = function () {
     var scrollX = document.body.scrollTop;
     cameraX = cameraStartX - scrollX;
-    draw();
+    computeNonTreePositions();
+    draw(nullSelection());
 };
 
-var updateHovering = function (forceUpdated) {
-    var under = findUnderMouse() || [null, null];
-    var updated = updateTarget({hovering: under[0], hoveringMode: under[1]});
-    if (updated || forceUpdated) {
-        draw();
-    }
-};
 
 var movingInfo = function () {
-    var startMouse = targeting.startMouse;
+    var startMouse = state.startMouse;
     var diff = [mouse[0] - startMouse[0], mouse[1] - startMouse[1]];
     return {
         diff: diff,
         direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
         absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
-        mode: targeting.movingMode,
+        mode: state.movingMode,
     };
 };
 
 var startMoving = function () {
-    if (targeting.moving) {
+    if (state.moving) {
         return;
     }
-    var moving = targeting.hovering;
-    var updated = updateTarget({
+    var moving = state.hovering;
+    updateState({
         moving: moving,
-        movingMode: targeting.hoveringMode,
+        movingMode: state.hoveringMode,
         startMouse: mouse,
     });
-    if (updated) {
-        draw();
-    }
 };
 
 var stopMoving = function (s) {
-    var updated = updateTarget({moving: null, movingMode: null});
-    if (updated) {
-        draw();
+    if (!state.moving) {
+        return;
     }
+    updateState({moving: null, movingMode: null});
+    computePositions(lastState.moving);
 };
 
 var dragMoving = function () {
-    var moving = targeting.moving;
+    var moving = state.moving;
     if (!moving) {
         return;
     }
@@ -131,22 +174,21 @@ var dragMoving = function () {
         moved = dragSymbol(moving, info);
     }
 
-    if (!moved) {
-        draw(movingSelection());
+    if (moved) {
+        updateState({doStructure: info.mode});
     } else {
-        computeStructure(info.mode);
-        draw();
+        computePositions(moving);
+        draw(movingSelection());
     }
 };
 
 var positionAfterMove = function (moving, mode) {
     var currentPos = {x: moving.x, y: moving.y};
     computeStructure(mode);
-    var sel = fullSelection(false);
-    computePositions(sel);
-    targeting.startMouse = [
-        targeting.startMouse[0] + moving.x - currentPos.x,
-        targeting.startMouse[1] + moving.y - currentPos.y,
+    computePositions(allSymbolTree);
+    state.startMouse = [
+        state.startMouse[0] + moving.x - currentPos.x,
+        state.startMouse[1] + moving.y - currentPos.y,
     ];
 };
 

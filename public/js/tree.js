@@ -44,6 +44,11 @@ var computeStructure = function (mode) {
     }
     linkTokens(allTokens);
     linkTree(allSymbolTree, 0);
+    updateState({
+        doStructure: false,
+        doPositions: true,
+        doDataDraw: true,
+    });
 };
 
 var treeFromTokens = function () {

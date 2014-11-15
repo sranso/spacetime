@@ -7,71 +7,32 @@ var svgExtraHeight = 115;
 
 var camera, cameraX, cameraStartX, _offCameraToken;
 
-var drawSetup = function () {
-
-    var svg = d3.select('svg#string')
-        .attr('width', '100%') ;
-
-    _offCameraToken = svg.append('g')
-        .classed('token', true)
-        .attr('transform', 'translate(-10000,-10000)')
-        .append('text') ;
-
-    camera = svg.append('g')
-        .classed('camera', true)
-        .on('mousemove', mouseMove)
-        .on('mouseleave', mouseLeave)
-        .on('mouseenter', mouseEnter)
-        .on('mousedown', mouseDown) ;
-
-    cameraX = cameraStartX;
-
-    d3.select(document)
-        .on('mouseup', mouseUp)
-        .on('scroll', mouseScroll)
-        .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
-        .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
-        .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
-
-    var background = camera.append('rect')
-        .classed('background', true)
-        .attr('x', -10000)
-        .attr('y', -10000)
-        .attr('width', 20000)
-        .attr('height', 20000) ;
-
-    computeStructure('tower');
-    draw();
-};
-
-var draw = function (sel) {
-    sel = sel || fullSelection();
-    computePositions(sel);
-    render(sel);
-};
-
 var fullSelection = function (dataSelection) {
-    if (dataSelection == null) { dataSelection = true }
     var symbolEls = camera.selectAll('.symbol');
     if (dataSelection) {
         var symbols = symbolsFromTree(allSymbolTree);
         symbolEls = symbolEls.data(symbols, _.property('id'));
     }
-    return selection(allSymbolTree, symbolEls, dataSelection);
+    return selection(symbolEls, dataSelection);
 };
 
 var movingSelection = function () {
     var symbolEls = camera.selectAll('.symbol.movingTree');
-    return selection(targeting.moving, symbolEls, false);
+    return selection(symbolEls, false);
 };
 
-var selection = function (symbolTree, symbolEls, dataSelection) {
+var nullSelection = function () {
+    var symbolEls = d3.select();
+    return selection(symbolEls, false);
+};
+
+var selection = function (symbolEls, dataSelection) {
     var targetSiblings,
         tokenEls, nonSeparatorEnterEls,
         symbolEnterEls, tokenEnterEls,
         symbolExitEls;
 
-    var target = targeting.target;
+    var target = state.target;
     if (target) {
         targetSiblings = (target.parent && target.parent.children) || [target];
     } else {
@@ -93,8 +54,8 @@ var selection = function (symbolTree, symbolEls, dataSelection) {
     });
 
     var sel = {
+        dataSelection: dataSelection,
         targetSiblings: targetSiblings,
-        symbolTree: symbolTree,
         symbolEls: symbolEls,
         tokenEls: tokenEls,
         nonSeparatorEnterEls: nonSeparatorEnterEls,
@@ -102,15 +63,26 @@ var selection = function (symbolTree, symbolEls, dataSelection) {
         tokenEnterEls: tokenEnterEls,
         symbolExitEls: symbolExitEls,
     };
-    _.extend(sel, targeting);
+    _.extend(sel, state);
     return sel;
 };
 
-var computePositions = function (sel) {
-    _computePositions(sel.symbolTree);
-    sel.svgHeight = allSymbolTree.h + svgExtraHeight;
+var computePositions = function (symbolTree) {
+    _computePositions(symbolTree);
+    if (symbolTree === allSymbolTree) {
+        computeNonTreePositions();
+    }
+    updateState({
+        doPositions: false,
+        doHovering: symbolTree === allSymbolTree,
+        doDraw: true,
+    });
+};
+
+var computeNonTreePositions = function () {
+    allPositions.svgHeight = allSymbolTree.h + svgExtraHeight;
     var lastToken = allTokens[allTokens.length - 1];
-    sel.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
+    allPositions.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
 };
 
 var _computePositions = function (node) {
@@ -124,7 +96,7 @@ var _computePositions = function (node) {
     pos.y = abovePos.y + levelHeight;
     pos.h = (node.depth + 1) * levelHeight;
 
-    if (node === targeting.moving) {
+    if (node === state.moving) {
         var info = movingInfo();
         pos.offsetX = info.direction[0] * Math.min(info.absDiff[0] / 3, 2);
         pos.offsetY = info.direction[1] * Math.min(info.absDiff[1] / 3, 2);
@@ -171,17 +143,57 @@ var _computePositions = function (node) {
     _.extend(node, pos);
 };
 
-var render = function (sel) {
+
+///////////////
+
+var drawSetup = function () {
 
     var svg = d3.select('svg#string')
-        .attr('height', sel.svgHeight) ;
+        .attr('width', '100%') ;
+
+    _offCameraToken = svg.append('g')
+        .classed('token', true)
+        .attr('transform', 'translate(-10000,-10000)')
+        .append('text') ;
+
+    camera = svg.append('g')
+        .classed('camera', true)
+        .on('mousemove', mouseMove)
+        .on('mouseleave', mouseLeave)
+        .on('mouseenter', mouseEnter)
+        .on('mousedown', mouseDown) ;
+
+    cameraX = cameraStartX;
+
+    d3.select(document)
+        .on('mouseup', mouseUp)
+        .on('scroll', mouseScroll)
+        .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
+        .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
+        .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
+
+    var background = camera.append('rect')
+        .classed('background', true)
+        .attr('x', -10000)
+        .attr('y', -10000)
+        .attr('width', 20000)
+        .attr('height', 20000) ;
+
+    updateState({doStructure: 'tower'});
+    doStuffAfterStateChanges();
+};
+
+var draw = function (sel) {
+
+    var svg = d3.select('svg#string')
+        .attr('height', allPositions.svgHeight) ;
 
     d3.select(document.body)
-        .style('height', sel.bodyHeight + 'px') ;
+        .style('height', allPositions.bodyHeight + 'px') ;
 
     camera
-        .classed('tower-mode', sel.mode === 'tower')
-        .classed('symbol-mode', sel.mode === 'symbol')
+        .classed('tower-mode', sel.targetMode === 'tower')
+        .classed('symbol-mode', sel.targetMode === 'symbol')
         .attr('transform', function () {
             return 'translate(' + cameraX + ',0)';
         }) ;
@@ -200,7 +212,7 @@ var render = function (sel) {
         .attr('x', 2)
         .attr('y', _.property('tokenY'))
         .attr('width', function (t) { return t.w - 4 })
-        .attr('height', sel.svgHeight) ;
+        .attr('height', allPositions.svgHeight) ;
 
     sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
@@ -242,6 +254,12 @@ var render = function (sel) {
 
     sel.symbolEls.select('g.top-brace')
         .call(topBrace) ;
+
+
+    updateState({doDraw: false});
+    if (sel.dataSelection) {
+        updateState({doDataDraw: false});
+    }
 };
 
 var topBraceEnter = function (g) {

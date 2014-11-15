@@ -3,17 +3,18 @@
 var SEPARATOR = 1;
 var EMPTY = 2;
 
-var untext, allSymbolTree, allTokens, symbolIdSequence, targeting;
+var untext, allSymbolTree, allTokens, allPositions, symbolIdSequence, state, lastState;
 
 var init = function () {
     untext = {};
     allSymbolTree = null;
     allTokens = [];
+    allPositions = {};
     symbolIdSequence = 0;
     hovering = null;
     hoveringMode = null;
     mouse = [0, 0];
-    targetingInit();
+    stateInit();
 };
 
 var setup = function (data) {
