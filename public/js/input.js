@@ -1,7 +1,7 @@
 var keyAssignments = {
     startMoving: ['$down', '$:left mouse'],
     stopMoving: ['$up', '$:left mouse'],
-    'delete': ['$down', 'R'],
+    'delete': ['$down', 'D'],
     startInserting: ['$down', 'space'],
     moving: ['left mouse'],
     debug: ['$down', 'G'],
@@ -69,6 +69,138 @@ var triggered = function (action) {
 
 var toggled = function (action) {
     return active(action, keysDown) != active(action, lastKeysDown);
+};
+
+var deleteTarget = function () {
+    var target = targeting.target;
+    if (!target) {
+        return;
+    }
+    if (targeting.mode === 'tower') {
+        allTokens.splice(target.tokenI, 1);
+        computeStructure('tower');
+    } else if (target.parent) {
+        target.parent.children.splice(target.treeI, 1);
+        computeStructure('symbol');
+    }
+    if (target === targeting.hovering) {
+        updateTarget({hovering: null, hoveringMode: null});
+    }
+    if (target === targeting.moving) {
+        updateTarget({moving: null, movingMode: null});
+    }
+    draw();
+    updateHovering();
+};
+
+var startInserting = function () {
+    var target = targeting.target;
+    if (!target) {
+        return;
+    }
+    var end = target.bar ? target.end : target;
+    newInsertingAt(target.level, end.tokenI + 1);
+    computeStructure('tower');
+    draw();
+};
+
+var maybeStopInserting = function () {
+    var inserting = targeting.inserting;
+    if (!inserting) {
+        return;
+    }
+    var info = movingInfo();
+    var diff = info.absDiff[0] + info.absDiff[1];
+    if (diff > 5) {
+        if (!inserting.text) {
+            allTokens.splice(inserting.tokenI, 1);
+            computeStructure('tower');
+        }
+        updateTarget({inserting: null, insertingMode: null});
+    }
+};
+
+var insertionEvent = function (keyCode) {
+    var inserting = targeting.inserting;
+    if (inserting) {
+        var character = String.fromCharCode(keyCode);
+        if (_.contains([' ', '(', ')'], character)) {
+            var level = inserting.level;
+            if (character === '(') {
+                level += 1;
+            } else if (character === ')') {
+                level = Math.max(1, level - 1);
+            }
+            if (inserting.text) {
+                newInsertingAt(level, inserting.tokenI + 1);
+            } else {
+                inserting.level = level;
+            }
+            computeStructure('tower');
+        } else if (character === ',') {
+            var level = inserting.level;
+            var tokenI = inserting.tokenI;
+            if (!inserting.text) {
+                allTokens.splice(tokenI, 1);
+            } else {
+                tokenI += 1;
+            }
+            var sep = createToken({level: level - 1, separator: true});
+            allTokens.splice(tokenI, 0, sep);
+            newInsertingAt(level, tokenI + 1);
+            computeStructure('tower');
+        } else if (character === '<' || character === '>') {
+            var level = inserting.level;
+            if (character === '<') {
+                level += 1;
+            } else if (character === '>') {
+                level = Math.max(1, level - 1);
+            }
+            inserting.level = level;
+            computeStructure('tower');
+        } else {
+            var text = inserting.text + character;
+            inserting.text = text;
+            textWidth(inserting, {recompute: true});
+        }
+        draw();
+        d3.event.preventDefault();
+    }
+};
+
+var newInsertingAt = function (level, tokenI) {
+    var insert = createToken({level: level, text: ''});
+    allTokens.splice(tokenI, 0, insert);
+    updateTarget({
+        inserting: insert,
+        insertingMode: 'tower',
+        startMouse: mouse,
+    });
+};
+
+var backspaceInserting = function () {
+    var inserting = targeting.inserting;
+    if (!inserting) {
+        return;
+    }
+
+    var text = inserting.text;
+    if (text) {
+        text = text.slice(0, text.length - 1);
+        inserting.text = text;
+        textWidth(inserting, {recompute: true});
+    } else {
+        allTokens.splice(inserting.tokenI, 1);
+        inserting = allTokens[inserting.tokenI - 1];
+        var insertingMode = inserting ? 'tower' : null;
+        updateTarget({
+            inserting: inserting,
+            insertingMode: insertingMode,
+            startMouse: mouse,
+        });
+        computeStructure('tower');
+    }
+    draw();
 };
 
 var qwertyKeyMap = {
