@@ -13,7 +13,6 @@ var init = function () {
     hovering = null;
     hoveringMode = null;
     mouse = [0, 0];
-    keyInit();
     targetingInit();
 };
 

@@ -13,31 +13,12 @@ var targetingInit = function () {
         hoveringMode: null,
         insertingMode: null,
         lastTarget: null,
-        lastHovering: null,
         inCamera: false,
     };
 };
 
 var updateTarget = function (update) {
-    if (_.has(update, 'inCamera')) {
-        targeting.inCamera = update.inCamera;
-    }
-    if (_.has(update, 'startMouse')) {
-        targeting.startMouse = update.startMouse;
-    }
-    if (_.has(update, 'hovering')) {
-        targeting.lastHovering = targeting.hovering;
-        targeting.hovering = update.hovering;
-        targeting.hoveringMode = update.hoveringMode;
-    }
-    if (_.has(update, 'moving')) {
-        targeting.moving = update.moving;
-        targeting.movingMode = update.movingMode;
-    }
-    if (_.has(update, 'inserting')) {
-        targeting.inserting = update.inserting;
-        targeting.insertingMode = update.insertingMode;
-    }
+    _.extend(targeting, update);
     var target = targeting.inserting || targeting.moving || targeting.hovering;
     var targetMode = targeting.insertingMode || targeting.movingMode || targeting.hoveringMode;
     var targetKind = (
@@ -62,8 +43,7 @@ var mouseDown = function () {
 var mouseMove = function () {
     mouse = d3.mouse(camera.node());
     dragMoving();
-    maybeStopInserting();
-    updateHovering();
+    updateHovering(maybeStopInserting());
 };
 
 var mouseUp = function () {
@@ -89,10 +69,10 @@ var mouseEnter = function () {
     updateTarget({inCamera: true});
 };
 
-var updateHovering = function () {
+var updateHovering = function (forceUpdated) {
     var under = findUnderMouse() || [null, null];
     var updated = updateTarget({hovering: under[0], hoveringMode: under[1]});
-    if (updated) {
+    if (updated || forceUpdated) {
         draw();
     }
 };

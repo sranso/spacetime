@@ -1,107 +1,31 @@
-var keyAssignments = {
-    startMoving: ['$down', '$:left mouse'],
-    stopMoving: ['$up', '$:left mouse'],
-    'delete': ['$down', 'D'],
-    startInserting: ['$down', 'space'],
-    moving: ['left mouse'],
-    debug: ['$down', 'G'],
-};
-
-var keyboardLayout, keysDown, lastKeysDown;
-
-var keyInit = function () {
-    keyboardLayout = 'dvorak';
-    keyRemap = 'default';
-    keysDown = {'$firing': false, '$key': 'left mouse', '$down': false, '$up': false, '$:left mouse': true};
-    lastKeysDown = keysDown;
-};
-
 var keyForEvent = function () {
-    var key = keyMap[keyboardLayout][d3.event.keyCode];
-    var remapped = keyRemaps[keyRemap][key];
-    return remapped == null ? key : remapped;
+    return keyMap[d3.event.keyCode];
 };
 
 var inputEvent = function (key, eventType) {
-    lastKeysDown = keysDown;
-    var pressed = _.filter(_.pairs(lastKeysDown), function (p) {
-        return p[1] && p[0][0] !== '$';
-    })
-    keysDown = _.object(pressed);
-    keysDown['$' + eventType] = true;
-    if (key) {
-        keysDown['$:' + key] = true;
-        keysDown[key] = eventType === 'down';
+    if ((key === 'backspace' || key === 'tab') && eventType === 'down') {
+        keypressEvent(null, key);
     }
-    keysDown['$firing'] = true;
 
-    if (key === 'backspace' && eventType === 'down') {
-        backspaceInserting();
-        d3.event.preventDefault();
+    if (targeting.inserting) {
+        return;
     }
-    if (!targeting.inserting) {
-        if (active('startMoving')) {
+    if (key === 'left mouse' || key === '6') {
+        if (eventType === 'down') {
             startMoving();
-        } else if (active('stopMoving')) {
-            stopMoving();
-        } else if (active('delete')) {
-            deleteTarget();
-        } else if (active('startInserting')) {
-            startInserting();
             d3.event.preventDefault();
-        } else if (active('debug')) {
-            debugger;
+        } else {
+            stopMoving();
         }
     }
-
-    keysDown['$firing'] = false;
 };
 
-var active = function (action, keys) {
-    keys = keys || keysDown;
-    var combo = keyAssignments[action];
-    return _.every(combo, function (key) { return keys[key]; });
-};
-
-var triggered = function (action) {
-    return active(action, keysDown) && !active(action, lastKeysDown);
-};
-
-var toggled = function (action) {
-    return active(action, keysDown) != active(action, lastKeysDown);
-};
-
-var deleteTarget = function () {
-    var target = targeting.target;
-    if (!target) {
-        return;
-    }
-    if (targeting.mode === 'tower') {
-        allTokens.splice(target.tokenI, 1);
+var removeEmptyText = function (inserting) {
+    if (inserting.token && !inserting.separator && !inserting.text) {
+        allTokens.splice(inserting.tokenI, 1);
         computeStructure('tower');
-    } else if (target.parent) {
-        target.parent.children.splice(target.treeI, 1);
-        computeStructure('symbol');
+        return true;
     }
-    if (target === targeting.hovering) {
-        updateTarget({hovering: null, hoveringMode: null});
-    }
-    if (target === targeting.moving) {
-        updateTarget({moving: null, movingMode: null});
-    }
-    draw();
-    updateHovering();
-};
-
-var startInserting = function () {
-    var target = targeting.target;
-    if (!target) {
-        return;
-    }
-    var end = target.bar ? target.end : target;
-    newInsertingAt(target.level, end.tokenI + 1);
-    computeStructure('tower');
-    draw();
 };
 
 var maybeStopInserting = function () {
@@ -111,99 +35,171 @@ var maybeStopInserting = function () {
     }
     var info = movingInfo();
     var diff = info.absDiff[0] + info.absDiff[1];
-    if (diff > 5) {
-        if (!inserting.text) {
-            allTokens.splice(inserting.tokenI, 1);
-            computeStructure('tower');
-        }
+    if (diff >= 3) {
+        removeEmptyText(inserting);
         updateTarget({inserting: null, insertingMode: null});
+        return true;
     }
 };
 
-var insertionEvent = function (keyCode) {
+var keypressEvent = function (keyCode, key) {
+    key = key || String.fromCharCode(keyCode);
+    d3.event.preventDefault();
     var inserting = targeting.inserting;
-    if (inserting) {
-        var character = String.fromCharCode(keyCode);
-        if (_.contains([' ', '(', ')'], character)) {
-            var level = inserting.level;
-            if (character === '(') {
-                level += 1;
-            } else if (character === ')') {
-                level = Math.max(1, level - 1);
-            }
-            if (inserting.text) {
-                newInsertingAt(level, inserting.tokenI + 1);
-            } else {
-                inserting.level = level;
-            }
-            computeStructure('tower');
-        } else if (character === ',') {
-            var level = inserting.level;
-            var tokenI = inserting.tokenI;
-            if (!inserting.text) {
-                allTokens.splice(tokenI, 1);
-            } else {
-                tokenI += 1;
-            }
-            var sep = createToken({level: level - 1, separator: true});
-            allTokens.splice(tokenI, 0, sep);
-            newInsertingAt(level, tokenI + 1);
-            computeStructure('tower');
-        } else if (character === '<' || character === '>') {
-            var level = inserting.level;
-            if (character === '<') {
-                level += 1;
-            } else if (character === '>') {
-                level = Math.max(1, level - 1);
-            }
-            inserting.level = level;
-            computeStructure('tower');
-        } else {
-            var text = inserting.text + character;
-            inserting.text = text;
-            textWidth(inserting, {recompute: true});
-        }
-        draw();
-        d3.event.preventDefault();
-    }
-};
-
-var newInsertingAt = function (level, tokenI) {
-    var insert = createToken({level: level, text: ''});
-    allTokens.splice(tokenI, 0, insert);
-    updateTarget({
-        inserting: insert,
-        insertingMode: 'tower',
-        startMouse: mouse,
-    });
-};
-
-var backspaceInserting = function () {
-    var inserting = targeting.inserting;
+    var firstInserting = false;
     if (!inserting) {
-        return;
-    }
-
-    var text = inserting.text;
-    if (text) {
-        text = text.slice(0, text.length - 1);
-        inserting.text = text;
-        textWidth(inserting, {recompute: true});
-    } else {
-        allTokens.splice(inserting.tokenI, 1);
-        inserting = allTokens[inserting.tokenI - 1];
-        var insertingMode = inserting ? 'tower' : null;
+        firstInserting = true;
+        var target = targeting.target;
+        if (!target) {
+            return;
+        }
+        inserting = target;
         updateTarget({
             inserting: inserting,
-            insertingMode: insertingMode,
+            insertingMode: targeting.mode,
             startMouse: mouse,
         });
+    }
+    var siblings = inserting.parent && inserting.parent.children;
+
+    if (key === '3') { // delete
+        if (inserting === targeting.hovering) {
+            updateTarget({hovering: null, hoveringMode: null});
+        }
+        if (inserting === targeting.moving) {
+            updateTarget({moving: null, movingMode: null});
+        }
+        if (targeting.mode === 'tower') {
+            allTokens.splice(inserting.tokenI, 1);
+            inserting = allTokens[inserting.tokenI];
+            updateTarget({inserting: inserting});
+            computeStructure('tower');
+        } else if (siblings) {
+            siblings.splice(inserting.treeI, 1);
+            inserting = siblings[inserting.treeI];
+            updateTarget({inserting: inserting});
+            computeStructure('symbol');
+        }
+
+    } else if (_.contains([' ', '(', ')'], key)) {
+        if (targeting.mode === 'symbol') {
+            if (inserting.token) {
+                updateTarget({insertingMode: 'tower'});
+            } else {
+                return; // TODO
+            }
+        }
+        var level = inserting.level;
+        if (inserting.bar || inserting.text) {
+            var insert = createToken({level: level, text: ''});
+            if (targeting.mode === 'tower') {
+                allTokens.splice(inserting.tokenI + 1, 0, insert);
+            } else {
+                siblings.splice(inserting.treeI + 1, 0, insert);
+            }
+            computeStructure(targeting.mode);
+            updateTarget({inserting: insert, insertingMode: 'tower'});
+            inserting = insert;
+        }
+        if (key === '(') {
+            level += 1;
+        } else if (key === ')') {
+            level = Math.max(1, level - 1);
+        }
+        inserting.level = level;
         computeStructure('tower');
+
+    } else if (key === 'tab') {
+        if (inserting.token) {
+            updateTarget({insertingMode: 'tower'});
+        } else {
+            return; // TODO
+        }
+        var level = inserting.level;
+        var tokenI = inserting.tokenI;
+        if (!inserting.text) {
+            allTokens.splice(tokenI, 1);
+        } else {
+            tokenI += 1;
+        }
+        var sep = createToken({level: level - 1, separator: true});
+        allTokens.splice(tokenI, 0, sep);
+        newInsertingAt(level, tokenI + 1);
+        computeStructure('tower');
+
+    } else if (_.contains(['<', '>', '1', '4'], key)) {
+        if (targeting.mode === 'symbol') {
+            if (inserting.token) {
+                updateTarget({insertingMode: 'tower'});
+            } else {
+                return; // TODO
+            }
+        }
+        var level = inserting.level;
+        if (key === '<' || key === '1') {
+            level += 1;
+        } else if (key === '>' || key === '4') {
+            level = Math.max(1, level - 1);
+        }
+        inserting.level = level;
+        computeStructure('tower');
+
+    } else if (key === '`' || key === '5') {
+        var dir = key === '`' ? -1 : +1;
+        var insert;
+        if (removeEmptyText(inserting)) {
+            dir = 0;
+        }
+        if (targeting.mode === 'tower') {
+            insert = allTokens[inserting.tokenI + dir];
+            if (!insert) {
+                // TODO
+            }
+        } else {
+            insert = siblings[inserting.treeI + dir];
+            if (!insert) {
+                // TODO
+            }
+        }
+        updateTarget({inserting: insert});
+
+    } else if (key === 'backspace') {
+        if (targeting.mode === 'symbol') {
+            if (inserting.token) {
+                updateTarget({insertingMode: 'tower'});
+            } else {
+                return; // TODO
+            }
+        }
+        var text = inserting.text;
+        if (text) {
+            text = text.slice(0, text.length - 1);
+            inserting.text = text;
+            textWidth(inserting, {recompute: true});
+        } else {
+            allTokens.splice(inserting.tokenI, 1);
+            inserting = allTokens[inserting.tokenI - 1];
+            var insertingMode = inserting ? 'tower' : null;
+            updateTarget({
+                inserting: inserting,
+                insertingMode: insertingMode,
+                startMouse: mouse,
+            });
+            computeStructure('tower');
+        }
+
+    } else if (key === '2') {
+        // Do nothing, but this enables keeping the text there
+    } else {
+        var text = firstInserting ? '' : inserting.text;
+        text += key;
+        inserting.text = text;
+        textWidth(inserting, {recompute: true});
     }
     draw();
 };
 
-var qwertyKeyMap = {
+var keyMap = {
       8: 'backspace',
       9: 'tab',
      13: 'enter',
@@ -303,55 +299,4 @@ var qwertyKeyMap = {
     220: '\\',
     221: ']',
     222: "'",
-};
-
-var dvorakKeyMap = _.extend({}, qwertyKeyMap, {
-     65: 'A',
-     88: 'B',
-     74: 'C',
-     69: 'D',
-    190: 'E',
-     85: 'F',
-     73: 'G',
-     68: 'H',
-     67: 'I',
-     72: 'J',
-     84: 'K',
-     78: 'L',
-     77: 'M',
-     66: 'N',
-     82: 'O',
-     76: 'P',
-    222: 'Q',
-     80: 'R',
-     79: 'S',
-     89: 'T',
-     71: 'U',
-     75: 'V',
-    188: 'W',
-     81: 'X',
-     70: 'Y',
-    186: 'Z',
-     83: ';',
-    221: '=',
-     87: ',',
-    219: '-',
-     86: '.',
-     90: '/',
-    192: '`',
-    191: '[',
-    220: '\\',
-    187: ']',
-    189: "'",
-});
-
-var keyRemaps = {
-    'default': {
-        'V': 'left mouse',
-    },
-};
-
-var keyMap = {
-    qwerty: qwertyKeyMap,
-    dvorak: dvorakKeyMap,
 };

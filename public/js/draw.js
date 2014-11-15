@@ -27,7 +27,7 @@ var drawSetup = function () {
         .on('mouseup', mouseUp)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
-        .on('keypress', function () { insertionEvent(d3.event.keyCode) }) ;
+        .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
 
     var background = camera.append('rect')
         .classed('background', true)
