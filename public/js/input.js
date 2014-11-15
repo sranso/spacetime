@@ -100,6 +100,12 @@ var keypressEvent = function (keyCode, key) {
             computeStructure(targeting.mode);
             updateTarget({inserting: insert, insertingMode: 'tower'});
             inserting = insert;
+        } else if (key === '(') {
+            var before = allTokens[inserting.tokenI - 1];
+            if (before.level > inserting.level) {
+                var insert = createToken({level: level, separator: true});
+                allTokens.splice(inserting.tokenI, 0, insert);
+            }
         }
         if (key === '(') {
             level += 1;
@@ -124,7 +130,10 @@ var keypressEvent = function (keyCode, key) {
         }
         var sep = createToken({level: level - 1, separator: true});
         allTokens.splice(tokenI, 0, sep);
-        newInsertingAt(level, tokenI + 1);
+        tokenI += 1;
+        var insert = createToken({level: level, text: ''});
+        allTokens.splice(tokenI, 0, insert);
+        updateTarget({inserting: insert});
         computeStructure('tower');
 
     } else if (_.contains(['<', '>', '1', '4'], key)) {
