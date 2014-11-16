@@ -46,8 +46,7 @@ var maybeStopInserting = function () {
     var diff = info.absDiff[0] + info.absDiff[1];
     if (diff >= 3) {
         removeEmptyText(inserting);
-        updateState({inserting: null, insertingMode: null});
-        return true;
+        updateState({inserting: null});
     }
 };
 

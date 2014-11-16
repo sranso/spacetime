@@ -8,9 +8,9 @@ var stateInit = function () {
         hovering: null,
 
         targetMode: null,
+        insertingMode: null,
         movingMode: null,
         hoveringMode: null,
-        insertingMode: null,
 
         doStructure: false,
         doPositions: false,
@@ -27,6 +27,9 @@ var stateInit = function () {
 
 var updateState = function (update) {
     _.extend(state, update);
+    if (!state.inserting) { state.insertingMode = null }
+    if (!state.moving) { state.movingMode = null }
+    if (!state.hovering) { state.hoveringMode = null }
     state.target = state.inserting || state.moving || state.hovering;
     state.targetMode = state.insertingMode || state.movingMode || state.hoveringMode;
     state.targetKind = (
@@ -113,11 +116,7 @@ var mouseEnter = doStuffAroundStateChanges(function () {
 });
 
 var mouseLeave = doStuffAroundStateChanges(function () {
-    updateState({
-        hovering: null,
-        hoveringMode: null,
-        inCamera: false,
-    });
+    updateState({hovering: null, inCamera: false});
 });
 
 var mouseScroll = function () {
@@ -155,7 +154,7 @@ var stopMoving = function (s) {
     if (!state.moving) {
         return;
     }
-    updateState({moving: null, movingMode: null});
+    updateState({moving: null});
     computePositions(lastState.moving);
 };
 
