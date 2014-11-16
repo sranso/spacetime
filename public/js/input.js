@@ -50,6 +50,8 @@ var maybeStopInserting = function () {
     }
 };
 
+var numberKeys = ['-','0','1','2','3','4','5','6','7','8','9','.'];
+
 var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     key = key || String.fromCharCode(keyCode);
     d3.event.preventDefault();
@@ -68,7 +70,33 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     }
     var siblings = ins.parent && ins.parent.children;
 
-    if (key === '3') { // delete
+    if (state.insertingNumber) {
+        if (!_.contains(numberKeys, key)) {
+            updateState({insertingNumber: false});
+        }
+    }
+
+    if (state.insertingNumber) {
+        var text = ins.text;
+        if (text === '0' && key !== '.') {
+            text = key;
+        } else {
+            text += key;
+        }
+        ins.text = text;
+        textWidth(ins, {recompute: true});
+        updateState({doPositions: true});
+
+    } else if (key === '#') {
+        if (ins.bar) {
+            return;
+        }
+        var num = (+ins.text + 1) || 0;
+        ins.text = '' + num;
+        textWidth(ins, {recompute: true});
+        updateState({doPositions: true, insertingNumber: true});
+
+    } else if (key === '3') { // delete
         if (ins === state.hovering) {
             updateState({hovering: null, hoveringMode: null});
         }
@@ -143,7 +171,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         allTokens.splice(tokenI, 0, insert);
         updateState({inserting: insert, doStructure: 'tower'});
 
-    } else if (_.contains(['<', '>', '1', '4'], key)) {
+    } else if (_.contains(['[', ']', '1', '4'], key)) {
         if (state.targetMode === 'symbol') {
             if (ins.token) {
                 updateState({insertingMode: 'tower'});
@@ -152,9 +180,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             }
         }
         var level = ins.level;
-        if (key === '<' || key === '1') {
+        if (key === '[' || key === '1') {
             level += 1;
-        } else if (key === '>' || key === '4') {
+        } else if (key === ']' || key === '4') {
             level = Math.max(1, level - 1);
         }
         ins.level = level;
@@ -215,6 +243,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     } else if (key === '6') {
         // do nothing
     } else {
+        if (ins.bar) {
+            return;
+        }
         var text = lastState.inserting ? ins.text : '';
         text += key;
         ins.text = text;

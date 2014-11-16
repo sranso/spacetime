@@ -21,13 +21,17 @@ var stateInit = function () {
         targetKind: null,
         startMouse: null,
         inCamera: false,
+        insertingNumber: false,
     };
     lastState = state;
 };
 
 var updateState = function (update) {
     _.extend(state, update);
-    if (!state.inserting) { state.insertingMode = null }
+    if (!state.inserting) {
+        state.insertingMode = null;
+        state.insertingNumber = null;
+    }
     if (!state.moving) { state.movingMode = null }
     if (!state.hovering) { state.hoveringMode = null }
     state.target = state.inserting || state.moving || state.hovering;
