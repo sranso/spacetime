@@ -216,6 +216,12 @@ var _findFromCoordinates = function (node, x, y) {
     return ifNotFound;
 };
 
+var findFromSiblings = function (siblings, x) {
+    return _.find(siblings, function (sibling) {
+        return x < sibling.x + sibling.w;
+    }) || siblings[siblings.length - 1];
+};
+
 var cloneTree = function (node) {
     var cNode = _.clone(node);
     cNode.id = symbolId();

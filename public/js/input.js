@@ -5,16 +5,21 @@ var keyForEvent = function () {
 var inputEvent = function (key, eventType) {
     if ((key === 'backspace' || key === 'tab') && eventType === 'down') {
         keypressEvent(null, key);
-    }
-
-    if (key === '\\') {
+        return;
+    } else if (key === '\\') {
         debugger;
-    }
-    if (state.inserting) {
         return;
     }
-    if (key === 'left mouse' || key === '6') {
-        immediateDoStuffAfterStateChanges(function () {
+
+    immediateDoStuffAfterStateChanges(function () {
+        if (key === 'shift') {
+            if (eventType === 'down') {
+                startSelection();
+            } else {
+                stopSelection();
+            }
+
+        } else if (key === 'left mouse' || key === '6') {
             if (eventType === 'down') {
                 startMoving();
                 d3.event.preventDefault();
@@ -25,8 +30,8 @@ var inputEvent = function (key, eventType) {
                     updateState({doHovering: true});
                 }
             }
-        });
-    }
+        }
+    });
 };
 
 var removeEmptyText = function (inserting) {
@@ -34,19 +39,6 @@ var removeEmptyText = function (inserting) {
         allTokens.splice(inserting.tokenI, 1);
         computeStructure('tower');
         return true;
-    }
-};
-
-var maybeStopInserting = function () {
-    var inserting = state.inserting;
-    if (!inserting) {
-        return;
-    }
-    var info = movingInfo();
-    var diff = info.absDiff[0] + info.absDiff[1];
-    if (diff >= 3) {
-        removeEmptyText(inserting);
-        updateState({inserting: null});
     }
 };
 
@@ -66,6 +58,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             inserting: ins,
             insertingMode: state.targetMode,
             startMouse: mouse,
+            firstInserting: true,
         });
     }
     var siblings = ins.parent && ins.parent.children;
@@ -88,7 +81,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         updateState({doPositions: true});
 
     } else if (key === '#') {
-        if (ins.bar) {
+        if (ins.bar || ins.separator) {
             return;
         }
         var num = (+ins.text + 1) || 0;
@@ -97,16 +90,21 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         updateState({doPositions: true, insertingNumber: true});
 
     } else if (key === '3') { // delete
-        if (ins === state.hovering) {
-            updateState({hovering: null, hoveringMode: null});
+        if (_.contains(state.targets, state.hovering)) {
+            updateState({hovering: null});
         }
-        if (ins === state.moving) {
-            updateState({moving: null, movingMode: null});
+        if (_.contains(state.targets, state.moving)) {
+            updateState({moving: null});
         }
         if (state.targetMode === 'tower') {
-            allTokens.splice(ins.tokenI, 1);
-            ins = allTokens[ins.tokenI];
-            updateState({inserting: ins, doStructure: 'tower'});
+            var tokenI = state.targets[0].tokenI;
+            allTokens.splice(tokenI, state.targets.length);
+            ins = allTokens[tokenI];
+            updateState({
+                inserting: ins,
+                doStructure: 'tower',
+                selection: null,
+            });
         } else if (siblings) {
             siblings.splice(ins.treeI, 1);
             ins = siblings[ins.treeI];
@@ -205,7 +203,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 // TODO
             }
         }
-        updateState({inserting: insert});
+        updateState({inserting: insert, firstInserting: true});
 
     } else if (key === 'backspace') {
         if (state.targetMode === 'symbol') {
@@ -239,18 +237,18 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             return; // TODO
         }
         siblings.splice(ins.treeI + 1, 0, cloned);
-        updateState({inserting: cloned, doStructure: state.targetMode});
+        updateState({inserting: cloned, doStructure: 'symbol'});
     } else if (key === '6') {
         // do nothing
     } else {
-        if (ins.bar) {
+        if (ins.bar || ins.separator) {
             return;
         }
-        var text = lastState.inserting ? ins.text : '';
+        var text = state.firstInserting ? '' : ins.text;
         text += key;
         ins.text = text;
         textWidth(ins, {recompute: true});
-        updateState({doPositions: true});
+        updateState({doPositions: true, firstInserting: false});
     }
 });
 

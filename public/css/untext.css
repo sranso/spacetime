@@ -62,6 +62,15 @@ a {
   fill: #ddd;
 }
 
+.tower-mode .token.targets rect.tower {
+  fill: #D3FD9E;
+}
+
+.symbol-mode .symbol.targets rect.background {
+  fill: #A0FA2D;
+  opacity: 0.4;
+}
+
 .tower-mode .token.target rect.tower {
   fill: #D3FD9E;
 }

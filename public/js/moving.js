@@ -3,14 +3,19 @@ var minMoveX = 15;
 var stateInit = function () {
     state = {
         target: null,
+        targets: [],
         inserting: null,
         moving: null,
         hovering: null,
+        selection: null,
+        selectionBegin: null,
+        selectionEnd: null,
 
         targetMode: null,
         insertingMode: null,
         movingMode: null,
         hoveringMode: null,
+        selectionMode: null,
 
         doStructure: false,
         doPositions: false,
@@ -19,9 +24,10 @@ var stateInit = function () {
         doDataDraw: false,
 
         targetKind: null,
-        startMouse: null,
+        startMouse: [0, 0],
         inCamera: false,
         insertingNumber: false,
+        firstInserting: false,
     };
     lastState = state;
 };
@@ -34,11 +40,28 @@ var updateState = function (update) {
     }
     if (!state.moving) { state.movingMode = null }
     if (!state.hovering) { state.hoveringMode = null }
-    state.target = state.inserting || state.moving || state.hovering;
-    state.targetMode = state.insertingMode || state.movingMode || state.hoveringMode;
+    if (!state.selection) {
+        state.selectionBegin = null;
+        state.selectionEnd = null;
+        state.selectionMode = null;
+    }
+    state.target = (
+        state.moving ||
+        state.selectionEnd ||
+        state.inserting ||
+        state.hovering
+    );
+    state.targets = state.selection || _.compact([state.target]);
+    state.targetMode = (
+        state.movingMode ||
+        state.selectionMode ||
+        state.insertingMode ||
+        state.hoveringMode
+    );
     state.targetKind = (
-        state.inserting && 'inserting' ||
         state.moving && 'moving' ||
+        state.selectionBegin && 'selection' ||
+        state.inserting && 'inserting' ||
         state.hovering && 'hovering'
     );
 };
@@ -59,11 +82,9 @@ var doStuffAfterStateChanges = function () {
         state.targetKind !== lastState.targetKind
     );
     if (updatedTarget) {
-        if (state.target) {
-            computePositions(state.target);
-        }
-        if (lastState.target && !state.doDataDraw) {
-            computePositions(lastState.target);
+        _.each(state.targets, computePositions);
+        if (!state.doDataDraw) {
+            _.each(lastState.targets, computePositions);
         }
     };
     if (state.doDraw || state.doDataDraw) {
@@ -75,6 +96,7 @@ var doStuffAfterStateChanges = function () {
 var immediateDoStuffAfterStateChanges = function (callback) {
     lastState = state;
     state = _.clone(state);
+    state.selection = state.selection ? state.selection.slice() : null;
     callback();
     doStuffAfterStateChanges();
 };
@@ -110,7 +132,8 @@ var mouseUp = function () {
 var mouseMove = doStuffAroundStateChanges(function () {
     mouse = d3.mouse(camera.node());
     dragMoving();
-    maybeStopInserting();
+    changeSelection();
+    maybeResetAfterMoving();
     updateState({doHovering: true});
 });
 
@@ -130,6 +153,59 @@ var mouseScroll = function () {
     draw(nullSelection());
 };
 
+var startSelection = function () {
+    var target = state.target;
+    if (!target) {
+        return;
+    }
+    if (target.bar) {
+        return;  // TODO
+    }
+    updateState({
+        selection: [target],
+        selectionBegin: target,
+        selectionEnd: target,
+        selectionMode: 'tower',
+    });
+};
+
+var changeSelection = function () {
+    var begin = state.selectionBegin;
+    if (!begin) {
+        return;
+    }
+    var end = findFromSiblings(allTokens, mouse[0]);
+    var indices = _.sortBy([begin.tokenI, end.tokenI]);
+    var selection = allTokens.slice(indices[0], indices[1] + 1);
+    updateState({
+        selection: selection,
+        selectionEnd: end,
+    });
+};
+
+var stopSelection = function () {
+    updateState({
+        selectionBegin: null,
+        startMouse: mouse,
+    });
+};
+
+
+var maybeResetAfterMoving = function () {
+    var info = movingInfo();
+    var diff = info.absDiff[0] + info.absDiff[1];
+    if (diff >= 3) {
+        if (state.inserting) {
+            removeEmptyText(state.inserting);
+            updateState({inserting: null});
+        }
+        if (state.selection) {
+            if (!state.selectionBegin && !state.moving) {
+                updateState({selection: null});
+            }
+        }
+    }
+};
 
 var movingInfo = function () {
     var startMouse = state.startMouse;
@@ -138,7 +214,6 @@ var movingInfo = function () {
         diff: diff,
         direction: [diff[0] >= 0 ? 1 : -1, diff[1] >= 0 ? 1 : -1],
         absDiff: [Math.abs(diff[0]), Math.abs(diff[1])],
-        mode: state.movingMode,
     };
 };
 
@@ -146,80 +221,87 @@ var startMoving = function () {
     if (state.moving) {
         return;
     }
-    var moving = state.hovering;
+    var moving = state.target;
     updateState({
         moving: moving,
-        movingMode: state.hoveringMode,
+        movingMode: state.targetMode,
         startMouse: mouse,
     });
 };
 
 var stopMoving = function (s) {
-    if (!state.moving) {
-        return;
-    }
     updateState({moving: null});
-    computePositions(lastState.moving);
 };
 
 var dragMoving = function () {
-    var moving = state.moving;
-    if (!moving) {
+    if (!state.moving) {
         return;
     }
 
     var info = movingInfo();
     var moved;
 
-    if (info.mode === 'tower') {
-        moved = dragTower(moving, info);
+    if (state.targetMode === 'tower') {
+        moved = dragTower(info);
     } else {
-        moved = dragSymbol(moving, info);
+        moved = dragSymbol(info);
     }
 
     if (moved) {
-        updateState({doStructure: info.mode});
+        updateState({doStructure: state.targetMode});
     } else {
-        computePositions(moving);
+        _.each(state.targets, computePositions);
         draw(movingSelection());
     }
 };
 
-var positionAfterMove = function (moving, mode) {
-    var currentPos = {x: moving.x, y: moving.y};
-    computeStructure(mode);
+var positionAfterMove = function () {
+    var currentPos = {x: state.moving.x, y: state.moving.y};
+    computeStructure(state.targetMode);
     computePositions(allSymbolTree);
     state.startMouse = [
-        state.startMouse[0] + moving.x - currentPos.x,
-        state.startMouse[1] + moving.y - currentPos.y,
+        state.startMouse[0] + state.moving.x - currentPos.x,
+        state.startMouse[1] + state.moving.y - currentPos.y,
     ];
 };
 
-var dragTower = function (moving, info) {
-    var levels = dragLevel(moving, info);
-    moving.level = levels[0];
+var dragTower = function (info) {
+    var levelChange = calculateLevelChange(info);
+    _.each(state.targets, function (target) {
+        target.level = target.level + levelChange;
+        if (target.level <= 0) {
+            target.level = 1;
+        }
+    });
 
-    var swapped = maybeSwap(moving, allTokens, 'tokenI', info);
-    var moved = (levels[0] !== levels[1]) || swapped;
+    var swapped = maybeSwap(allTokens, 'tokenI', info);
+    var moved = levelChange || swapped;
     if (moved) {
-        positionAfterMove(moving, info.mode);
+        positionAfterMove();
     }
     return moved;
 };
 
-var maybeSwap = function (moving, siblings, index, info) {
+var maybeSwap = function (siblings, index, info) {
     var swapped = false;
-    var movingI = moving[index];
     var diffX = info.absDiff[0];
+    var dir = info.direction[0];
+    var len = state.targets.length;
+    var movingI = state.targets[dir < 0 ? 0 : len - 1][index];
     while (true) {
-        var neighborI = movingI + info.direction[0];
-        var neighborSymbol = siblings[neighborI];
-        if (neighborSymbol && diffX >= neighborSymbol.w / 2 && diffX > minMoveX) {
+        var neighborI = movingI + dir;
+        var neighbor = siblings[neighborI];
+        if (neighbor && diffX >= neighbor.w / 2 && diffX > minMoveX) {
             swapped = true;
-            siblings[movingI] = neighborSymbol;
-            siblings[neighborSymbol[index]] = moving;
+            var args;
+            if (dir < 0) {
+                args = [neighborI, len + 1].concat(state.targets, neighbor);
+            } else {
+                args = [neighborI - len, len + 1].concat(neighbor, state.targets);
+            }
+            siblings.splice.apply(siblings, args);
             movingI = neighborI;
-            diffX -= neighborSymbol.w;
+            diffX -= neighbor.w;
         } else {
             break;
         }
@@ -227,10 +309,10 @@ var maybeSwap = function (moving, siblings, index, info) {
     return swapped;
 }
 
-var dragSymbol = function (moving, info) {
-    var levels = dragLevel(moving, info);
+var dragSymbol = function (info) {
+    var moving = state.moving;
+    var levelChange = calculateLevelChange(info);
 
-    var levelChange = levels[0] - levels[1];
     if (levelChange <= -1) {
         moving.parent.children.splice(moving.treeI, 1);
         var n = new Array(-levelChange);
@@ -240,7 +322,7 @@ var dragSymbol = function (moving, info) {
         var after = newSiblings.slice(insertBefore.treeI);
         newSiblings = before.concat([moving]).concat(after);
         insertBefore.parent.children = newSiblings;
-        positionAfterMove(moving, info.mode);
+        positionAfterMove();
     } else if (levelChange >= 1) {
         var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
@@ -257,25 +339,19 @@ var dragSymbol = function (moving, info) {
             } else {
                 descendNeighbor.children.push(moving);
             }
-            positionAfterMove(moving, info.mode);
+            positionAfterMove();
         } else {
             levelChange = 0;
         }
     }
 
-    var swapped = maybeSwap(moving, moving.parent.children, 'treeI', movingInfo());
+    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
     if (swapped) {
-        positionAfterMove(moving, info.mode);
+        positionAfterMove();
     }
     return levelChange !== 0 || swapped;
 };
 
-var dragLevel = function (moving, info) {
-    var previousLevel = moving.level;
-    var levelChange = Math.round(info.diff[1] / levelHeight);
-    var newLevel = previousLevel + levelChange;
-    if (newLevel <= 0) {
-        newLevel = 1;
-    }
-    return [newLevel, previousLevel];
+var calculateLevelChange = function (info) {
+    return Math.round(info.diff[1] / levelHeight);
 };

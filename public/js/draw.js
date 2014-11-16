@@ -63,7 +63,6 @@ var selection = function (symbolEls, dataSelection) {
         tokenEnterEls: tokenEnterEls,
         symbolExitEls: symbolExitEls,
     };
-    _.extend(sel, state);
     return sel;
 };
 
@@ -96,7 +95,7 @@ var _computePositions = function (node) {
     pos.y = abovePos.y + levelHeight;
     pos.h = (node.depth + 1) * levelHeight;
 
-    if (node === state.moving) {
+    if (state.targetKind === 'moving' && _.contains(state.targets, node)) {
         var info = movingInfo();
         pos.offsetX = info.direction[0] * Math.min(info.absDiff[0] / 3, 2);
         pos.offsetY = info.direction[1] * Math.min(info.absDiff[1] / 3, 2);
@@ -192,8 +191,8 @@ var draw = function (sel) {
         .style('height', allPositions.bodyHeight + 'px') ;
 
     camera
-        .classed('tower-mode', sel.targetMode === 'tower')
-        .classed('symbol-mode', sel.targetMode === 'symbol')
+        .classed('tower-mode', state.targetMode === 'tower')
+        .classed('symbol-mode', state.targetMode === 'symbol')
         .attr('transform', function () {
             return 'translate(' + cameraX + ',0)';
         }) ;
@@ -234,14 +233,14 @@ var draw = function (sel) {
                 'symbol', 'token', 'bar',
                 'separator', 'empty', 'movingTree',
             ], function (c) { return s[c] });
-            if (s === sel.target) {
+            if (_.contains(state.targets, s)) {
+                classes.push('targets');
+            }
+            if (s === state.target) {
                 classes.push('target');
             }
             if (_.contains(sel.targetSiblings, s)) {
                 classes.push('target-sibling');
-            }
-            if (s === sel.moving) {
-                classes.push('moving');
             }
             return classes.join(' ');
         })
