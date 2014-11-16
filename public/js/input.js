@@ -69,6 +69,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
     }
 
+    // TODO: a lot of these need to handle a selection.
+    // TODO: also make them all work for symbol mode and bars.
+
     if (state.insertingNumber) {
         var text = ins.text;
         if (text === '0' && key !== '.') {
@@ -78,7 +81,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
         ins.text = text;
         textWidth(ins, {recompute: true});
-        updateState({doPositions: true});
+        updateState({doPositions: true, selection: null});
 
     } else if (key === '#') {
         if (ins.bar || ins.separator) {
@@ -87,7 +90,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         var num = (+ins.text + 1) || 0;
         ins.text = '' + num;
         textWidth(ins, {recompute: true});
-        updateState({doPositions: true, insertingNumber: true});
+        updateState({
+            doPositions: true,
+            insertingNumber: true,
+            selection: null,
+        });
 
     } else if (key === '3') { // delete
         if (_.contains(state.targets, state.hovering)) {
@@ -145,8 +152,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             ins.level = level;
             updateState({doStructure: 'tower'});
         }
+        updateState({selection: null});
 
-    } else if (key === 'tab') {
+    } else if (key === ',') {
         if (ins.token) {
             updateState({insertingMode: 'tower'});
         } else {
@@ -167,9 +175,31 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         tokenI += 1;
         var insert = createToken({level: level, text: ''});
         allTokens.splice(tokenI, 0, insert);
-        updateState({inserting: insert, doStructure: 'tower'});
+        updateState({
+            inserting: insert,
+            doStructure: 'tower',
+            selection: null,
+        });
 
-    } else if (_.contains(['[', ']', '1', '4'], key)) {
+    } else if (key === 'tab') {
+        if (!ins.ref && !ins.bar) {
+            return;
+        }
+        if (ins.ref) {
+            siblings[ins.treeI] = ins.ref;
+            ins = ins.ref;
+        } else if (siblings) {
+            var ref = createToken({ref: ins, text: ins.begin.text});
+            siblings[ins.treeI] = ref;
+            ins = ref;
+        }
+        updateState({
+            inserting: ins,
+            doStructure: 'symbol',
+            selection: null,
+        });
+
+    } else if (key === '[' || key === ']') {
         if (state.targetMode === 'symbol') {
             if (ins.token) {
                 updateState({insertingMode: 'tower'});
@@ -178,13 +208,13 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             }
         }
         var level = ins.level;
-        if (key === '[' || key === '1') {
+        if (key === '[') {
             level += 1;
-        } else if (key === ']' || key === '4') {
+        } else if (key === ']') {
             level = Math.max(1, level - 1);
         }
         ins.level = level;
-        updateState({doStructure: 'tower'});
+        updateState({doStructure: 'tower', selection: null});
 
     } else if (key === '`' || key === '5') {
         var dir = key === '`' ? -1 : +1;
@@ -203,7 +233,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 // TODO
             }
         }
-        updateState({inserting: insert, firstInserting: true});
+        updateState({
+            inserting: insert,
+            firstInserting: true,
+            selection: null,
+        });
 
     } else if (key === 'backspace') {
         if (state.targetMode === 'symbol') {
@@ -218,7 +252,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             text = text.slice(0, text.length - 1);
             ins.text = text;
             textWidth(ins, {recompute: true});
-            updateState({doPositions: true});
+            updateState({doPositions: true, selection: null});
         } else {
             allTokens.splice(ins.tokenI, 1);
             ins = allTokens[ins.tokenI - 1];
@@ -228,16 +262,21 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 insertingMode: insertingMode,
                 startMouse: mouse,
                 doStructure: 'tower',
+                selection: null,
             });
         }
 
-    } else if (key === '2') {
+    } else if (key === '2') {  // clone
         var cloned = cloneTree(ins);
         if (!siblings) {
             return; // TODO
         }
         siblings.splice(ins.treeI + 1, 0, cloned);
-        updateState({inserting: cloned, doStructure: 'symbol'});
+        updateState({
+            inserting: cloned,
+            doStructure: 'symbol',
+            selection: null,
+        });
     } else if (key === '6') {
         // do nothing
     } else {
@@ -248,7 +287,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         text += key;
         ins.text = text;
         textWidth(ins, {recompute: true});
-        updateState({doPositions: true, firstInserting: false});
+        updateState({
+            doPositions: true,
+            firstInserting: false,
+            selection: null,
+        });
     }
 });
 

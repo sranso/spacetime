@@ -312,6 +312,9 @@ var maybeSwap = function (siblings, index, info) {
 var dragSymbol = function (info) {
     var moving = state.moving;
     var levelChange = calculateLevelChange(info);
+    if (moving.level + levelChange <= 0) {
+        levelChange = 1 - moving.level;
+    }
 
     if (levelChange <= -1) {
         moving.parent.children.splice(moving.treeI, 1);

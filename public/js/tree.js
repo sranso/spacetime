@@ -10,6 +10,7 @@ var createBar = function (bar) {
         symbol: true,
         bar: true,
         token: false,
+        ref: null,
         children: [],
         _children: [],
         level: 0,
@@ -25,6 +26,7 @@ var createToken = function (token) {
         symbol: true,
         bar: false,
         token: true,
+        ref: null,
         text: '',
         level: 0,
         depth: 0,
@@ -229,6 +231,11 @@ var cloneTree = function (node) {
         cNode.children = _.map(node.children, function (child) {
             return cloneTree(child);
         });
+    }
+
+    // TODO: make refs the same symbols but appearing in different places.
+    if (cNode.ref) {
+        cNode.ref = cloneTree(cNode.ref);
     }
     return cNode;
 };

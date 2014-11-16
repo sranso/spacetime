@@ -48,6 +48,9 @@ a {
 .token text {
   text-anchor: middle;
 }
+.token.ref text {
+  font-weight: bold;
+}
 
 .token.empty text {
   fill: #aaaaaa;

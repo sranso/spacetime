@@ -177,9 +177,6 @@ var drawSetup = function () {
         .attr('y', -10000)
         .attr('width', 20000)
         .attr('height', 20000) ;
-
-    updateState({doStructure: 'tower'});
-    doStuffAfterStateChanges();
 };
 
 var draw = function (sel) {
@@ -230,7 +227,7 @@ var draw = function (sel) {
 
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
-                'symbol', 'token', 'bar',
+                'symbol', 'token', 'bar', 'ref',
                 'separator', 'empty', 'movingTree',
             ], function (c) { return s[c] });
             if (_.contains(state.targets, s)) {
