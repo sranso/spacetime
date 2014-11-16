@@ -31,7 +31,6 @@ var createToken = function (token) {
         level: 0,
         depth: 0,
         separator: false,
-        empty: false,
     }, token);
 };
 

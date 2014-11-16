@@ -1,8 +1,5 @@
 //window.untext = (function () {
 
-var SEPARATOR = 1;
-var EMPTY = 2;
-
 var untext, allSymbolTree, allTokens, allPositions, symbolIdSequence, state, lastState;
 
 var init = function () {
@@ -27,7 +24,7 @@ var setup = function (example) {
 
 
 var prepJSON = function (node) {
-    var json = _.pick(node, 'id', 'symbol', 'bar', 'token', 'text', 'separator', 'empty');
+    var json = _.pick(node, 'id', 'symbol', 'bar', 'token', 'text', 'separator');
     json.children = _.map(node.children, prepJSON);
     json.ref = node.ref ? prepJSON(node.ref) : null;
     return json;

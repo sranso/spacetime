@@ -114,11 +114,7 @@ var _computePositions = function (node) {
             pos.symbolEndY = levelHeight;
         } else {
             pos.symbolEndY = pos.tokenY;
-            if (node.empty) {
-                pos.w = 30;
-            } else {
-                pos.w = Math.max(textWidth(node) + 15, 25);
-            }
+            pos.w = Math.max(textWidth(node) + 15, 25);
         }
         pos.braceW = pos.w;
     } else {
@@ -212,7 +208,7 @@ var draw = function (sel) {
 
     sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
-        .text(function (t) { return t.empty ? "∅" : t.text }) ;
+        .text(_.property('text')) ;
 
     ////// symbols draw
 
@@ -228,7 +224,7 @@ var draw = function (sel) {
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
                 'symbol', 'token', 'bar', 'ref',
-                'separator', 'empty', 'movingTree',
+                'separator', 'movingTree',
             ], function (c) { return s[c] });
             if (_.contains(state.targets, s)) {
                 classes.push('targets');

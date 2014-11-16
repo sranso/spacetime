@@ -74,14 +74,18 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
 
     if (state.insertingNumber) {
         var text = ins.text;
-        if (text === '0' && key !== '.') {
+        if (state.firstInserting) {
             text = key;
         } else {
             text += key;
         }
         ins.text = text;
         textWidth(ins, {recompute: true});
-        updateState({doPositions: true, selection: null});
+        updateState({
+            doPositions: true,
+            selection: null,
+            firstInserting: false,
+        });
 
     } else if (key === '#') {
         if (ins.bar || ins.separator) {
