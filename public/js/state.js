@@ -69,7 +69,7 @@ var doStuffAfterStateChanges = function () {
         computeStructure(state.doStructure);
     }
     if (state.doPositions) {
-        computePositions(allDisplayTree);
+        computePositions(allViewTree);
     }
     if (state.doHovering) {
         computeHovering();

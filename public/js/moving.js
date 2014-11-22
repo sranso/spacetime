@@ -136,7 +136,7 @@ var dragMoving = function () {
     if (state.targetMode === 'tower') {
         moved = false; // dragTower(info); TODO
     } else {
-        moved = dragSymbol(info);
+        moved = dragTree(info);
     }
 
     if (moved) {
@@ -151,7 +151,7 @@ var afterMove = function (changed) {
     var currentPos = {x: state.moving.x, y: state.moving.y};
     updateSymbols(changed);
     computeStructure(state.targetMode);
-    computePositions(allDisplayTree);
+    computePositions(allViewTree);
     state.startMouse = [
         state.startMouse[0] + state.moving.x - currentPos.x,
         state.startMouse[1] + state.moving.y - currentPos.y,
@@ -202,7 +202,7 @@ var maybeSwap = function (siblings, index, info) {
     return swapped;
 }
 
-var dragSymbol = function (info) {
+var dragTree = function (info) {
     var moving = state.moving;
     var levelChange = calculateLevelChange(info);
     if (moving.level + levelChange <= 0) {

@@ -7,36 +7,34 @@ var svgExtraHeight = 115;
 
 var camera, cameraX, cameraStartX, _offCameraTower;
 
-var allSymbolsFromTree;
 var fullSelection = function (dataSelection) {
-    var symbolEls = camera.selectAll('.symbol');
+    var viewEls = camera.selectAll('.view');
     if (dataSelection) {
-        var symbols = symbolsFromTree();
-        allSymbolsFromTree = symbols;
-        symbolEls = symbolEls.data(symbols, _.property('id'));
+        var views = viewsFromTree();
+        viewEls = viewEls.data(views, _.property('id'));
     }
-    return selection(symbolEls, dataSelection);
+    return selection(viewEls, dataSelection);
 };
 
 var movingSelection = function () {
-    var symbolEls = camera.selectAll('.symbol.movingTree');
-    return selection(symbolEls, false);
+    var viewEls = camera.selectAll('.view.movingTree');
+    return selection(viewEls, false);
 };
 
 var nullSelection = function () {
-    var symbolEls = d3.select();
-    return selection(symbolEls, false);
+    var viewEls = d3.select();
+    return selection(viewEls, false);
 };
 
-var selection = function (symbolEls, dataSelection) {
+var selection = function (viewEls, dataSelection) {
     var targetSiblings,
         towerEls, nonDividerEnterEls,
-        symbolEnterEls, towerEnterEls,
-        symbolExitEls;
+        viewEnterEls, towerEnterEls,
+        viewExitEls;
 
     var target = state.target;
     if (target) {
-        if (target.parent === allDisplayTree) {
+        if (target.parent === allViewTree) {
             targetSiblings = [target];
         } else {
             targetSiblings = target.parent.children;
@@ -46,52 +44,52 @@ var selection = function (symbolEls, dataSelection) {
     }
 
     if (dataSelection) {
-        symbolEnterEls = symbolEls.enter().append('g');
-        symbolExitEls = symbolEls.exit();
-        symbolEls.order();
+        viewEnterEls = viewEls.enter().append('g');
+        viewExitEls = viewEls.exit();
+        viewEls.order();
     } else {
-        symbolEnterEls = symbolExitEls = d3.selectAll([]);
+        viewEnterEls = viewExitEls = d3.selectAll([]);
     }
 
-    towerEls = symbolEls.filter(_.property('tower'));
-    towerEnterEls = symbolEnterEls.filter(_.property('tower'));
-    nonDividerEnterEls = symbolEnterEls.filter(function (s) {
+    towerEls = viewEls.filter(_.property('tower'));
+    towerEnterEls = viewEnterEls.filter(_.property('tower'));
+    nonDividerEnterEls = viewEnterEls.filter(function (s) {
         return !s.divider;
     });
 
     var sel = {
         dataSelection: dataSelection,
         targetSiblings: targetSiblings,
-        symbolEls: symbolEls,
+        viewEls: viewEls,
         towerEls: towerEls,
         nonDividerEnterEls: nonDividerEnterEls,
-        symbolEnterEls: symbolEnterEls,
+        viewEnterEls: viewEnterEls,
         towerEnterEls: towerEnterEls,
-        symbolExitEls: symbolExitEls,
+        viewExitEls: viewExitEls,
     };
     return sel;
 };
 
-var computePositions = function (symbolTree) {
-    _computePositions(symbolTree);
-    if (symbolTree === allDisplayTree) {
+var computePositions = function (viewTree) {
+    _computePositions(viewTree);
+    if (viewTree === allViewTree) {
         computeNonTreePositions();
     }
     updateState({
         doPositions: false,
-        doHovering: symbolTree === allDisplayTree,
+        doHovering: viewTree === allViewTree,
         doDraw: true,
     });
 };
 
 var computeNonTreePositions = function () {
-    topLevelPositions.svgHeight = allDisplayTree.h + svgExtraHeight;
+    topLevelPositions.svgHeight = allViewTree.h + svgExtraHeight;
     var lastTower = allTowers[allTowers.length - 1];
     topLevelPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
 };
 
 var _computePositions = function (node) {
-    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, symbolEndY: 0, towerY: 0, movingTree: false};
+    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, viewEndY: 0, towerY: 0, movingTree: false};
     var leftI = (node.tower ? node.towerI : node.begin.towerI) - 1;
     var leftPos = leftI >= 0 ? allTowers[leftI].position : nullPos;
     var abovePos = node.parent ? node.parent.position : nullPos;
@@ -117,14 +115,14 @@ var _computePositions = function (node) {
         pos.towerY = 35;
         if (node.divider) {
             pos.w = dividerWidth;
-            pos.symbolEndY = levelHeight;
+            pos.viewEndY = levelHeight;
         } else {
-            pos.symbolEndY = pos.towerY;
+            pos.viewEndY = pos.towerY;
             pos.w = Math.max(textWidth(node) + 15, 25);
         }
         pos.braceW = pos.w;
     } else {
-        pos.symbolEndY = levelHeight;
+        pos.viewEndY = levelHeight;
         node.position = pos;
         _.each(node._children, function (child) {
             _computePositions(child);
@@ -191,12 +189,12 @@ var draw = function (sel) {
 
     camera
         .classed('tower-mode', state.targetMode === 'tower')
-        .classed('symbol-mode', state.targetMode === 'symbol')
+        .classed('tree-mode', state.targetMode === 'tree')
         .attr('transform', function () {
             return 'translate(' + cameraX + ',0)';
         }) ;
 
-    sel.symbolExitEls.remove();
+    sel.viewExitEls.remove();
 
     ///// towers (towers) draw
 
@@ -216,22 +214,23 @@ var draw = function (sel) {
         .attr('x', function (t) { return t.w / 2 })
         .text(_.property('text')) ;
 
-    ////// symbols draw
+    ////// views draw
 
     sel.nonDividerEnterEls.append('rect')
         .classed('background', true)
         .attr('x', 0)
         .attr('y', 0) ;
 
-    sel.symbolEls.select('rect.background')
+    sel.viewEls.select('rect.background')
         .attr('width', _.property('w'))
         .attr('height', function (b) { return b.h + 20 }) ;
 
-    sel.symbolEls.attr('class', function (s) {
+    sel.viewEls.attr('class', function (s) {
             var classes = _.filter([
                 'symbol', 'tower', 'branch', 'reference',
                 'divider', 'movingTree',
             ], function (c) { return s[c] });
+            classes.push('view');
             if (_.contains(state.targets, s)) {
                 classes.push('targets');
             }
@@ -250,7 +249,7 @@ var draw = function (sel) {
     sel.nonDividerEnterEls.append('g')
         .call(topBraceEnter) ;
 
-    sel.symbolEls.select('g.top-brace')
+    sel.viewEls.select('g.top-brace')
         .call(topBrace) ;
 
 

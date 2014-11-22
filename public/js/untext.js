@@ -1,6 +1,6 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allDisplayTree, allTowers, topLevelPositions, symbolIdSequence, displayIdSequence, state, lastState;
+var untext, allSymbols, allViewTree, allTowers, topLevelPositions, symbolIdSequence, viewIdSequence, state, lastState;
 
 var init = function () {
     untext = {};
@@ -8,7 +8,7 @@ var init = function () {
     allTowers = [];
     topLevelPositions = {};
     symbolIdSequence = 0;
-    displayIdSequence = 0;
+    viewIdSequence = 0;
     hovering = null;
     hoveringMode = null;
     mouse = [0, 0];
@@ -33,11 +33,11 @@ var setup = function (example) {
     ]});
     allSymbols = [];
     linkSymbols(root);
-    allDisplayTree = root.display;
+    allViewTree = root.view;
     updateState({
-        inserting: allDisplayTree.children[0],
-        insertingMode: 'symbol',
-        doStructure: 'symbol',
+        inserting: allViewTree.children[0],
+        insertingMode: 'tree',
+        doStructure: 'tree',
     });
 
     drawSetup();
@@ -48,12 +48,12 @@ var setup = function (example) {
 };
 
 var linkSymbols = function (node) {
-    node.display = createDisplay(node);
-    node.display.children = _.map(node.children, function (child) {
+    node.view = createView(node);
+    node.view.children = _.map(node.children, function (child) {
         child.parents = [node];
         linkSymbols(child);
-        child.display.parent = node.display;
-        return child.display;
+        child.view.parent = node.view;
+        return child.view;
     });
     allSymbols.push(node);
 };
@@ -66,7 +66,7 @@ var prepJSON = function (node) {
 };
 
 var dumpJSON = function () {
-    return JSON.stringify(prepJSON(allDisplayTree));
+    return JSON.stringify(prepJSON(allViewTree));
 };
 
 var loadJSONString = function (text) {
@@ -74,8 +74,8 @@ var loadJSONString = function (text) {
 };
 
 var loadJSON = function (json) {
-    allDisplayTree = _loadJSON(json);
-    symbolIdSequence = maxSymbolId(allDisplayTree) + 1;
+    allViewTree = _loadJSON(json);
+    symbolIdSequence = maxSymbolId(allViewTree) + 1;
     updateState({doStructure: 'symbol'});
     doStuffAfterStateChanges();
 };

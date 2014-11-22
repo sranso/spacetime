@@ -70,7 +70,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     }
 
     // TODO: a lot of these need to handle a selection.
-    // TODO: also make them all work for symbol mode and branches.
+    // TODO: also make them all work for tree mode and branches.
 
     if (state.insertingNumber) {
         var text = ins.text;
@@ -119,11 +119,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         } else if (siblings) {
             siblings.splice(ins.treeI, 1);
             ins = siblings[ins.treeI];
-            updateState({inserting: ins, doStructure: 'symbol'});
+            updateState({inserting: ins, doStructure: 'tree'});
         }
 
     } else if (_.contains([' ', '(', ')'], key)) {
-        if (state.targetMode === 'symbol') {
+        if (state.targetMode === 'tree') {
             if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             }
@@ -190,9 +190,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             return;
         }
         if (ins.reference) {
-            ins = siblings[ins.treeI] = ins.symbol.display;
+            ins = siblings[ins.treeI] = ins.symbol.view;
         } else if (siblings) {
-            var reference = createDisplay(ins.symbol, {
+            var reference = createView(ins.symbol, {
                 reference: true,
                 text: ins.begin.text,
                 tower: true,
@@ -202,12 +202,12 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
         updateState({
             inserting: ins,
-            doStructure: 'symbol',
+            doStructure: 'tree',
             selection: null,
         });
 
     } else if (key === '[' || key === ']') {
-        if (state.targetMode === 'symbol') {
+        if (state.targetMode === 'tree') {
             if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             } else {
@@ -247,7 +247,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         });
 
     } else if (key === 'backspace') {
-        if (state.targetMode === 'symbol') {
+        if (state.targetMode === 'tree') {
             if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             } else {
@@ -281,7 +281,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         siblings.splice(ins.treeI + 1, 0, cloned);
         updateState({
             inserting: cloned,
-            doStructure: 'symbol',
+            doStructure: 'tree',
             selection: null,
         });
     } else if (key === '6') {

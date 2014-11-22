@@ -4,15 +4,15 @@ var symbolId = function () {
     return id;
 };
 
-var displayId = function () {
-    var id = displayIdSequence;
-    displayIdSequence += 1;
+var viewId = function () {
+    var id = viewIdSequence;
+    viewIdSequence += 1;
     return id;
 };
 
-var createDisplay = function (symbol, display) {
-    display = _.extend({
-        id: displayId(),
+var createView = function (symbol, view) {
+    view = _.extend({
+        id: viewId(),
         tower: !symbol || symbol.leaf,
         reference: false,
         divider: !symbol,
@@ -30,9 +30,9 @@ var createDisplay = function (symbol, display) {
         parent: null,
         treeI: 0,
         towerI: 0,
-    }, display || {});
-    display.branch = !display.tower;
-    return display;
+    }, view || {});
+    view.branch = !view.tower;
+    return view;
 };
 
 var createSymbol = function (symbol) {
@@ -45,17 +45,17 @@ var createSymbol = function (symbol) {
         children: [],
         parents: [],
         text: '',
-        display: null,
+        view: null,
     }, symbol);
 };
 
-var updateSymbols = function (displayNodes) {
-    _.each(displayNodes, updateSymbol);
+var updateSymbols = function (viewNodes) {
+    _.each(viewNodes, updateSymbol);
 };
 
-var updateSymbol = function (displayNode) {
-    var symbol = displayNode.symbol;
-    var newChildren = _.pluck(displayNode.children, 'symbol');
+var updateSymbol = function (viewNode) {
+    var symbol = viewNode.symbol;
+    var newChildren = _.pluck(viewNode.children, 'symbol');
     newChildren = _.filter(newChildren, _.property('alive'));
     var oldChildren = symbol.children;
     var removeChildren = _.difference(oldChildren, newChildren);
@@ -67,8 +67,8 @@ var updateSymbol = function (displayNode) {
         child.parents.push(symbol);
     });
     symbol.children = newChildren;
-    symbol.text = displayNode.text;
-    symbol.display = displayNode;
+    symbol.text = viewNode.text;
+    symbol.view = viewNode;
     if (!newChildren.length) {
         killSymbol(symbol);
     }
@@ -90,15 +90,15 @@ var _killSymbol = function (symbol, visited) {
 
 // TODO
 var computeStructure = function (mode) {
-    updateDisplay();
+    updateView();
 };
 
-var updateDisplay = function (displayTree) {
-    allDisplayTree = displayTree || allDisplayTree;
-    _updateDisplay(allDisplayTree);
+var updateView = function (viewTree) {
+    allViewTree = viewTree || allViewTree;
+    _updateView(allViewTree);
     towersFromTree();
     linkTowers(allTowers);
-    linkTree(allDisplayTree, 0);
+    linkTree(allViewTree, 0);
     updateState({
         doStructure: false,
         doPositions: true,
@@ -107,7 +107,7 @@ var updateDisplay = function (displayTree) {
 };
 
 // TODO: what to about the oddball dividers?
-var _updateDisplay = function (node) {
+var _updateView = function (node) {
     var symbol = node.symbol;
     var oldChildren = node.children;
     if (!node.reference) {
@@ -121,11 +121,11 @@ var _updateDisplay = function (node) {
                 }
             }
             if (i === oldChildren.length) {
-                child = symbol.display;
+                child = symbol.view;
             } else {
                 oldChildren.splice(i, 1);
             }
-            _updateDisplay(child);
+            _updateView(child);
             return child;
         });
         node.text = symbol.text;
@@ -181,7 +181,7 @@ var markDividers = function (children) {
 //        towersFromTree();
 //    }
 //    linkTowers(allTowers);
-//    linkTree(allDisplayTree, 0);
+//    linkTree(allViewTree, 0);
 //    updateState({
 //        doStructure: false,
 //        doPositions: true,
@@ -190,7 +190,7 @@ var markDividers = function (children) {
 //};
 
 var treeFromTowers = function () {
-    allDisplayTree = _treeFromTowers(allTowers, 0);
+    allViewTree = _treeFromTowers(allTowers, 0);
 };
 
 var linkTowers = function (towers) {
@@ -231,9 +231,9 @@ var _treeFromTowers = function (towers, level) {
 };
 
 var towersFromTree = function () {
-    addDividersToChildren(allDisplayTree, 0);
-    var symbols = symbolsFromTree();
-    allTowers = _.filter(symbols, _.property('tower'));
+    addDividersToChildren(allViewTree, 0);
+    var views = viewsFromTree();
+    allTowers = _.filter(views, _.property('tower'));
 };
 
 var addDividersToChildren = function (node) {
@@ -241,7 +241,7 @@ var addDividersToChildren = function (node) {
     var _children = [];
     _.each(node.children, function (child, i) {
         if (child.dividerLeft) {
-            var tower = createDisplay(null, {divider: true});
+            var tower = createView(null, {divider: true});
             _children.push(tower);
         }
         _children.push(child);
@@ -252,16 +252,16 @@ var addDividersToChildren = function (node) {
     node._children = _children;
 };
 
-var symbolsFromTree = function () {
-    var symbols = [];
-    _symbolsFromTree(allDisplayTree, symbols);
-    return symbols;
+var viewsFromTree = function () {
+    var views = [];
+    _viewsFromTree(allViewTree, views);
+    return views;
 };
 
-var _symbolsFromTree = function (node, symbols) {
+var _viewsFromTree = function (node, views) {
     _.each(node._children, function (child) {
-        symbols.push(child);
-        _symbolsFromTree(child, symbols);
+        views.push(child);
+        _viewsFromTree(child, views);
     });
 };
 
@@ -270,7 +270,7 @@ var findUnderMouse = function () {
 };
 
 var findFromCoordinates = function (x, y) {
-    return _findFromCoordinates(allDisplayTree, x, y);
+    return _findFromCoordinates(allViewTree, x, y);
 };
 
 var _findFromCoordinates = function (node, x, y) {
@@ -279,18 +279,18 @@ var _findFromCoordinates = function (node, x, y) {
         var child = node._children[i];
         if (child.x <= x && x <= child.x + child.w && y >= child.y) {
             if (child.tower) {
-                if (y >= child.y + child.symbolEndY) {
+                if (y >= child.y + child.viewEndY) {
                     return [child, 'tower'];
                 } else {
                     if (child.divider) {
                         ifNotFound = [child, 'tower'];
                     } else {
-                        return [child, 'symbol'];
+                        return [child, 'tree'];
                     }
                 }
             } else {
-                if (y < child.y + child.symbolEndY) {
-                    return [child, 'symbol'];
+                if (y < child.y + child.viewEndY) {
+                    return [child, 'tree'];
                 }
                 var found = _findFromCoordinates(child, x, y);
                 if (found) {
@@ -308,9 +308,10 @@ var findFromSiblings = function (siblings, x) {
     }) || siblings[siblings.length - 1];
 };
 
+// TODO
 var cloneTree = function (node) {
     var cNode = _.clone(node);
-    cNode.id = symbolId();
+    cNode.id = viewId();
     if (cNode.branch) {
         cNode.children = _.map(node.children, function (child) {
             return cloneTree(child);
