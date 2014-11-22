@@ -7,10 +7,12 @@ var svgExtraHeight = 115;
 
 var camera, cameraX, cameraStartX, _offCameraTower;
 
+var allSymbolsFromTree;
 var fullSelection = function (dataSelection) {
     var symbolEls = camera.selectAll('.symbol');
     if (dataSelection) {
         var symbols = symbolsFromTree();
+        allSymbolsFromTree = symbols;
         symbolEls = symbolEls.data(symbols, _.property('id'));
     }
     return selection(symbolEls, dataSelection);
@@ -34,7 +36,11 @@ var selection = function (symbolEls, dataSelection) {
 
     var target = state.target;
     if (target) {
-        targetSiblings = (target.parent && target.parent.children) || [target];
+        if (target.parent === allDisplayTree) {
+            targetSiblings = [target];
+        } else {
+            targetSiblings = target.parent.children;
+        }
     } else {
         targetSiblings = [];
     }

@@ -56,6 +56,7 @@ var updateSymbols = function (displayNodes) {
 var updateSymbol = function (displayNode) {
     var symbol = displayNode.symbol;
     var newChildren = _.pluck(displayNode.children, 'symbol');
+    newChildren = _.filter(newChildren, _.property('alive'));
     var oldChildren = symbol.children;
     var removeChildren = _.difference(oldChildren, newChildren);
     var addChildren = _.difference(newChildren, oldChildren);
@@ -74,10 +75,15 @@ var updateSymbol = function (displayNode) {
 };
 
 var killSymbol = function (symbol) {
+    _killSymbol(symbol, []);
+};
+var _killSymbol = function (symbol, visited) {
+    symbol.alive = false;
+    visited.push(symbol);
     _.each(symbol.parents, function (parent) {
         parent.children = _.without(parent.children, symbol);
-        if (!parent.children.length) {
-            killSymbol(parent);
+        if (!parent.children.length && !_.contains(visited, parent)) {
+            _killSymbol(parent, visited);
         }
     });
 };
@@ -115,9 +121,10 @@ var _updateDisplay = function (node) {
                 }
             }
             if (i === oldChildren.length) {
-                return symbol.display;
+                child = symbol.display;
+            } else {
+                oldChildren.splice(i, 1);
             }
-            oldChildren.splice(i, 1);
             _updateDisplay(child);
             return child;
         });
@@ -263,7 +270,7 @@ var findUnderMouse = function () {
 };
 
 var findFromCoordinates = function (x, y) {
-    return _findFromCoordinates({_children: [allDisplayTree]}, x, y);
+    return _findFromCoordinates(allDisplayTree, x, y);
 };
 
 var _findFromCoordinates = function (node, x, y) {

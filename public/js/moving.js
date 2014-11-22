@@ -11,19 +11,16 @@ var computeHovering = function () {
 };
 
 var mouseDown = function () {
-    return; // TODO
     mouse = d3.mouse(camera.node());
     inputEvent('left mouse', 'down');
 };
 
 var mouseUp = function () {
-    return; // TODO
     mouse = d3.mouse(camera.node());
     inputEvent('left mouse', 'up');
 };
 
 var mouseMove = doStuffAroundStateChanges(function () {
-    return; // TODO
     mouse = d3.mouse(camera.node());
     dragMoving();
     changeSelection();
@@ -32,13 +29,11 @@ var mouseMove = doStuffAroundStateChanges(function () {
 });
 
 var mouseEnter = doStuffAroundStateChanges(function () {
-    return; // TODO
     mouse = d3.mouse(camera.node());
     updateState({inCamera: true, doHovering: true});
 });
 
 var mouseLeave = doStuffAroundStateChanges(function () {
-    return; // TODO
     updateState({hovering: null, inCamera: false});
 });
 
@@ -139,7 +134,7 @@ var dragMoving = function () {
     var moved;
 
     if (state.targetMode === 'tower') {
-        moved = dragTower(info);
+        moved = false; // dragTower(info); TODO
     } else {
         moved = dragSymbol(info);
     }
@@ -152,8 +147,9 @@ var dragMoving = function () {
     }
 };
 
-var positionAfterMove = function () {
+var afterMove = function (changed) {
     var currentPos = {x: state.moving.x, y: state.moving.y};
+    updateSymbols(changed);
     computeStructure(state.targetMode);
     computePositions(allDisplayTree);
     state.startMouse = [
@@ -174,7 +170,7 @@ var dragTower = function (info) {
     var swapped = maybeSwap(allTowers, 'towerI', info);
     var moved = levelChange || swapped;
     if (moved) {
-        positionAfterMove();
+        afterMove();
     }
     return moved;
 };
@@ -213,8 +209,10 @@ var dragSymbol = function (info) {
         levelChange = 1 - moving.level;
     }
 
+    var changed = [];
     if (levelChange <= -1) {
         moving.parent.children.splice(moving.treeI, 1);
+        changed.push(moving.parent);
         var n = new Array(-levelChange);
         var insertBefore = _.reduce(n, _.property('parent'), moving);
         var newSiblings = insertBefore.parent.children;
@@ -222,7 +220,8 @@ var dragSymbol = function (info) {
         var after = newSiblings.slice(insertBefore.treeI);
         newSiblings = before.concat([moving]).concat(after);
         insertBefore.parent.children = newSiblings;
-        positionAfterMove();
+        changed.push(insertBefore.parent);
+        afterMove(changed);
     } else if (levelChange >= 1) {
         var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
@@ -234,21 +233,24 @@ var dragSymbol = function (info) {
         });
         if (descendNeighbor) {
             siblings.splice(moving.treeI, 1);
+            changed.push(moving.parent);
+            changed.push(descendNeighbor);
             if (descendNeighbor.treeI > moving.treeI) {
                 descendNeighbor.children.unshift(moving);
             } else {
                 descendNeighbor.children.push(moving);
             }
-            positionAfterMove();
+            afterMove(changed);
         } else {
             levelChange = 0;
         }
     }
 
-    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
-    if (swapped) {
-        positionAfterMove();
-    }
+    var swapped = false; // TODO
+    //var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
+    //if (swapped) {
+    //    afterMove();
+    //}
     return levelChange !== 0 || swapped;
 };
 

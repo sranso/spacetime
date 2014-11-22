@@ -50,7 +50,7 @@ var setup = function (example) {
 var linkSymbols = function (node) {
     node.display = createDisplay(node);
     node.display.children = _.map(node.children, function (child) {
-        child.parents = [child];
+        child.parents = [node];
         linkSymbols(child);
         child.display.parent = node.display;
         return child.display;
