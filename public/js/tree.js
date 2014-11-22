@@ -4,47 +4,95 @@ var symbolId = function () {
     return id;
 };
 
-var createBar = function (bar) {
-    return _.extend({
-        id: symbolId(),
-        symbol: true,
-        bar: true,
-        token: false,
-        ref: null,
-        children: [],
-        _children: [],
-        level: 0,
-        depth: 0,
-        begin: null,
-        end: null,
-    }, bar);
+var displayId = function () {
+    var id = displayIdSequence;
+    displayIdSequence += 1;
+    return id;
 };
 
-var createToken = function (token) {
-    return _.extend({
-        id: symbolId(),
-        symbol: true,
-        bar: false,
-        token: true,
-        ref: null,
+var createDisplay = function (symbol, display) {
+    display = _.extend({
+        id: displayId(),
+        token: !symbol || symbol.leaf,
+        reference: false,
+        separator: !symbol,
+        separatorLeft: false,
+        separatorRight: false,
+        symbol: symbol,
+        children: [],
+        _children: [],
         text: '',
         level: 0,
         depth: 0,
-        separator: false,
-    }, token);
+        position: null,
+        begin: null,
+        end: null,
+        parent: null,
+        treeI: 0,
+        tokenI: 0,
+    }, display || {});
+    display.branch = !display.token;
+    return display;
 };
 
+var createSymbol = function (symbol) {
+    var leaf = _.has(symbol, 'text');
+    return _.extend({
+        id: symbolId(),
+        alive: true,
+        leaf: leaf,
+        branch: !leaf,
+        children: [],
+        parents: [],
+        text: '',
+        display: null,
+    }, symbol);
+};
+
+var updateSymbols = function (displayNodes) {
+    _.each(displayNodes, updateSymbol);
+};
+
+var updateSymbol = function (displayNode) {
+    var symbol = displayNode.symbol;
+    var newChildren = _.pluck(displayNode.children, 'symbol');
+    var oldChildren = symbol.children;
+    var removeChildren = _.difference(oldChildren, newChildren);
+    var addChildren = _.difference(newChildren, oldChildren);
+    _.each(removeChildren, function (child) {
+        child.parents = _.without(child.parents, symbol);
+    });
+    _.each(addChildren, function (child) {
+        child.parents.push(symbol);
+    });
+    symbol.children = newChildren;
+    symbol.text = displayNode.text;
+    symbol.display = displayNode;
+    if (!newChildren.length) {
+        killSymbol(symbol);
+    }
+};
+
+var killSymbol = function (symbol) {
+    _.each(symbol.parents, function (parent) {
+        parent.children = _.without(parent.children, symbol);
+        if (!parent.children.length) {
+            killSymbol(parent);
+        }
+    });
+};
+
+// TODO
 var computeStructure = function (mode) {
-    if (!mode) {
-        return;
-    }
-    if (mode === 'tower') {
-        treeFromTokens();
-    } else {
-        tokensFromTree();
-    }
+    updateDisplay();
+};
+
+var updateDisplay = function (displayTree) {
+    allDisplayTree = displayTree || allDisplayTree;
+    _updateDisplay(allDisplayTree);
+    tokensFromTree();
     linkTokens(allTokens);
-    linkTree(allSymbolTree, 0);
+    linkTree(allDisplayTree, 0);
     updateState({
         doStructure: false,
         doPositions: true,
@@ -52,8 +100,90 @@ var computeStructure = function (mode) {
     });
 };
 
+// TODO: what to about the oddball separators?
+var _updateDisplay = function (node) {
+    var symbol = node.symbol;
+    var oldChildren = node.children;
+    if (!node.reference) {
+        node.children = _.map(symbol.children, function (symbol) {
+            var child;
+            var i;
+            for (i = 0; i < oldChildren.length; i++) {
+                child = oldChildren[i];
+                if (child.symbol === symbol) {
+                    break;
+                }
+            }
+            if (i === oldChildren.length) {
+                return symbol.display;
+            }
+            oldChildren.splice(i, 1);
+            _updateDisplay(child);
+            return child;
+        });
+        node.text = symbol.text;
+    }
+};
+
+var linkTree = function (node, level) {
+    var begin = node._children[0];
+    var end = node._children[node._children.length - 1];
+    var depth = 1;
+    node.children = _.filter(node._children, function (child, i) {
+        child.parent = node;
+        child.level = level + 1;
+        if (child.branch) {
+            var ret = linkTree(child, level + 1);
+            depth = Math.max(depth, ret[2] + 1);
+            if (i === 0) { begin = ret[0]; }
+            if (i === node._children.length - 1) { end = ret[1]; }
+        }
+        return !child.separator;
+    });
+    markSeparators(node.children);
+
+    _.each(node.children, function (child, i) {
+        child.treeI = i;
+    });
+    node.begin = begin;
+    node.end = end;
+    node.depth = depth;
+    return [begin, end, depth];
+};
+
+var markSeparators = function (children) {
+    var lastChild = null;
+    _.each(children, function (child, i) {
+        child.separatorLeft = child.separatorRight = false;
+        if (lastChild && lastChild.branch && child.branch) {
+            lastChild.separatorRight = true;
+            child.separatorLeft = true;
+        }
+        lastChild = child;
+    });
+};
+
+
+//var computeStructure = function (mode) {
+//    if (!mode) {
+//        return;
+//    }
+//    if (mode === 'tower') {
+//        treeFromTokens();
+//    } else {
+//        tokensFromTree();
+//    }
+//    linkTokens(allTokens);
+//    linkTree(allDisplayTree, 0);
+//    updateState({
+//        doStructure: false,
+//        doPositions: true,
+//        doDataDraw: true,
+//    });
+//};
+
 var treeFromTokens = function () {
-    allSymbolTree = _treeFromTokens(allTokens, 0);
+    allDisplayTree = _treeFromTokens(allTokens, 0);
 };
 
 var linkTokens = function (tokens) {
@@ -94,59 +224,9 @@ var _treeFromTokens = function (tokens, level) {
 };
 
 var tokensFromTree = function () {
-    removeEmptySymbols(allSymbolTree);
-    addSeparatorsToChildren(allSymbolTree, 0);
-    var symbols = symbolsFromTree(allSymbolTree);
+    addSeparatorsToChildren(allDisplayTree, 0);
+    var symbols = symbolsFromTree();
     allTokens = _.filter(symbols, _.property('token'));
-};
-
-var removeEmptySymbols = function (node) {
-    node.children = _.filter(node.children, function (child) {
-        if (child.bar) {
-            removeEmptySymbols(child);
-            return child.children.length > 0;
-        } else {
-            return true;
-        }
-    });
-};
-
-var markSeparators = function (children) {
-    var lastChild = null;
-    _.each(children, function (child, i) {
-        child.separatorLeft = child.separatorRight = false;
-        if (lastChild && lastChild.bar && child.bar) {
-            lastChild.separatorRight = true;
-            child.separatorLeft = true;
-        }
-        lastChild = child;
-    });
-};
-
-var linkTree = function (node, level) {
-    var begin = node._children[0];
-    var end = node._children[node._children.length - 1];
-    var depth = 1;
-    node.children = _.filter(node._children, function (child, i) {
-        child.parent = node;
-        child.level = level + 1;
-        if (child.bar) {
-            var ret = linkTree(child, level + 1);
-            depth = Math.max(depth, ret[2] + 1);
-            if (i === 0) { begin = ret[0]; }
-            if (i === node._children.length - 1) { end = ret[1]; }
-        }
-        return !child.separator;
-    });
-    markSeparators(node.children);
-
-    _.each(node.children, function (child, i) {
-        child.treeI = i;
-    });
-    node.begin = begin;
-    node.end = end;
-    node.depth = depth;
-    return [begin, end, depth];
 };
 
 var addSeparatorsToChildren = function (node) {
@@ -154,30 +234,28 @@ var addSeparatorsToChildren = function (node) {
     var _children = [];
     _.each(node.children, function (child, i) {
         if (child.separatorLeft) {
-            var token = createToken({separator: true});
+            var token = createDisplay(null, {separator: true});
             _children.push(token);
         }
         _children.push(child);
-        if (child.bar) {
+        if (child.branch) {
             addSeparatorsToChildren(child);
         }
     });
     node._children = _children;
 };
 
-var symbolsFromTree = function (node) {
+var symbolsFromTree = function () {
     var symbols = [];
-    _symbolsFromTree(node, symbols);
+    _symbolsFromTree(allDisplayTree, symbols);
     return symbols;
 };
 
 var _symbolsFromTree = function (node, symbols) {
-    symbols.push(node);
-    if (node.bar) {
-        _.each(node._children, function (child) {
-            _symbolsFromTree(child, symbols);
-        });
-    }
+    _.each(node._children, function (child) {
+        symbols.push(child);
+        _symbolsFromTree(child, symbols);
+    });
 };
 
 var findUnderMouse = function () {
@@ -185,7 +263,7 @@ var findUnderMouse = function () {
 };
 
 var findFromCoordinates = function (x, y) {
-    return _findFromCoordinates({_children: [allSymbolTree]}, x, y);
+    return _findFromCoordinates({_children: [allDisplayTree]}, x, y);
 };
 
 var _findFromCoordinates = function (node, x, y) {
@@ -226,15 +304,15 @@ var findFromSiblings = function (siblings, x) {
 var cloneTree = function (node) {
     var cNode = _.clone(node);
     cNode.id = symbolId();
-    if (cNode.bar) {
+    if (cNode.branch) {
         cNode.children = _.map(node.children, function (child) {
             return cloneTree(child);
         });
     }
 
     // TODO: make refs the same symbols but appearing in different places.
-    if (cNode.ref) {
-        cNode.ref = cloneTree(cNode.ref);
+    if (cNode.reference) {
+        cNode.reference = cloneTree(cNode.ref);
     }
     return cNode;
 };

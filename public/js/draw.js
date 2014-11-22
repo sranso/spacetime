@@ -10,7 +10,7 @@ var camera, cameraX, cameraStartX, _offCameraToken;
 var fullSelection = function (dataSelection) {
     var symbolEls = camera.selectAll('.symbol');
     if (dataSelection) {
-        var symbols = symbolsFromTree(allSymbolTree);
+        var symbols = symbolsFromTree();
         symbolEls = symbolEls.data(symbols, _.property('id'));
     }
     return selection(symbolEls, dataSelection);
@@ -68,20 +68,20 @@ var selection = function (symbolEls, dataSelection) {
 
 var computePositions = function (symbolTree) {
     _computePositions(symbolTree);
-    if (symbolTree === allSymbolTree) {
+    if (symbolTree === allDisplayTree) {
         computeNonTreePositions();
     }
     updateState({
         doPositions: false,
-        doHovering: symbolTree === allSymbolTree,
+        doHovering: symbolTree === allDisplayTree,
         doDraw: true,
     });
 };
 
 var computeNonTreePositions = function () {
-    allPositions.svgHeight = allSymbolTree.h + svgExtraHeight;
+    topLevelPositions.svgHeight = allDisplayTree.h + svgExtraHeight;
     var lastToken = allTokens[allTokens.length - 1];
-    allPositions.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
+    topLevelPositions.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
 };
 
 var _computePositions = function (node) {
@@ -178,10 +178,10 @@ var drawSetup = function () {
 var draw = function (sel) {
 
     var svg = d3.select('svg#string')
-        .attr('height', allPositions.svgHeight) ;
+        .attr('height', topLevelPositions.svgHeight) ;
 
     d3.select(document.body)
-        .style('height', allPositions.bodyHeight + 'px') ;
+        .style('height', topLevelPositions.bodyHeight + 'px') ;
 
     camera
         .classed('tower-mode', state.targetMode === 'tower')
@@ -204,7 +204,7 @@ var draw = function (sel) {
         .attr('x', 2)
         .attr('y', _.property('tokenY'))
         .attr('width', function (t) { return t.w - 4 })
-        .attr('height', allPositions.svgHeight) ;
+        .attr('height', topLevelPositions.svgHeight) ;
 
     sel.tokenEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
@@ -223,7 +223,7 @@ var draw = function (sel) {
 
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
-                'symbol', 'token', 'bar', 'ref',
+                'symbol', 'token', 'branch', 'reference',
                 'separator', 'movingTree',
             ], function (c) { return s[c] });
             if (_.contains(state.targets, s)) {

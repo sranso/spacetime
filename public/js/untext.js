@@ -1,13 +1,14 @@
 //window.untext = (function () {
 
-var untext, allSymbolTree, allTokens, allPositions, symbolIdSequence, state, lastState;
+var untext, allSymbols, allDisplayTree, allTokens, topLevelPositions, symbolIdSequence, displayIdSequence, state, lastState;
 
 var init = function () {
     untext = {};
-    allSymbolTree = null;
+    allSymbols = null;
     allTokens = [];
-    allPositions = {};
+    topLevelPositions = {};
     symbolIdSequence = 0;
+    displayIdSequence = 0;
     hovering = null;
     hoveringMode = null;
     mouse = [0, 0];
@@ -16,22 +17,56 @@ var init = function () {
 
 var setup = function (example) {
     init();
+
+    var root = createSymbol({children: [
+        createSymbol({children: [
+            createSymbol({text: 'Table'}),
+            createSymbol({text: 'class'}),
+            createSymbol({children: [
+                createSymbol({text: 'fibonaci'}),
+                createSymbol({text: 'function'}),
+                createSymbol({children: [
+                    createSymbol({text: 'fibonaci2'}),
+                ]}),
+            ]}),
+        ]}),
+    ]});
+    allSymbols = [];
+    linkSymbols(root);
+    allDisplayTree = root.display;
+    updateState({
+        inserting: allDisplayTree.children[0],
+        insertingMode: 'symbol',
+        doStructure: 'symbol',
+    });
+
     drawSetup();
-    loadJSON(example);
+    doStuffAfterStateChanges();
+    //loadJSON(example);
 
     console.log('untext loaded');
+};
+
+var linkSymbols = function (node) {
+    node.display = createDisplay(node);
+    node.display.children = _.map(node.children, function (child) {
+        child.parents = [child];
+        linkSymbols(child);
+        child.display.parent = node.display;
+        return child.display;
+    });
+    allSymbols.push(node);
 };
 
 
 var prepJSON = function (node) {
     var json = _.pick(node, 'id', 'symbol', 'bar', 'token', 'text', 'separator');
     json.children = _.map(node.children, prepJSON);
-    json.ref = node.ref ? prepJSON(node.ref) : null;
     return json;
 };
 
 var dumpJSON = function () {
-    return JSON.stringify(prepJSON(allSymbolTree));
+    return JSON.stringify(prepJSON(allDisplayTree));
 };
 
 var loadJSONString = function (text) {
@@ -39,8 +74,8 @@ var loadJSONString = function (text) {
 };
 
 var loadJSON = function (json) {
-    allSymbolTree = _loadJSON(json);
-    symbolIdSequence = maxSymbolId(allSymbolTree) + 1;
+    allDisplayTree = _loadJSON(json);
+    symbolIdSequence = maxSymbolId(allDisplayTree) + 1;
     updateState({doStructure: 'symbol'});
     doStuffAfterStateChanges();
 };

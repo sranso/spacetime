@@ -11,16 +11,19 @@ var computeHovering = function () {
 };
 
 var mouseDown = function () {
+    return; // TODO
     mouse = d3.mouse(camera.node());
     inputEvent('left mouse', 'down');
 };
 
 var mouseUp = function () {
+    return; // TODO
     mouse = d3.mouse(camera.node());
     inputEvent('left mouse', 'up');
 };
 
 var mouseMove = doStuffAroundStateChanges(function () {
+    return; // TODO
     mouse = d3.mouse(camera.node());
     dragMoving();
     changeSelection();
@@ -29,15 +32,18 @@ var mouseMove = doStuffAroundStateChanges(function () {
 });
 
 var mouseEnter = doStuffAroundStateChanges(function () {
+    return; // TODO
     mouse = d3.mouse(camera.node());
     updateState({inCamera: true, doHovering: true});
 });
 
 var mouseLeave = doStuffAroundStateChanges(function () {
+    return; // TODO
     updateState({hovering: null, inCamera: false});
 });
 
 var mouseScroll = function () {
+    return; // TODO
     var scrollX = document.body.scrollTop;
     cameraX = cameraStartX - scrollX;
     computeNonTreePositions();
@@ -49,7 +55,7 @@ var startSelection = function () {
     if (!target) {
         return;
     }
-    if (target.bar) {
+    if (target.branch) {
         return;  // TODO
     }
     updateState({
@@ -149,7 +155,7 @@ var dragMoving = function () {
 var positionAfterMove = function () {
     var currentPos = {x: state.moving.x, y: state.moving.y};
     computeStructure(state.targetMode);
-    computePositions(allSymbolTree);
+    computePositions(allDisplayTree);
     state.startMouse = [
         state.startMouse[0] + state.moving.x - currentPos.x,
         state.startMouse[1] + state.moving.y - currentPos.y,
@@ -224,7 +230,7 @@ var dragSymbol = function (info) {
         neighborI = moving.treeI - info.direction[0];
         var secondNeighbor = siblings[neighborI];
         var descendNeighbor = _.find([firstNeighbor, secondNeighbor], function (n) {
-            return n && n.bar;
+            return n && n.branch;
         });
         if (descendNeighbor) {
             siblings.splice(moving.treeI, 1);

@@ -11,10 +11,10 @@ a {
   fill: #ffffff;
 }
 
-.bar .top-brace .mid-point {
+.branch .top-brace .mid-point {
   fill: none;
 }
-.bar .top-brace path {
+.branch .top-brace path {
   stroke: #C5DFCB;
 }
 .token .top-brace .mid-point {
@@ -48,7 +48,7 @@ a {
 .token text {
   text-anchor: middle;
 }
-.token.ref text {
+.token.reference text {
   font-weight: bold;
 }
 

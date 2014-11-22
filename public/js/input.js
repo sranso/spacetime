@@ -70,7 +70,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     }
 
     // TODO: a lot of these need to handle a selection.
-    // TODO: also make them all work for symbol mode and bars.
+    // TODO: also make them all work for symbol mode and branches.
 
     if (state.insertingNumber) {
         var text = ins.text;
@@ -88,7 +88,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         });
 
     } else if (key === '#') {
-        if (ins.bar || ins.separator) {
+        if (ins.branch || ins.separator) {
             return;
         }
         var num = (+ins.text + 1) || 0;
@@ -129,7 +129,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             }
         }
         var level = ins.level;
-        if (ins.bar || ins.text) {
+        if (ins.branch || ins.text) {
             var insert = createToken({level: level, text: ''});
             if (state.targetMode === 'tower') {
                 allTokens.splice(ins.tokenI + 1, 0, insert);
@@ -186,16 +186,19 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         });
 
     } else if (key === 'tab') {
-        if (!ins.ref && !ins.bar) {
+        if (!ins.reference && !ins.branch) {
             return;
         }
-        if (ins.ref) {
-            siblings[ins.treeI] = ins.ref;
-            ins = ins.ref;
+        if (ins.reference) {
+            ins = siblings[ins.treeI] = ins.symbol.display;
         } else if (siblings) {
-            var ref = createToken({ref: ins, text: ins.begin.text});
-            siblings[ins.treeI] = ref;
-            ins = ref;
+            var reference = createDisplay(ins.symbol, {
+                reference: true,
+                text: ins.begin.text,
+                token: true,
+            });
+            siblings[ins.treeI] = reference;
+            ins = reference;
         }
         updateState({
             inserting: ins,
@@ -284,7 +287,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     } else if (key === '6') {
         // do nothing
     } else {
-        if (ins.bar || ins.separator) {
+        if (ins.branch || ins.separator) {
             return;
         }
         var text = state.firstInserting ? '' : ins.text;
