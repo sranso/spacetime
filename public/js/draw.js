@@ -1,11 +1,11 @@
 var width = '100%';
 var height = 300;
 var levelHeight = 20;
-var separatorWidth = 8;
+var dividerWidth = 8;
 var cameraStartX = 90;
 var svgExtraHeight = 115;
 
-var camera, cameraX, cameraStartX, _offCameraToken;
+var camera, cameraX, cameraStartX, _offCameraTower;
 
 var fullSelection = function (dataSelection) {
     var symbolEls = camera.selectAll('.symbol');
@@ -28,8 +28,8 @@ var nullSelection = function () {
 
 var selection = function (symbolEls, dataSelection) {
     var targetSiblings,
-        tokenEls, nonSeparatorEnterEls,
-        symbolEnterEls, tokenEnterEls,
+        towerEls, nonDividerEnterEls,
+        symbolEnterEls, towerEnterEls,
         symbolExitEls;
 
     var target = state.target;
@@ -47,20 +47,20 @@ var selection = function (symbolEls, dataSelection) {
         symbolEnterEls = symbolExitEls = d3.selectAll([]);
     }
 
-    tokenEls = symbolEls.filter(_.property('token'));
-    tokenEnterEls = symbolEnterEls.filter(_.property('token'));
-    nonSeparatorEnterEls = symbolEnterEls.filter(function (s) {
-        return !s.separator;
+    towerEls = symbolEls.filter(_.property('tower'));
+    towerEnterEls = symbolEnterEls.filter(_.property('tower'));
+    nonDividerEnterEls = symbolEnterEls.filter(function (s) {
+        return !s.divider;
     });
 
     var sel = {
         dataSelection: dataSelection,
         targetSiblings: targetSiblings,
         symbolEls: symbolEls,
-        tokenEls: tokenEls,
-        nonSeparatorEnterEls: nonSeparatorEnterEls,
+        towerEls: towerEls,
+        nonDividerEnterEls: nonDividerEnterEls,
         symbolEnterEls: symbolEnterEls,
-        tokenEnterEls: tokenEnterEls,
+        towerEnterEls: towerEnterEls,
         symbolExitEls: symbolExitEls,
     };
     return sel;
@@ -80,14 +80,14 @@ var computePositions = function (symbolTree) {
 
 var computeNonTreePositions = function () {
     topLevelPositions.svgHeight = allDisplayTree.h + svgExtraHeight;
-    var lastToken = allTokens[allTokens.length - 1];
-    topLevelPositions.bodyHeight = window.innerHeight + lastToken.x + lastToken.w;
+    var lastTower = allTowers[allTowers.length - 1];
+    topLevelPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
 };
 
 var _computePositions = function (node) {
     var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, symbolEndY: 0, towerY: 0, movingTree: false};
-    var leftI = (node.token ? node.tokenI : node.begin.tokenI) - 1;
-    var leftPos = leftI >= 0 ? allTokens[leftI].position : nullPos;
+    var leftI = (node.tower ? node.towerI : node.begin.towerI) - 1;
+    var leftPos = leftI >= 0 ? allTowers[leftI].position : nullPos;
     var abovePos = node.parent ? node.parent.position : nullPos;
 
     var pos = {};
@@ -106,14 +106,14 @@ var _computePositions = function (node) {
         pos.movingTree = abovePos.movingTree;
     }
 
-    if (node.token) {
+    if (node.tower) {
         pos.x = leftPos.x + leftPos.w;
-        pos.tokenY = 35;
-        if (node.separator) {
-            pos.w = separatorWidth;
+        pos.towerY = 35;
+        if (node.divider) {
+            pos.w = dividerWidth;
             pos.symbolEndY = levelHeight;
         } else {
-            pos.symbolEndY = pos.tokenY;
+            pos.symbolEndY = pos.towerY;
             pos.w = Math.max(textWidth(node) + 15, 25);
         }
         pos.braceW = pos.w;
@@ -126,12 +126,12 @@ var _computePositions = function (node) {
         pos.x = node.begin.position.x;
         pos.braceW = node.end.position.x + node.end.position.w - pos.x;
         pos.w = pos.braceW;
-        if (node.separatorLeft) {
-            pos.x -= separatorWidth / 2;
-            pos.w += separatorWidth / 2;
+        if (node.dividerLeft) {
+            pos.x -= dividerWidth / 2;
+            pos.w += dividerWidth / 2;
         }
-        if (node.separatorRight) {
-            pos.w += separatorWidth / 2;
+        if (node.dividerRight) {
+            pos.w += dividerWidth / 2;
         }
     }
     node.position = pos;
@@ -146,8 +146,8 @@ var drawSetup = function () {
     var svg = d3.select('svg#string')
         .attr('width', '100%') ;
 
-    _offCameraToken = svg.append('g')
-        .classed('token', true)
+    _offCameraTower = svg.append('g')
+        .classed('tower', true)
         .attr('transform', 'translate(-10000,-10000)')
         .append('text') ;
 
@@ -192,27 +192,27 @@ var draw = function (sel) {
 
     sel.symbolExitEls.remove();
 
-    ///// towers (tokens) draw
+    ///// towers (towers) draw
 
-    sel.tokenEnterEls.append('rect')
+    sel.towerEnterEls.append('rect')
         .classed('tower', true) ;
 
-    sel.tokenEnterEls.append('text')
+    sel.towerEnterEls.append('text')
         .attr('y', levelHeight + 7) ;
 
-    sel.tokenEls.select('rect.tower')
+    sel.towerEls.select('rect.tower')
         .attr('x', 2)
-        .attr('y', _.property('tokenY'))
+        .attr('y', _.property('towerY'))
         .attr('width', function (t) { return t.w - 4 })
         .attr('height', topLevelPositions.svgHeight) ;
 
-    sel.tokenEls.select('text')
+    sel.towerEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
         .text(_.property('text')) ;
 
     ////// symbols draw
 
-    sel.nonSeparatorEnterEls.append('rect')
+    sel.nonDividerEnterEls.append('rect')
         .classed('background', true)
         .attr('x', 0)
         .attr('y', 0) ;
@@ -223,8 +223,8 @@ var draw = function (sel) {
 
     sel.symbolEls.attr('class', function (s) {
             var classes = _.filter([
-                'symbol', 'token', 'branch', 'reference',
-                'separator', 'movingTree',
+                'symbol', 'tower', 'branch', 'reference',
+                'divider', 'movingTree',
             ], function (c) { return s[c] });
             if (_.contains(state.targets, s)) {
                 classes.push('targets');
@@ -241,7 +241,7 @@ var draw = function (sel) {
             return 'translate(' + (s.x + s.offsetX) + ',' + (s.y + s.offsetY) + ')';
         }) ;
 
-    sel.nonSeparatorEnterEls.append('g')
+    sel.nonDividerEnterEls.append('g')
         .call(topBraceEnter) ;
 
     sel.symbolEls.select('g.top-brace')
@@ -272,8 +272,8 @@ var topBraceEnter = function (g) {
 var topBrace = function (g) {
     g
         .attr('transform', function (s) {
-            if (s.separatorLeft) {
-                return 'translate(' + (separatorWidth / 2) + ',0)';
+            if (s.dividerLeft) {
+                return 'translate(' + (dividerWidth / 2) + ',0)';
             }
             return '';
         }) ;
@@ -308,12 +308,12 @@ var topBracePath = function (s) {
 };
 
 
-var textWidth = function (token, recompute) {
-    if (!recompute && token._textWidth) {
-        return token._textWidth;
+var textWidth = function (tower, recompute) {
+    if (!recompute && tower._textWidth) {
+        return tower._textWidth;
     }
-    _offCameraToken.text(token.text || '%');
-    var box = _offCameraToken.node().getBBox();
-    token._textWidth = Math.ceil(box.width);
-    return token._textWidth;
+    _offCameraTower.text(tower.text || '%');
+    var box = _offCameraTower.node().getBBox();
+    tower._textWidth = Math.ceil(box.width);
+    return tower._textWidth;
 };

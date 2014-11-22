@@ -17,10 +17,10 @@ a {
 .branch .top-brace path {
   stroke: #C5DFCB;
 }
-.token .top-brace .mid-point {
+.tower .top-brace .mid-point {
   fill: #E2F3E5;
 }
-.token .top-brace path {
+.tower .top-brace path {
   stroke: none;
 }
 
@@ -41,18 +41,18 @@ a {
   opacity: 0.0;
 }
 
-.token rect.tower {
+.tower rect.tower {
   fill: none;
 }
 
-.token text {
+.tower text {
   text-anchor: middle;
 }
-.token.reference text {
+.tower.reference text {
   font-weight: bold;
 }
 
-.token.empty text {
+.tower.empty text {
   fill: #aaaaaa;
 }
 
@@ -61,11 +61,11 @@ a {
   fill: white;
 }
 
-.tower-mode .token rect.tower {
+.tower-mode .tower rect.tower {
   fill: #ddd;
 }
 
-.tower-mode .token.targets rect.tower {
+.tower-mode .tower.targets rect.tower {
   fill: #D3FD9E;
 }
 
@@ -74,7 +74,7 @@ a {
   opacity: 0.4;
 }
 
-.tower-mode .token.target rect.tower {
+.tower-mode .tower.target rect.tower {
   fill: #D3FD9E;
 }
 

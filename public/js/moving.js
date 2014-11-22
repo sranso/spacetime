@@ -71,9 +71,9 @@ var changeSelection = function () {
     if (!begin) {
         return;
     }
-    var end = findFromSiblings(allTokens, mouse[0]);
-    var indices = _.sortBy([begin.tokenI, end.tokenI]);
-    var selection = allTokens.slice(indices[0], indices[1] + 1);
+    var end = findFromSiblings(allTowers, mouse[0]);
+    var indices = _.sortBy([begin.towerI, end.towerI]);
+    var selection = allTowers.slice(indices[0], indices[1] + 1);
     updateState({
         selection: selection,
         selectionEnd: end,
@@ -171,7 +171,7 @@ var dragTower = function (info) {
         }
     });
 
-    var swapped = maybeSwap(allTokens, 'tokenI', info);
+    var swapped = maybeSwap(allTowers, 'towerI', info);
     var moved = levelChange || swapped;
     if (moved) {
         positionAfterMove();

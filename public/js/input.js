@@ -35,8 +35,8 @@ var inputEvent = function (key, eventType) {
 };
 
 var removeEmptyText = function (inserting) {
-    if (inserting.token && !inserting.separator && !inserting.text) {
-        allTokens.splice(inserting.tokenI, 1);
+    if (inserting.tower && !inserting.divider && !inserting.text) {
+        allTowers.splice(inserting.towerI, 1);
         computeStructure('tower');
         return true;
     }
@@ -88,7 +88,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         });
 
     } else if (key === '#') {
-        if (ins.branch || ins.separator) {
+        if (ins.branch || ins.divider) {
             return;
         }
         var num = (+ins.text + 1) || 0;
@@ -108,9 +108,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             updateState({moving: null});
         }
         if (state.targetMode === 'tower') {
-            var tokenI = state.targets[0].tokenI;
-            allTokens.splice(tokenI, state.targets.length);
-            ins = allTokens[tokenI];
+            var towerI = state.targets[0].towerI;
+            allTowers.splice(towerI, state.targets.length);
+            ins = allTowers[towerI];
             updateState({
                 inserting: ins,
                 doStructure: 'tower',
@@ -124,15 +124,15 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
 
     } else if (_.contains([' ', '(', ')'], key)) {
         if (state.targetMode === 'symbol') {
-            if (ins.token) {
+            if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             }
         }
         var level = ins.level;
         if (ins.branch || ins.text) {
-            var insert = createToken({level: level, text: ''});
+            var insert = createTower({level: level, text: ''});
             if (state.targetMode === 'tower') {
-                allTokens.splice(ins.tokenI + 1, 0, insert);
+                allTowers.splice(ins.towerI + 1, 0, insert);
             } else {
                 siblings.splice(ins.treeI + 1, 0, insert);
             }
@@ -140,10 +140,10 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             updateState({inserting: insert, insertingMode: 'tower'});
             ins = insert;
         } else if (key === '(') {
-            var before = allTokens[ins.tokenI - 1];
+            var before = allTowers[ins.towerI - 1];
             if (before.level > ins.level) {
-                var insert = createToken({level: level, separator: true});
-                allTokens.splice(ins.tokenI, 0, insert);
+                var insert = createTower({level: level, divider: true});
+                allTowers.splice(ins.towerI, 0, insert);
             }
             updateState({doStructure: 'tower'});
         }
@@ -159,26 +159,26 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         updateState({selection: null});
 
     } else if (key === ',') {
-        if (ins.token) {
+        if (ins.tower) {
             updateState({insertingMode: 'tower'});
         } else {
             return; // TODO
         }
         var level = ins.level;
-        var tokenI = ins.tokenI;
+        var towerI = ins.towerI;
         if (!ins.text) {
-            allTokens.splice(tokenI, 1);
+            allTowers.splice(towerI, 1);
         } else {
-            tokenI += 1;
+            towerI += 1;
         }
         if (level === 1) {
             level = 2; // TODO
         }
-        var sep = createToken({level: level - 1, separator: true});
-        allTokens.splice(tokenI, 0, sep);
-        tokenI += 1;
-        var insert = createToken({level: level, text: ''});
-        allTokens.splice(tokenI, 0, insert);
+        var divider = createTower({level: level - 1, divider: true});
+        allTowers.splice(towerI, 0, divider);
+        towerI += 1;
+        var insert = createTower({level: level, text: ''});
+        allTowers.splice(towerI, 0, insert);
         updateState({
             inserting: insert,
             doStructure: 'tower',
@@ -195,7 +195,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             var reference = createDisplay(ins.symbol, {
                 reference: true,
                 text: ins.begin.text,
-                token: true,
+                tower: true,
             });
             siblings[ins.treeI] = reference;
             ins = reference;
@@ -208,7 +208,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
 
     } else if (key === '[' || key === ']') {
         if (state.targetMode === 'symbol') {
-            if (ins.token) {
+            if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             } else {
                 return; // TODO
@@ -230,7 +230,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             dir = 0;
         }
         if (state.targetMode === 'tower') {
-            insert = allTokens[ins.tokenI + dir];
+            insert = allTowers[ins.towerI + dir];
             if (!insert) {
                 // TODO
             }
@@ -248,7 +248,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
 
     } else if (key === 'backspace') {
         if (state.targetMode === 'symbol') {
-            if (ins.token) {
+            if (ins.tower) {
                 updateState({insertingMode: 'tower'});
             } else {
                 return; // TODO
@@ -261,8 +261,8 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             textWidth(ins, {recompute: true});
             updateState({doPositions: true, selection: null});
         } else {
-            allTokens.splice(ins.tokenI, 1);
-            ins = allTokens[ins.tokenI - 1];
+            allTowers.splice(ins.towerI, 1);
+            ins = allTowers[ins.towerI - 1];
             var insertingMode = ins ? 'tower' : null;
             updateState({
                 inserting: ins,
@@ -287,7 +287,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     } else if (key === '6') {
         // do nothing
     } else {
-        if (ins.branch || ins.separator) {
+        if (ins.branch || ins.divider) {
             return;
         }
         var text = state.firstInserting ? '' : ins.text;

@@ -13,11 +13,11 @@ var displayId = function () {
 var createDisplay = function (symbol, display) {
     display = _.extend({
         id: displayId(),
-        token: !symbol || symbol.leaf,
+        tower: !symbol || symbol.leaf,
         reference: false,
-        separator: !symbol,
-        separatorLeft: false,
-        separatorRight: false,
+        divider: !symbol,
+        dividerLeft: false,
+        dividerRight: false,
         symbol: symbol,
         children: [],
         _children: [],
@@ -29,9 +29,9 @@ var createDisplay = function (symbol, display) {
         end: null,
         parent: null,
         treeI: 0,
-        tokenI: 0,
+        towerI: 0,
     }, display || {});
-    display.branch = !display.token;
+    display.branch = !display.tower;
     return display;
 };
 
@@ -90,8 +90,8 @@ var computeStructure = function (mode) {
 var updateDisplay = function (displayTree) {
     allDisplayTree = displayTree || allDisplayTree;
     _updateDisplay(allDisplayTree);
-    tokensFromTree();
-    linkTokens(allTokens);
+    towersFromTree();
+    linkTowers(allTowers);
     linkTree(allDisplayTree, 0);
     updateState({
         doStructure: false,
@@ -100,7 +100,7 @@ var updateDisplay = function (displayTree) {
     });
 };
 
-// TODO: what to about the oddball separators?
+// TODO: what to about the oddball dividers?
 var _updateDisplay = function (node) {
     var symbol = node.symbol;
     var oldChildren = node.children;
@@ -138,9 +138,9 @@ var linkTree = function (node, level) {
             if (i === 0) { begin = ret[0]; }
             if (i === node._children.length - 1) { end = ret[1]; }
         }
-        return !child.separator;
+        return !child.divider;
     });
-    markSeparators(node.children);
+    markDividers(node.children);
 
     _.each(node.children, function (child, i) {
         child.treeI = i;
@@ -151,13 +151,13 @@ var linkTree = function (node, level) {
     return [begin, end, depth];
 };
 
-var markSeparators = function (children) {
+var markDividers = function (children) {
     var lastChild = null;
     _.each(children, function (child, i) {
-        child.separatorLeft = child.separatorRight = false;
+        child.dividerLeft = child.dividerRight = false;
         if (lastChild && lastChild.branch && child.branch) {
-            lastChild.separatorRight = true;
-            child.separatorLeft = true;
+            lastChild.dividerRight = true;
+            child.dividerLeft = true;
         }
         lastChild = child;
     });
@@ -169,11 +169,11 @@ var markSeparators = function (children) {
 //        return;
 //    }
 //    if (mode === 'tower') {
-//        treeFromTokens();
+//        treeFromTowers();
 //    } else {
-//        tokensFromTree();
+//        towersFromTree();
 //    }
-//    linkTokens(allTokens);
+//    linkTowers(allTowers);
 //    linkTree(allDisplayTree, 0);
 //    updateState({
 //        doStructure: false,
@@ -182,15 +182,15 @@ var markSeparators = function (children) {
 //    });
 //};
 
-var treeFromTokens = function () {
-    allDisplayTree = _treeFromTokens(allTokens, 0);
+var treeFromTowers = function () {
+    allDisplayTree = _treeFromTowers(allTowers, 0);
 };
 
-var linkTokens = function (tokens) {
-    _.each(tokens, function (t, i) { t.tokenI = i });
+var linkTowers = function (towers) {
+    _.each(towers, function (t, i) { t.towerI = i });
 };
 
-var _treeFromTokens = function (tokens, level) {
+var _treeFromTowers = function (towers, level) {
     var node = createBar({level: level});
     var childBeginI = null;
     var attachBar = function (endI) {
@@ -199,7 +199,7 @@ var _treeFromTokens = function (tokens, level) {
         }
     };
     var recurse = function (beginI, endI) {
-        return _treeFromTokens(tokens.slice(beginI, endI), level + 1);
+        return _treeFromTowers(towers.slice(beginI, endI), level + 1);
     };
     var attach = function (child) {
         if (child) {
@@ -207,39 +207,39 @@ var _treeFromTokens = function (tokens, level) {
         }
     };
 
-    _.each(tokens, function (token, i) {
-        if (token.level === node.level + 1) {
+    _.each(towers, function (tower, i) {
+        if (tower.level === node.level + 1) {
             attachBar(i);
             childBeginI = null;
-            attach(token);
+            attach(tower);
         } else {
             if (childBeginI == null) {
                 childBeginI = i;
             }
         }
     });
-    attachBar(tokens.length);
+    attachBar(towers.length);
 
     return node;
 };
 
-var tokensFromTree = function () {
-    addSeparatorsToChildren(allDisplayTree, 0);
+var towersFromTree = function () {
+    addDividersToChildren(allDisplayTree, 0);
     var symbols = symbolsFromTree();
-    allTokens = _.filter(symbols, _.property('token'));
+    allTowers = _.filter(symbols, _.property('tower'));
 };
 
-var addSeparatorsToChildren = function (node) {
-    markSeparators(node.children);
+var addDividersToChildren = function (node) {
+    markDividers(node.children);
     var _children = [];
     _.each(node.children, function (child, i) {
-        if (child.separatorLeft) {
-            var token = createDisplay(null, {separator: true});
-            _children.push(token);
+        if (child.dividerLeft) {
+            var tower = createDisplay(null, {divider: true});
+            _children.push(tower);
         }
         _children.push(child);
         if (child.branch) {
-            addSeparatorsToChildren(child);
+            addDividersToChildren(child);
         }
     });
     node._children = _children;
@@ -271,11 +271,11 @@ var _findFromCoordinates = function (node, x, y) {
     for (var i = 0; i < node._children.length; i++) {
         var child = node._children[i];
         if (child.x <= x && x <= child.x + child.w && y >= child.y) {
-            if (child.token) {
+            if (child.tower) {
                 if (y >= child.y + child.symbolEndY) {
                     return [child, 'tower'];
                 } else {
-                    if (child.separator) {
+                    if (child.divider) {
                         ifNotFound = [child, 'tower'];
                     } else {
                         return [child, 'symbol'];
