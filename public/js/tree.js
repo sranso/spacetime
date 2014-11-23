@@ -36,6 +36,7 @@ var createView = function (symbol, view) {
 };
 
 var createSymbol = function (symbol) {
+    symbol = symbol || {};
     var leaf = _.has(symbol, 'text');
     return _.extend({
         id: symbolId(),
@@ -47,10 +48,6 @@ var createSymbol = function (symbol) {
         text: '',
         view: null,
     }, symbol);
-};
-
-var updateSymbols = function (views) {
-    _.each(views, updateSymbol);
 };
 
 var updateSymbol = function (view) {
@@ -66,13 +63,17 @@ var updateSymbol = function (view) {
         child.parents.push(symbol);
     });
     symbol.children = newChildren;
-    symbol.text = view.text;
+    if (symbol.branch) {
+        symbol.text = view.text;
+    }
     symbol.view = view;
+};
+
+var maybeKillView = function (view) {
     if (!view.children.length) {
         killView(view);
     }
 };
-
 var killView = function (view) {
     _killView(view);
     killSymbol(view.symbol);
@@ -101,12 +102,12 @@ var _killSymbol = function (symbol, visited) {
 
 // TODO
 var computeStructure = function (mode) {
-    updateView();
+    updateViews();
 };
 
-var updateView = function (viewTree) {
+var updateViews = function (viewTree) {
     allViewTree = viewTree || allViewTree;
-    _updateView(allViewTree);
+    _updateViews(allViewTree);
     towersFromTree();
     linkTowers(allTowers);
     linkTree(allViewTree, 0);
@@ -118,7 +119,7 @@ var updateView = function (viewTree) {
 };
 
 // TODO: what to about the oddball dividers?
-var _updateView = function (node) {
+var _updateViews = function (node) {
     var symbol = node.symbol;
     var oldChildren = node.children;
     if (!node.reference) {
@@ -136,7 +137,7 @@ var _updateView = function (node) {
             } else {
                 oldChildren.splice(i, 1);
             }
-            _updateView(child);
+            _updateViews(child);
             return child;
         });
         node.text = symbol.text;
@@ -274,6 +275,13 @@ var _viewsFromTree = function (node, views) {
         views.push(child);
         _viewsFromTree(child, views);
     });
+};
+
+var ancestor = function (node, n) {
+    if (n === 0) {
+        return node;
+    }
+    return ancestor(node.parent, n - 1);
 };
 
 var findUnderMouse = function () {
