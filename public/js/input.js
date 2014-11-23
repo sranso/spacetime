@@ -128,9 +128,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 updateState({insertingMode: 'tower'});
             }
         }
-        var level = ins.level;
+        var depth = ins.depth;
         if (ins.branch || ins.text) {
-            var insert = createTower({level: level, text: ''});
+            var insert = createTower({depth: depth, text: ''});
             if (state.targetMode === 'tower') {
                 allTowers.splice(ins.towerI + 1, 0, insert);
             } else {
@@ -141,19 +141,19 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             ins = insert;
         } else if (key === '(') {
             var before = allTowers[ins.towerI - 1];
-            if (before.level > ins.level) {
-                var insert = createTower({level: level, divider: true});
+            if (before.depth > ins.depth) {
+                var insert = createTower({depth: depth, divider: true});
                 allTowers.splice(ins.towerI, 0, insert);
             }
             updateState({doStructure: 'tower'});
         }
         if (key === '(') {
-            level += 1;
+            depth += 1;
         } else if (key === ')') {
-            level = Math.max(1, level - 1);
+            depth = Math.max(1, depth - 1);
         }
-        if (level !== ins.level) {
-            ins.level = level;
+        if (depth !== ins.depth) {
+            ins.depth = depth;
             updateState({doStructure: 'tower'});
         }
         updateState({selection: null});
@@ -164,20 +164,20 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         } else {
             return; // TODO
         }
-        var level = ins.level;
+        var depth = ins.depth;
         var towerI = ins.towerI;
         if (!ins.text) {
             allTowers.splice(towerI, 1);
         } else {
             towerI += 1;
         }
-        if (level === 1) {
-            level = 2; // TODO
+        if (depth === 1) {
+            depth = 2; // TODO
         }
-        var divider = createTower({level: level - 1, divider: true});
+        var divider = createTower({depth: depth - 1, divider: true});
         allTowers.splice(towerI, 0, divider);
         towerI += 1;
-        var insert = createTower({level: level, text: ''});
+        var insert = createTower({depth: depth, text: ''});
         allTowers.splice(towerI, 0, insert);
         updateState({
             inserting: insert,
@@ -214,13 +214,13 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 return; // TODO
             }
         }
-        var level = ins.level;
+        var depth = ins.depth;
         if (key === '[') {
-            level += 1;
+            depth += 1;
         } else if (key === ']') {
-            level = Math.max(1, level - 1);
+            depth = Math.max(1, depth - 1);
         }
-        ins.level = level;
+        ins.depth = depth;
         updateState({doStructure: 'tower', selection: null});
 
     } else if (key === '`' || key === '5') {

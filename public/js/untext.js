@@ -1,12 +1,12 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allViewTree, allTowers, topLevelPositions, symbolIdSequence, viewIdSequence, state, lastState;
+var untext, allSymbols, allViewTree, allTowers, otherPositions, symbolIdSequence, viewIdSequence, state, lastState;
 
 var init = function () {
     untext = {};
     allSymbols = null;
     allTowers = [];
-    topLevelPositions = {};
+    otherPositions = {};
     symbolIdSequence = 0;
     viewIdSequence = 0;
     hovering = null;

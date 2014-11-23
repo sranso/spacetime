@@ -203,16 +203,16 @@ var maybeSwap = function (siblings, index, info) {
 
 var dragTree = function (info) {
     var moving = state.moving;
-    var levelChange = calculateLevelChange(info);
-    if (moving.level + levelChange <= 0) {
-        levelChange = 1 - moving.level;
+    var depthChange = calculateDepthChange(info);
+    if (moving.depth + depthChange <= 0) {
+        depthChange = 1 - moving.depth;
     }
 
     var changed = [];
-    if (levelChange <= -1) {
+    if (depthChange <= -1) {
         moving.parent.children.splice(moving.treeI, 1);
         changed.push(moving.parent);
-        var n = new Array(-levelChange);
+        var n = new Array(-depthChange);
         var insertBefore = _.reduce(n, _.property('parent'), moving);
         var newSiblings = insertBefore.parent.children;
         var before = newSiblings.slice(0, insertBefore.treeI);
@@ -222,7 +222,7 @@ var dragTree = function (info) {
         changed.push(insertBefore.parent);
         updateSymbols(changed);
         positionAfterMove();
-    } else if (levelChange >= 1) {
+    } else if (depthChange >= 1) {
         var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
         var firstNeighbor = siblings[neighborI];
@@ -243,7 +243,7 @@ var dragTree = function (info) {
             updateSymbols(changed);
             positionAfterMove(changed);
         } else {
-            levelChange = 0;
+            depthChange = 0;
         }
     }
 
@@ -252,9 +252,9 @@ var dragTree = function (info) {
         updateSymbol(moving.parent);
         positionAfterMove();
     }
-    return levelChange !== 0 || swapped;
+    return depthChange !== 0 || swapped;
 };
 
-var calculateLevelChange = function (info) {
-    return Math.round(info.diff[1] / levelHeight);
+var calculateDepthChange = function (info) {
+    return Math.round(info.diff[1] / depthHeight);
 };

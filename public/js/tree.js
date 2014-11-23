@@ -22,8 +22,8 @@ var createView = function (symbol, view) {
         children: [],
         _children: [],
         text: '',
-        level: 0,
         depth: 0,
+        height: 0,
         position: null,
         begin: null,
         end: null,
@@ -143,16 +143,16 @@ var _updateView = function (node) {
     }
 };
 
-var linkTree = function (node, level) {
+var linkTree = function (node, depth) {
     var begin = node._children[0];
     var end = node._children[node._children.length - 1];
-    var depth = 1;
+    var height = 1;
     node.children = _.filter(node._children, function (child, i) {
         child.parent = node;
-        child.level = level + 1;
+        child.depth = depth + 1;
         if (child.branch) {
-            var ret = linkTree(child, level + 1);
-            depth = Math.max(depth, ret[2] + 1);
+            var ret = linkTree(child, depth + 1);
+            height = Math.max(height, ret[2] + 1);
             if (i === 0) { begin = ret[0]; }
             if (i === node._children.length - 1) { end = ret[1]; }
         }
@@ -165,8 +165,8 @@ var linkTree = function (node, level) {
     });
     node.begin = begin;
     node.end = end;
-    node.depth = depth;
-    return [begin, end, depth];
+    node.height = height;
+    return [begin, end, height];
 };
 
 var markDividers = function (children) {
@@ -208,8 +208,8 @@ var linkTowers = function (towers) {
     _.each(towers, function (t, i) { t.towerI = i });
 };
 
-var _treeFromTowers = function (towers, level) {
-    var node = createBar({level: level});
+var _treeFromTowers = function (towers, depth) {
+    var node = createBar({depth: depth});
     var childBeginI = null;
     var attachBar = function (endI) {
         if (childBeginI != null) {
@@ -217,7 +217,7 @@ var _treeFromTowers = function (towers, level) {
         }
     };
     var recurse = function (beginI, endI) {
-        return _treeFromTowers(towers.slice(beginI, endI), level + 1);
+        return _treeFromTowers(towers.slice(beginI, endI), depth + 1);
     };
     var attach = function (child) {
         if (child) {
@@ -226,7 +226,7 @@ var _treeFromTowers = function (towers, level) {
     };
 
     _.each(towers, function (tower, i) {
-        if (tower.level === node.level + 1) {
+        if (tower.depth === node.depth + 1) {
             attachBar(i);
             childBeginI = null;
             attach(tower);

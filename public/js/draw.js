@@ -1,6 +1,6 @@
 var width = '100%';
 var height = 300;
-var levelHeight = 20;
+var depthHeight = 20;
 var dividerWidth = 8;
 var cameraStartX = 90;
 var svgExtraHeight = 115;
@@ -73,7 +73,7 @@ var selection = function (viewEls, dataSelection) {
 var computePositions = function (viewTree) {
     _computePositions(viewTree);
     if (viewTree === allViewTree) {
-        computeNonTreePositions();
+        computeOtherPositions();
     }
     updateState({
         doPositions: false,
@@ -82,10 +82,10 @@ var computePositions = function (viewTree) {
     });
 };
 
-var computeNonTreePositions = function () {
-    topLevelPositions.svgHeight = allViewTree.h + svgExtraHeight;
+var computeOtherPositions = function () {
+    otherPositions.svgHeight = allViewTree.h + svgExtraHeight;
     var lastTower = allTowers[allTowers.length - 1];
-    topLevelPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
+    otherPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
 };
 
 var _computePositions = function (node) {
@@ -96,8 +96,8 @@ var _computePositions = function (node) {
 
     var pos = {};
 
-    pos.y = abovePos.y + levelHeight;
-    pos.h = (node.depth + 1) * levelHeight;
+    pos.y = abovePos.y + depthHeight;
+    pos.h = (node.height + 1) * depthHeight;
 
     if (state.targetKind === 'moving' && _.contains(state.targets, node)) {
         var info = movingInfo();
@@ -115,14 +115,14 @@ var _computePositions = function (node) {
         pos.towerY = 35;
         if (node.divider) {
             pos.w = dividerWidth;
-            pos.viewEndY = levelHeight;
+            pos.viewEndY = depthHeight;
         } else {
             pos.viewEndY = pos.towerY;
             pos.w = Math.max(textWidth(node) + 15, 25);
         }
         pos.braceW = pos.w;
     } else {
-        pos.viewEndY = levelHeight;
+        pos.viewEndY = depthHeight;
         node.position = pos;
         _.each(node._children, function (child) {
             _computePositions(child);
@@ -182,10 +182,10 @@ var drawSetup = function () {
 var draw = function (sel) {
 
     var svg = d3.select('svg#string')
-        .attr('height', topLevelPositions.svgHeight) ;
+        .attr('height', otherPositions.svgHeight) ;
 
     d3.select(document.body)
-        .style('height', topLevelPositions.bodyHeight + 'px') ;
+        .style('height', otherPositions.bodyHeight + 'px') ;
 
     camera
         .classed('tower-mode', state.targetMode === 'tower')
@@ -202,13 +202,13 @@ var draw = function (sel) {
         .classed('tower', true) ;
 
     sel.towerEnterEls.append('text')
-        .attr('y', levelHeight + 7) ;
+        .attr('y', depthHeight + 7) ;
 
     sel.towerEls.select('rect.tower')
         .attr('x', 2)
         .attr('y', _.property('towerY'))
         .attr('width', function (t) { return t.w - 4 })
-        .attr('height', topLevelPositions.svgHeight) ;
+        .attr('height', otherPositions.svgHeight) ;
 
     sel.towerEls.select('text')
         .attr('x', function (t) { return t.w / 2 })
