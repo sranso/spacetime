@@ -147,9 +147,8 @@ var dragMoving = function () {
     }
 };
 
-var afterMove = function (changed) {
+var positionAfterMove = function () {
     var currentPos = {x: state.moving.x, y: state.moving.y};
-    updateSymbols(changed);
     computeStructure(state.targetMode);
     computePositions(allViewTree);
     state.startMouse = [
@@ -170,7 +169,7 @@ var dragTower = function (info) {
     var swapped = maybeSwap(allTowers, 'towerI', info);
     var moved = levelChange || swapped;
     if (moved) {
-        afterMove();
+        positionAfterMove();
     }
     return moved;
 };
@@ -221,7 +220,8 @@ var dragTree = function (info) {
         newSiblings = before.concat([moving]).concat(after);
         insertBefore.parent.children = newSiblings;
         changed.push(insertBefore.parent);
-        afterMove(changed);
+        updateSymbols(changed);
+        positionAfterMove();
     } else if (levelChange >= 1) {
         var siblings = moving.parent.children;
         var neighborI = moving.treeI + info.direction[0];
@@ -240,17 +240,18 @@ var dragTree = function (info) {
             } else {
                 descendNeighbor.children.push(moving);
             }
-            afterMove(changed);
+            updateSymbols(changed);
+            positionAfterMove(changed);
         } else {
             levelChange = 0;
         }
     }
 
-    var swapped = false; // TODO
-    //var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
-    //if (swapped) {
-    //    afterMove();
-    //}
+    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
+    if (swapped) {
+        updateSymbol(moving.parent);
+        positionAfterMove();
+    }
     return levelChange !== 0 || swapped;
 };
 
