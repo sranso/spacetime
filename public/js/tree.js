@@ -49,14 +49,13 @@ var createSymbol = function (symbol) {
     }, symbol);
 };
 
-var updateSymbols = function (viewNodes) {
-    _.each(viewNodes, updateSymbol);
+var updateSymbols = function (views) {
+    _.each(views, updateSymbol);
 };
 
-var updateSymbol = function (viewNode) {
-    var symbol = viewNode.symbol;
-    var newChildren = _.pluck(viewNode.children, 'symbol');
-    newChildren = _.filter(newChildren, _.property('alive'));
+var updateSymbol = function (view) {
+    var symbol = view.symbol;
+    var newChildren = _.pluck(view.children, 'symbol');
     var oldChildren = symbol.children;
     var removeChildren = _.difference(oldChildren, newChildren);
     var addChildren = _.difference(newChildren, oldChildren);
@@ -67,10 +66,22 @@ var updateSymbol = function (viewNode) {
         child.parents.push(symbol);
     });
     symbol.children = newChildren;
-    symbol.text = viewNode.text;
-    symbol.view = viewNode;
-    if (!newChildren.length) {
-        killSymbol(symbol);
+    symbol.text = view.text;
+    symbol.view = view;
+    if (!view.children.length) {
+        killView(view);
+    }
+};
+
+var killView = function (view) {
+    _killView(view);
+    killSymbol(view.symbol);
+};
+var _killView = function (view) {
+    var parent = view.parent;
+    parent.children = _.without(parent.children, view);
+    if (!parent.children.length) {
+        _killView(parent);
     }
 };
 
