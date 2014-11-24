@@ -141,7 +141,7 @@ var dragMoving = function () {
     }
 
     if (moved) {
-        updateState({doStructure: state.targetMode});
+        updateState({doStructure: true});
     } else {
         _.each(state.targets, computePositions);
         draw(movingSelection());
@@ -150,7 +150,7 @@ var dragMoving = function () {
 
 var positionAfterMove = function () {
     var currentPos = {x: state.moving.x, y: state.moving.y};
-    computeStructure(state.targetMode);
+    computeStructure();
     computePositions(allViewTree);
     state.startMouse = [
         state.startMouse[0] + state.moving.x - currentPos.x,

@@ -122,7 +122,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             });
             updateState({
                 inserting: nextIns && nextIns[0],
-                doStructure: 'tower',
+                doStructure: true,
                 selection: null,
             });
         } else if (siblings) {
@@ -130,7 +130,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             update(ins.parent);
             maybeKillView(ins.parent);
             ins = siblings[ins.treeI];
-            updateState({inserting: ins, doStructure: 'tree'});
+            updateState({inserting: ins, doStructure: true});
         }
 
     } else if (_.contains([' ', '(', ')'], key)) {
@@ -201,19 +201,19 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             return;
         }
         if (ins.reference) {
-            ins = siblings[ins.treeI] = ins.symbol.view;
+            ins = siblings[treeI(ins)] = ins.symbol.view;
         } else if (siblings) {
             var reference = createView(ins.symbol, {
                 reference: true,
-                text: ins.begin.text,
+                text: leftmostTower(ins)[0].text,
                 tower: true,
             });
-            siblings[ins.treeI] = reference;
+            siblings[treeI(ins)] = reference;
             ins = reference;
         }
         updateState({
             inserting: ins,
-            doStructure: 'tree',
+            doStructure: true,
             selection: null,
         });
 

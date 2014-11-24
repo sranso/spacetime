@@ -102,13 +102,7 @@ var _killSymbol = function (symbol, visited) {
     });
 };
 
-// TODO
-var computeStructure = function (mode) {
-    updateViews();
-};
-
-var updateViews = function (viewTree) {
-    allViewTree = viewTree || allViewTree;
+var computeStructure = function () {
     _updateViews(allViewTree);
     addDividersToChildren(allViewTree, 0);
     linkTreeHeight(allViewTree);
