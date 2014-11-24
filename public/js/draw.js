@@ -84,14 +84,14 @@ var computePositions = function (viewTree) {
 
 var computeOtherPositions = function () {
     otherPositions.svgHeight = allViewTree.h + svgExtraHeight;
-    var lastTower = allTowers[allTowers.length - 1];
+    var lastTower = rightmostTower(allViewTree);
     otherPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
 };
 
 var _computePositions = function (node) {
     var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, viewEndY: 0, towerY: 0, movingTree: false};
-    var leftI = (node.tower ? node.towerI : node.begin.towerI) - 1;
-    var leftPos = leftI >= 0 ? allTowers[leftI].position : nullPos;
+    var leftTower = previousTower(node);
+    var leftPos = leftTower ? leftTower[0].position : nullPos;
     var abovePos = node.parent ? node.parent.position : nullPos;
 
     var pos = {};
@@ -127,8 +127,9 @@ var _computePositions = function (node) {
         _.each(node._children, function (child) {
             _computePositions(child);
         });
-        pos.x = node.begin.position.x;
-        pos.braceW = node.end.position.x + node.end.position.w - pos.x;
+        pos.x = leftmostTower(node)[0].position.x;
+        var end = rightmostTower(node)[0];
+        pos.braceW = end.position.x + end.position.w - pos.x;
         pos.w = pos.braceW;
         if (node.dividerLeft) {
             pos.x -= dividerWidth / 2;

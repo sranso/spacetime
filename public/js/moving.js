@@ -61,12 +61,13 @@ var startSelection = function () {
     });
 };
 
+// TODO: fix allTower
 var changeSelection = function () {
     var begin = state.selectionBegin;
     if (!begin) {
         return;
     }
-    var end = findFromSiblings(allTowers, mouse[0]);
+    var end = findFromTowers(mouse[0]);
     var indices = _.sortBy([begin.towerI, end.towerI]);
     var selection = allTowers.slice(indices[0], indices[1] + 1);
     updateState({
@@ -175,12 +176,6 @@ var dragTower = function (info) {
         });
         moved = true;
     }
-    // _.each(state.targets, function (target) {
-    //     target.depth = target.depth + depthChange;
-    //     if (target.depth <= 0) {
-    //         target.depth = 1;
-    //     }
-    // });
 
     // var swapped = maybeSwap(allTowers, 'towerI', info);
     // var moved = depthChange || swapped;
@@ -191,88 +186,90 @@ var dragTower = function (info) {
 };
 
 var moveTowerDown = function (tower) {
-    var leftTower = allTowers[tower.towerI - 1];
-    var rightTower = allTowers[tower.towerI + 1];
-    var leftDepth = leftTower ? leftTower.depth : 0;
-    var rightDepth = rightTower ? rightTower.depth : 0;
+    var leftTower = previousTower(tower);
+    var rightTower = nextTower(tower);
+    var leftDepth = leftTower ? leftTower[1] : -1000;
+    var rightDepth = rightTower ? rightTower[1] : -1000;
+    var oldParent = tower.parent;
     var siblings = tower.parent.children;
-    if (tower.depth >= leftDepth && tower.depth >= rightDepth) {
+    if (leftDepth <= 0 && rightDepth <= 0) {
         var newParent = createView(createSymbol(), {children: [tower]});
-        siblings[tower.treeI] = newParent;
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-    } else if (tower.depth >= leftDepth && tower.depth < rightDepth) {
-        var newParent = siblings[tower.treeI + 1];
-        siblings.splice(tower.treeI, 1);
+        siblings[treeI(tower)] = newParent;
+        update(oldParent);
+        update(newParent);
+    } else if (leftDepth <= 0 && rightDepth > 0) {
+        var newParent = siblings[treeI(tower) + 1];
+        siblings.splice(treeI(tower), 1);
         newParent.children.unshift(tower);
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-    } else if (tower.depth < leftDepth && tower.depth >= rightDepth) {
-        var newParent = siblings[tower.treeI - 1];
-        siblings.splice(tower.treeI, 1);
+        update(oldParent);
+        update(newParent);
+    } else if (leftDepth > 0 && rightDepth <= 0) {
+        var newParent = siblings[treeI(tower) - 1];
+        siblings.splice(treeI(tower), 1);
         newParent.children.push(tower);
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-    } else {  // tower.depth < leftDepth && tower.depth < rightDepth
-        var newParent = siblings[tower.treeI - 1];
-        var merge = siblings[tower.treeI + 1];
+        update(oldParent);
+        update(newParent);
+    } else {  // leftDepth > 0 && rightDepth > 0
+        var newParent = siblings[treeI(tower) - 1];
+        var merge = siblings[treeI(tower) + 1];
         newParent.children.push(tower);
         newParent.children = newParent.children.concat(merge.children);
         merge.children = [];
-        siblings.splice(tower.treeI, 2);
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-        updateSymbol(merge);
+        siblings.splice(treeI(tower), 2);
+        update(oldParent);
+        update(newParent);
+        update(merge);
         killView(merge);
     }
 };
 
 var moveTowerUp = function (tower) {
-    if (tower.depth <= 1) {
+    if (!tower.parent.parent) {
         return;
     }
-    var leftTower = allTowers[tower.towerI - 1];
-    var rightTower = allTowers[tower.towerI + 1];
-    var leftDepth = leftTower ? leftTower.depth : 0;
-    var rightDepth = rightTower ? rightTower.depth : 0;
-    if (tower.depth > leftDepth && tower.depth > rightDepth) {
+    var leftTower = previousTower(tower);
+    var rightTower = nextTower(tower);
+    var leftDepth = leftTower ? leftTower[1] : -1000;
+    var rightDepth = rightTower ? rightTower[1] : -1000;
+    var oldParent = tower.parent;
+    if (leftDepth < 0 && rightDepth < 0) {
         var newParent = tower.parent.parent;
-        newParent.children[tower.parent.treeI] = tower;
-        tower.parent.children = [];
-        updateSymbol(newParent);
-        updateSymbol(tower.parent);
-        killSymbol(tower.parent);
-    } else if (tower.depth > leftDepth && tower.depth <= rightDepth) {
+        newParent.children[treeI(oldParent)] = tower;
+        oldParent.children = [];
+        update(newParent);
+        update(oldParent);
+        killSymbol(oldParent);
+    } else if (leftDepth < 0 && rightDepth >= 0) {
         var newParent = tower.parent.parent;
-        newParent.children.splice(tower.parent.treeI, 0, tower);
-        tower.parent.children.shift();
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-    } else if (tower.depth <= leftDepth && tower.depth > rightDepth) {
+        newParent.children.splice(treeI(oldParent), 0, tower);
+        oldParent.children.shift();
+        update(oldParent);
+        update(newParent);
+    } else if (leftDepth >= 0 && rightDepth < 0) {
         var newParent = tower.parent.parent;
-        newParent.children.splice(tower.parent.treeI + 1, 0, tower);
-        tower.parent.children.pop();
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-    } else {  // tower.depth <= leftDepth && tower.depth <= rightDepth
+        newParent.children.splice(treeI(oldParent) + 1, 0, tower);
+        oldParent.children.pop();
+        update(oldParent);
+        update(newParent);
+    } else {  // leftDepth >= 0 && rightDepth >= 0
         var newParent = tower.parent.parent;
-        var splitChildren = tower.parent.children.slice(tower.treeI + 1);
+        var splitChildren = oldParent.children.slice(treeI(tower) + 1);
         var split = createView(createSymbol(), {children: splitChildren});
-        tower.parent.children = tower.parent.children.slice(0, tower.treeI);
-        newParent.children.splice(tower.parent.treeI + 1, 0, split);
-        newParent.children.splice(tower.parent.treeI + 1, 0, tower);
-        updateSymbol(tower.parent);
-        updateSymbol(newParent);
-        updateSymbol(split);
+        oldParent.children = oldParent.children.slice(0, treeI(tower));
+        newParent.children.splice(treeI(oldParent) + 1, 0, split);
+        newParent.children.splice(treeI(oldParent) + 1, 0, tower);
+        update(oldParent);
+        update(newParent);
+        update(split);
     }
 };
 
-var maybeSwap = function (siblings, index, info) {
+var maybeSwapTree = function (siblings, info) {
     var swapped = false;
     var diffX = info.absDiff[0];
     var dir = info.direction[0];
     var len = state.targets.length;
-    var movingI = state.targets[dir < 0 ? 0 : len - 1][index];
+    var movingI = treeI(state.targets[dir < 0 ? 0 : len - 1]);
     while (true) {
         var neighborI = movingI + dir;
         var neighbor = siblings[neighborI];
@@ -297,41 +294,29 @@ var maybeSwap = function (siblings, index, info) {
 var dragTree = function (info) {
     var moving = state.moving;
     var depthChange = calculateDepthChange(info);
-    if (moving.depth + depthChange <= 0) {
-        depthChange = 1 - moving.depth;
-    }
 
     if (depthChange <= -1) {
-        moving.parent.children.splice(moving.treeI, 1);
-        updateSymbol(moving.parent);
-        var n = new Array(-depthChange);
-        var insertBefore = ancestor(moving, -depthChange);
-        var newSiblings = insertBefore.parent.children;
-        var before = newSiblings.slice(0, insertBefore.treeI);
-        var after = newSiblings.slice(insertBefore.treeI);
-        newSiblings = before.concat([moving]).concat(after);
-        insertBefore.parent.children = newSiblings;
-        updateSymbol(insertBefore.parent);
-        maybeKillView(moving.parent);
-        positionAfterMove();
+        _(-depthChange).times(function () {
+            moveTreeUp(moving);
+        });
     } else if (depthChange >= 1) {
         var siblings = moving.parent.children;
-        var neighborI = moving.treeI + info.direction[0];
+        var neighborI = treeI(moving) + info.direction[0];
         var firstNeighbor = siblings[neighborI];
-        neighborI = moving.treeI - info.direction[0];
+        neighborI = treeI(moving) - info.direction[0];
         var secondNeighbor = siblings[neighborI];
         var descendNeighbor = _.find([firstNeighbor, secondNeighbor], function (n) {
             return n && n.branch;
         });
         if (descendNeighbor) {
-            siblings.splice(moving.treeI, 1);
-            updateSymbol(moving.parent);
-            if (descendNeighbor.treeI > moving.treeI) {
+            siblings.splice(treeI(moving), 1);
+            update(moving.parent);
+            if (treeI(descendNeighbor) > treeI(moving)) {
                 descendNeighbor.children.unshift(moving);
             } else {
                 descendNeighbor.children.push(moving);
             }
-            updateSymbol(descendNeighbor);
+            update(descendNeighbor);
             maybeKillView(moving.parent);
             positionAfterMove();
         } else {
@@ -339,12 +324,26 @@ var dragTree = function (info) {
         }
     }
 
-    var swapped = maybeSwap(moving.parent.children, 'treeI', movingInfo());
+    var swapped = maybeSwapTree(moving.parent.children, movingInfo());
     if (swapped) {
-        updateSymbol(moving.parent);
+        update(moving.parent);
         positionAfterMove();
     }
     return depthChange !== 0 || swapped;
+};
+
+var moveTreeUp = function (node) {
+    if (!node.parent.parent) {
+        return;
+    }
+    var oldParent = node.parent;
+    var newParent = node.parent.parent;
+    oldParent.children.splice(treeI(node), 1);
+    newParent.children.splice(treeI(oldParent), 0, node);
+    update(newParent);
+    update(oldParent);
+    maybeKillView(oldParent);
+    positionAfterMove();
 };
 
 var calculateDepthChange = function (info) {

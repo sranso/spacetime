@@ -22,14 +22,9 @@ var createView = function (symbol, view) {
         children: [],
         _children: [],
         text: '',
-        depth: 0,
         height: 0,
         position: null,
-        begin: null,
-        end: null,
         parent: null,
-        treeI: 0,
-        towerI: 0,
     }, view || {});
     view.branch = !view.tower;
     return view;
@@ -48,6 +43,13 @@ var createSymbol = function (symbol) {
         text: '',
         view: null,
     }, symbol);
+};
+
+var update = function (view) {
+    _.each(view.children, function (child) {
+        child.parent = view;
+    });
+    updateSymbol(view);
 };
 
 var updateSymbol = function (view) {
@@ -108,9 +110,8 @@ var computeStructure = function (mode) {
 var updateViews = function (viewTree) {
     allViewTree = viewTree || allViewTree;
     _updateViews(allViewTree);
-    towersFromTree();
-    linkTowers(allTowers);
-    linkTree(allViewTree, 0);
+    addDividersToChildren(allViewTree, 0);
+    linkTreeHeight(allViewTree);
     updateState({
         doStructure: false,
         doPositions: true,
@@ -137,6 +138,8 @@ var _updateViews = function (node) {
             } else {
                 oldChildren.splice(i, 1);
             }
+
+            child.parent = node;
             _updateViews(child);
             return child;
         });
@@ -144,30 +147,16 @@ var _updateViews = function (node) {
     }
 };
 
-var linkTree = function (node, depth) {
-    var begin = node._children[0];
-    var end = node._children[node._children.length - 1];
+var linkTreeHeight = function (node) {
     var height = 1;
-    node.children = _.filter(node._children, function (child, i) {
-        child.parent = node;
-        child.depth = depth + 1;
-        if (child.branch) {
-            var ret = linkTree(child, depth + 1);
-            height = Math.max(height, ret[2] + 1);
-            if (i === 0) { begin = ret[0]; }
-            if (i === node._children.length - 1) { end = ret[1]; }
-        }
-        return !child.divider;
-    });
-    markDividers(node.children);
-
     _.each(node.children, function (child, i) {
-        child.treeI = i;
+        if (child.branch) {
+            var childHeight = linkTreeHeight(child);
+            height = Math.max(height, childHeight + 1);
+        }
     });
-    node.begin = begin;
-    node.end = end;
     node.height = height;
-    return [begin, end, height];
+    return height;
 };
 
 var markDividers = function (children) {
@@ -180,72 +169,6 @@ var markDividers = function (children) {
         }
         lastChild = child;
     });
-};
-
-
-//var computeStructure = function (mode) {
-//    if (!mode) {
-//        return;
-//    }
-//    if (mode === 'tower') {
-//        treeFromTowers();
-//    } else {
-//        towersFromTree();
-//    }
-//    linkTowers(allTowers);
-//    linkTree(allViewTree, 0);
-//    updateState({
-//        doStructure: false,
-//        doPositions: true,
-//        doDataDraw: true,
-//    });
-//};
-
-var treeFromTowers = function () {
-    allViewTree = _treeFromTowers(allTowers, 0);
-};
-
-var linkTowers = function (towers) {
-    _.each(towers, function (t, i) { t.towerI = i });
-};
-
-var _treeFromTowers = function (towers, depth) {
-    var node = createBar({depth: depth});
-    var childBeginI = null;
-    var attachBar = function (endI) {
-        if (childBeginI != null) {
-            attach(recurse(childBeginI, endI));
-        }
-    };
-    var recurse = function (beginI, endI) {
-        return _treeFromTowers(towers.slice(beginI, endI), depth + 1);
-    };
-    var attach = function (child) {
-        if (child) {
-            node._children.push(child);
-        }
-    };
-
-    _.each(towers, function (tower, i) {
-        if (tower.depth === node.depth + 1) {
-            attachBar(i);
-            childBeginI = null;
-            attach(tower);
-        } else {
-            if (childBeginI == null) {
-                childBeginI = i;
-            }
-        }
-    });
-    attachBar(towers.length);
-
-    return node;
-};
-
-var towersFromTree = function () {
-    addDividersToChildren(allViewTree, 0);
-    var views = viewsFromTree();
-    allTowers = _.filter(views, _.property('tower'));
 };
 
 var addDividersToChildren = function (node) {
@@ -277,15 +200,74 @@ var _viewsFromTree = function (node, views) {
     });
 };
 
-var ancestor = function (node, n) {
-    if (n === 0) {
-        return node;
+var previousTower = function (node, depth) {
+    depth = depth || 0;
+    while (true) {
+        if (!node.parent) {
+            return null;
+        }
+        var i = treeI(node);
+        if (i === 0) {
+            node = node.parent;
+            depth -= 1;
+        } else {
+            return rightmostTower(node.parent.children[i - 1], depth);
+        }
     }
-    return ancestor(node.parent, n - 1);
+};
+
+var rightmostTower = function (node, depth) {
+    depth = depth || 0;
+    while (true) {
+        if (node.tower) {
+            return [node, depth];
+        }
+        node = node.children[node.children.length - 1];
+        depth += 1;
+    }
+};
+
+var nextTower = function (node, depth) {
+    depth = depth || 0;
+    while (true) {
+        if (!node.parent) {
+            return null;
+        }
+        var i = treeI(node);
+        if (i === node.parent.children.length - 1) {
+            node = node.parent;
+            depth -= 1;
+        } else {
+            return leftmostTower(node.parent.children[i + 1], depth);
+        }
+    }
+};
+
+var leftmostTower = function (node, depth) {
+    depth = depth || 0;
+    while (true) {
+        if (node.tower) {
+            return [node, depth];
+        }
+        node = node.children[0];
+        depth += 1;
+    }
+};
+
+var treeI = function (node) {
+    return node.parent.children.indexOf(node);
 };
 
 var findUnderMouse = function () {
     return findFromCoordinates(mouse[0], mouse[1]);
+};
+
+var findFromTowers = function (x) {
+    var found = findFromCoordinates(x, 10000);
+    if (found) {
+        return found[0];
+    }
+    return null;
 };
 
 var findFromCoordinates = function (x, y) {
