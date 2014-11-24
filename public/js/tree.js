@@ -65,7 +65,7 @@ var updateSymbol = function (view) {
         child.parents.push(symbol);
     });
     symbol.children = newChildren;
-    if (symbol.branch) {
+    if (symbol.leaf) {
         symbol.text = view.text;
     }
     symbol.view = view;

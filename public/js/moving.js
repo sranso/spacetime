@@ -177,8 +177,8 @@ var dragTower = function (info) {
         moved = true;
     }
 
-    // var swapped = maybeSwap(allTowers, 'towerI', info);
-    // var moved = depthChange || swapped;
+    var swapped = maybeSwapTower(info);
+    var moved = depthChange || swapped;
     if (moved) {
         positionAfterMove();
     }
@@ -264,32 +264,60 @@ var moveTowerUp = function (tower) {
     }
 };
 
-var maybeSwapTree = function (siblings, info) {
+var maybeSwapTower = function (info) {
     var swapped = false;
     var diffX = info.absDiff[0];
     var dir = info.direction[0];
-    var len = state.targets.length;
-    var movingI = treeI(state.targets[dir < 0 ? 0 : len - 1]);
+    var neighbor;
     while (true) {
-        var neighborI = movingI + dir;
-        var neighbor = siblings[neighborI];
+        if (dir < 0) {
+            neighbor = previousTower(state.targets[0]);
+        } else {
+            neighbor = nextTower(state.targets[state.targets.length - 1]);
+        }
+        neighbor = neighbor && neighbor[0];
         if (neighbor && diffX >= neighbor.w / 2 && diffX > minMoveX) {
             swapped = true;
-            var args;
-            if (dir < 0) {
-                args = [neighborI, len + 1].concat(state.targets, neighbor);
-            } else {
-                args = [neighborI - len, len + 1].concat(neighbor, state.targets);
-            }
-            siblings.splice.apply(siblings, args);
-            movingI = neighborI;
+            swapTargetTowers(neighbor, info);
             diffX -= neighbor.w;
         } else {
             break;
         }
     }
     return swapped;
-}
+};
+
+var swapTargetTowers = function (neighbor, info) {
+    if (info.direction[0] < 0) {
+        _(state.targets.length).times(function () {
+            swapTower(neighbor);
+        });
+    } else {
+        for (var i = state.targets.length - 1; i >= 0; i--) {
+            swapTower(state.targets[i]);
+        }
+    }
+};
+
+var swapTower = function (tower) {
+    var rightTower = nextTower(tower);
+    var rightDepth = rightTower[1];
+    rightTower = rightTower[0];
+    var towerI = treeI(tower);
+    var rightI = treeI(rightTower);
+    var oldParent = tower.parent;
+    rightTower.parent.children[rightI] = tower;
+    tower.parent.children[towerI] = rightTower;
+    update(rightTower.parent);
+    update(oldParent);
+
+    var absDepthDiff = Math.abs(rightDepth);
+    var up = rightDepth > 0 ? tower : rightTower;
+    var down = rightDepth > 0 ? rightTower : tower;
+    _(absDepthDiff).times(function () { moveTowerDown(down) });
+    _(absDepthDiff).times(function () { moveTowerUp(up) });
+};
+
 
 var dragTree = function (info) {
     var moving = state.moving;
@@ -344,6 +372,33 @@ var moveTreeUp = function (node) {
     update(oldParent);
     maybeKillView(oldParent);
     positionAfterMove();
+};
+
+var maybeSwapTree = function (siblings, info) {
+    var swapped = false;
+    var diffX = info.absDiff[0];
+    var dir = info.direction[0];
+    var len = state.targets.length;
+    var movingI = treeI(state.targets[dir < 0 ? 0 : len - 1]);
+    while (true) {
+        var neighborI = movingI + dir;
+        var neighbor = siblings[neighborI];
+        if (neighbor && diffX >= neighbor.w / 2 && diffX > minMoveX) {
+            swapped = true;
+            var args;
+            if (dir < 0) {
+                args = [neighborI, len + 1].concat(state.targets, neighbor);
+            } else {
+                args = [neighborI - len, len + 1].concat(neighbor, state.targets);
+            }
+            siblings.splice.apply(siblings, args);
+            movingI = neighborI;
+            diffX -= neighbor.w;
+        } else {
+            break;
+        }
+    }
+    return swapped;
 };
 
 var calculateDepthChange = function (info) {
