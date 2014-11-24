@@ -108,16 +108,27 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             updateState({moving: null});
         }
         if (state.targetMode === 'tower') {
-            var towerI = state.targets[0].towerI;
-            allTowers.splice(towerI, state.targets.length);
-            ins = allTowers[towerI];
+            var nextIns = (
+                nextTower(state.targets[state.targets.length - 1]) ||
+                previousTower(state.targets[0])
+            );
+            _.each(state.targets, function (target) {
+                while (target.parent.children.length > 1) {
+                    moveTowerDown(target);
+                }
+                target.parent.children = [];
+                update(target.parent);
+                killView(target.parent);
+            });
             updateState({
-                inserting: ins,
+                inserting: nextIns && nextIns[0],
                 doStructure: 'tower',
                 selection: null,
             });
         } else if (siblings) {
             siblings.splice(ins.treeI, 1);
+            update(ins.parent);
+            maybeKillView(ins.parent);
             ins = siblings[ins.treeI];
             updateState({inserting: ins, doStructure: 'tree'});
         }
