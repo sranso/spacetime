@@ -17,6 +17,7 @@ var init = function () {
 
 var setup = function (example) {
     init();
+    drawSetup();
 
     var root = createSymbol({children: [
         createSymbol({children: [
@@ -40,7 +41,6 @@ var setup = function (example) {
         doStructure: 'tree',
     });
 
-    drawSetup();
     doStuffAfterStateChanges();
     //loadJSON(example);
 

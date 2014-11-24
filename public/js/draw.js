@@ -118,7 +118,7 @@ var _computePositions = function (node) {
             pos.viewEndY = depthHeight;
         } else {
             pos.viewEndY = pos.towerY;
-            pos.w = Math.max(textWidth(node) + 15, 25);
+            pos.w = Math.max(node.textWidth + 15, 25);
         }
         pos.braceW = pos.w;
     } else {
@@ -314,12 +314,8 @@ var topBracePath = function (s) {
 };
 
 
-var textWidth = function (tower, recompute) {
-    if (!recompute && tower._textWidth) {
-        return tower._textWidth;
-    }
-    _offCameraTower.text(tower.text || '%');
+var textWidth = function (text) {
+    _offCameraTower.text(text || '%');
     var box = _offCameraTower.node().getBBox();
-    tower._textWidth = Math.ceil(box.width);
-    return tower._textWidth;
+    return Math.ceil(box.width);
 };

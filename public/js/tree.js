@@ -32,7 +32,7 @@ var createView = function (symbol, view) {
 
 var createSymbol = function (symbol) {
     symbol = symbol || {};
-    var leaf = _.has(symbol, 'text');
+    var leaf = symbol.text != null;
     return _.extend({
         id: symbolId(),
         alive: true,
@@ -40,7 +40,8 @@ var createSymbol = function (symbol) {
         branch: !leaf,
         children: [],
         parents: [],
-        text: '',
+        text: null,
+        textWidth: leaf ? textWidth(symbol.text) : null,
         view: null,
     }, symbol);
 };
@@ -66,7 +67,10 @@ var updateSymbol = function (view) {
     });
     symbol.children = newChildren;
     if (symbol.leaf) {
-        symbol.text = view.text;
+        if (symbol.text !== view.text) {
+            symbol.text = view.text;
+            symbol.textWidth = textWidth(view.text);
+        }
     }
     symbol.view = view;
 };
@@ -117,7 +121,11 @@ var computeStructure = function () {
 var _updateViews = function (node) {
     var symbol = node.symbol;
     var oldChildren = node.children;
-    if (!node.reference) {
+    if (node.reference) {
+        var left = leftmostLeaf(node.symbol);
+        node.text = left.text;
+        node.textWidth = left.textWidth;
+    } else {
         node.children = _.map(symbol.children, function (symbol) {
             var child;
             var i;
@@ -128,7 +136,7 @@ var _updateViews = function (node) {
                 }
             }
             if (i === oldChildren.length) {
-                child = symbol.view;
+                child = cloneOnlyTree(symbol.view);
             } else {
                 oldChildren.splice(i, 1);
             }
@@ -138,6 +146,7 @@ var _updateViews = function (node) {
             return child;
         });
         node.text = symbol.text;
+        node.textWidth = symbol.textWidth;
     }
 };
 
@@ -218,6 +227,15 @@ var rightmostTower = function (node, depth) {
         }
         node = node.children[node.children.length - 1];
         depth += 1;
+    }
+};
+
+var leftmostLeaf = function (node) {
+    while (true) {
+        if (node.leaf) {
+            return node;
+        }
+        node = node.children[0];
     }
 };
 
@@ -303,19 +321,48 @@ var findFromSiblings = function (siblings, x) {
     }) || siblings[siblings.length - 1];
 };
 
-// TODO
-var cloneTree = function (node) {
-    var cNode = _.clone(node);
-    cNode.id = viewId();
-    if (cNode.branch) {
-        cNode.children = _.map(node.children, function (child) {
-            return cloneTree(child);
+var cloneTreeAndSymbols = function (originalNode) {
+    var toClone = {};
+    symbolsToClone(originalNode, toClone);
+    clonedSymbols = _.reduce(toClone, function (cloned, symbol, id) {
+        cloned[id] = createSymbol(_.pick(symbol, 'text'));
+        return cloned;
+    }, {});
+    return _cloneTreeAndSymbols(originalNode, clonedSymbols);
+};
+
+var symbolsToClone = function (node, toClone) {
+    if (!node.reference) {
+        toClone[node.symbol.id] = node.symbol;
+    }
+    if (node.branch) {
+        _.each(node.children, function (child) {
+            symbolsToClone(child, toClone);
         });
     }
+};
 
-    // TODO: make refs the same symbols but appearing in different places.
-    if (cNode.reference) {
-        cNode.reference = cloneTree(cNode.ref);
+var _cloneTreeAndSymbols = function (originalNode, clonedSymbols) {
+    var node = _.clone(originalNode);
+    node.id = viewId();
+    node.symbol = clonedSymbols[node.symbol.id] || node.symbol;
+    if (node.branch) {
+        node.children = _.map(node.children, function (child) {
+            return _cloneTreeAndSymbols(child, clonedSymbols);
+        });
+        update(node);
     }
-    return cNode;
+    return node;
+};
+
+var cloneOnlyTree = function (originalNode) {
+    var node = _.clone(originalNode);
+    node.id = viewId();
+    if (node.branch) {
+        node.children = _.map(node.children, function (child) {
+            child.parent = node;
+            return cloneOnlyTree(child);
+        });
+    }
+    return node;
 };

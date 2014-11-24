@@ -126,10 +126,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 selection: null,
             });
         } else if (siblings) {
-            siblings.splice(ins.treeI, 1);
+            var i = treeI(ins);
+            siblings.splice(i, 1);
             update(ins.parent);
             maybeKillView(ins.parent);
-            ins = siblings[ins.treeI];
+            ins = siblings[i] || siblings[i - 1];
             updateState({inserting: ins, doStructure: true});
         }
 
@@ -201,7 +202,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             return;
         }
         if (ins.reference) {
-            ins = siblings[treeI(ins)] = ins.symbol.view;
+            ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
         } else if (siblings) {
             var reference = createView(ins.symbol, {
                 reference: true,
@@ -285,28 +286,31 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
 
     } else if (key === '2') {  // clone
-        var cloned = cloneTree(ins);
-        if (!siblings) {
-            return; // TODO
-        }
-        siblings.splice(ins.treeI + 1, 0, cloned);
+        var cloned = cloneTreeAndSymbols(ins);
+        siblings.splice(treeI(ins) + 1, 0, cloned);
+        update(ins.parent);
         updateState({
             inserting: cloned,
-            doStructure: 'tree',
+            doStructure: true,
             selection: null,
         });
+
     } else if (key === '6') {
         // do nothing
+
     } else {
         if (ins.branch || ins.divider) {
             return;
         }
+        if (ins.reference) {
+            return; // TODO
+        }
         var text = state.firstInserting ? '' : ins.text;
         text += key;
         ins.text = text;
-        textWidth(ins, {recompute: true});
+        update(ins);
         updateState({
-            doPositions: true,
+            doStructure: true,
             firstInserting: false,
             selection: null,
         });

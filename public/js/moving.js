@@ -328,24 +328,25 @@ var dragTree = function (info) {
             moveTreeUp(moving);
         });
     } else if (depthChange >= 1) {
+        var i = treeI(moving);
+        var oldParent = moving.parent;
         var siblings = moving.parent.children;
-        var neighborI = treeI(moving) + info.direction[0];
-        var firstNeighbor = siblings[neighborI];
-        neighborI = treeI(moving) - info.direction[0];
-        var secondNeighbor = siblings[neighborI];
-        var descendNeighbor = _.find([firstNeighbor, secondNeighbor], function (n) {
-            return n && n.branch;
+        var firstI = i + info.direction[0];
+        var secondI = i - info.direction[0];
+        var descendI = _.find([firstI, secondI], function (i) {
+            return siblings[i] && siblings[i].branch;
         });
+        var descendNeighbor = descendI != null && siblings[descendI];
         if (descendNeighbor) {
-            siblings.splice(treeI(moving), 1);
-            update(moving.parent);
-            if (treeI(descendNeighbor) > treeI(moving)) {
-                descendNeighbor.children.unshift(moving);
-            } else {
+            siblings.splice(i, 1);
+            if (descendI < i) {
                 descendNeighbor.children.push(moving);
+            } else {
+                descendNeighbor.children.unshift(moving);
             }
             update(descendNeighbor);
-            maybeKillView(moving.parent);
+            update(oldParent);
+            maybeKillView(oldParent);
             positionAfterMove();
         } else {
             depthChange = 0;
