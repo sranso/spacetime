@@ -61,15 +61,26 @@ var startSelection = function () {
     });
 };
 
-// TODO: fix allTower
 var changeSelection = function () {
     var begin = state.selectionBegin;
     if (!begin) {
         return;
     }
     var end = findFromTowers(mouse[0]);
-    var indices = _.sortBy([begin.towerI, end.towerI]);
-    var selection = allTowers.slice(indices[0], indices[1] + 1);
+    if (!end) {
+        return;
+    }
+    var sorted = _.sortBy([begin, end], _.property('x'));
+    var tower = sorted[0];
+    var selection = [];
+    while (tower) {
+        selection.push(tower);
+        if (tower === sorted[1]) {
+            break;
+        }
+        tower = nextTower(tower);
+        tower = tower && tower[0];
+    }
     updateState({
         selection: selection,
         selectionEnd: end,

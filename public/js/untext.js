@@ -34,7 +34,7 @@ var setup = function (example) {
     ]});
     allSymbols = [];
     linkSymbols(root);
-    infiniteRecursionSymbol = createSymbol({text: '[Infinite Recursion]'});
+    infiniteRecursionSymbol = createSymbol({text: '[∞-recursion]'});
     allSymbols.push(infiniteRecursionSymbol);
     allViewTree = root.view;
     updateState({
