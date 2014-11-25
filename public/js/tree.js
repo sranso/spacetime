@@ -103,26 +103,27 @@ var maybeKillView = function (view) {
 };
 var killView = function (view) {
     _killView(view);
-    killSymbol(view.symbol);
+    detatchSymbol(view.symbol);
 };
 var _killView = function (view) {
     var parent = view.parent;
-    parent.children = _.without(parent.children, view);
-    if (!parent.children.length) {
-        _killView(parent);
+    if (parent) {
+        parent.children = _.without(parent.children, view);
+        if (!parent.children.length) {
+            _killView(parent);
+        }
     }
 };
 
-var killSymbol = function (symbol) {
-    _killSymbol(symbol, []);
+var detatchSymbol = function (symbol) {
+    _detachSymbol(symbol, []);
 };
-var _killSymbol = function (symbol, visited) {
-    symbol.alive = false;
+var _detachSymbol = function (symbol, visited) {
     visited.push(symbol);
     _.each(symbol.parents, function (parent) {
         parent.children = _.without(parent.children, symbol);
         if (!parent.children.length && !_.contains(visited, parent)) {
-            _killSymbol(parent, visited);
+            _detachSymbol(parent, visited);
         }
     });
 };

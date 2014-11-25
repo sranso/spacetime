@@ -59,13 +59,24 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     var ins = state.inserting;
     if (!ins) {
         var target = state.target;
-        if (!target) {
-            return;
+        var mode;
+        if (target) {
+            ins = target;
+            mode = state.targetMode;
+        } else {
+            if (key === ' ') {
+                var insert = createView(createSymbol({text: ''}));
+                allViewTree.children.push(insert);
+                updateTree(allViewTree);
+                ins = insert;
+                mode = 'tree';
+            } else {
+                return;
+            }
         }
-        ins = target;
         updateState({
             inserting: ins,
-            insertingMode: state.targetMode,
+            insertingMode: mode,
             startMouse: mouse,
             firstInserting: true,
         });
@@ -129,8 +140,8 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             });
         } else {
             var i = treeI(ins);
-            ins = siblingSymbol(ins, +1) || siblingSymbol(ins, -1);
             var oldParent = ins.parent;
+            ins = siblingSymbol(ins, +1) || siblingSymbol(ins, -1);
             siblings.splice(i, 1);
             updateTree(oldParent);
             maybeKillView(oldParent);

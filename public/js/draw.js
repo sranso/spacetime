@@ -74,6 +74,9 @@ var selection = function (viewEls, dataSelection) {
 };
 
 var computePositions = function (viewTree) {
+    if (!allViewTree.children.length) {
+        return;
+    }
     _computePositions(viewTree);
     if (viewTree === allViewTree) {
         computeOtherPositions();
