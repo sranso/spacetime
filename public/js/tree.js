@@ -91,9 +91,26 @@ var updateSymbol = function (view) {
         if (symbol.text !== view.text) {
             symbol.text = view.text;
             symbol.textWidth = textWidth(view.text);
+            maybeUpdateParentsText(symbol, []);
+        }
+    } else {
+        if (symbol.children.length) {
+            maybeUpdateParentsText(symbol.children[0], []);
         }
     }
     symbol.view = view;
+};
+
+var maybeUpdateParentsText = function (symbol, visited) {
+    visited.push(symbol);
+    _.each(symbol.parents, function (parent) {
+        var i = _.indexOf(parent.children, symbol);
+        if (i === 0 && !_.contains(visited, parent)) {
+            parent.text = symbol.text;
+            parent.textWidth = symbol.textWidth;
+            maybeUpdateParentsText(parent, visited);
+        }
+    });
 };
 
 var maybeKillView = function (view) {
@@ -103,7 +120,7 @@ var maybeKillView = function (view) {
 };
 var killView = function (view) {
     _killView(view);
-    detatchSymbol(view.symbol);
+    detachSymbol(view.symbol);
 };
 var _killView = function (view) {
     var parent = view.parent;
@@ -115,7 +132,7 @@ var _killView = function (view) {
     }
 };
 
-var detatchSymbol = function (symbol) {
+var detachSymbol = function (symbol) {
     _detachSymbol(symbol, []);
 };
 var _detachSymbol = function (symbol, visited) {
@@ -139,11 +156,7 @@ var computeStructure = function () {
 };
 
 var _updateViews = function (node) {
-    if (node.reference) {
-        var left = leftmostLeaf(node.symbol);
-        node.text = left.text;
-        node.textWidth = left.textWidth;
-    } else if (node.tower) {
+    if (node.tower) {
         node.text = node.symbol.text;
         node.textWidth = node.symbol.textWidth;
     } else {

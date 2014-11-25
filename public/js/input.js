@@ -208,9 +208,6 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         });
 
     } else if (key === 'tab') {
-        if (!ins.reference && !ins.branch) {
-            return;
-        }
         var oldParent = ins.parent;
         if (ins.reference) {
             ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
