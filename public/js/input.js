@@ -36,10 +36,19 @@ var inputEvent = function (key, eventType) {
 
 var removeEmptyText = function (inserting) {
     if (inserting.tower && !inserting.divider && !inserting.text) {
-        allTowers.splice(inserting.towerI, 1);
-        computeStructure('tower');
-        return true;
+        inserting.parent.children.splice(treeI(inserting), 1);
+        update(inserting.parent);
+        updateState({doStructure: true});
     }
+};
+
+var deleteTower = function (tower) {
+    while (tower.parent.children.length > 1) {
+        moveTowerDown(tower);
+    }
+    tower.parent.children = [];
+    update(tower.parent);
+    killView(tower.parent);
 };
 
 var numberKeys = ['-','0','1','2','3','4','5','6','7','8','9','.'];
@@ -61,7 +70,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             firstInserting: true,
         });
     }
-    var siblings = ins.parent && ins.parent.children;
+    var siblings = ins.parent.children;
 
     if (state.insertingNumber) {
         if (!_.contains(numberKeys, key)) {
@@ -80,9 +89,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             text += key;
         }
         ins.text = text;
-        textWidth(ins, {recompute: true});
+        update(ins);
         updateState({
-            doPositions: true,
+            doStructure: true,
             selection: null,
             firstInserting: false,
         });
@@ -93,9 +102,9 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
         var num = (+ins.text + 1) || 0;
         ins.text = '' + num;
-        textWidth(ins, {recompute: true});
+        update(ins);
         updateState({
-            doPositions: true,
+            doStructure: true,
             insertingNumber: true,
             selection: null,
         });
@@ -112,20 +121,13 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 nextTower(state.targets[state.targets.length - 1]) ||
                 previousTower(state.targets[0])
             );
-            _.each(state.targets, function (target) {
-                while (target.parent.children.length > 1) {
-                    moveTowerDown(target);
-                }
-                target.parent.children = [];
-                update(target.parent);
-                killView(target.parent);
-            });
+            _.each(state.targets, deleteTower);
             updateState({
                 inserting: nextIns && nextIns[0],
                 doStructure: true,
                 selection: null,
             });
-        } else if (siblings) {
+        } else {
             var i = treeI(ins);
             var oldParent = ins.parent;
             siblings.splice(i, 1);
@@ -143,33 +145,29 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
         var depth = ins.depth;
         if (ins.branch || ins.text) {
-            var insert = createTower({depth: depth, text: ''});
+            var insert = createView(createSymbol({text: ''}));
+            siblings.splice(treeI(ins) + 1, 0, insert);
             if (state.targetMode === 'tower') {
-                allTowers.splice(ins.towerI + 1, 0, insert);
+                update(ins.parent);
             } else {
-                siblings.splice(ins.treeI + 1, 0, insert);
+                updateTree(ins.parent);
             }
-            computeStructure(state.targetMode);
             updateState({inserting: insert, insertingMode: 'tower'});
             ins = insert;
         } else if (key === '(') {
-            var before = allTowers[ins.towerI - 1];
-            if (before.depth > ins.depth) {
-                var insert = createTower({depth: depth, divider: true});
-                allTowers.splice(ins.towerI, 0, insert);
+            var left = previousTower(ins);
+            if (left && left[1] > 0) {
+                var insert = createView(null);
+                siblings.splice(treeI(ins), 0, insert);
+                update(ins.parent);
             }
-            updateState({doStructure: 'tower'});
         }
         if (key === '(') {
-            depth += 1;
+            moveTowerDown(ins);
         } else if (key === ')') {
-            depth = Math.max(1, depth - 1);
+            moveTowerUp(ins);
         }
-        if (depth !== ins.depth) {
-            ins.depth = depth;
-            updateState({doStructure: 'tower'});
-        }
-        updateState({selection: null});
+        updateState({doStructure: true, selection: null});
 
     } else if (key === ',') {
         if (ins.tower) {
@@ -178,23 +176,23 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             return; // TODO
         }
         var depth = ins.depth;
-        var towerI = ins.towerI;
+        var oldParent = ins.parent;
+        var i = treeI(ins);
         if (!ins.text) {
-            allTowers.splice(towerI, 1);
+            siblings.splice(i, 1);
         } else {
-            towerI += 1;
+            i += 1;
         }
-        if (depth === 1) {
-            depth = 2; // TODO
-        }
-        var divider = createTower({depth: depth - 1, divider: true});
-        allTowers.splice(towerI, 0, divider);
-        towerI += 1;
-        var insert = createTower({depth: depth, text: ''});
-        allTowers.splice(towerI, 0, insert);
+        var divider = createView(null);
+        siblings.splice(i, 0, divider);
+        i += 1;
+        var insert = createView(createSymbol({text: ''}));
+        siblings.splice(i, 0, insert);
+        update(oldParent);
+        moveTowerUp(divider);
         updateState({
             inserting: insert,
-            doStructure: 'tower',
+            doStructure: true,
             selection: null,
         });
 
@@ -205,7 +203,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         var oldParent = ins.parent;
         if (ins.reference) {
             ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
-        } else if (siblings) {
+        } else {
             var reference = createView(ins.symbol, {
                 reference: true,
             });
@@ -227,32 +225,28 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 return; // TODO
             }
         }
-        var depth = ins.depth;
         if (key === '[') {
-            depth += 1;
+            moveTowerDown(ins);
         } else if (key === ']') {
-            depth = Math.max(1, depth - 1);
+            moveTowerUp(ins);
         }
-        ins.depth = depth;
-        updateState({doStructure: 'tower', selection: null});
+        updateState({doStructure: true, selection: null});
 
-    } else if (key === '`' || key === '5') {
-        var dir = key === '`' ? -1 : +1;
-        var insert;
-        if (removeEmptyText(ins)) {
-            dir = 0;
-        }
-        if (state.targetMode === 'tower') {
-            insert = allTowers[ins.towerI + dir];
-            if (!insert) {
-                // TODO
-            }
+    } else if (key === '`' || key === '5') {  // move cursor
+        // TODO: creating new symbols at edges?
+        if (ins.tower) {
+            updateState({insertingMode: 'tower'});
         } else {
-            insert = siblings[ins.treeI + dir];
-            if (!insert) {
-                // TODO
-            }
+            return; // TODO
         }
+        var insert;
+        if (key === '`') {
+            insert = previousTower(ins);
+        } else {
+            insert = nextTower(ins);
+        }
+        insert = insert && insert[0];
+        removeEmptyText(ins);
         updateState({
             inserting: insert,
             firstInserting: true,
@@ -267,21 +261,25 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 return; // TODO
             }
         }
+        if (ins.reference) {
+            return; // TODO
+        }
         var text = ins.text;
         if (text) {
             text = text.slice(0, text.length - 1);
             ins.text = text;
-            textWidth(ins, {recompute: true});
-            updateState({doPositions: true, selection: null});
+            update(ins);
+            updateState({doStructure: true, selection: null});
         } else {
-            allTowers.splice(ins.towerI, 1);
-            ins = allTowers[ins.towerI - 1];
+            var left = previousTower(ins);
+            deleteTower(ins);
+            ins = left && left[0];
             var insertingMode = ins ? 'tower' : null;
             updateState({
                 inserting: ins,
                 insertingMode: insertingMode,
                 startMouse: mouse,
-                doStructure: 'tower',
+                doStructure: true,
                 selection: null,
             });
         }

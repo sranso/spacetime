@@ -1,11 +1,10 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allViewTree, allTowers, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol;
+var untext, allSymbols, allViewTree, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol;
 
 var init = function () {
     untext = {};
     allSymbols = null;
-    allTowers = [];
     otherPositions = {};
     symbolIdSequence = 0;
     viewIdSequence = 0;
