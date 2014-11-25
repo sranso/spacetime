@@ -318,34 +318,33 @@ var swapTower = function (tower) {
     _(absDepthDiff).times(function () { moveTowerUp(up) });
 };
 
-
+// TODO: make it work with multiple targets.
 var dragTree = function (info) {
-    var moving = state.moving;
+    var node = state.moving;
     var depthChange = calculateDepthChange(info);
 
     if (depthChange <= -1) {
         _(-depthChange).times(function () {
-            moveTreeUp(moving);
+            moveTreeUp(node);
         });
     } else if (depthChange >= 1) {
-        var i = treeI(moving);
-        var oldParent = moving.parent;
-        var siblings = moving.parent.children;
-        var firstI = i + info.direction[0];
-        var secondI = i - info.direction[0];
-        var descendI = _.find([firstI, secondI], function (i) {
-            return siblings[i] && siblings[i].branch;
+        var i = treeI(node);
+        var oldParent = node.parent;
+        var siblings = node.parent.children;
+        var first = siblingSymbol(node, info.direction[0]);
+        var second = siblingSymbol(node, -info.direction[0]);
+        var descend = _.find([first, second], function (node) {
+            return node && node.branch;
         });
-        var descendNeighbor = descendI != null && siblings[descendI];
-        if (descendNeighbor) {
-            siblings.splice(i, 1);
-            if (descendI < i) {
-                descendNeighbor.children.push(moving);
+        if (descend) {
+            if (treeI(descend) < i) {
+                descend.children.push(node);
             } else {
-                descendNeighbor.children.unshift(moving);
+                descend.children.unshift(node);
             }
-            update(descendNeighbor);
-            update(oldParent);
+            siblings.splice(i, 1);
+            updateTree(descend);
+            updateTree(oldParent);
             maybeKillView(oldParent);
             positionAfterMove();
         } else {
@@ -353,9 +352,8 @@ var dragTree = function (info) {
         }
     }
 
-    var swapped = maybeSwapTree(moving.parent.children, movingInfo());
+    var swapped = maybeSwapTree(node.parent, movingInfo());
     if (swapped) {
-        update(moving.parent);
         positionAfterMove();
     }
     return depthChange !== 0 || swapped;
@@ -369,18 +367,19 @@ var moveTreeUp = function (node) {
     var newParent = node.parent.parent;
     oldParent.children.splice(treeI(node), 1);
     newParent.children.splice(treeI(oldParent), 0, node);
-    update(newParent);
-    update(oldParent);
+    updateTree(newParent);
+    updateTree(oldParent);
     maybeKillView(oldParent);
     positionAfterMove();
 };
 
-var maybeSwapTree = function (siblings, info) {
+var maybeSwapTree = function (parent, info) {
+    var siblings = _.filter(parent.children, _.property('symbol'));
     var swapped = false;
     var diffX = info.absDiff[0];
     var dir = info.direction[0];
     var len = state.targets.length;
-    var movingI = treeI(state.targets[dir < 0 ? 0 : len - 1]);
+    var movingI = _.indexOf(siblings, state.targets[dir < 0 ? 0 : len - 1]);
     while (true) {
         var neighborI = movingI + dir;
         var neighbor = siblings[neighborI];
@@ -398,6 +397,10 @@ var maybeSwapTree = function (siblings, info) {
         } else {
             break;
         }
+    }
+    if (swapped) {
+        parent.children = siblings;
+        updateTree(parent);
     }
     return swapped;
 };

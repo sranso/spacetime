@@ -127,9 +127,10 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             });
         } else if (siblings) {
             var i = treeI(ins);
+            var oldParent = ins.parent;
             siblings.splice(i, 1);
-            update(ins.parent);
-            maybeKillView(ins.parent);
+            updateTree(oldParent);
+            maybeKillView(oldParent);
             ins = siblings[i] || siblings[i - 1];
             updateState({inserting: ins, doStructure: true});
         }
@@ -201,17 +202,17 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         if (!ins.reference && !ins.branch) {
             return;
         }
+        var oldParent = ins.parent;
         if (ins.reference) {
             ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
         } else if (siblings) {
             var reference = createView(ins.symbol, {
                 reference: true,
-                text: leftmostTower(ins)[0].text,
-                tower: true,
             });
             siblings[treeI(ins)] = reference;
             ins = reference;
         }
+        updateTree(oldParent);
         updateState({
             inserting: ins,
             doStructure: true,
@@ -286,9 +287,10 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
 
     } else if (key === '2') {  // clone
+        // TODO: clone towers
         var cloned = cloneTreeAndSymbols(ins);
         siblings.splice(treeI(ins) + 1, 0, cloned);
-        update(ins.parent);
+        updateTree(ins.parent);
         updateState({
             inserting: cloned,
             doStructure: true,

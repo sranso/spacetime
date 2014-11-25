@@ -1,6 +1,6 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allViewTree, allTowers, otherPositions, symbolIdSequence, viewIdSequence, state, lastState;
+var untext, allSymbols, allViewTree, allTowers, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol;
 
 var init = function () {
     untext = {};
@@ -34,6 +34,8 @@ var setup = function (example) {
     ]});
     allSymbols = [];
     linkSymbols(root);
+    infiniteRecursionSymbol = createSymbol({text: '[Infinite Recursion]'});
+    allSymbols.push(infiniteRecursionSymbol);
     allViewTree = root.view;
     updateState({
         inserting: allViewTree.children[0],
@@ -53,7 +55,17 @@ var linkSymbols = function (node) {
         child.parents = [node];
         linkSymbols(child);
         child.view.parent = node.view;
-        return child.view;
+        if (child.leaf) {
+            return child.view;
+        }
+        var left = leftmostLeaf(child);
+        var reference = createView(child, {
+            reference: true,
+            text: left.text,
+            textWidth: left.textWidth,
+            parent: node.view,
+        });
+        return reference;
     });
     allSymbols.push(node);
 };

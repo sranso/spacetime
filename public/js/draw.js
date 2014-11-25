@@ -89,7 +89,7 @@ var computeOtherPositions = function () {
 };
 
 var _computePositions = function (node) {
-    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, viewEndY: 0, towerY: 0, movingTree: false};
+    var nullPos = {x: 0, y: 0, w: 0, h: 0, offsetX: 0, offsetY: 0, braceW: 0, viewEndY: 0, towerY: 0, movingTree: false, dividerLeft: false};
     var leftTower = previousTower(node);
     var leftPos = leftTower ? leftTower[0].position : nullPos;
     var abovePos = node.parent ? node.parent.position : nullPos;
@@ -124,18 +124,23 @@ var _computePositions = function (node) {
     } else {
         pos.viewEndY = depthHeight;
         node.position = pos;
-        _.each(node._children, function (child) {
+        _.each(node.children, function (child) {
             _computePositions(child);
         });
         pos.x = leftmostTower(node)[0].position.x;
         var end = rightmostTower(node)[0];
         pos.braceW = end.position.x + end.position.w - pos.x;
         pos.w = pos.braceW;
-        if (node.dividerLeft) {
+        var left = node.parent && node.parent.children[treeI(node) - 1];
+        var right = node.parent && node.parent.children[treeI(node) + 1];
+        if (left && left.divider) {
+            pos.dividerLeft = true;
             pos.x -= dividerWidth / 2;
             pos.w += dividerWidth / 2;
+        } else {
+            pos.dividerLeft = false;
         }
-        if (node.dividerRight) {
+        if (right && right.divider) {
             pos.w += dividerWidth / 2;
         }
     }
