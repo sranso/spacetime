@@ -129,11 +129,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             });
         } else {
             var i = treeI(ins);
+            ins = siblingSymbol(ins, +1) || siblingSymbol(ins, -1);
             var oldParent = ins.parent;
             siblings.splice(i, 1);
             updateTree(oldParent);
             maybeKillView(oldParent);
-            ins = siblings[i] || siblings[i - 1];
             updateState({inserting: ins, doStructure: true});
         }
 

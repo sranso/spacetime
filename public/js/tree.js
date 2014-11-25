@@ -17,7 +17,7 @@ var createView = function (symbol, view) {
         tower: !symbol || symbol.leaf || view.reference || false,
         reference: false,
         divider: !symbol,
-        symbol: symbol,
+        symbol: symbol || null,
         children: [],
         text: '',
         height: 0,
@@ -31,7 +31,7 @@ var createView = function (symbol, view) {
 var createSymbol = function (symbol) {
     symbol = symbol || {};
     var leaf = symbol.text != null;
-    return _.extend({
+    symbol = _.extend({
         id: symbolId(),
         alive: true,
         leaf: leaf,
@@ -42,6 +42,8 @@ var createSymbol = function (symbol) {
         textWidth: leaf ? textWidth(symbol.text) : null,
         view: null,
     }, symbol);
+    allSymbols.push(symbol);
+    return symbol;
 };
 
 var updateTree = function (view) {
@@ -377,7 +379,7 @@ var cloneTreeAndSymbols = function (originalNode) {
 };
 
 var symbolsToClone = function (node, toClone) {
-    if (!node.reference) {
+    if (!node.reference && node.symbol) {
         toClone[node.symbol.id] = node.symbol;
     }
     if (node.branch) {
@@ -390,7 +392,9 @@ var symbolsToClone = function (node, toClone) {
 var _cloneTreeAndSymbols = function (originalNode, clonedSymbols) {
     var node = _.clone(originalNode);
     node.id = viewId();
-    node.symbol = clonedSymbols[node.symbol.id] || node.symbol;
+    if (node.symbol) {
+        node.symbol = clonedSymbols[node.symbol.id] || node.symbol;
+    }
     if (node.branch) {
         node.children = _.map(node.children, function (child) {
             child = _cloneTreeAndSymbols(child, clonedSymbols);
