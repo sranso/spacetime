@@ -27,7 +27,7 @@ var nullSelection = function () {
 };
 
 var selection = function (viewEls, dataSelection) {
-    var targetSiblings,
+    var targetSiblings, symbolsForTargets,
         towerEls, nonDividerEnterEls,
         viewEnterEls, towerEnterEls,
         viewExitEls;
@@ -39,7 +39,9 @@ var selection = function (viewEls, dataSelection) {
         } else {
             targetSiblings = target.parent.children;
         }
+        symbolsForTargets = _.compact(_.pluck(state.targets, 'symbol'));
     } else {
+        symbolsForTargets = [];
         targetSiblings = [];
     }
 
@@ -60,6 +62,7 @@ var selection = function (viewEls, dataSelection) {
     var sel = {
         dataSelection: dataSelection,
         targetSiblings: targetSiblings,
+        symbolsForTargets: symbolsForTargets,
         viewEls: viewEls,
         towerEls: towerEls,
         nonDividerEnterEls: nonDividerEnterEls,
@@ -202,24 +205,6 @@ var draw = function (sel) {
 
     sel.viewExitEls.remove();
 
-    ///// towers (towers) draw
-
-    sel.towerEnterEls.append('rect')
-        .classed('tower', true) ;
-
-    sel.towerEnterEls.append('text')
-        .attr('y', depthHeight + 7) ;
-
-    sel.towerEls.select('rect.tower')
-        .attr('x', 2)
-        .attr('y', _.property('towerY'))
-        .attr('width', function (t) { return t.w - 4 })
-        .attr('height', otherPositions.svgHeight) ;
-
-    sel.towerEls.select('text')
-        .attr('x', function (t) { return t.w / 2 })
-        .text(_.property('text')) ;
-
     ////// views draw
 
     sel.nonDividerEnterEls.append('rect')
@@ -246,6 +231,9 @@ var draw = function (sel) {
             if (_.contains(sel.targetSiblings, s)) {
                 classes.push('target-sibling');
             }
+            if (_.contains(sel.symbolsForTargets, s.symbol)) {
+                classes.push('symbol-for-target');
+            }
             return classes.join(' ');
         })
         .attr('transform', function (s) {
@@ -257,6 +245,24 @@ var draw = function (sel) {
 
     sel.viewEls.select('g.top-brace')
         .call(topBrace) ;
+
+    ///// towers (towers) draw
+
+    sel.towerEnterEls.append('rect')
+        .classed('tower', true) ;
+
+    sel.towerEnterEls.append('text')
+        .attr('y', depthHeight + 7) ;
+
+    sel.towerEls.select('rect.tower')
+        .attr('x', 2)
+        .attr('y', _.property('towerY'))
+        .attr('width', function (t) { return t.w - 4 })
+        .attr('height', otherPositions.svgHeight) ;
+
+    sel.towerEls.select('text')
+        .attr('x', function (t) { return t.w / 2 })
+        .text(_.property('text')) ;
 
 
     updateState({doDraw: false});

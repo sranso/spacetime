@@ -29,7 +29,7 @@ a {
   stroke-width: 1px;
 }
 
-.view.target-sibling .top-brace .mid-point {
+.view.symbol-for-target .top-brace .mid-point {
   fill: #5BBD71;
 }
 
@@ -66,20 +66,11 @@ a {
 }
 
 .tower-mode .tower.targets rect.tower {
-  fill: #D3FD9E;
+  fill: #C1FF72;
 }
 
 .tree-mode .view.targets rect.background {
-  fill: #A0FA2D;
-  opacity: 0.4;
-}
-
-.tower-mode .tower.target rect.tower {
-  fill: #D3FD9E;
-}
-
-.tree-mode .view.target rect.background {
-  fill: #A0FA2D;
+  fill: #8FFF00;
   opacity: 0.4;
 }
 
