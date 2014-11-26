@@ -74,6 +74,16 @@ a {
   opacity: 0.4;
 }
 
+
+.autocomplete rect {
+  fill: #88B1E0;
+  opacity: 0.9;
+}
+
+.autocomplete.no-match rect {
+  fill: #8094A9;
+}
+
 h1 {
   font-size: 18px;
   position: fixed;

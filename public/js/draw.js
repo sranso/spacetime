@@ -28,6 +28,7 @@ var nullSelection = function () {
 
 var selection = function (viewEls, dataSelection) {
     var targetSiblings, symbolsForTargets,
+        autocomplete,
         towerEls, nonDividerEnterEls,
         viewEnterEls, towerEnterEls,
         viewExitEls;
@@ -45,6 +46,20 @@ var selection = function (viewEls, dataSelection) {
         targetSiblings = [];
     }
 
+    if (state.inserting && state.inserting.symbol === insertingReferenceSymbol) {
+        if (state.inserting.text.length > 0) {
+            autocomplete = symbolsForText(state.inserting.text);
+            autocomplete = _.pluck(autocomplete, 'text');
+            if (!autocomplete.length) {
+                autocomplete = [null];
+            }
+        } else {
+            autocomplete = [];
+        }
+    } else {
+        autocomplete = [];
+    }
+
     if (dataSelection) {
         viewEnterEls = viewEls.enter().append('g');
         viewExitEls = viewEls.exit();
@@ -60,6 +75,7 @@ var selection = function (viewEls, dataSelection) {
     });
 
     var sel = {
+        autocomplete: autocomplete,
         dataSelection: dataSelection,
         targetSiblings: targetSiblings,
         symbolsForTargets: symbolsForTargets,
@@ -272,6 +288,43 @@ var draw = function (sel) {
     if (sel.dataSelection) {
         updateState({doDataDraw: false});
     }
+
+
+    // Autocomplete
+
+    var autocomplete = camera.selectAll('g.autocomplete')
+        .data(sel.autocomplete) ;
+
+    var autoEnter = autocomplete.enter().append('g');
+
+    autocomplete.exit().remove();
+
+    autoEnter.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('height', 20)
+        .attr('width', 200) ;
+
+    autoEnter.append('text')
+        .attr('x', 4)
+        .attr('y', 15) ;
+
+    autocomplete
+        .attr('class', function (a) {
+            var classes = ['autocomplete'];
+            if (!a) {
+                classes.push('no-match');
+            }
+            return classes.join(' ');
+        })
+        .attr('transform', function (a, i) {
+            var x = state.inserting.x + 10;
+            var y = state.inserting.y + 40 + 20 * i;
+            return 'translate(' + x + ',' + y + ')';
+        }) ;
+
+    autocomplete.select('text')
+        .text(function (a) { return a || 'X' }) ;
 };
 
 var topBraceEnter = function (g) {

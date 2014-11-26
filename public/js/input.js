@@ -104,7 +104,13 @@ var symbolsForText = function (text) {
         return [];
     }
     var references = _.filter(viewsFromTree(), 'reference');
-    var symbols = references.concat(allSymbols);
+    var eligibleSymbols = _.filter(allSymbols, function (symbol) {
+        if (!symbol.children.length) {
+            return false;
+        }
+        return symbol.children[0].leaf;
+    });
+    var symbols = references.concat(eligibleSymbols);
     var matching = _.filter(symbols, function (symbol) {
         return symbol.text.indexOf(text) === 0;
     });
@@ -115,18 +121,10 @@ var symbolsForText = function (text) {
         if (b.reference) {
             return a.reference ? 0 : +1;
         }
-        if (a.parents.length !== b.parents.length) {
-            return a.parents.length > b.parents.length ? -1 : +1;
+        if (a.parents.length === b.parents.length) {
+            return 0;
         }
-        var aScore = 0;
-        if (a.children.length && a.children[0].leaf) {
-            aScore = -1;
-        }
-        var bScore = 0;
-        if (b.children.length && b.children[0].leaf) {
-            bScore = 1;
-        }
-        return aScore + bScore;
+        return a.parents.length > b.parents.length ? -1 : +1;
     });
     var dereferenced = _.map(sorted, function (s) {
         return s.symbol || s;
@@ -310,7 +308,7 @@ var handleKeypress = function (key) {
             if (left) {
                 toggleReference(left);
             }
-        } else {
+        } else if (ins.reference || !ins.tower || !_.isNaN(+ins.text)) {
             ins = toggleReference(ins);
             updateState({
                 inserting: ins,
