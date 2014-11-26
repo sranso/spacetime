@@ -324,7 +324,7 @@ var draw = function (sel) {
         }) ;
 
     autocomplete.select('text')
-        .text(function (a) { return a || 'X' }) ;
+        .text(function (a) { return a || 'X - enter to create' }) ;
 };
 
 var topBraceEnter = function (g) {

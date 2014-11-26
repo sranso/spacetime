@@ -43,7 +43,7 @@ var startInsertingReference = function (ins) {
 var doneInserting = function (ins, doneMode) {
     if (ins.tower && !ins.divider) {
         var remove = false;
-        if (!ins.text) {
+        if (!ins.text && doneMode === 'remove') {
             remove = true;
         } else if (ins.symbol === insertingReferenceSymbol) {
             if (doneMode === 'create') {
@@ -97,6 +97,7 @@ var toggleReference = function (ins) {
         ins = reference;
     }
     updateTree(oldParent);
+    return ins;
 };
 
 var symbolsForText = function (text) {
@@ -161,7 +162,10 @@ var handleKeypress = function (key) {
             mode = state.targetMode;
         } else {
             if (key === ' ') {
-                var insert = createView(insertingReferenceSymbol, {text: ''});
+                var insert = createView(insertingReferenceSymbol, {
+                    text: '',
+                    reference: true,
+                });
                 allViewTree.children.push(insert);
                 updateTree(allViewTree);
                 updateTree(insert);
@@ -264,11 +268,8 @@ var handleKeypress = function (key) {
         if (ins.branch || ins.text) {
             var i = treeI(ins);
             var doneMode = key === 'enter' ? 'create' : 'keepIncomplete';
-            var result = doneInserting(ins, doneMode);
-            if (result === 'incomplete') {
+            if (doneInserting(ins, doneMode) === 'incomplete') {
                 return;
-            } else if (result === 'deleted') {
-                i -= 1;
             }
             var insert = createView(insertingReferenceSymbol, {
                 text: '',
@@ -309,9 +310,17 @@ var handleKeypress = function (key) {
                 toggleReference(left);
             }
         } else if (ins.reference || !ins.tower || !_.isNaN(+ins.text)) {
+            if (doneInserting(ins, 'keepIncomplete') === 'incomplete') {
+                return;
+            }
             ins = toggleReference(ins);
+            var mode = state.insertingMode;
+            if (mode === 'tower' && ins.branch) {
+                mode = 'tree';
+            }
             updateState({
                 inserting: ins,
+                insertingMode: mode,
                 selection: null,
             });
         }
@@ -340,11 +349,17 @@ var handleKeypress = function (key) {
             }
         }
         var text = ins.text;
+        if (state.firstInserting && ins.reference) {
+            startInsertingReference(ins);
+        }
         if (text) {
             text = text.slice(0, text.length - 1);
             ins.text = text;
             update(ins);
-            updateState({selection: null});
+            updateState({
+                selection: null,
+                firstInserting: false,
+            });
         } else {
             var left = previousTower(ins);
             deleteTower(ins);
@@ -358,6 +373,7 @@ var handleKeypress = function (key) {
                 insertingMode: insertingMode,
                 startMouse: mouse,
                 selection: null,
+                firstInserting: false,
             });
         }
 
