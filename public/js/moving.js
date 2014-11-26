@@ -247,7 +247,7 @@ var moveTowerUp = function (tower) {
         oldParent.children = [];
         update(newParent);
         update(oldParent);
-        killSymbol(oldParent);
+        killView(oldParent);
     } else if (leftDepth < 0 && rightDepth >= 0) {
         var newParent = tower.parent.parent;
         newParent.children.splice(treeI(oldParent), 0, tower);

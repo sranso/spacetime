@@ -30,16 +30,15 @@ var createView = function (symbol, view) {
 
 var createSymbol = function (symbol) {
     symbol = symbol || {};
-    var leaf = symbol.text != null;
     symbol = _.extend({
         id: symbolId(),
         alive: true,
-        leaf: leaf,
-        branch: !leaf,
+        leaf: symbol.leaf || false,
+        branch: !symbol.leaf,
         children: [],
         parents: [],
         text: '',
-        textWidth: leaf ? textWidth(symbol.text) : null,
+        textWidth: textWidth(symbol.text || ''),
         view: null,
     }, symbol);
     allSymbols.push(symbol);
@@ -393,7 +392,7 @@ var cloneTreeAndSymbols = function (originalNode) {
     var toClone = {};
     symbolsToClone(originalNode, toClone);
     clonedSymbols = _.reduce(toClone, function (cloned, symbol, id) {
-        cloned[id] = createSymbol(_.pick(symbol, 'text'));
+        cloned[id] = createSymbol(_.pick(symbol, 'text', 'leaf'));
         return cloned;
     }, {});
     return _cloneTreeAndSymbols(originalNode, clonedSymbols);

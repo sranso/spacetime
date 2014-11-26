@@ -19,7 +19,7 @@ var inputEvent = function (key, eventType) {
                 stopSelection();
             }
 
-        } else if (key === 'left mouse' || key === '6') {
+        } else if (key === 'left mouse' || (key === '6' && !state.insertingNumber)) {
             if (eventType === 'down') {
                 startMoving();
                 d3.event.preventDefault();
@@ -47,7 +47,7 @@ var doneInserting = function (ins, doneMode) {
             remove = true;
         } else if (ins.symbol === insertingReferenceSymbol) {
             if (doneMode === 'create') {
-                var insert = createView(createSymbol({text: ''}));
+                var insert = createView(createSymbol({leaf: true}));
                 ins.parent.children[treeI(ins)] = insert;
                 update(ins.parent);
                 insert.text = ins.text;
@@ -148,6 +148,11 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     handleKeypress(key);
 });
 
+
+
+
+
+
 var handleKeypress = function (key) {
     var ins = state.inserting;
     if (!ins) {
@@ -205,11 +210,15 @@ var handleKeypress = function (key) {
         if (ins.branch || ins.divider) {
             return;
         }
-        if (state.firstInserting && ins.reference) {
-            startInsertingReference(ins);
+        var text = ins.text;
+        if (ins.reference) {
+            var insert = createView(createSymbol({leaf: true}));
+            ins.parent.children[treeI(ins)] = insert;
+            update(ins.parent);
+            updateState({inserting: insert});
+            ins = insert;
         }
-        var text = state.firstInserting ? '' : ins.text;
-        var num = (+ins.text + 1) || 0;
+        var num = text && (+text + 1) || 0;
         ins.text = '' + num;
         update(ins);
         updateState({
