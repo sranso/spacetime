@@ -34,11 +34,44 @@ var inputEvent = function (key, eventType) {
     });
 };
 
-var removeEmptyText = function (inserting) {
-    if (inserting.tower && !inserting.divider && !inserting.text) {
-        inserting.parent.children.splice(treeI(inserting), 1);
-        update(inserting.parent);
-        updateState({doStructure: true});
+var startInsertingReference = function (ins) {
+    ins.symbol = insertingReferenceSymbol;
+    update(ins.parent);
+    update(ins);
+};
+
+var doneInserting = function (ins, doneMode) {
+    if (ins.tower && !ins.divider) {
+        var remove = false;
+        if (!ins.text) {
+            remove = true;
+        } else if (ins.symbol === insertingReferenceSymbol) {
+            if (doneMode === 'create') {
+                var insert = createView(createSymbol({text: ''}));
+                ins.parent.children[treeI(ins)] = insert;
+                update(ins.parent);
+                insert.text = ins.text;
+                update(insert);
+                return 'created';
+            }
+
+            var symbol = symbolsForText(ins.text)[0];
+            if (symbol) {
+                ins.symbol = symbol;
+                update(ins.parent);
+                return 'assigned';
+            } else if (doneMode === 'keepIncomplete') {
+                return 'incomplete';
+            } else {
+                remove = true;
+            }
+        }
+        if (remove) {
+            ins.parent.children.splice(treeI(ins), 1);
+            updateTree(ins.parent);
+            maybeKillView(ins.parent);
+            return 'deleted';
+        }
     }
 };
 
@@ -51,11 +84,71 @@ var deleteTower = function (tower) {
     killView(tower.parent);
 };
 
+var toggleReference = function (ins) {
+    var siblings = ins.parent.children;
+    var oldParent = ins.parent;
+    if (ins.reference) {
+        ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
+    } else {
+        var reference = createView(ins.symbol, {
+            reference: true,
+        });
+        siblings[treeI(ins)] = reference;
+        ins = reference;
+    }
+    updateTree(oldParent);
+};
+
+var symbolsForText = function (text) {
+    if (!text) {
+        return [];
+    }
+    var references = _.filter(viewsFromTree(), 'reference');
+    var symbols = references.concat(allSymbols);
+    var matching = _.filter(symbols, function (symbol) {
+        return symbol.text.indexOf(text) === 0;
+    });
+    var sorted = matching.sort(function (a, b) {
+        if (a.reference && !b.reference) {
+            return -1;
+        }
+        if (b.reference) {
+            return a.reference ? 0 : +1;
+        }
+        if (a.parents.length !== b.parents.length) {
+            return a.parents.length > b.parents.length ? -1 : +1;
+        }
+        var aScore = 0;
+        if (a.children.length && a.children[0].leaf) {
+            aScore = -1;
+        }
+        var bScore = 0;
+        if (b.children.length && b.children[0].leaf) {
+            bScore = 1;
+        }
+        return aScore + bScore;
+    });
+    var dereferenced = _.map(sorted, function (s) {
+        return s.symbol || s;
+    });
+    var unique = _.uniq(dereferenced);
+    var nonInserting = _.without(unique, insertingReferenceSymbol);
+    var clipped = nonInserting.slice(0, 7);
+    return clipped;
+};
+
 var numberKeys = ['-','0','1','2','3','4','5','6','7','8','9','.'];
 
 var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     key = key || String.fromCharCode(keyCode);
+    if (keyCode === 13) {
+        key = 'enter';
+    }
     d3.event.preventDefault();
+    handleKeypress(key);
+});
+
+var handleKeypress = function (key) {
     var ins = state.inserting;
     if (!ins) {
         var target = state.target;
@@ -65,9 +158,10 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             mode = state.targetMode;
         } else {
             if (key === ' ') {
-                var insert = createView(createSymbol({text: ''}));
+                var insert = createView(insertingReferenceSymbol, {text: ''});
                 allViewTree.children.push(insert);
                 updateTree(allViewTree);
+                updateTree(insert);
                 ins = insert;
                 mode = 'tree';
             } else {
@@ -92,6 +186,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
     // TODO: a lot of these need to handle a selection.
     // TODO: also make them all work for tree mode and branches.
 
+
     if (state.insertingNumber) {
         var text = ins.text;
         if (state.firstInserting) {
@@ -102,7 +197,6 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         ins.text = text;
         update(ins);
         updateState({
-            doStructure: true,
             selection: null,
             firstInserting: false,
         });
@@ -111,11 +205,14 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         if (ins.branch || ins.divider) {
             return;
         }
+        if (state.firstInserting && ins.reference) {
+            startInsertingReference(ins);
+        }
+        var text = state.firstInserting ? '' : ins.text;
         var num = (+ins.text + 1) || 0;
         ins.text = '' + num;
         update(ins);
         updateState({
-            doStructure: true,
             insertingNumber: true,
             selection: null,
         });
@@ -135,7 +232,6 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             _.each(state.targets, deleteTower);
             updateState({
                 inserting: nextIns && nextIns[0],
-                doStructure: true,
                 selection: null,
             });
         } else {
@@ -145,10 +241,13 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
             siblings.splice(i, 1);
             updateTree(oldParent);
             maybeKillView(oldParent);
-            updateState({inserting: ins, doStructure: true});
+            updateState({
+                inserting: ins,
+                firstInserting: true,
+            });
         }
 
-    } else if (_.contains([' ', '(', ')'], key)) {
+    } else if (_.contains(['enter', ' ', '(', ')'], key)) {
         if (state.targetMode === 'tree') {
             if (ins.tower) {
                 updateState({insertingMode: 'tower'});
@@ -156,13 +255,25 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         }
         var depth = ins.depth;
         if (ins.branch || ins.text) {
-            var insert = createView(createSymbol({text: ''}));
-            siblings.splice(treeI(ins) + 1, 0, insert);
+            var i = treeI(ins);
+            var doneMode = key === 'enter' ? 'create' : 'keepIncomplete';
+            var result = doneInserting(ins, doneMode);
+            if (result === 'incomplete') {
+                return;
+            } else if (result === 'deleted') {
+                i -= 1;
+            }
+            var insert = createView(insertingReferenceSymbol, {
+                text: '',
+                reference: true,
+            });
+            siblings.splice(i + 1, 0, insert);
             if (state.targetMode === 'tower') {
                 update(ins.parent);
             } else {
                 updateTree(ins.parent);
             }
+            update(insert);
             updateState({inserting: insert, insertingMode: 'tower'});
             ins = insert;
         } else if (key === '(') {
@@ -178,52 +289,25 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         } else if (key === ')') {
             moveTowerUp(ins);
         }
-        updateState({doStructure: true, selection: null});
+        updateState({selection: null});
 
     } else if (key === ',') {
-        if (ins.tower) {
-            updateState({insertingMode: 'tower'});
-        } else {
-            return; // TODO
-        }
-        var depth = ins.depth;
-        var oldParent = ins.parent;
-        var i = treeI(ins);
-        if (!ins.text) {
-            siblings.splice(i, 1);
-        } else {
-            i += 1;
-        }
-        var divider = createView(null);
-        siblings.splice(i, 0, divider);
-        i += 1;
-        var insert = createView(createSymbol({text: ''}));
-        siblings.splice(i, 0, insert);
-        update(oldParent);
-        moveTowerUp(divider);
-        updateState({
-            inserting: insert,
-            doStructure: true,
-            selection: null,
-        });
+        handleKeypress(')');
+        handleKeypress('(');
 
     } else if (key === 'tab') {
-        var oldParent = ins.parent;
-        if (ins.reference) {
-            ins = siblings[treeI(ins)] = cloneOnlyTree(ins.symbol.view);
+        if (ins.tower && !ins.text) {
+            var left = siblingSymbol(ins, -1);
+            if (left) {
+                toggleReference(left);
+            }
         } else {
-            var reference = createView(ins.symbol, {
-                reference: true,
+            ins = toggleReference(ins);
+            updateState({
+                inserting: ins,
+                selection: null,
             });
-            siblings[treeI(ins)] = reference;
-            ins = reference;
         }
-        updateTree(oldParent);
-        updateState({
-            inserting: ins,
-            doStructure: true,
-            selection: null,
-        });
 
     } else if (key === '[' || key === ']') {
         if (state.targetMode === 'tree') {
@@ -238,28 +322,7 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         } else if (key === ']') {
             moveTowerUp(ins);
         }
-        updateState({doStructure: true, selection: null});
-
-    } else if (key === '`' || key === '5') {  // move cursor
-        // TODO: creating new symbols at edges?
-        if (ins.tower) {
-            updateState({insertingMode: 'tower'});
-        } else {
-            return; // TODO
-        }
-        var insert;
-        if (key === '`') {
-            insert = previousTower(ins);
-        } else {
-            insert = nextTower(ins);
-        }
-        insert = insert && insert[0];
-        removeEmptyText(ins);
-        updateState({
-            inserting: insert,
-            firstInserting: true,
-            selection: null,
-        });
+        updateState({selection: null});
 
     } else if (key === 'backspace') {
         if (state.targetMode === 'tree') {
@@ -269,25 +332,24 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
                 return; // TODO
             }
         }
-        if (ins.reference) {
-            return; // TODO
-        }
         var text = ins.text;
         if (text) {
             text = text.slice(0, text.length - 1);
             ins.text = text;
             update(ins);
-            updateState({doStructure: true, selection: null});
+            updateState({selection: null});
         } else {
             var left = previousTower(ins);
             deleteTower(ins);
             ins = left && left[0];
+            if (ins && ins.reference) {
+                startInsertingReference(ins);
+            }
             var insertingMode = ins ? 'tower' : null;
             updateState({
                 inserting: ins,
                 insertingMode: insertingMode,
                 startMouse: mouse,
-                doStructure: true,
                 selection: null,
             });
         }
@@ -299,7 +361,6 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         updateTree(ins.parent);
         updateState({
             inserting: cloned,
-            doStructure: true,
             selection: null,
         });
 
@@ -310,20 +371,19 @@ var keypressEvent = doStuffAroundStateChanges(function (keyCode, key) {
         if (ins.branch || ins.divider) {
             return;
         }
-        if (ins.reference) {
-            return; // TODO
+        if (state.firstInserting && ins.reference) {
+            startInsertingReference(ins);
         }
         var text = state.firstInserting ? '' : ins.text;
         text += key;
         ins.text = text;
         update(ins);
         updateState({
-            doStructure: true,
             firstInserting: false,
             selection: null,
         });
     }
-});
+};
 
 var keyMap = {8: 'backspace', 9: 'tab', 13: 'enter', 16: 'shift', 17: 'ctrl', 18: 'alt', 19: 'pause/break', 20: 'caps lock', 27: 'escape', 32: 'space', 33: 'page up', 34: 'page down', 35: 'end', 36: 'home', 37: 'left arrow', 38: 'up arrow', 39: 'right arrow', 40: 'down arrow', 45: 'insert', 46: 'delete', 48: '0', 49: '1', 50: '2', 51: '3', 52: '4', 53: '5', 54: '6', 55: '7', 56: '8', 57: '9', 65: 'A', 66: 'B', 67: 'C', 68: 'D', 69: 'E', 70: 'F', 71: 'G', 72: 'H', 73: 'I', 74: 'J', 75: 'K', 76: 'L', 77: 'M', 78: 'N', 79: 'O', 80: 'P', 81: 'Q', 82: 'R', 83: 'S', 84: 'T', 85: 'U', 86: 'V', 87: 'W', 88: 'X', 89: 'Y', 90: 'Z', 91: 'left window key', 92: 'right window key', 93: 'select key', 96: 'numpad 0', 97: 'numpad 1', 98: 'numpad 2', 99: 'numpad 3', 100: 'numpad 4', 101: 'numpad 5', 102: 'numpad 6', 103: 'numpad 7', 104: 'numpad 8', 105: 'numpad 9', 106: 'multiply', 107: 'add', 109: 'subtract', 110: 'decimal point', 111: 'divide', 112: 'F1', 113: 'F2', 114: 'F3', 115: 'F4', 116: 'F5', 117: 'F6', 118: 'F7', 119: 'F8', 120: 'F9', 121: 'F10', 122: 'F11', 123: 'F12', 144: 'num lock', 145: 'scroll lock', 186: ';', 187: '=', 188: ',', 189: '-', 190: '.', 191: '/', 192: '`', 219: '[', 220: '\\', 221: ']', 222: "'"};
 

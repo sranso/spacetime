@@ -38,7 +38,7 @@ var createSymbol = function (symbol) {
         branch: !leaf,
         children: [],
         parents: [],
-        text: null,
+        text: '',
         textWidth: leaf ? textWidth(symbol.text) : null,
         view: null,
     }, symbol);
@@ -72,6 +72,7 @@ var update = function (view) {
         child.parent = view;
     });
     updateSymbol(view);
+    updateState({doStructure: true});
 };
 
 var updateSymbol = function (view) {
@@ -91,7 +92,9 @@ var updateSymbol = function (view) {
         if (symbol.text !== view.text) {
             symbol.text = view.text;
             symbol.textWidth = textWidth(view.text);
-            maybeUpdateParentsText(symbol, []);
+            if (symbol !== insertingReferenceSymbol) {
+                maybeUpdateParentsText(symbol, []);
+            }
         }
     } else {
         if (symbol.children.length) {
@@ -104,11 +107,13 @@ var updateSymbol = function (view) {
 var maybeUpdateParentsText = function (symbol, visited) {
     visited.push(symbol);
     _.each(symbol.parents, function (parent) {
-        var i = _.indexOf(parent.children, symbol);
-        if (i === 0 && !_.contains(visited, parent)) {
-            parent.text = symbol.text;
-            parent.textWidth = symbol.textWidth;
-            maybeUpdateParentsText(parent, visited);
+        if (parent.text !== symbol.text) {
+            var i = _.indexOf(parent.children, symbol);
+            if (i === 0 && !_.contains(visited, parent)) {
+                parent.text = symbol.text;
+                parent.textWidth = symbol.textWidth;
+                maybeUpdateParentsText(parent, visited);
+            }
         }
     });
 };
@@ -126,7 +131,9 @@ var _killView = function (view) {
     var parent = view.parent;
     if (parent) {
         parent.children = _.without(parent.children, view);
-        if (!parent.children.length) {
+        if (parent.children.length) {
+            fixDividers(parent);
+        } else {
             _killView(parent);
         }
     }

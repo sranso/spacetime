@@ -1,6 +1,6 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allViewTree, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol;
+var untext, allSymbols, allViewTree, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol, insertingReferenceSymbol;
 
 var init = function () {
     untext = {};
@@ -30,6 +30,8 @@ var setup = function (example) {
 var blankSetup = function () {
     infiniteRecursionSymbol = createSymbol({text: '[Infinite recursion]'});
     infiniteRecursionSymbol.view = createView(infiniteRecursionSymbol);
+    insertingReferenceSymbol = createSymbol({text: ''});
+    insertingReferenceSymbol.view = createView(insertingReferenceSymbol);
     var root = createSymbol({children: [
         createSymbol({children: [
             createSymbol({text: 'fibonaci'}),
@@ -119,9 +121,8 @@ var _prepSymbolsJSON = function (symbols) {
     });
     return {
         symbols: jsonSymbols,
-        specialSymbols: {
-            infiniteRecursion: infiniteRecursionSymbol.id
-        },
+        infiniteRecursionSymbol: infiniteRecursionSymbol.id,
+        insertingReferenceSymbol: insertingReferenceSymbol.id,
     };
 };
 
@@ -142,7 +143,8 @@ var loadJSON = function (json) {
     _loadIdSequences(viewTable);
 
     allViewTree = viewTable[json.viewTreeRoot];
-    infiniteRecursionSymbol = symbolTable[json.specialSymbols.infiniteRecursion];
+    infiniteRecursionSymbol = symbolTable[json.infiniteRecursionSymbol];
+    insertingReferenceSymbol = symbolTable[json.insertingReferenceSymbol];
 
     updateState({
         hovering: null,

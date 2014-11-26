@@ -100,7 +100,7 @@ var maybeResetAfterMoving = function () {
     var diff = info.absDiff[0] + info.absDiff[1];
     if (diff >= 3) {
         if (state.inserting) {
-            removeEmptyText(state.inserting);
+            doneInserting(state.inserting, 'remove');
             updateState({inserting: null});
         }
         if (state.selection) {
@@ -151,9 +151,7 @@ var dragMoving = function () {
         moved = dragTree(info);
     }
 
-    if (moved) {
-        updateState({doStructure: true});
-    } else {
+    if (!moved) {
         _.each(state.targets, computePositions);
         draw(movingSelection());
     }
