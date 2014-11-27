@@ -171,6 +171,11 @@ var handleKeypress = function (key) {
                 updateTree(insert);
                 ins = insert;
                 mode = 'tree';
+
+            } else if (key === '1') {  // undo
+                recoverUndo();
+                return;
+
             } else {
                 return;
             }

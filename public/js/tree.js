@@ -86,6 +86,9 @@ var updateSymbol = function (view) {
     _.each(addChildren, function (child) {
         child.parents.push(symbol);
     });
+    if (!_.isEqual(_.pluck(oldChildren, 'id'), _.pluck(newChildren, 'id'))) {
+        updateState({didChangeSymbol: true});
+    }
     symbol.children = newChildren;
     if (symbol.leaf) {
         if (symbol.text !== view.text) {

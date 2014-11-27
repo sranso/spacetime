@@ -21,6 +21,8 @@ var stateInit = function () {
         doDraw: false,
         doDataDraw: false,
 
+        didChangeSymbol: false,
+
         targetKind: null,
         startMouse: [0, 0],
         inCamera: false,
@@ -85,6 +87,10 @@ var doStuffAfterStateChanges = function () {
             _.each(lastState.targets, computePositions);
         }
     };
+    if (state.didChangeSymbol) {
+        state.didChangeSymbol = false;
+        saveUndo();
+    }
     if (state.doDraw || state.doDataDraw) {
         var sel = fullSelection(state.doDataDraw);
         draw(sel);

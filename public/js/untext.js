@@ -1,6 +1,6 @@
 //window.untext = (function () {
 
-var untext, allSymbols, allViewTree, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol, insertingReferenceSymbol;
+var untext, allSymbols, allViewTree, otherPositions, symbolIdSequence, viewIdSequence, state, lastState, infiniteRecursionSymbol, insertingReferenceSymbol, undoHistory;
 
 var init = function () {
     untext = {};
@@ -11,6 +11,7 @@ var init = function () {
     hovering = null;
     hoveringMode = null;
     mouse = [0, 0];
+    undoHistory = [];
     stateInit();
 };
 
@@ -23,6 +24,8 @@ var setup = function (example) {
     } else {
         blankSetup();
     }
+    saveUndo();
+    saveUndo();
 
     console.log('untext loaded');
 };
@@ -72,6 +75,21 @@ var linkSymbols = function (node) {
     }
 };
 
+
+var saveUndo = function () {
+    if (undoHistory.length >= 40) {
+        undoHistory.shift();
+    }
+    undoHistory.push(dumpJSON());
+};
+
+var recoverUndo = function () {
+    if (undoHistory.length < 2) {
+        return;
+    }
+    undoHistory.pop();
+    loadJSONString(undoHistory[undoHistory.length - 1]);
+};
 
 var prepJSON = function () {
     var v = _prepViewsJSON();
