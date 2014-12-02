@@ -58,7 +58,9 @@ var fixDividers = function (node) {
             return;
         }
         if (lastChild && lastChild.branch && child.branch) {
-            newChildren.push(createView(null));
+            var divider = createView(null);
+            divider.parent = node;
+            newChildren.push(divider);
         }
         newChildren.push(child);
         lastChild = child;
