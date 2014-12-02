@@ -106,7 +106,7 @@ var computePositions = function (viewTree) {
 
 var computeOtherPositions = function () {
     otherPositions.svgHeight = allViewTree.h + svgExtraHeight;
-    var lastTower = rightmostTower(allViewTree);
+    var lastTower = rightmostTower(allViewTree)[0];
     otherPositions.bodyHeight = window.innerHeight + lastTower.x + lastTower.w;
 };
 

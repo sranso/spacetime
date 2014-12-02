@@ -38,10 +38,10 @@ var mouseLeave = doStuffAroundStateChanges(function () {
 });
 
 var mouseScroll = function () {
-    return; // TODO
     var scrollX = document.body.scrollTop;
+    console.log(scrollX);
     cameraX = cameraStartX - scrollX;
-    computeNonTreePositions();
+    computeOtherPositions();
     draw(nullSelection());
 };
 
