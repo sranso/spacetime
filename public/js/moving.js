@@ -151,7 +151,9 @@ var dragMoving = function () {
         moved = dragTree(info);
     }
 
-    if (!moved) {
+    if (moved) {
+        updateState({doPositions: true});
+    } else {
         _.each(state.targets, computePositions);
         draw(movingSelection());
     }
@@ -169,21 +171,18 @@ var positionAfterMove = function () {
 
 var dragTower = function (info) {
     var depthChange = calculateDepthChange(info);
-    var moved = false;
     if (depthChange > 0) {
         _(depthChange).times(function () {
             for (var i = 0; i < state.targets.length; i++) {
                 moveTowerDown(state.targets[i]);
             }
         });
-        moved = true;
     } else if (depthChange < 0) {
         _(-depthChange).times(function () {
             for (var i = state.targets.length - 1; i >= 0; i--) {
                 moveTowerUp(state.targets[i]);
             }
         });
-        moved = true;
     }
 
     var swapped = maybeSwapTower(info);
