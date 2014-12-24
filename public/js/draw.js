@@ -371,7 +371,7 @@ var topBracePath = function (s) {
     var controlY = 2;
     var endX = s.braceW - startX;
     var endsY = 19;
-    var vertEndsY = 21;
+    var vertEndsY = 27;
     return  'M'+startX+','+vertEndsY+' '+
             'V'+endsY+' '+
             'C'+control1X+','+controlY+' '+control2X+','+midY+' '+horiz1X+','+midY+' '+
