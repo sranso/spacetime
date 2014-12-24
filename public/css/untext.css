@@ -7,83 +7,6 @@ a {
   color: #00B7FF;
 }
 
-.camera > .background {
-  fill: #ffffff;
-}
-
-.branch .top-brace .mid-point {
-  fill: none;
-}
-.branch .top-brace path {
-  stroke: #C5DFCB;
-}
-.tower .top-brace .mid-point {
-  fill: #E2F3E5;
-}
-.tower .top-brace path {
-  stroke: none;
-}
-
-.view .top-brace path {
-  fill: none;
-  stroke-width: 1px;
-}
-
-.view.symbol-for-target .top-brace .mid-point {
-  fill: #5BBD71;
-}
-
-.view.target-sibling .top-brace path {
-  stroke: #5BBD71;
-}
-
-.view .mouse {
-  opacity: 0.0;
-}
-
-.tower rect.tower {
-  fill: none;
-}
-
-.tower text {
-  text-anchor: middle;
-}
-.tower.reference text {
-  font-weight: bold;
-}
-
-.tower.empty text {
-  fill: #aaaaaa;
-}
-
-.view rect.background {
-  opacity: 0.0;
-  fill: white;
-}
-
-.tower-mode .tower rect.tower {
-  fill: #ddd;
-}
-
-.tower-mode .tower.targets rect.tower {
-  fill: #C1FF72;
-}
-
-.tree-mode .view.targets rect.background {
-  fill: #8FFF00;
-  opacity: 0.4;
-}
-
-
-.autocomplete rect {
-  fill: #88B1E0;
-  opacity: 0.9;
-}
-
-.autocomplete.no-match rect {
-  fill: #8094A9;
-}
-
 h1 {
   font-size: 18px;
   position: fixed;
@@ -91,8 +14,7 @@ h1 {
   top: 10px;
 }
 
-svg#string {
-  cursor: pointer;
+svg#code {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
