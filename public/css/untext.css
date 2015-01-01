@@ -25,6 +25,10 @@ h1 {
   fill: white;
   stroke: #ddd;
 }
+.statement.selection .background {
+  fill: #efe;
+  stroke: #aaa;
+}
 
 .statement.under-input text {
   display: none;
