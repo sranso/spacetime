@@ -1,11 +1,12 @@
-var camera, allStatements, mouse, textInput;
+var camera, allStatements, mouse, textInput, under;
 
 var statementsX = 160;
-var lineHeight = 30;
-var statementW = 370;
+var statementsTextX = 50;
+var lineHeight = 35;
+var statementW = 400;
 
 mouse = null;
-
+under = null;
 
 var drawSetup = function () {
     var svg = d3.select('svg#code')
@@ -24,9 +25,25 @@ var drawSetup = function () {
         .attr('height', 20000) ;
 
     textInput = d3.select('#text-input')
-        .style('width', (statementW - 6) + 'px')
-        .style('height', (lineHeight - 3) + 'px')
-        .style('left', (statementsX + 29) + 'px') ;
+        .style('left', (statementsX + statementsTextX + 23) + 'px') ;
+
+    textInput.select('input')
+        .style('width', (statementW - statementsTextX - 20) + 'px')
+        .style('height', (lineHeight - 12) + 'px') ;
+
+    camera.append('rect')
+        .classed('track-rail', true)
+        .attr('x', statementsX + 70)
+        .attr('y', 10)
+        .attr('width', 10)
+        .attr('height', 10000) ;
+
+    camera.append('rect')
+        .classed('track-rail', true)
+        .attr('x', statementsX + statementW - 80)
+        .attr('y', 10)
+        .attr('width', 10)
+        .attr('height', 10000) ;
 };
 
 var computePositions = function (statements) {
@@ -36,7 +53,7 @@ var computePositions = function (statements) {
             x: statementsX,
             y: prevPos.y + lineHeight,
             w: statementW,
-            h: lineHeight,
+            h: lineHeight - 3,
         };
         statement.position = pos;
         _.extend(statement, pos);
@@ -60,11 +77,13 @@ var draw = function (sel) {
         .classed('background', true)
         .attr('x', 0)
         .attr('y', 0)
+        .attr('rx', 4)
+        .attr('ry', 4)
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
     statementsEnter.append('text')
-        .attr('y', 20)
-        .attr('x', 5) ;
+        .attr('y', 21)
+        .attr('x', statementsTextX) ;
 
     statements.select('text')
         .text(_.property('text')) ;
@@ -72,17 +91,27 @@ var draw = function (sel) {
 
 var mouseMove = function () {
     mouse = d3.mouse(camera.node());
-    var under = findUnderMouse();
-    d3.select('.under-input')
-        .classed('under-input', false) ;
+    fixUnder();
+};
+
+var fixUnder = function () {
+    var newUnder = findUnderMouse();
+    if (newUnder !== under) {
+        if (under) {
+            d3.select(under.__el__)
+                .classed('under-input', false) ;
+        }
+        textInput.node().blur();
+        under = newUnder;
+    }
 
     if (under) {
         d3.select(under.__el__)
             .classed('under-input', true) ;
-
         textInput
-            .style('top', (under.y + 29) + 'px')
+            .style('top', (under.y + 32) + 'px')
             .style('display', 'block')
+        textInput.select('input')
             .property('value', under.text) ;
     } else {
         textInput
@@ -121,6 +150,24 @@ allStatements = _.map([
     {text: '4 + 1'},
     {text: '^ * 3'},
     {text: '^ - 12'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: '3 + 5'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: 'square width:100 x:100 y:150'},
+    {text: '4 + 1'},
+    {text: '^ * 3'},
+    {text: '^ - 12'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: '3 + 5'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: 'square width:100 x:100 y:150'},
+    {text: '4 + 1'},
+    {text: '^ * 3'},
+    {text: '^ - 12'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: '3 + 5'},
+    {text: 'square width:50 x:100 y:150'},
+    {text: 'square width:100 x:100 y:150'},
 ], createStatement);
 
 drawSetup();

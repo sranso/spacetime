@@ -16,9 +16,14 @@ h1 {
   fill: #ffffff;
 }
 
+.track-rail {
+  fill: #eee;
+  stroke: #ddd;
+}
+
 .statement .background {
   fill: white;
-  stroke: #999999;
+  stroke: #ddd;
 }
 
 .statement.under-input text {
@@ -28,11 +33,15 @@ h1 {
 #text-input {
   position: absolute;
   display: none;
+}
+
+#text-input input {
   border: none;
   background: transparent;
-  font-size: 14px;
-  padding-left: 4px;
+  padding-left: 5px;
   padding-top: 0px;
+  font-size: 14px;
+  line-height: 0px;
 }
 
 svg#code {
