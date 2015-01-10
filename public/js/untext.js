@@ -1,23 +1,27 @@
-var camera, allSteps, mouse, textInput, under, allGroups, selection, selectionHistoryI, selectionHistory, __selectionHistoryAll, saveHistoryI, selectionStart, selectionEnd, selectionHistoryEl, __stretches;
-
 var stepsX = 240;
 var stepsTextX = 50;
 var lineHeight = 35;
 var stepW = 400;
+var historyWidth = 20;
 
-mouse = null;
-under = null;
-selection = {
-    elements: [],
-};
-allGroups = [selection];
-__stretches = [];
-selectionHistory = [{selection: selection}];
-selectionHistoryI = 0;
-saveHistoryI = -1;
-__selectionHistoryAll = selectionHistory;
-selectionStart = null;
-selectionEnd = null;
+var camera;
+var textInput;
+var selectionHistoryEl;
+var selectionHistoryCursor;
+
+var mouse = null;
+var under = null;
+var allSteps = [];
+
+var selection = createGroup();
+var allGroups = [selection];
+var __stretches = [];
+var selectionHistory = [{selection: selection}];
+var selectionHistoryI = 0;
+var saveHistoryI = -1;
+var __selectionHistoryAll = selectionHistory;
+var selectionStart = null;
+var selectionEnd = null;
 
 var drawSetup = function () {
     var svg = d3.select('svg#code')
@@ -31,6 +35,13 @@ var drawSetup = function () {
     selectionHistoryEl = svg.append('g')
         .classed('selection-history', true)
         .attr('transform', 'translate(600,200)') ;
+
+    selectionHistoryCursor = selectionHistoryEl.append('rect')
+        .classed('history-cursor', true)
+        .attr('x', 1)
+        .attr('y', 1)
+        .attr('width', historyWidth - 2)
+        .attr('height', historyWidth - 2) ;
 
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
@@ -118,7 +129,7 @@ var browseSelectionHistory = function (forward) {
         pop();
         selectionHistoryI += 1;
         if (selectionHistoryI === selectionHistory.length) {
-            var nextSelection = {elements: []};
+            var nextSelection = createGroup();
             selectionHistory.push({selection: nextSelection});
             allGroups.push(nextSelection);
         }
@@ -196,10 +207,10 @@ var computeSelectionHistoryPositions = function () {
     for (var i = selectionHistory.length - 1; i >= 0; i--) {
         var selectionView = selectionHistory[i];
         var pos = {
-            x: prevPos.x - 20,
+            x: prevPos.x - historyWidth,
             y: prevPos.y,
-            w: 20,
-            h: 20,
+            w: historyWidth,
+            h: historyWidth,
         };
         selectionView.position = pos;
         _.extend(selectionView, pos);
@@ -256,14 +267,15 @@ var drawSelectionHistory = function () {
     var historyEls = selectionHistoryEl.selectAll('g.history')
         .data(__selectionHistoryAll) ;
 
-    var historyEnterEls = historyEls.enter().append('g');
+    var historyEnterEls = historyEls.enter().append('g')
+        .classed('history', true) ;
 
     historyEnterEls.append('rect')
         .classed('background', true)
-        .attr('x', 2)
-        .attr('y', 2)
-        .attr('width', function (d) { return d.w - 4 })
-        .attr('height', function (d) { return d.h - 4 }) ;
+        .attr('x', 3)
+        .attr('y', 3)
+        .attr('width', function (d) { return d.w - 6 })
+        .attr('height', function (d) { return d.h - 6 }) ;
 
     historyEnterEls.append('rect')
         .classed('mouse', true)
@@ -272,8 +284,6 @@ var drawSelectionHistory = function () {
         .attr('width', _.property('w'))
         .attr('height', _.property('h'))
         .on('click', function (d, i) {
-            console.log('click');
-            console.log(d);
             selectionHistoryI = i;
             selection = selectionHistory[selectionHistoryI].selection;
             computePositions();
@@ -283,13 +293,19 @@ var drawSelectionHistory = function () {
     historyEls.exit().remove();
 
     historyEls
-        .attr('class', function (d, i) {
-            if (i === selectionHistoryI) {
-                return 'history showing';
-            }
-            return 'history';
-        })
         .attr('transform', function (d, i) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+        }) ;
+
+    historyEls.select('rect.background')
+        .style('fill', function (d, i) {
+            var c = d.selection.color;
+            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+        }) ;
+
+    selectionHistoryCursor
+        .attr('transform', function () {
+            var d = selectionHistory[selectionHistoryI];
             return 'translate(' + d.x + ',' + d.y + ')';
         }) ;
 };

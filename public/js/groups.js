@@ -1,3 +1,11 @@
+var createGroup = function (group) {
+    group = group || {};
+    return _.extend({
+        elements: [],
+        color: [_.random(360), _.random(70, 95), _.random(89, 92)],
+    }, group);
+};
+
 var orderElements = function (elements) {
     return _.sortBy(elements, function (element) {
         return _.indexOf(allSteps, element);
@@ -112,7 +120,14 @@ var drawGroups = function (stretches) {
 
     stretchEls.select('rect.background')
         .attr('width', function (d) { return d.w - 2 })
-        .attr('height', function (d) { return d.h - 2 }) ;
+        .attr('height', function (d) { return d.h - 2 })
+        .style('fill', function (d, i) {
+            if (d.group === selection) {
+                return '#afa';
+            }
+            var c = d.group.color;
+            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+        }) ;
 
     stretchEls.select('rect.mouse')
         .attr('width', _.property('w'))
