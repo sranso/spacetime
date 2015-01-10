@@ -3,6 +3,7 @@ var createGroup = function (group) {
     return _.extend({
         elements: [],
         color: [_.random(360), _.random(70, 95), _.random(89, 92)],
+        text: '',
     }, group);
 };
 

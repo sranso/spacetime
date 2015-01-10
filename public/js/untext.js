@@ -3,11 +3,14 @@ var stepsTextX = 50;
 var lineHeight = 35;
 var stepW = 400;
 var historyWidth = 20;
+var selectionInfoWidth = 32;
 
 var camera;
-var textInput;
+var stepTextInput;
+var selectionTextInput;
 var selectionHistoryEl;
 var selectionHistoryCursor;
+var selectionInfoEl;
 
 var mouse = null;
 var under = null;
@@ -37,11 +40,36 @@ var drawSetup = function () {
         .attr('transform', 'translate(600,200)') ;
 
     selectionHistoryCursor = selectionHistoryEl.append('rect')
-        .classed('history-cursor', true)
+        .classed('selection-cursor', true)
         .attr('x', 1)
         .attr('y', 1)
         .attr('width', historyWidth - 2)
         .attr('height', historyWidth - 2) ;
+
+    selectionInfoEl = svg.append('g')
+        .classed('selection-info', true)
+        .attr('transform', 'translate(850,300)') ;
+
+    selectionInfoEl.append('rect')
+        .classed('selection-cursor', true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', selectionInfoWidth)
+        .attr('height', selectionInfoWidth) ;
+
+    selectionInfoEl.append('rect')
+        .classed('selection-color', true)
+        .attr('x', 2)
+        .attr('y', 2)
+        .attr('width', selectionInfoWidth - 4)
+        .attr('height', selectionInfoWidth - 4) ;
+
+    selectionTextInput = d3.select('#selection-text-input')
+        .style('left', '930px')
+        .style('top', '327px') ;
+
+    selectionTextInput.select('input')
+        .property('placeholder', 'Group name') ;
 
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
@@ -55,10 +83,10 @@ var drawSetup = function () {
         .attr('width', 20000)
         .attr('height', 20000) ;
 
-    textInput = d3.select('#text-input')
+    stepTextInput = d3.select('#step-text-input')
         .style('left', (stepsX + stepsTextX + 23) + 'px') ;
 
-    textInput.select('input')
+    stepTextInput.select('input')
         .style('width', (stepW - stepsTextX - 20) + 'px')
         .style('height', (lineHeight - 12) + 'px') ;
 
@@ -104,8 +132,8 @@ var keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === 'z' || key === 'a') {
-        browseSelectionHistory(key === 'z');
+    if (key === 'd' || key === 's') {
+        browseSelectionHistory(key === 'd');
     }
 
     computePositions();
@@ -221,6 +249,7 @@ var computeSelectionHistoryPositions = function () {
 var draw = function () {
     drawTrack(allSteps);
     drawSelectionHistory();
+    drawSelectionInfo();
     drawGroups(__stretches);
 };
 
@@ -277,6 +306,10 @@ var drawSelectionHistory = function () {
         .attr('width', function (d) { return d.w - 6 })
         .attr('height', function (d) { return d.h - 6 }) ;
 
+    historyEnterEls.append('text')
+        .attr('x', 10)
+        .attr('y', historyWidth / 2 + 3) ;
+
     historyEnterEls.append('rect')
         .classed('mouse', true)
         .attr('x', 0)
@@ -303,10 +336,34 @@ var drawSelectionHistory = function () {
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
         }) ;
 
+    historyEls.select('text')
+        .text(function (d) {
+            return d.selection.text.slice(0, 2);
+        }) ;
+
     selectionHistoryCursor
         .attr('transform', function () {
             var d = selectionHistory[selectionHistoryI];
             return 'translate(' + d.x + ',' + d.y + ')';
+        }) ;
+};
+
+var drawSelectionInfo = function () {
+    selectionInfoEl.select('rect.selection-color')
+        .style('fill', function () {
+            var c = selection.color;
+            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+        }) ;
+
+    selectionTextInput.select('input')
+        .property('value', selection.text)
+        .on('input', function () {
+            selection.text = this.value;
+            computePositions();
+            draw();
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
         }) ;
 };
 
@@ -323,20 +380,20 @@ var fixUnder = function () {
             d3.select(under.__el__)
                 .classed('under-input', false) ;
         }
-        textInput.node().blur();
+        stepTextInput.node().blur();
         under = newUnder;
     }
 
     if (under) {
         d3.select(under.__el__)
             .classed('under-input', true) ;
-        textInput
+        stepTextInput
             .style('top', (under.y + 32) + 'px')
             .style('display', 'block')
-        textInput.select('input')
+        stepTextInput.select('input')
             .property('value', under.text) ;
     } else {
-        textInput
+        stepTextInput
             .style('display', 'none') ;
     }
 };

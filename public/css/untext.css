@@ -21,6 +21,24 @@ h1 {
   stroke: #ddd;
 }
 
+.selection-info {
+}
+  .selection-cursor {
+    fill: #fff;
+    stroke: #666;
+    stroke-width: 2px;
+  }
+
+  #selection-text-input {
+    position: absolute;
+  }
+
+    #selection-text-input input {
+      font-size: 17px;
+      width: 300px;
+      padding: 5px;
+    }
+
 .step {
 }
   .step .background {
@@ -36,13 +54,12 @@ h1 {
     display: none;
   }
 
-
-  #text-input {
+  #step-text-input {
     position: absolute;
     display: none;
   }
 
-    #text-input input {
+    #step-text-input input {
       border: none;
       background: transparent;
       padding-left: 5px;
@@ -54,15 +71,14 @@ h1 {
 
 .history {
 }
+  .history text {
+    text-anchor: middle;
+    font-size: 10px;
+  }
+
   .history .mouse {
     fill: #fff;
     opacity: 0;
-  }
-
-  .history-cursor {
-    fill: #fff;
-    stroke: #666;
-    stroke-width: 2px;
   }
 
 
