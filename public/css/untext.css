@@ -21,42 +21,63 @@ h1 {
   stroke: #ddd;
 }
 
-.step .background {
-  fill: white;
-  stroke: #ddd;
-}
-.step.selection .background {
-  fill: #efe;
-  stroke: #aaa;
+.step {
 }
 
-.step.under-input text {
-  display: none;
-}
+  .step .background {
+    fill: white;
+    stroke: #ddd;
+  }
+  .step.selection .background {
+    fill: #efe;
+    stroke: #aaa;
+  }
+
+  .step.under-input text {
+    display: none;
+  }
 
 
-.history .background {
-  fill: #ccc;
+  #text-input {
+    position: absolute;
+    display: none;
+  }
+
+    #text-input input {
+      border: none;
+      background: transparent;
+      padding-left: 5px;
+      padding-top: 0px;
+      font-size: 14px;
+      line-height: 0px;
+    }
+
+
+.history {
 }
 
-.history.showing .background {
-  fill: #afa;
-  stroke: #777;
+  .history .background {
+    fill: #ccc;
+  }
+
+  .history.showing .background {
+    fill: #afa;
+    stroke: #777;
+  }
+
+
+.group-stretch {
 }
 
-#text-input {
-  position: absolute;
-  display: none;
-}
+  .group-stretch .background {
+    fill: #ccc;
+  }
 
-#text-input input {
-  border: none;
-  background: transparent;
-  padding-left: 5px;
-  padding-top: 0px;
-  font-size: 14px;
-  line-height: 0px;
-}
+  .group-stretch.showing .background {
+    fill: #afa;
+    stroke: #777;
+  }
+
 
 svg#code {
   -webkit-touch-callout: none;
