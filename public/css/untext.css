@@ -21,16 +21,16 @@ h1 {
   stroke: #ddd;
 }
 
-.statement .background {
+.step .background {
   fill: white;
   stroke: #ddd;
 }
-.statement.selection .background {
+.step.selection .background {
   fill: #efe;
   stroke: #aaa;
 }
 
-.statement.under-input text {
+.step.under-input text {
   display: none;
 }
 
