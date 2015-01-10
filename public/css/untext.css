@@ -23,7 +23,6 @@ h1 {
 
 .step {
 }
-
   .step .background {
     fill: white;
     stroke: #ddd;
@@ -55,6 +54,10 @@ h1 {
 
 .history {
 }
+  .history .mouse {
+    fill: #fff;
+    opacity: 0;
+  }
 
   .history .background {
     fill: #ccc;
@@ -68,6 +71,10 @@ h1 {
 
 .group-stretch {
 }
+  .group-stretch .mouse {
+    fill: #fff;
+    opacity: 0;
+  }
 
   .group-stretch .background {
     fill: #ccc;

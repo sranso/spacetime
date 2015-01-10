@@ -182,7 +182,7 @@ var computeTrackPositions = function (steps) {
             x: stepsX,
             y: prevPos.y + lineHeight,
             w: stepW,
-            h: lineHeight - 3,
+            h: lineHeight,
         };
         step.position = pos;
         _.extend(step, pos);
@@ -228,11 +228,11 @@ var drawTrack = function (steps) {
     stepEnterEls.append('rect')
         .classed('background', true)
         .attr('x', 0)
-        .attr('y', 0)
+        .attr('y', 1)
         .attr('rx', 4)
         .attr('ry', 4)
         .attr('width', _.property('w'))
-        .attr('height', _.property('h')) ;
+        .attr('height', function (d) { return d.h - 3 }) ;
 
     stepEnterEls.append('text')
         .attr('y', 21)
@@ -264,6 +264,21 @@ var drawSelectionHistory = function () {
         .attr('y', 2)
         .attr('width', function (d) { return d.w - 4 })
         .attr('height', function (d) { return d.h - 4 }) ;
+
+    historyEnterEls.append('rect')
+        .classed('mouse', true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', _.property('w'))
+        .attr('height', _.property('h'))
+        .on('click', function (d, i) {
+            console.log('click');
+            console.log(d);
+            selectionHistoryI = i;
+            selection = selectionHistory[selectionHistoryI].selection;
+            computePositions();
+            draw();
+        }) ;
 
     historyEls.exit().remove();
 
@@ -316,8 +331,8 @@ var findUnderMouse = function () {
 
 var findFromCoordinates = function (x, y) {
     return _.find(allSteps, function (step) {
-        if (step.y < y && y < step.y + step.h) {
-            return step.x < x && x < step.x + step.w;
+        if (step.y <= y && y < step.y + step.h) {
+            return step.x <= x && x < step.x + step.w;
         }
         return false;
     });

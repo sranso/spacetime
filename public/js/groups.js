@@ -82,10 +82,22 @@ var drawGroups = function (stretches) {
 
     stretchEnterEls.append('rect')
         .classed('background', true)
-        .attr('x', 0)
-        .attr('y', 0)
+        .attr('x', 1)
+        .attr('y', 1)
         .attr('rx', 2)
         .attr('ry', 2) ;
+
+    stretchEnterEls.append('rect')
+        .classed('mouse', true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .on('click', function (d) {
+            selection = d.group;
+            selectionHistoryI = saveHistoryI + 1;
+            selectionHistory[selectionHistoryI] = {selection: selection};
+            computePositions();
+            draw();
+        }) ;
 
     stretchEls
         .attr('class', function (d) {
@@ -100,5 +112,9 @@ var drawGroups = function (stretches) {
 
     stretchEls.select('rect.background')
         .attr('width', function (d) { return d.w - 2 })
+        .attr('height', function (d) { return d.h - 2 }) ;
+
+    stretchEls.select('rect.mouse')
+        .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
 };
