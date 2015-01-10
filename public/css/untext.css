@@ -36,11 +36,12 @@ h1 {
 
 
 .history .background {
-  fill: #999;
+  fill: #ccc;
 }
 
 .history.showing .background {
-  fill: #9e9;
+  fill: #afa;
+  stroke: #777;
 }
 
 #text-input {

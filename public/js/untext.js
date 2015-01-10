@@ -104,6 +104,9 @@ var keypressEvent = function (keyCode, key) {
     } else if (key === 'a') {
         var nextSelection = selectionHistory[_.indexOf(selectionHistory, selection) - 1];
         if (nextSelection) {
+            if (selection === selectionHistory[selectionHistory.length - 1] && !selection.elements.length) {
+                selectionHistory.pop();
+            }
             selection = nextSelection;
         }
     }
