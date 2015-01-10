@@ -1,4 +1,4 @@
-var camera, allSteps, mouse, textInput, under, allGroups, selection, selectionHistory, __selectionHistoryAll, selectionStart, selectionEnd, selectionHistoryEl, __stretches;
+var camera, allSteps, mouse, textInput, under, allGroups, selection, selectionHistoryI, selectionHistory, __selectionHistoryAll, saveHistoryI, selectionStart, selectionEnd, selectionHistoryEl, __stretches;
 
 var stepsX = 240;
 var stepsTextX = 50;
@@ -12,7 +12,9 @@ selection = {
 };
 allGroups = [selection];
 __stretches = [];
-selectionHistory = [selection];
+selectionHistory = [{selection: selection}];
+selectionHistoryI = 0;
+saveHistoryI = -1;
 __selectionHistoryAll = selectionHistory;
 selectionStart = null;
 selectionEnd = null;
@@ -91,36 +93,48 @@ var keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === 'z') {
-        var nextSelection = selectionHistory[_.indexOf(selectionHistory, selection) + 1];
-        if (!nextSelection) {
-            if (selection.elements.length) {
-                nextSelection = {elements: []};
-                selectionHistory.push(nextSelection);
-                allGroups.push(nextSelection);
-            } else {
-                nextSelection = selection;
-            }
-        }
-        selection = nextSelection;
-    } else if (key === 'a') {
-        var nextSelection = selectionHistory[_.indexOf(selectionHistory, selection) - 1];
-        if (nextSelection) {
-            if (selection === selectionHistory[selectionHistory.length - 1] && !selection.elements.length) {
-                selectionHistory.pop();
-                allGroups = _.without(allGroups, selection);
-            }
-            selection = nextSelection;
-        }
+    if (key === 'z' || key === 'a') {
+        browseSelectionHistory(key === 'z');
     }
 
     computePositions();
     draw();
 };
 
+var browseSelectionHistory = function (forward) {
+    var pop = function () {
+        if (selectionHistoryI > saveHistoryI) {
+            selectionHistory.pop();
+            if (!_.contains(_.pluck(selectionHistory, 'selection'), selection)) {
+                allGroups = _.without(allGroups, selection);
+            }
+            selectionHistoryI -= 1;
+            return true;
+        }
+        return false;
+    }
+
+    if (forward) {
+        pop();
+        selectionHistoryI += 1;
+        if (selectionHistoryI === selectionHistory.length) {
+            var nextSelection = {elements: []};
+            selectionHistory.push({selection: nextSelection});
+            allGroups.push(nextSelection);
+        }
+    } else if (selectionHistoryI > 0 && !pop()) {
+        selectionHistoryI -= 1;
+    }
+    selection = selectionHistory[selectionHistoryI].selection;
+};
+
 var startSelection = function () {
     fixUnder();
     selectionStart = under;
+    if (selectionHistoryI !== selectionHistory.length - 1) {
+        selectionHistory.push({selection: selection});
+        selectionHistoryI = selectionHistory.length - 1;
+    }
     changeSelection();
 };
 
@@ -139,6 +153,12 @@ var changeSelection = function () {
         endI = temp;
     }
     selection.elements = allSteps.slice(startI, endI + 1);
+
+    if (selection.elements.length) {
+        saveHistoryI = selectionHistoryI;
+    } else {
+        saveHistoryI = selectionHistoryI - 1;
+    }
 
     computePositions();
     draw();
@@ -174,15 +194,15 @@ var computeSelectionHistoryPositions = function () {
     var prevPos = {x: 360, y: 200, w: 0, h: 0};
     __selectionHistoryAll = selectionHistory;
     for (var i = selectionHistory.length - 1; i >= 0; i--) {
-        var selection = selectionHistory[i];
+        var selectionView = selectionHistory[i];
         var pos = {
             x: prevPos.x - 20,
             y: prevPos.y,
             w: 20,
             h: 20,
         };
-        selection.position = pos;
-        _.extend(selection, pos);
+        selectionView.position = pos;
+        _.extend(selectionView, pos);
         prevPos = pos;
     }
 };
@@ -248,8 +268,8 @@ var drawSelectionHistory = function () {
     historyEls.exit().remove();
 
     historyEls
-        .attr('class', function (d) {
-            if (d === selection) {
+        .attr('class', function (d, i) {
+            if (i === selectionHistoryI) {
                 return 'history showing';
             }
             return 'history';
