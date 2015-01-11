@@ -6,25 +6,27 @@ var newId = function () {
 };
 
 var createStep = function (step) {
-    return _.extend({
+    step = _.extend({
         id: newId(),
         text: '',
         pseudo: false,
         groups: [],
-        position: null,
-        __el__: null,
         next: null,
         previous: null,
+        underPseudo: null,
     }, step);
+    step.stretch = [step];
+    return step;
 };
 
 // TODO: only allow groups of single stretches to become
 // pseudo steps.
 var createPseudoStep = function (stretch) {
+    var text = stretch.group ? stretch.group.text : stretch[0].text;
     return {
         id: newId(),
         //id: group.id,
-        text: stretch.group.text,
+        text: text,
         pseudo: true,
         stretch: stretch,
         group: stretch.group,
@@ -36,15 +38,9 @@ var createPseudoStep = function (stretch) {
 };
 
 var realSteps = function (pseudoSteps) {
-    var steps = [];
-    _.each(pseudoSteps, function (step) {
-        if (step.pseudo) {
-            steps = steps.concat(step.stretch);
-        } else {
-            steps.push(step);
-        }
-    });
-    return steps;
+    return _.reduce(pseudoSteps, function (steps, step) {
+        return steps.concat(step.stretch);
+    }, []);
 };
 
 var addUnderGroup = function (steps, group) {
@@ -79,15 +75,30 @@ var computePseudoSteps = function () {
             }
         });
 
-        if (maxStretch.length) {
-            var pseudo = createPseudoStep(maxStretch);
-            allPseudoSteps.push(pseudo);
-            real = maxStretch[maxStretch.length - 1].next;
-        } else {
-            allPseudoSteps.push(real);
+        if (!maxStretch.length) {
+            maxStretch = [real];
+        }
+        var pseudo = createPseudoStep(maxStretch);
+        allPseudoSteps.push(pseudo);
+        var nextReal = maxStretch[maxStretch.length - 1].next;
+        while (real && real !== nextReal) {
+            real.underPseudo = pseudo;
             real = real.next;
         }
     }
+
+    linkSteps(allPseudoSteps);
+};
+
+var linkSteps = function (steps) {
+    var previous = null;
+    _.each(steps, function (step) {
+        if (previous) {
+            previous.next = step;
+        }
+        step.previous = previous;
+        previous = step;
+    });
 };
 
 var computeStepPositions = function (steps) {
@@ -132,7 +143,7 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = [];
-            if (_.contains(selection.elements, d)) {
+            if (_.intersection(d.stretch, selection.elements).length) {
                 classes.push('selection');
             }
             classes.push('step');

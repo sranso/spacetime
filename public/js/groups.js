@@ -35,6 +35,39 @@ var groupByStretches = function (elements) {
     return stretches;
 };
 
+var groupByPseudoStretches = function (elements) {
+    if (!elements.length) {
+        return [];
+    }
+    var i = 0;
+    var real = elements[i];
+    var pseudo = real.underPseudo;
+    var stretchStep = {step: pseudo};
+    var stretch = [stretchStep];
+    var stretches = [stretch];
+
+    while (real) {
+        var missingSteps = _.difference(pseudo.stretch, elements);
+        stretchStep.partial = missingSteps.length;
+        while (real && real.underPseudo === pseudo) {
+            i += 1;
+            real = elements[i];
+        }
+        if (real) {
+            var nextPseudo = real.underPseudo;
+            var stretchStep = {step: nextPseudo};
+            if (nextPseudo == pseudo.next) {
+                stretch.push(stretchStep);
+            } else {
+                stretch = [stretchStep];
+                stretches.push(stretch);
+            }
+            pseudo = nextPseudo;
+        }
+    }
+    return stretches;
+};
+
 var orderGroups = function (groups) {
     return groups.sort(function (a, b) {
         if (a.__maxStretches !== b.__maxStretches) {
@@ -53,7 +86,7 @@ var orderGroups = function (groups) {
 var computeGroupPositions = function (groups) {
     groups = _.filter(groups, function (group) {
         group.elements = orderElements(group.elements);
-        group.stretches = groupByStretches(group.elements);
+        group.stretches = groupByPseudoStretches(group.elements);
         if (!group.stretches.length) {
             return false;
         }
@@ -70,9 +103,9 @@ var computeGroupPositions = function (groups) {
             var lastEl = stretch[stretch.length - 1];
             var pos = {
                 x: x,
-                y: stretch[0].y,
+                y: stretch[0].step.y,
                 w: 9,
-                h: lastEl.y + lastEl.h - stretch[0].y,
+                h: lastEl.step.y + lastEl.step.h - stretch[0].step.y,
             };
             stretch.position = pos;
             _.extend(stretch, pos);

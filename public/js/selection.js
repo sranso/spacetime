@@ -32,12 +32,14 @@ var toggleExpanded = function () {
 
 var startSelection = function () {
     fixUnder();
-    selectionStart = under;
-    if (selectionHistoryI !== selectionHistory.length - 1) {
-        selectionHistory.push({selection: selection});
-        selectionHistoryI = selectionHistory.length - 1;
+    if (under) {
+        selectionStart = under.stretch[0];
+        if (selectionHistoryI !== selectionHistory.length - 1) {
+            selectionHistory.push({selection: selection});
+            selectionHistoryI = selectionHistory.length - 1;
+        }
+        changeSelection();
     }
-    changeSelection();
 };
 
 var changeSelection = function () {
@@ -45,10 +47,10 @@ var changeSelection = function () {
         return;
     }
     if (under) {
-        selectionEnd = under;
+        selectionEnd = under.stretch[0];
     }
-    var startI = _.indexOf(allPseudoSteps, selectionStart);
-    var endI = _.indexOf(allPseudoSteps, selectionEnd);
+    var startI = _.indexOf(allPseudoSteps, selectionStart.underPseudo);
+    var endI = _.indexOf(allPseudoSteps, selectionEnd.underPseudo);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
