@@ -4,6 +4,7 @@ var createGroup = function (group) {
         elements: [],
         color: [_.random(360), _.random(70, 95), _.random(89, 92)],
         text: '',
+        expanded: true,
     }, group);
 };
 
@@ -70,7 +71,7 @@ var computeGroupPositions = function (groups) {
             var pos = {
                 x: x,
                 y: stretch[0].y,
-                w: 7,
+                w: 9,
                 h: lastEl.y + lastEl.h - stretch[0].y,
             };
             stretch.position = pos;
@@ -79,7 +80,7 @@ var computeGroupPositions = function (groups) {
 
             __stretches.push(stretch);
         });
-        x -= 7;
+        x -= 9;
     });
 };
 

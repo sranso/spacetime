@@ -15,6 +15,7 @@ var selectionInfoEl;
 var mouse = null;
 var under = null;
 var allSteps = [];
+var allPseudoSteps = [];
 
 var selection = createGroup();
 var allGroups = [selection];
@@ -114,6 +115,11 @@ var inputEvent = function (key, eventType) {
         debugger;
         return;
     }
+    if (key === 'tab' && eventType === 'down') {
+        d3.event.preventDefault();
+        keypressEvent(null, 'tab');
+        return;
+    }
 
     if (key === 'shift' || key === 'ctrl') {
         if (eventType === 'down') {
@@ -134,10 +140,11 @@ var keypressEvent = function (keyCode, key) {
 
     if (key === 'd' || key === 's') {
         browseSelectionHistory(key === 'd');
+    } else if (key === 'tab') {
+        toggleExpanded();
     }
 
-    computePositions();
-    draw();
+    update();
 };
 
 var browseSelectionHistory = function (forward) {
@@ -167,6 +174,11 @@ var browseSelectionHistory = function (forward) {
     selection = selectionHistory[selectionHistoryI].selection;
 };
 
+var toggleExpanded = function () {
+    selection.expanded = !selection.expanded;
+    update();
+};
+
 var startSelection = function () {
     fixUnder();
     selectionStart = under;
@@ -184,14 +196,16 @@ var changeSelection = function () {
     if (under) {
         selectionEnd = under;
     }
-    var startI = _.indexOf(allSteps, selectionStart);
-    var endI = _.indexOf(allSteps, selectionEnd);
+    var startI = _.indexOf(allPseudoSteps, selectionStart);
+    var endI = _.indexOf(allPseudoSteps, selectionEnd);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
         endI = temp;
     }
-    selection.elements = allSteps.slice(startI, endI + 1);
+    removeUnderGroup(selection.elements, selection);
+    selection.elements = realSteps(allPseudoSteps.slice(startI, endI + 1));
+    addUnderGroup(selection.elements, selection);
 
     if (selection.elements.length) {
         saveHistoryI = selectionHistoryI;
@@ -199,8 +213,7 @@ var changeSelection = function () {
         saveHistoryI = selectionHistoryI - 1;
     }
 
-    computePositions();
-    draw();
+    update();
 };
 
 var stopSelection = function () {
@@ -208,10 +221,16 @@ var stopSelection = function () {
     selectionEnd = null;
 };
 
+var update = function () {
+    computePseudoSteps();
+    computePositions();
+    draw();
+};
+
 var computePositions = function () {
-    computeTrackPositions(allSteps);
+    computeTrackPositions(allPseudoSteps);
     computeSelectionHistoryPositions();
-    computeGroupPositions(allGroups);
+    //computeGroupPositions(allGroups);
 };
 
 var computeTrackPositions = function (steps) {
@@ -247,10 +266,10 @@ var computeSelectionHistoryPositions = function () {
 };
 
 var draw = function () {
-    drawTrack(allSteps);
+    drawTrack(allPseudoSteps);
     drawSelectionHistory();
     drawSelectionInfo();
-    drawGroups(__stretches);
+    //drawGroups(__stretches);
 };
 
 var drawTrack = function (steps) {
@@ -319,8 +338,7 @@ var drawSelectionHistory = function () {
         .on('click', function (d, i) {
             selectionHistoryI = i;
             selection = selectionHistory[selectionHistoryI].selection;
-            computePositions();
-            draw();
+            update();
         }) ;
 
     historyEls.exit().remove();
@@ -359,8 +377,7 @@ var drawSelectionInfo = function () {
         .property('value', selection.text)
         .on('input', function () {
             selection.text = this.value;
-            computePositions();
-            draw();
+            update();
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
@@ -403,22 +420,12 @@ var findUnderMouse = function () {
 };
 
 var findFromCoordinates = function (x, y) {
-    return _.find(allSteps, function (step) {
+    return _.find(allPseudoSteps, function (step) {
         if (step.y <= y && y < step.y + step.h) {
             return step.x <= x && x < step.x + step.w;
         }
         return false;
     });
-};
-
-var createStep = function (step) {
-    return _.extend({
-        text: '',
-        position: null,
-        __el__: null,
-        next: null,
-        previous: null,
-    }, step);
 };
 
 allSteps = _.map([
@@ -457,6 +464,7 @@ var linkSteps = function (steps) {
 };
 
 linkSteps(allSteps);
+linkSteps(allPseudoSteps);
 
 var keyMap = {8: 'backspace', 9: 'tab', 13: 'enter', 16: 'shift', 17: 'ctrl', 18: 'alt', 19: 'pause/break', 20: 'caps lock', 27: 'escape', 32: 'space', 33: 'page up', 34: 'page down', 35: 'end', 36: 'home', 37: 'left arrow', 38: 'up arrow', 39: 'right arrow', 40: 'down arrow', 45: 'insert', 46: 'delete', 48: '0', 49: '1', 50: '2', 51: '3', 52: '4', 53: '5', 54: '6', 55: '7', 56: '8', 57: '9', 65: 'A', 66: 'B', 67: 'C', 68: 'D', 69: 'E', 70: 'F', 71: 'G', 72: 'H', 73: 'I', 74: 'J', 75: 'K', 76: 'L', 77: 'M', 78: 'N', 79: 'O', 80: 'P', 81: 'Q', 82: 'R', 83: 'S', 84: 'T', 85: 'U', 86: 'V', 87: 'W', 88: 'X', 89: 'Y', 90: 'Z', 91: 'left window key', 92: 'right window key', 93: 'select key', 96: 'numpad 0', 97: 'numpad 1', 98: 'numpad 2', 99: 'numpad 3', 100: 'numpad 4', 101: 'numpad 5', 102: 'numpad 6', 103: 'numpad 7', 104: 'numpad 8', 105: 'numpad 9', 106: 'multiply', 107: 'add', 109: 'subtract', 110: 'decimal point', 111: 'divide', 112: 'F1', 113: 'F2', 114: 'F3', 115: 'F4', 116: 'F5', 117: 'F6', 118: 'F7', 119: 'F8', 120: 'F9', 121: 'F10', 122: 'F11', 123: 'F12', 144: 'num lock', 145: 'scroll lock', 186: ';', 187: '=', 188: ',', 189: '-', 190: '.', 191: '/', 192: '`', 219: '[', 220: '\\', 221: ']', 222: "'"};
 
@@ -476,5 +484,4 @@ var qwerty = function () {
 
 dvorak();
 drawSetup();
-computePositions();
-draw();
+update();
