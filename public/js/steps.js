@@ -116,6 +116,29 @@ var computeStepPositions = function (steps) {
     });
 };
 
+var drawStepsSetup = function () {
+    stepTextInput = d3.select('#step-text-input')
+        .style('left', (stepsX + stepsTextX + 23) + 'px') ;
+
+    stepTextInput.select('input')
+        .style('width', (stepW - stepsTextX - 20) + 'px')
+        .style('height', (lineHeight - 12) + 'px') ;
+
+    camera.append('rect')
+        .classed('track-rail', true)
+        .attr('x', stepsX + 70)
+        .attr('y', 10)
+        .attr('width', 10)
+        .attr('height', 10000) ;
+
+    camera.append('rect')
+        .classed('track-rail', true)
+        .attr('x', stepsX + stepW - 80)
+        .attr('y', 10)
+        .attr('width', 10)
+        .attr('height', 10000) ;
+};
+
 var drawSteps = function (steps) {
     var stepEls = camera.selectAll('g.step')
         .data(steps, _.property('id')) ;

@@ -91,6 +91,46 @@ var computeSelectionHistoryPositions = function () {
     }
 };
 
+var drawSelectionHistorySetup = function () {
+    selectionHistoryEl = svg.append('g')
+        .classed('selection-history', true)
+        .attr('transform', 'translate(600,200)') ;
+
+    selectionHistoryCursor = selectionHistoryEl.append('rect')
+        .classed('selection-cursor', true)
+        .attr('x', 1)
+        .attr('y', 1)
+        .attr('width', historyWidth - 2)
+        .attr('height', historyWidth - 2) ;
+};
+
+var drawSelectionInfoSetup = function () {
+    selectionInfoEl = svg.append('g')
+        .classed('selection-info', true)
+        .attr('transform', 'translate(850,300)') ;
+
+    selectionInfoEl.append('rect')
+        .classed('selection-cursor', true)
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', selectionInfoWidth)
+        .attr('height', selectionInfoWidth) ;
+
+    selectionInfoEl.append('rect')
+        .classed('selection-color', true)
+        .attr('x', 2)
+        .attr('y', 2)
+        .attr('width', selectionInfoWidth - 4)
+        .attr('height', selectionInfoWidth - 4) ;
+
+    selectionTextInput = d3.select('#selection-text-input')
+        .style('left', '930px')
+        .style('top', '327px') ;
+
+    selectionTextInput.select('input')
+        .property('placeholder', 'Group name') ;
+};
+
 var drawSelectionHistory = function () {
     var historyEls = selectionHistoryEl.selectAll('g.history')
         .data(__selectionHistoryAll) ;

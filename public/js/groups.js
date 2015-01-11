@@ -117,6 +117,9 @@ var computeGroupPositions = function (groups) {
     });
 };
 
+var drawGroupsSetup = function () {
+};
+
 var drawGroups = function (stretches) {
     var stretchEls = camera.selectAll('g.group-stretch')
         .data(stretches) ;
