@@ -229,24 +229,9 @@ var update = function () {
 };
 
 var computePositions = function () {
-    computeTrackPositions(allPseudoSteps);
+    computeStepPositions(allPseudoSteps);
     computeSelectionHistoryPositions();
     //computeGroupPositions(allGroups);
-};
-
-var computeTrackPositions = function (steps) {
-    var prevPos = {x: 0, y: 0, w: 0, h: 0};
-    _.each(steps, function (step) {
-        var pos = {
-            x: stepsX,
-            y: prevPos.y + lineHeight,
-            w: stepW,
-            h: lineHeight,
-        };
-        step.position = pos;
-        _.extend(step, pos);
-        prevPos = pos;
-    });
 };
 
 var computeSelectionHistoryPositions = function () {
@@ -267,51 +252,10 @@ var computeSelectionHistoryPositions = function () {
 };
 
 var draw = function () {
-    drawTrack(allPseudoSteps);
+    drawSteps(allPseudoSteps);
     drawSelectionHistory();
     drawSelectionInfo();
     //drawGroups(__stretches);
-};
-
-var drawTrack = function (steps) {
-    var stepEls = camera.selectAll('g.step')
-        .data(steps, _.property('id')) ;
-
-    var stepEnterEls = stepEls.enter().append('g')
-        .each(function (d) {
-            d.__el__ = this;
-        }) ;
-
-    stepEnterEls.append('rect')
-        .classed('background', true)
-        .attr('x', 0)
-        .attr('y', 1)
-        .attr('rx', 4)
-        .attr('ry', 4)
-        .attr('width', _.property('w'))
-        .attr('height', function (d) { return d.h - 3 }) ;
-
-    stepEnterEls.append('text')
-        .attr('y', 21)
-        .attr('x', stepsTextX) ;
-
-    stepEls.exit().remove();
-
-    stepEls
-        .attr('class', function (d) {
-            var classes = [];
-            if (_.contains(selection.elements, d)) {
-                classes.push('selection');
-            }
-            classes.push('step');
-            return classes.join(' ');
-        })
-        .attr('transform', function (d, i) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }) ;
-
-    stepEls.select('text')
-        .text(_.property('text')) ;
 };
 
 var drawSelectionHistory = function () {
