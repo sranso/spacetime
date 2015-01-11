@@ -1,5 +1,13 @@
+var idSequence = 0;
+
+var newId = function () {
+    idSequence += 1;
+    return idSequence;
+};
+
 var createStep = function (step) {
     return _.extend({
+        id: newId(),
         text: '',
         pseudo: false,
         groups: [],
@@ -10,8 +18,12 @@ var createStep = function (step) {
     }, step);
 };
 
+// TODO: only allow groups of single stretches to become
+// pseudo steps.
 var createPseudoStep = function (stretch) {
     return {
+        id: newId(),
+        //id: group.id,
         text: stretch.group.text,
         pseudo: true,
         stretch: stretch,

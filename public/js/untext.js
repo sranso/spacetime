@@ -12,7 +12,7 @@ var selectionHistoryEl;
 var selectionHistoryCursor;
 var selectionInfoEl;
 
-var mouse = null;
+var mouse = [0, 0];
 var under = null;
 var allSteps = [];
 var allPseudoSteps = [];
@@ -225,6 +225,7 @@ var update = function () {
     computePseudoSteps();
     computePositions();
     draw();
+    fixUnder();
 };
 
 var computePositions = function () {
@@ -274,12 +275,9 @@ var draw = function () {
 
 var drawTrack = function (steps) {
     var stepEls = camera.selectAll('g.step')
-        .data(steps) ;
+        .data(steps, _.property('id')) ;
 
     var stepEnterEls = stepEls.enter().append('g')
-        .attr('transform', function (d, i) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        })
         .each(function (d) {
             d.__el__ = this;
         }) ;
@@ -297,6 +295,8 @@ var drawTrack = function (steps) {
         .attr('y', 21)
         .attr('x', stepsTextX) ;
 
+    stepEls.exit().remove();
+
     stepEls
         .attr('class', function (d) {
             var classes = [];
@@ -305,6 +305,9 @@ var drawTrack = function (steps) {
             }
             classes.push('step');
             return classes.join(' ');
+        })
+        .attr('transform', function (d, i) {
+            return 'translate(' + d.x + ',' + d.y + ')';
         }) ;
 
     stepEls.select('text')
