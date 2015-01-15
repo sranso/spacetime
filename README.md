@@ -1,3 +1,3 @@
-# Untext
+# Untext (temporary name)
 
-Symbolic editor for code and more.
+Programming editor and environment.

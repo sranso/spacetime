@@ -2,9 +2,6 @@ var browseSelectionHistory = function (forward) {
     var pop = function () {
         if (selectionHistoryI > saveHistoryI) {
             selectionHistory.pop();
-            if (!_.contains(_.pluck(selectionHistory, 'selection'), selection)) {
-                allGroups = _.without(allGroups, selection);
-            }
             selectionHistoryI -= 1;
             return true;
         }
