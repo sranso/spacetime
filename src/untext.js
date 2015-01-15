@@ -30,57 +30,12 @@ var __selectionHistoryAll = selectionHistory;
 var selectionStart = null;
 var selectionEnd = null;
 
-var drawSetup = function () {
-    drawOverallSetup();
-    drawStepsSetup();
-    drawSelectionHistorySetup();
-    drawSelectionInfoSetup();
-    drawGroupsSetup();
-};
-
-var drawOverallSetup = function() {
-    svg = d3.select('svg#code')
-        .attr('width', '100%')
-        .attr('height', '2000px') ;
-
-    camera = svg.append('g')
-        .classed('camera', true)
-        .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown) ;
-
-    d3.select(document)
-        .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
-        .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
-        .on('keypress', function () { keypressEvent(d3.event.keyCode) })
-        .on('mouseup', mouseUp) ;
-
-    var background = camera.append('rect')
-        .classed('background', true)
-        .attr('x', -10000)
-        .attr('y', -10000)
-        .attr('width', 20000)
-        .attr('height', 20000) ;
-};
-
 var update = function () {
     computeSteps();
     computePseudoSteps();
     computePositions();
     draw();
     fixUnder();
-};
-
-var computePositions = function () {
-    computeStepPositions(allPseudoSteps);
-    computeSelectionHistoryPositions();
-    computeGroupPositions(allGroups);
-};
-
-var draw = function () {
-    drawSteps(allPseudoSteps);
-    drawSelectionHistory();
-    drawSelectionInfo();
-    drawGroups(__stretches);
 };
 
 var mouseDown = function () {

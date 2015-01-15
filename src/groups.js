@@ -99,7 +99,7 @@ var orderGroups = function (groups) {
     });
 };
 
-var computeGroupPositions = function (groups) {
+var groupsToDraw = function (groups) {
     groups = _.filter(groups, function (group) {
         group.elements = orderElements(group.elements);
         group.stretches = groupByPseudoStretches(group.elements);
@@ -110,80 +110,5 @@ var computeGroupPositions = function (groups) {
         group.__firstElementI = _.indexOf(allSteps, group.elements[0]);
         return true;
     });
-    var ordered = orderGroups(groups);
-
-    __stretches = [];
-    var x = 230;
-    _.each(ordered, function (group) {
-        _.each(group.stretches, function (stretch) {
-            var lastEl = stretch[stretch.length - 1];
-            var pos = {
-                x: x,
-                y: stretch[0].step.y,
-                w: 9,
-                h: lastEl.step.y + lastEl.step.h - stretch[0].step.y,
-            };
-            stretch.position = pos;
-            _.extend(stretch, pos);
-            stretch.group = group;
-
-            __stretches.push(stretch);
-        });
-        x -= 9;
-    });
-};
-
-var drawGroupsSetup = function () {
-};
-
-var drawGroups = function (stretches) {
-    var stretchEls = camera.selectAll('g.group-stretch')
-        .data(stretches) ;
-
-    var stretchEnterEls = stretchEls.enter().append('g');
-
-    stretchEnterEls.append('rect')
-        .classed('background', true)
-        .attr('x', 1)
-        .attr('y', 1)
-        .attr('rx', 2)
-        .attr('ry', 2) ;
-
-    stretchEnterEls.append('rect')
-        .classed('mouse', true)
-        .attr('x', 0)
-        .attr('y', 0)
-        .on('click', function (d) {
-            selection = d.group;
-            selectionHistoryI = saveHistoryI + 1;
-            selectionHistory[selectionHistoryI] = {selection: selection};
-            computePositions();
-            draw();
-        }) ;
-
-    stretchEls
-        .attr('class', function (d) {
-            if (d.group === selection) {
-                return 'group-stretch showing';
-            }
-            return 'group-stretch';
-        })
-        .attr('transform', function (d, i) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }) ;
-
-    stretchEls.select('rect.background')
-        .attr('width', function (d) { return d.w - 2 })
-        .attr('height', function (d) { return d.h - 2 })
-        .style('fill', function (d, i) {
-            if (d.group === selection) {
-                return '#afa';
-            }
-            var c = d.group.color;
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
-        }) ;
-
-    stretchEls.select('rect.mouse')
-        .attr('width', _.property('w'))
-        .attr('height', _.property('h')) ;
+    return orderGroups(groups);
 };
