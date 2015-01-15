@@ -7,7 +7,6 @@ var newId = function () {
 
 var createStep = function (step) {
     step = _.extend({
-        id: newId(),
         text: '',
         pseudo: false,
         groups: [],
@@ -16,6 +15,7 @@ var createStep = function (step) {
         underPseudo: null,
     }, step);
     step.stretch = [step];
+    step.id = newId();
     return step;
 };
 
@@ -53,6 +53,15 @@ var removeUnderGroup = function (steps, group) {
     _.each(steps, function (step) {
         step.groups = _.without(step.groups, group);
     });
+};
+
+var computeSteps = function () {
+    allSteps = [];
+    var step = allStepsLinkedList.next;
+    while (step) {
+        allSteps.push(step);
+        step = step.next;
+    }
 };
 
 var computePseudoSteps = function () {

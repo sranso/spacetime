@@ -1,11 +1,13 @@
 var createGroup = function (group) {
     group = group || {};
-    return _.extend({
+    group = _.extend({
         elements: [],
         color: [_.random(360), _.random(70, 95), _.random(89, 92)],
         text: '',
         expanded: true,
     }, group);
+    group.id = newId();
+    return group;
 };
 
 var orderElements = function (elements) {
@@ -33,6 +35,20 @@ var groupByStretches = function (elements) {
         previous = element;
     }
     return stretches;
+};
+
+var partitionInternalExternalGroups = function (compareToElements, internalElements) {
+    var groups = _.reduce(internalElements, function (groups, element) {
+        return _.union(groups, element.groups);
+    }, []);
+    return _.partition(groups, function (group) {
+        return isGroupInternal(compareToElements, group.elements);
+    });
+};
+
+var isGroupInternal = function (compareToElements, groupElements) {
+    var externalElements = _.difference(groupElements, compareToElements);
+    return !externalElements.length;
 };
 
 var groupByPseudoStretches = function (elements) {

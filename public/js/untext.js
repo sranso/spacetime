@@ -15,6 +15,7 @@ var selectionInfoEl;
 
 var mouse = [0, 0];
 var under = null;
+var allStepsLinkedList = {head: true, next: null, previous: null};
 var allSteps = [];
 var allPseudoSteps = [];
 
@@ -59,6 +60,7 @@ var drawOverallSetup = function() {
 };
 
 var update = function () {
+    computeSteps();
     computePseudoSteps();
     computePositions();
     draw();
@@ -147,6 +149,7 @@ allSteps = _.map([
 ], createStep);
 
 linkSteps(allSteps);
+allStepsLinkedList.next = allSteps[0];
 
 dvorak();
 drawSetup();

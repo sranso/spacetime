@@ -34,6 +34,8 @@ var keypressEvent = function (keyCode, key) {
         browseSelectionHistory(key === 'd');
     } else if (key === 'tab') {
         toggleExpanded();
+    } else if (key === 'c') {
+        copySelectionSteps();
     }
 
     update();
