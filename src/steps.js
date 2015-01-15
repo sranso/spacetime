@@ -22,11 +22,12 @@ var createStep = function (step) {
 // TODO: only allow groups of single stretches to become
 // pseudo steps.
 var createPseudoStep = function (stretch) {
-    var text = stretch.group ? stretch.group.text : stretch[0].text;
+    var entity = stretch.group ? stretch.group : stretch[0];
     return {
         id: newId(),
         //id: group.id,
-        text: text,
+        entity: entity,
+        text: entity.text,
         pseudo: true,
         stretch: stretch,
         group: stretch.group,
@@ -131,7 +132,22 @@ var drawStepsSetup = function () {
 
     stepTextInput.select('input')
         .style('width', (stepW - stepsTextX - 20) + 'px')
-        .style('height', (lineHeight - 12) + 'px') ;
+        .style('height', (lineHeight - 12) + 'px')
+        .on('input', function () {
+            if (under) {
+                under.entity.text = this.value;
+                update();
+            }
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
 
     camera.append('rect')
         .classed('track-rail', true)
@@ -187,4 +203,7 @@ var drawSteps = function (steps) {
 
     stepEls.select('text')
         .text(_.property('text')) ;
+
+    stepTextInput.select('input')
+        .property('value', selection.text) ;
 };

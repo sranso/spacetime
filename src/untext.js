@@ -18,6 +18,7 @@ var under = null;
 var allStepsLinkedList = {head: true, next: null, previous: null};
 var allSteps = [];
 var allPseudoSteps = [];
+var isMouseDown = false;
 
 var selection = createGroup();
 var allGroups = [selection];
@@ -44,12 +45,14 @@ var drawOverallSetup = function() {
 
     camera = svg.append('g')
         .classed('camera', true)
-        .on('mousemove', mouseMove) ;
+        .on('mousemove', mouseMove)
+        .on('mousedown', mouseDown) ;
 
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
-        .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
+        .on('keypress', function () { keypressEvent(d3.event.keyCode) })
+        .on('mouseup', mouseUp) ;
 
     var background = camera.append('rect')
         .classed('background', true)
@@ -80,6 +83,14 @@ var draw = function () {
     drawGroups(__stretches);
 };
 
+var mouseDown = function () {
+    isMouseDown = true;
+};
+
+var mouseUp = function () {
+    isMouseDown = false;
+};
+
 var mouseMove = function () {
     mouse = d3.mouse(camera.node());
     fixUnder();
@@ -88,14 +99,16 @@ var mouseMove = function () {
 
 var fixUnder = function () {
     var newUnder = findUnderMouse();
-    if (newUnder !== under) {
+    var underEntity = under && under.entity;
+    var newEntity = newUnder && newUnder.entity;
+    if (newEntity != underEntity) {
         if (under) {
             d3.select(under.__el__)
                 .classed('under-input', false) ;
         }
-        stepTextInput.node().blur();
-        under = newUnder;
+        stepTextInput.select('input').node().blur();
     }
+    under = newUnder;
 
     if (under) {
         d3.select(under.__el__)
