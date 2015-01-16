@@ -32,6 +32,10 @@ var copySelectionSteps = function () {
     linkSteps(copy);
     copy[copy.length - 1].next = stretch[stretch.length - 1].next;
     copy[0].previous = stretch[stretch.length - 1];
+    var next = stretch[stretch.length - 1].next;
+    if (next) {
+        next.previous = copy[copy.length - 1];
+    }
     stretch[stretch.length - 1].next = copy[0];
 
     update();
