@@ -50,7 +50,11 @@ h1 {
     stroke: #aaa;
   }
 
-  .step.under-input text {
+  .step text.result {
+    fill: #338;
+  }
+
+  .step.under-input text.text {
     display: none;
   }
 

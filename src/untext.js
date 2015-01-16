@@ -1,10 +1,3 @@
-var stepsX = 240;
-var stepsTextX = 50;
-var lineHeight = 35;
-var stepW = 400;
-var historyWidth = 20;
-var selectionInfoWidth = 32;
-
 var svg;
 var camera;
 var stepTextInput;
@@ -32,6 +25,7 @@ var selectionEnd = null;
 
 var update = function () {
     computeSteps();
+    executeSteps();
     computePseudoSteps();
     computePositions();
     draw();
@@ -61,21 +55,23 @@ var fixUnder = function () {
             d3.select(under.__el__)
                 .classed('under-input', false) ;
         }
-        stepTextInput.select('input').node().blur();
     }
     under = newUnder;
+    if (newEntity != underEntity) {
+        stepTextInput.select('input').node().blur();
 
-    if (under) {
-        d3.select(under.__el__)
-            .classed('under-input', true) ;
-        stepTextInput
-            .style('top', (under.y + 32) + 'px')
-            .style('display', 'block')
-        stepTextInput.select('input')
-            .property('value', under.text) ;
-    } else {
-        stepTextInput
-            .style('display', 'none') ;
+        if (under) {
+            d3.select(under.__el__)
+                .classed('under-input', true) ;
+            stepTextInput
+                .style('top', (under.y + 32) + 'px')
+                .style('display', 'block')
+            stepTextInput.select('input')
+                .property('value', under.text) ;
+        } else {
+            stepTextInput
+                .style('display', 'none') ;
+        }
     }
 };
 
@@ -94,26 +90,21 @@ var findFromCoordinates = function (x, y) {
 
 allSteps = _.map([
     {text: '4 + 1'},
-    {text: '^ * 3'},
-    {text: '^ - 12'},
-    {text: 'square width:50 x:100 y:150'},
+    {text: '5 * 3'},
+    {text: '15 - 12'},
     {text: '3 + 5'},
-    {text: 'square width:50 x:100 y:150'},
-    {text: 'square width:100 x:100 y:150'},
     {text: '4 + 1'},
-    {text: '^ * 3'},
-    {text: '^ - 12'},
-    {text: 'square width:50 x:100 y:150'},
+    {text: '5 * 3'},
+    {text: '15 - 12'},
     {text: '3 + 5'},
-    {text: 'square width:50 x:100 y:150'},
-    {text: 'square width:100 x:100 y:150'},
     {text: '4 + 1'},
-    {text: '^ * 3'},
-    {text: '^ - 12'},
-    {text: 'square width:50 x:100 y:150'},
+    {text: '5 * 3'},
+    {text: '15 - 12'},
     {text: '3 + 5'},
-    {text: 'square width:50 x:100 y:150'},
-    {text: 'square width:100 x:100 y:150'},
+    {text: '4 + 1'},
+    {text: '5 * 3'},
+    {text: '15 - 12'},
+    {text: '3 + 5'},
 ], createStep);
 
 linkSteps(allSteps);

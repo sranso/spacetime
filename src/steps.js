@@ -13,6 +13,7 @@ var createStep = function (step) {
         next: null,
         previous: null,
         underPseudo: null,
+        result: null,
     }, step);
     step.stretch = [step];
     step.id = newId();

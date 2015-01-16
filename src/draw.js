@@ -1,7 +1,14 @@
+var stepsX = 240;
+var stepsTextX = 50;
+var lineHeight = 35;
+var stepW = 400;
+var historyWidth = 20;
+var selectionInfoWidth = 32;
+
 var computePositions = function () {
     computeStepPositions(allPseudoSteps);
     computeSelectionHistoryPositions();
-    computeGroupPositions(allGroups);
+    computeGroupPositions(groupsToDraw(allGroups));
 };
 
 var drawSetup = function () {
@@ -161,8 +168,14 @@ var drawSteps = function (steps) {
         .attr('height', function (d) { return d.h - 3 }) ;
 
     stepEnterEls.append('text')
+        .classed('text', true)
         .attr('y', 21)
         .attr('x', stepsTextX) ;
+
+    stepEnterEls.append('text')
+        .classed('result', true)
+        .attr('y', 25)
+        .attr('x', stepW - 120) ;
 
     stepEls.exit().remove();
 
@@ -172,6 +185,9 @@ var drawSteps = function (steps) {
             if (_.intersection(d.stretch, selection.elements).length) {
                 classes.push('selection');
             }
+            if (under && under.entity == d.entity) {
+                classes.push('under-input');
+            }
             classes.push('step');
             return classes.join(' ');
         })
@@ -179,11 +195,13 @@ var drawSteps = function (steps) {
             return 'translate(' + d.x + ',' + d.y + ')';
         }) ;
 
-    stepEls.select('text')
+    stepEls.select('text.text')
         .text(_.property('text')) ;
 
-    stepTextInput.select('input')
-        .property('value', selection.text) ;
+    stepEls.select('text.result')
+        .text(function (d) {
+            return d.stretch[d.stretch.length - 1].result;
+        }) ;
 };
 
 
