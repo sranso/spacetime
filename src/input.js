@@ -5,15 +5,13 @@ var keyForEvent = function () {
 var inputEvent = function (key, eventType) {
     if (key === '\\') {
         debugger;
-        return;
-    }
-    if (key === 'tab' && eventType === 'down') {
+    } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
         keypressEvent(null, 'tab');
-        return;
-    }
-
-    if (key === 'shift' || key === 'ctrl') {
+    } else if (key === 'enter') {
+        insertNewStep();
+        d3.event.preventDefault();
+    } else if (key === 'shift' || key === 'ctrl') {
         if (eventType === 'down') {
             startSelection();
         } else {
@@ -22,9 +20,21 @@ var inputEvent = function (key, eventType) {
     }
 };
 
+var textInputEvent = function (key) {
+    if (key === '\\') {
+        debugger;
+    } else if (key === 'enter') {
+        insertNewStep();
+        d3.event.preventDefault();
+    } else if (key === 'tab') {
+        d3.event.preventDefault();
+    }
+    d3.event.stopPropagation();
+};
+
 var keypressEvent = function (keyCode, key) {
     key = key || String.fromCharCode(keyCode);
-    if (keyCode === 13) {
+    if (keyForEvent() === 'enter') {
         key = 'enter';
     }
 

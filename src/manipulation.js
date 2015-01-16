@@ -36,3 +36,17 @@ var copySelectionSteps = function () {
 
     update();
 };
+
+var insertNewStep = function () {
+    var previousPseudo = target() || {entity: allStepsLinkedList};
+    var previous = previousPseudo.entity;
+    var step = createStep({});
+    step.previous = previous;
+    step.next = previous.next;
+    previous.next = step;
+
+    inserting = {entity: step};
+    update();
+    stepTextInput.select('input').node().focus();
+    setTextForStepTextInput();
+};

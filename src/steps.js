@@ -99,6 +99,13 @@ var computePseudoSteps = function () {
     }
 
     linkSteps(allPseudoSteps);
+
+    // TODO: handle inserting (and under) and pseudo steps better.
+    if (inserting) {
+        inserting = _.find(allPseudoSteps, function (pseudo) {
+            return pseudo.entity === inserting.entity;
+        });
+    }
 };
 
 var linkSteps = function (steps) {

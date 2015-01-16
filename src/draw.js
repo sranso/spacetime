@@ -119,17 +119,15 @@ var drawStepsSetup = function () {
         .style('width', (stepW - stepsTextX - 20) + 'px')
         .style('height', (lineHeight - 12) + 'px')
         .on('input', function () {
-            if (under) {
-                under.entity.text = this.value;
+            if (target()) {
+                target().entity.text = this.value;
                 update();
             }
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
         })
-        .on('keydown', function () {
-            d3.event.stopPropagation();
-        })
+        .on('keydown', function () { textInputEvent(keyForEvent()) })
         .on('keyup', function () {
             d3.event.stopPropagation();
         }) ;
@@ -185,7 +183,7 @@ var drawSteps = function (steps) {
             if (_.intersection(d.stretch, selection.elements).length) {
                 classes.push('selection');
             }
-            if (under && under.entity == d.entity) {
+            if (target() && target().entity == d.entity) {
                 classes.push('under-input');
             }
             classes.push('step');
@@ -202,6 +200,8 @@ var drawSteps = function (steps) {
         .text(function (d) {
             return d.stretch[d.stretch.length - 1].result;
         }) ;
+
+    positionStepTextInput();
 };
 
 
