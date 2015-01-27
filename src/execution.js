@@ -10,8 +10,8 @@ var parseStep = function (step) {
         var nextChar = text[1];
         if (
             text[0] === '.' &&
-            !('0' <= lastChar && lastChar < '9') &&
-            !('0' <= nextChar && nextChar < '9')
+            !('0' <= lastChar && lastChar <= '9') &&
+            !('0' <= nextChar && nextChar <= '9')
         ) {
             var referencedStep = step;
             while (text[0] === '.') {
@@ -27,6 +27,7 @@ var parseStep = function (step) {
         }
 
         parsed += text[0];
+        lastChar = text[0];
         text = text.slice(1);
     }
 

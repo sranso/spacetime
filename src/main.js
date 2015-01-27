@@ -114,8 +114,8 @@ var findFromCoordinates = function (x, y) {
 
 allSteps = _.map([
     {text: '4 + 1'},
-    {text: '5 * 3'},
-    {text: '15 - 12'},
+    {text: '. * 3'},
+    {text: '. - 12'},
 ], createStep);
 
 linkSteps(allSteps);

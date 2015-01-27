@@ -29,14 +29,11 @@ var copySelectionSteps = function () {
         return step;
     });
 
+    var previous = stretch[stretch.length - 1];
+    var next = previous.next;
+    linkSteps([previous, copy[0]]);
     linkSteps(copy);
-    copy[copy.length - 1].next = stretch[stretch.length - 1].next;
-    copy[0].previous = stretch[stretch.length - 1];
-    var next = stretch[stretch.length - 1].next;
-    if (next) {
-        next.previous = copy[copy.length - 1];
-    }
-    stretch[stretch.length - 1].next = copy[0];
+    linkSteps([copy[copy.length - 1], next]);
 
     update();
 };
@@ -44,10 +41,9 @@ var copySelectionSteps = function () {
 var insertNewStep = function () {
     var previousPseudo = target() || {entity: allStepsLinkedList};
     var previous = previousPseudo.entity;
+    var next = previous.next;
     var step = createStep({});
-    step.previous = previous;
-    step.next = previous.next;
-    previous.next = step;
+    linkSteps([previous, step, next]);
 
     inserting = {entity: step};
     update();

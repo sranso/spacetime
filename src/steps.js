@@ -111,10 +111,13 @@ var computePseudoSteps = function () {
 var linkSteps = function (steps) {
     var previous = null;
     _.each(steps, function (step) {
+        if (!step) {
+            return;
+        }
         if (previous) {
             previous.next = step;
+            step.previous = previous;
         }
-        step.previous = previous;
         previous = step;
     });
 };
