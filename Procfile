@@ -1,1 +1,1 @@
-web: DEBUG=untext bin/www
+web: DEBUG=compa bin/www

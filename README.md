@@ -1,3 +1,3 @@
-# Untext (temporary name)
+# CompA (temporary name)
 
 Programming editor and environment.
