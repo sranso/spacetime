@@ -38,15 +38,17 @@ var copySelectionSteps = function () {
     update();
 };
 
-var insertNewStep = function () {
-    var previousPseudo = target() || {entity: allStepsLinkedList};
-    var previous = previousPseudo.entity;
+var insertNewStep = function (targetPseudo) {
+    var previousPseudo = targetPseudo; // TODO: default for if there is none. || {stretch: [allStepsLinkedList]};
+    var previous = previousPseudo.stretch[previousPseudo.stretch.length - 1];
     var next = previous.next;
-    var step = createStep({});
-    linkSteps([previous, step, next]);
-
-    inserting = {entity: step};
+    var newStep = createStep({});
+    linkSteps([previous, newStep, next]);
     update();
-    stepTextInput.select('input').node().focus();
-    setTextForStepTextInput();
+
+    var pseudoId = computePseudoId([newStep]);
+    var newPseudo = _.find(allPseudoSteps, function (pseudo) {
+        return pseudo.id === pseudoId;
+    });
+    d3.select(newPseudo.__el__).select('.expression').node().focus();
 };

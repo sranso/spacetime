@@ -20,11 +20,11 @@ var inputEvent = function (key, eventType) {
     }
 };
 
-var textInputEvent = function (key) {
+var textInputEvent = function (step, key) {
     if (key === '\\') {
         debugger;
     } else if (key === 'enter') {
-        insertNewStep();
+        insertNewStep(step);
         d3.event.preventDefault();
     } else if (key === 'tab') {
         d3.event.preventDefault();

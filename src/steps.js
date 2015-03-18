@@ -20,13 +20,16 @@ var createStep = function (step) {
     return step;
 };
 
+var computePseudoId = function (stretch) {
+    return stretch[0].id + '-' + stretch[stretch.length - 1].id;
+};
+
 // TODO: only allow groups of single stretches to become
 // pseudo steps.
 var createPseudoStep = function (stretch) {
     var entity = stretch.group ? stretch.group : stretch[0];
     return {
-        id: newId(),
-        //id: group.id,
+        id: computePseudoId(stretch),
         entity: entity,
         text: entity.text,
         pseudo: true,
@@ -99,13 +102,6 @@ var computePseudoSteps = function () {
     }
 
     linkSteps(allPseudoSteps);
-
-    // TODO: handle inserting (and under) and pseudo steps better.
-    if (inserting) {
-        inserting = _.find(allPseudoSteps, function (pseudo) {
-            return pseudo.entity === inserting.entity;
-        });
-    }
 };
 
 var linkSteps = function (steps) {

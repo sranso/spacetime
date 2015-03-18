@@ -1,5 +1,5 @@
 var stepsX = 240;
-var stepsTextX = 50;
+var stepsExpressionX = 120;
 var lineHeight = 35;
 var stepW = 400;
 var historyWidth = 20;
@@ -85,12 +85,11 @@ var computeGroupPositions = function (groups) {
 
 
 var drawOverallSetup = function() {
-    svg = d3.select('svg#code')
+    trackContainer = d3.select('#track');
+    trackHtml = d3.select('div#track-html');
+    trackSvg = d3.select('svg#track-svg')
         .attr('width', '100%')
-        .attr('height', '2000px') ;
-
-    camera = svg.append('g')
-        .classed('camera', true)
+        .attr('height', '2000px')
         .on('mousemove', mouseMove)
         .on('mousedown', mouseDown) ;
 
@@ -100,7 +99,7 @@ var drawOverallSetup = function() {
         .on('keypress', function () { keypressEvent(d3.event.keyCode) })
         .on('mouseup', mouseUp) ;
 
-    var background = camera.append('rect')
+    var background = trackSvg.append('rect')
         .classed('background', true)
         .attr('x', -10000)
         .attr('y', -10000)
@@ -112,70 +111,43 @@ var drawOverallSetup = function() {
 ///////////////// Steps
 
 var drawStepsSetup = function () {
-    stepTextInput = d3.select('#step-text-input')
-        .style('left', (stepsX + stepsTextX + 23) + 'px') ;
+};
 
-    stepTextInput.select('input')
-        .style('width', (stepW - stepsTextX - 20) + 'px')
-        .style('height', (lineHeight - 12) + 'px')
-        .on('input', function () {
-            if (target()) {
-                target().entity.text = this.value;
-                update();
-            }
+var drawSteps = function (steps) {
+    var stepEls = trackHtml.selectAll('div.step')
+        .data(steps, function (d) { return d.id }) ;
+
+    var stepEnterEls = stepEls.enter().append('div')
+        .style('width', function (d) { return d.w + 'px' })
+        .style('height', function (d) { return (d.h - 1) + 'px' }) ;
+
+    var resultContainerEnterEls = stepEnterEls.append('div')
+        .classed('result-container', true)
+        .style('width', stepsExpressionX + 'px')
+        .style('height', function (d) { return (d.h - 1) + 'px' }) ;
+
+    resultContainerEnterEls.append('div')
+        .classed('result', true) ;
+
+    stepEnterEls.append('div')
+        .attr('contenteditable', true)
+        .classed('expression', true)
+        .on('input', function (d) {
+            d.entity.text = this.textContent;
+            update();
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
         })
-        .on('keydown', function () { textInputEvent(keyForEvent()) })
+        .on('keydown', function (d) { textInputEvent(d, keyForEvent()) })
         .on('keyup', function () {
             d3.event.stopPropagation();
         }) ;
 
-    camera.append('rect')
-        .classed('track-rail', true)
-        .attr('x', stepsX + 70)
-        .attr('y', 10)
-        .attr('width', 10)
-        .attr('height', 10000) ;
-
-    camera.append('rect')
-        .classed('track-rail', true)
-        .attr('x', stepsX + stepW - 80)
-        .attr('y', 10)
-        .attr('width', 10)
-        .attr('height', 10000) ;
-};
-
-var drawSteps = function (steps) {
-    var stepEls = camera.selectAll('g.step')
-        .data(steps, _.property('id')) ;
-
-    var stepEnterEls = stepEls.enter().append('g')
-        .each(function (d) {
-            d.__el__ = this;
-        }) ;
-
-    stepEnterEls.append('rect')
-        .classed('background', true)
-        .attr('x', 0)
-        .attr('y', 1)
-        .attr('rx', 4)
-        .attr('ry', 4)
-        .attr('width', _.property('w'))
-        .attr('height', function (d) { return d.h - 3 }) ;
-
-    stepEnterEls.append('text')
-        .classed('text', true)
-        .attr('y', 21)
-        .attr('x', stepsTextX) ;
-
-    stepEnterEls.append('text')
-        .classed('result', true)
-        .attr('y', 25)
-        .attr('x', stepW - 120) ;
 
     stepEls.exit().remove();
+
+    stepEls.each(function (d) { d.__el__ = this });
 
     stepEls
         .attr('class', function (d) {
@@ -183,32 +155,26 @@ var drawSteps = function (steps) {
             if (_.intersection(d.stretch, selection.elements).length) {
                 classes.push('selection');
             }
-            if (target() && target().entity == d.entity) {
-                classes.push('under-input');
-            }
             classes.push('step');
             return classes.join(' ');
         })
-        .attr('transform', function (d, i) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }) ;
+        .style('top', function (d) { return d.y + 'px' })
+        .style('left', function (d) { return d.x + 'px' }) ;
 
-    stepEls.select('text.text')
-        .text(_.property('text')) ;
+    stepEls.select('.expression')
+        .text(function (d) { return d.text }) ;
 
-    stepEls.select('text.result')
+    stepEls.select('.result')
         .text(function (d) {
             return d.stretch[d.stretch.length - 1].result;
         }) ;
-
-    positionStepTextInput();
 };
 
 
 ///////////////// Selections
 
 var drawSelectionHistorySetup = function () {
-    selectionHistoryEl = svg.append('g')
+    selectionHistoryEl = trackSvg.append('g')
         .classed('selection-history', true)
         .attr('transform', 'translate(600,200)') ;
 
@@ -221,7 +187,7 @@ var drawSelectionHistorySetup = function () {
 };
 
 var drawSelectionInfoSetup = function () {
-    selectionInfoEl = svg.append('g')
+    selectionInfoEl = trackSvg.append('g')
         .classed('selection-info', true)
         .attr('transform', 'translate(850,300)') ;
 
@@ -327,7 +293,7 @@ var drawGroupsSetup = function () {
 };
 
 var drawGroups = function (stretches) {
-    var stretchEls = camera.selectAll('g.group-stretch')
+    var stretchEls = trackSvg.selectAll('g.group-stretch')
         .data(stretches) ;
 
     var stretchEnterEls = stretchEls.enter().append('g');
