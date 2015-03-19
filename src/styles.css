@@ -56,23 +56,29 @@ h1 {
     border: solid 0px #ddd;
     border-right-width: 1px;
   }
-  .step .result {
-    color: #338;
-    font-size: 16px;
-    text-align: center;
-    margin-top: 6px;
-  }
-  .step .expression {
+    .step .result {
+      color: #338;
+      font-size: 16px;
+      text-align: center;
+      margin: 6px 4px 0px 4px;
+      overflow: hidden;
+    }
+
+  .step .expression-container {
     float: left;
-    font-size: 14px;
-    text-align: left;
-    margin-top: 6px;
-    margin-left: 10px;
   }
+    .step .expression {
+      font-size: 14px;
+      text-align: left;
+      margin: 6px;
+      float: left;
+      padding: 2px 4px;
+    }
 
   .step.selection {
     background-color: #efe;
     border-color: #aaa;
+    z-index: 3;
   }
     .step.selection .result-container {
       border-color: #aaa;

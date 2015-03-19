@@ -45,10 +45,5 @@ var insertNewStep = function (targetPseudo) {
     var newStep = createStep({});
     linkSteps([previous, newStep, next]);
     update();
-
-    var pseudoId = computePseudoId([newStep]);
-    var newPseudo = _.find(allPseudoSteps, function (pseudo) {
-        return pseudo.id === pseudoId;
-    });
-    d3.select(newPseudo.__el__).select('.expression').node().focus();
+    d3.select(newStep.underPseudo.__el__).select('.expression').node().focus();
 };

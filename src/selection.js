@@ -28,7 +28,7 @@ var toggleExpanded = function () {
 };
 
 var startSelection = function () {
-    fixUnder();
+    under = findUnderMouse();
     if (under) {
         selectionStart = under.stretch[0];
         if (selectionHistoryI !== selectionHistory.length - 1) {

@@ -85,13 +85,14 @@ var computeGroupPositions = function (groups) {
 
 
 var drawOverallSetup = function() {
-    trackContainer = d3.select('#track');
+    trackContainer = d3.select('#track')
+        .on('mousemove', mouseMove)
+        .on('mousedown', mouseDown) ;
+
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg')
         .attr('width', '100%')
-        .attr('height', '2000px')
-        .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown) ;
+        .attr('height', '2000px') ;
 
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
@@ -117,9 +118,7 @@ var drawSteps = function (steps) {
     var stepEls = trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.id }) ;
 
-    var stepEnterEls = stepEls.enter().append('div')
-        .style('width', function (d) { return d.w + 'px' })
-        .style('height', function (d) { return (d.h - 1) + 'px' }) ;
+    var stepEnterEls = stepEls.enter().append('div');
 
     var resultContainerEnterEls = stepEnterEls.append('div')
         .classed('result-container', true)
@@ -129,9 +128,23 @@ var drawSteps = function (steps) {
     resultContainerEnterEls.append('div')
         .classed('result', true) ;
 
-    stepEnterEls.append('div')
-        .attr('contenteditable', true)
+    var expressionContainerEnterEls = stepEnterEls.append('div')
+        .classed('expression-container', true)
+        .style('width', (stepW - stepsExpressionX - 1) + 'px')
+        .style('height', function (d) { return (d.h - 1) + 'px' })
+        .on('dblclick', function (d) {
+            var expression = d3.select(this).select('.expression').node();
+            expression.focus();
+            var range = document.createRange();
+            range.selectNodeContents(expression);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }) ;
+
+    expressionContainerEnterEls.append('div')
         .classed('expression', true)
+        .attr('contenteditable', true)
         .on('input', function (d) {
             d.entity.text = this.textContent;
             update();
@@ -158,6 +171,8 @@ var drawSteps = function (steps) {
             classes.push('step');
             return classes.join(' ');
         })
+        .style('width', function (d) { return d.w + 'px' })
+        .style('height', function (d) { return (d.h - 1) + 'px' })
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' }) ;
 

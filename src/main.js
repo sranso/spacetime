@@ -29,7 +29,7 @@ var update = function () {
     computePseudoSteps();
     computePositions();
     draw();
-    fixUnder();
+    under = findUnderMouse();
 };
 
 var mouseDown = function () {
@@ -41,16 +41,9 @@ var mouseUp = function () {
 };
 
 var mouseMove = function () {
-    mouse = d3.mouse(trackContainer.node());
-    fixUnder();
+    mouse = d3.mouse(trackHtml.node());
+    under = findUnderMouse();
     changeSelection();
-};
-
-var fixUnder = function () {
-    var newUnder = findUnderMouse();
-    var underEntity = under && under.entity;
-    var newEntity = newUnder && newUnder.entity;
-    under = newUnder;
 };
 
 var findUnderMouse = function () {
