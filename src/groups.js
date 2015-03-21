@@ -94,6 +94,7 @@ var stretchPartitions = function (targetStretch) {
         covering: covering,
         coveringFromStart: coveringFromStart,
         coveringToEnd: coveringToEnd,
+        notCovering: _.difference(all, covering),
         before: _.difference(before, covering),
         after: _.difference(after, covering),
         internal: internal,

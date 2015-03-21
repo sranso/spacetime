@@ -3,26 +3,26 @@ var copySelectionSteps = function () {
     if (stretches.length !== 1) {
         return; // TODO: For multi-stretch groups: copy each stretch?
     }
-    var stretch = stretches[0];
+    var original = stretches[0];
 
-    var p = stretchPartitions(stretch);
+    var p = stretchPartitions(original);
 
-    var internalCloneMap = {};
-    _.each(p.internal, function (originalStretch) {
+    var cloneMap = {};
+    _.each(p.notCovering, function (originalStretch) {
         var stretch = cloneStretch(originalStretch);
-        internalCloneMap[originalStretch.id] = stretch;
+        cloneMap[originalStretch.id] = stretch;
         stretch.group.stretches.push(stretch);
     });
 
-    var copy = cloneStretch(stretch);
+    var copy = cloneStretch(original);
     copy.group.stretches.push(copy);
-    copy.steps = _.map(stretch.steps, function (original) {
+    copy.steps = _.map(original.steps, function (original) {
         var step = cloneStep(original);
         step.stretches = _.filter(original.stretches, function (originalStretch) {
-            return _.contains(p.internal, originalStretch);
+            return _.contains(p.notCovering, originalStretch);
         });
         step.stretches = _.map(step.stretches, function (originalStretch) {
-            var stretch = internalCloneMap[originalStretch.id];
+            var stretch = cloneMap[originalStretch.id];
             stretch.steps.push(step);
             step.stretches.push(stretch);
             return stretch;
@@ -30,13 +30,24 @@ var copySelectionSteps = function () {
         return step;
     });
 
-    // TODO: expand/fixup before, after and covering stretches.
-
-    var previous = stretch.steps[stretch.steps.length - 1];
+    var previous = original.steps[original.steps.length - 1];
     var next = previous.next;
+    var lastCopyStep = copy.steps[copy.steps.length - 1];
     linkSteps([previous, copy.steps[0]]);
     linkSteps(copy.steps);
-    linkSteps([copy.steps[copy.steps.length - 1], next]);
+    linkSteps([lastCopyStep, next]);
+
+    _.each(p.coveringToEnd, function (stretch) {
+        stretch.steps.push(lastCopyStep);
+    });
+    _.each(p.covering, fixupStretchSteps);
+    _.each(p.after, function (originalAfter) {
+        var stretch = cloneMap[originalAfter.id];
+        stretch.steps.push(originalAfter.steps[originalAfter.steps.length - 1]);
+        fixupStretchSteps(stretch);
+        originalAfter.steps.push(original.steps[original.steps.length - 1]);
+        fixupStretchSteps(originalAfter);
+    });
 
     update();
 };
