@@ -30,6 +30,8 @@ var copySelectionSteps = function () {
         return step;
     });
 
+    // TODO: expand/fixup before, after and covering stretches.
+
     var previous = stretch.steps[stretch.steps.length - 1];
     var next = previous.next;
     linkSteps([previous, copy.steps[0]]);
@@ -41,10 +43,20 @@ var copySelectionSteps = function () {
 
 var insertNewStep = function (targetPseudo) {
     var previousPseudo = targetPseudo; // TODO: default for if there is none. || {stretch: [allStepsLinkedList]};
-    var previous = previousPseudo.stretch.steps[previousPseudo.stretch.steps.length - 1];
+    var previousStretch = previousPseudo.stretch;
+    var previous = previousStretch.steps[previousStretch.steps.length - 1];
     var next = previous.next;
     var newStep = createStep();
+
     linkSteps([previous, newStep, next]);
+
+    var p = stretchPartitions(previousStretch);
+    _.each(p.coveringToEnd, function (stretch) {
+        stretch.steps[stretch.steps.length - 1] = newStep;
+    });
+    _.each(p.covering, fixupStretchSteps);
+    _.each(p.after, fixupStretchSteps);
+
     update();
     d3.select(newStep.underPseudo.__el__).select('.expression').node().focus();
 };

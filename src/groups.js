@@ -73,7 +73,7 @@ var stretchPartitions = function (targetStretch) {
         return stretch.steps[0] === firstStep;
     });
     var start = p[0], before = p[1];
-    p = _.filter(lastStep.stretches, function (stretch) {
+    p = _.partition(lastStep.stretches, function (stretch) {
         return stretch.steps[stretch.steps.length - 1] === lastStep;
     });
     var end = p[0], after = p[1];
@@ -83,20 +83,36 @@ var stretchPartitions = function (targetStretch) {
     }, []));
     var internal = _.difference(all, before, after);
 
+    var coveringFromStart = _.intersection(start, after);
+    var coveringToEnd = _.intersection(before, end);
     var covering = _.union(
         _.intersection(before, after),
-        _.intersection(start, after),
-        _.intersection(before, end)
+        coveringFromStart,
+        coveringToEnd
     );
     return {
         covering: covering,
+        coveringFromStart: coveringFromStart,
+        coveringToEnd: coveringToEnd,
         before: _.difference(before, covering),
         after: _.difference(after, covering),
         internal: internal,
+        matching: _.intersection(start, end),
     };
 };
 
 var fixupStretchSteps = function (stretch) {
+    var end = stretch.steps[stretch.steps.length - 1];
+    var steps = [];
+    var step = stretch.steps[0];
+    while (step) {
+        steps.push(step);
+        if (step === end) {
+            break;
+        }
+        step = step.next;
+    }
+    setStretchSteps(stretch, steps);
 };
 
 var orderGroups = function (groups) {
