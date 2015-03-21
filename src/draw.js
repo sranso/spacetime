@@ -63,17 +63,17 @@ var computeGroupPositions = function (groups) {
     __stretches = [];
     var x = 230;
     _.each(groups, function (group) {
-        _.each(group.stretches, function (stretch) {
-            var lastEl = stretch[stretch.length - 1];
+        _.each(group.pseudoStretches, function (stretch) {
+            var first = stretch.steps[0];
+            var last = stretch.steps[stretch.steps.length - 1];
             var pos = {
                 x: x,
-                y: stretch[0].step.y,
+                y: first.step.y,
                 w: 9,
-                h: lastEl.step.y + lastEl.step.h - stretch[0].step.y,
+                h: last.step.y + last.step.h - first.step.y,
             };
             stretch.position = pos;
             _.extend(stretch, pos);
-            stretch.group = group;
 
             __stretches.push(stretch);
         });
@@ -116,7 +116,7 @@ var drawStepsSetup = function () {
 
 var drawSteps = function (steps) {
     var stepEls = trackHtml.selectAll('div.step')
-        .data(steps, function (d) { return d.id }) ;
+        .data(steps, function (d) { return d.stretch.id }) ;
 
     var stepEnterEls = stepEls.enter().append('div');
 
@@ -146,7 +146,7 @@ var drawSteps = function (steps) {
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('input', function (d) {
-            d.entity.text = this.textContent;
+            d.stretch.text = this.textContent;
             update();
         })
         .on('keypress', function () {
@@ -165,7 +165,7 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = [];
-            if (_.intersection(d.stretch, selection.elements).length) {
+            if (_.intersection(d.stretch.steps, selection.stretches[0].steps).length) {
                 classes.push('selection');
             }
             classes.push('step');
@@ -177,11 +177,11 @@ var drawSteps = function (steps) {
         .style('left', function (d) { return d.x + 'px' }) ;
 
     stepEls.select('.expression')
-        .text(function (d) { return d.text }) ;
+        .text(function (d) { return d.stretch.text }) ;
 
     stepEls.select('.result')
         .text(function (d) {
-            return d.stretch[d.stretch.length - 1].result;
+            return d.stretch.steps[d.stretch.steps.length - 1].result;
         }) ;
 };
 
@@ -325,7 +325,7 @@ var drawGroups = function (stretches) {
         .attr('x', 0)
         .attr('y', 0)
         .on('click', function (d) {
-            selection = d.group;
+            selection = d.stretch.group;
             selectionHistoryI = saveHistoryI + 1;
             selectionHistory[selectionHistoryI] = {selection: selection};
             update();
@@ -333,7 +333,7 @@ var drawGroups = function (stretches) {
 
     stretchEls
         .attr('class', function (d) {
-            if (d.group === selection) {
+            if (d.stretch.group === selection) {
                 return 'group-stretch showing';
             }
             return 'group-stretch';
@@ -346,10 +346,13 @@ var drawGroups = function (stretches) {
         .attr('width', function (d) { return d.w - 2 })
         .attr('height', function (d) { return d.h - 2 })
         .style('fill', function (d, i) {
-            if (d.group === selection) {
+            if (d.stretch.group === selection) {
                 return '#afa';
             }
-            var c = d.group.color;
+            // if (d.stretch.group.stretches.length === 1) {
+            //     return '#ccc';
+            // }
+            var c = d.stretch.group.color;
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
         }) ;
 

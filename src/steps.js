@@ -5,36 +5,34 @@ var newId = function () {
     return idSequence;
 };
 
+// A step is its own stretch.
 var createStep = function (step) {
     step = _.extend({
+        _type: 'step',
         text: '',
-        pseudo: false,
-        groups: [],
+        expanded: true,
+        stretches: [],
         next: null,
         previous: null,
         underPseudo: null,
         result: null,
-    }, step);
-    step.stretch = [step];
+    }, step || {});
+    step.steps = [step];
     step.id = newId();
+    step.pseudo = createPseudoStep(step);
     return step;
 };
 
-var computePseudoId = function (stretch) {
-    return stretch[0].id + '-' + stretch[stretch.length - 1].id;
+var cloneStep = function (original) {
+    var step = createStep(original);
+    step.stretches = [];
+    return step;
 };
 
-// TODO: only allow groups of single stretches to become
-// pseudo steps.
 var createPseudoStep = function (stretch) {
-    var entity = stretch.group ? stretch.group : stretch[0];
     return {
-        id: computePseudoId(stretch),
-        entity: entity,
-        text: entity.text,
-        pseudo: true,
+        _type: 'pseudo',
         stretch: stretch,
-        group: stretch.group,
         position: null,
         __el__: null,
         next: null,
@@ -43,26 +41,14 @@ var createPseudoStep = function (stretch) {
 };
 
 var realSteps = function (pseudoSteps) {
-    return _.reduce(pseudoSteps, function (steps, step) {
-        return steps.concat(step.stretch);
+    return _.reduce(pseudoSteps, function (steps, pseudo) {
+        return steps.concat(pseudo.stretch.steps);
     }, []);
-};
-
-var addUnderGroup = function (steps, group) {
-    _.each(steps, function (step) {
-        step.groups = _.union(step.groups, [group]);
-    });
-};
-
-var removeUnderGroup = function (steps, group) {
-    _.each(steps, function (step) {
-        step.groups = _.without(step.groups, group);
-    });
 };
 
 var computeSteps = function () {
     allSteps = [];
-    var step = allStepsLinkedList.next;
+    var step = allStepsHead.next;
     while (step) {
         allSteps.push(step);
         step = step.next;
@@ -75,28 +61,22 @@ var computePseudoSteps = function () {
 
     var real = allSteps[0];
     while (real) {
-        var maxStretch = {length: 0};
-        _.each(real.groups, function (group) {
-            if (!group.expanded) {
-                var stretches = groupByStretches(orderElements(group.elements));
-                var stretch = _.find(stretches, function (stretch) {
-                    return _.contains(stretch, real);
-                });
-                stretch.group = group;
-                if (stretch.length > maxStretch.length) {
+        var maxStretch = {steps: []};
+        _.each(real.stretches, function (stretch) {
+            if (!stretch.expanded) {
+                if (stretch.steps.length > maxStretch.steps.length) {
                     maxStretch = stretch;
                 }
             }
         });
 
-        if (!maxStretch.length) {
-            maxStretch = [real];
+        if (!maxStretch.steps.length) {
+            maxStretch = real;
         }
-        var pseudo = createPseudoStep(maxStretch);
-        allPseudoSteps.push(pseudo);
-        var nextReal = maxStretch[maxStretch.length - 1].next;
+        allPseudoSteps.push(maxStretch.pseudo);
+        var nextReal = maxStretch.steps[maxStretch.steps.length - 1].next;
         while (real && real !== nextReal) {
-            real.underPseudo = pseudo;
+            real.underPseudo = maxStretch.pseudo;
             real = real.next;
         }
     }

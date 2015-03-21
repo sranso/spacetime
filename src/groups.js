@@ -1,99 +1,108 @@
 var createGroup = function (group) {
-    group = group || {};
     group = _.extend({
-        elements: [],
+        _type: 'group',
+        stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(89, 92)],
         text: '',
-        expanded: true,
-    }, group);
+    }, group || {});
     group.id = newId();
     return group;
 };
 
-var orderElements = function (elements) {
-    return _.sortBy(elements, function (element) {
-        return _.indexOf(allSteps, element);
-    });
+var createStretch = function (stretch) {
+    stretch = _.extend({
+        _type: 'stretch',
+        text: '',
+        steps: [],
+        expanded: true,
+        group: null,
+    }, stretch || {});
+    stretch.id = newId();
+    stretch.pseudo = createPseudoStep(stretch);
+    stretch.pseudoStretch = createPseudoStretch(stretch);
+    return stretch;
 };
 
-var groupByStretches = function (elements) {
-    if (!elements.length) {
-        return [];
-    }
-    var previous = elements[0];
-    var stretch = [previous];
-    var stretches = [stretch];
-
-    for (var i = 1; i < elements.length; i++) {
-        var element = elements[i];
-        if (previous.next === element) {
-            stretch.push(element);
-        } else {
-            stretch = [element];
-            stretches.push(stretch);
-        }
-        previous = element;
-    }
-    return stretches;
+var cloneStretch = function (original) {
+    var stretch = createStretch(original);
+    stretch.steps = [];
+    return stretch;
 };
 
-var partitionInternalExternalGroups = function (compareToElements, internalElements) {
-    var groups = _.reduce(internalElements, function (groups, element) {
-        return _.union(groups, element.groups);
-    }, []);
-    return _.partition(groups, function (group) {
-        return isGroupInternal(compareToElements, group.elements);
-    });
+var createPseudoStretch = function (stretch) {
+    return {
+        _type: 'pseudoStretch',
+        steps: [],
+        stretch: stretch,
+        position: null,
+    };
 };
 
-var isGroupInternal = function (compareToElements, groupElements) {
-    var externalElements = _.difference(groupElements, compareToElements);
-    return !externalElements.length;
-};
-
-var groupByPseudoStretches = function (elements) {
-    if (!elements.length) {
-        return [];
-    }
+var computePseudoStretchSteps = function (pseudoStretch) {
+    pseudoStretch.steps = [];
     var i = 0;
-    var real = elements[i];
-    var pseudo = real.underPseudo;
-    var stretchStep = {step: pseudo};
-    var stretch = [stretchStep];
-    var stretches = [stretch];
-
+    var steps = pseudoStretch.stretch.steps;
+    var real = steps[i];
     while (real) {
-        var missingSteps = _.difference(pseudo.stretch, elements);
-        stretchStep.partial = missingSteps.length;
+        var pseudo = real.underPseudo;
+        var pseudoStep = {step: pseudo};
+        pseudoStretch.steps.push(pseudoStep);
+        var missingSteps = _.difference(pseudo.stretch.steps, steps);
+        pseudoStep.partial = missingSteps.length > 0;
         while (real && real.underPseudo === pseudo) {
             i += 1;
-            real = elements[i];
-        }
-        if (real) {
-            var nextPseudo = real.underPseudo;
-            var stretchStep = {step: nextPseudo};
-            if (nextPseudo == pseudo.next) {
-                stretch.push(stretchStep);
-            } else {
-                stretch = [stretchStep];
-                stretches.push(stretch);
-            }
-            pseudo = nextPseudo;
+            real = steps[i];
         }
     }
-    return stretches;
+};
+
+var setStretchSteps = function (stretch, steps) {
+    _.each(stretch.steps, function (oldStep) {
+        oldStep.stretches = _.without(oldStep.stretches, stretch);
+    });
+    _.each(steps, function (newStep) {
+        newStep.stretches.push(stretch);
+    });
+    stretch.steps = steps;
+};
+
+var stretchPartitions = function (targetStretch) {
+    var firstStep = targetStretch.steps[0];
+    var lastStep = targetStretch.steps[targetStretch.steps.length - 1];
+    var p = _.partition(firstStep.stretches, function (stretch) {
+        return stretch.steps[0] === firstStep;
+    });
+    var start = p[0], before = p[1];
+    p = _.filter(lastStep.stretches, function (stretch) {
+        return stretch.steps[stretch.steps.length - 1] === lastStep;
+    });
+    var end = p[0], after = p[1];
+
+    var all = _.uniq(_.reduce(targetStretch.steps, function (all, step) {
+        return all.concat(step.stretches);
+    }, []));
+    var internal = _.difference(all, before, after);
+
+    var covering = _.union(
+        _.intersection(before, after),
+        _.intersection(start, after),
+        _.intersection(before, end)
+    );
+    return {
+        covering: covering,
+        before: _.difference(before, covering),
+        after: _.difference(after, covering),
+        internal: internal,
+    };
+};
+
+var fixupStretchSteps = function (stretch) {
 };
 
 var orderGroups = function (groups) {
     return groups.sort(function (a, b) {
-        if (a.__maxStretches !== b.__maxStretches) {
-            return a.__maxStretches < b.__maxStretches ? -1 : +1;
-        }
-        if (a.elements.length !== b.elements.length) {
-            return a.elements.length < b.elements.length ? -1 : +1;
-        }
-        if (a.__firstElementI !== b.__firstElementI) {
-            return a.__firstElementI < b.__firstElementI ? -1 : +1;
+        if (a.stretches[0].steps.length !== b.stretches[0].steps.length) {
+            return a.stretches[0].steps.length < b.stretches[0].steps.length ? -1 : +1;
         }
         return 0;
     });
@@ -101,14 +110,14 @@ var orderGroups = function (groups) {
 
 var groupsToDraw = function (groups) {
     groups = _.filter(groups, function (group) {
-        group.elements = orderElements(group.elements);
-        group.stretches = groupByPseudoStretches(group.elements);
-        if (!group.stretches.length) {
-            return false;
-        }
-        group.__maxStretches = _.max(_.pluck(group.stretches, 'length'));
-        group.__firstElementI = _.indexOf(allSteps, group.elements[0]);
-        return true;
+        group.pseudoStretches = _.map(group.stretches, function (stretch) {
+            computePseudoStretchSteps(stretch.pseudoStretch);
+            return stretch.pseudoStretch;
+        });
+        group.pseudoStretches = _.filter(group.pseudoStretches, function (stretch) {
+            return stretch.steps.length;
+        });
+        return group.pseudoStretches.length > 0;
     });
     return orderGroups(groups);
 };

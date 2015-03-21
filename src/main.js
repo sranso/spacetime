@@ -8,12 +8,15 @@ var selectionInfoEl;
 
 var mouse = [0, 0];
 var under = null;
-var allStepsLinkedList = {head: true, next: null, previous: null};
+var allStepsHead = {head: true, next: null, previous: null};
+var allStepsTail = {tail: true, next: null, previous: null};
 var allSteps = [];
 var allPseudoSteps = [];
 var isMouseDown = false;
 
-var selection = createGroup();
+var __stretch = createStretch();
+var selection = createGroup({stretches: [__stretch]});
+__stretch.group = selection;
 var allGroups = [selection];
 var __stretches = [];
 var selectionHistory = [{selection: selection}];
@@ -66,7 +69,8 @@ allSteps = _.map([
 ], createStep);
 
 linkSteps(allSteps);
-allStepsLinkedList.next = allSteps[0];
+allStepsHead.next = allSteps[0];
+allStepsTail.previous = allSteps[0];
 
 dvorak();
 drawSetup();

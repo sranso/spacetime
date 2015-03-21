@@ -12,7 +12,9 @@ var browseSelectionHistory = function (forward) {
         pop();
         selectionHistoryI += 1;
         if (selectionHistoryI === selectionHistory.length) {
-            var nextSelection = createGroup();
+            var stretch = createStretch();
+            var nextSelection = createGroup({stretches: [stretch]});
+            stretch.group = nextSelection;
             selectionHistory.push({selection: nextSelection});
             allGroups.push(nextSelection);
         }
@@ -23,14 +25,14 @@ var browseSelectionHistory = function (forward) {
 };
 
 var toggleExpanded = function () {
-    selection.expanded = !selection.expanded;
+    selection.stretches[0].expanded = !selection.stretches[0].expanded;
     update();
 };
 
 var startSelection = function () {
     under = findUnderMouse();
     if (under) {
-        selectionStart = under.stretch[0];
+        selectionStart = under;
         if (selectionHistoryI !== selectionHistory.length - 1) {
             selectionHistory.push({selection: selection});
             selectionHistoryI = selectionHistory.length - 1;
@@ -44,20 +46,19 @@ var changeSelection = function () {
         return;
     }
     if (under) {
-        selectionEnd = under.stretch[0];
+        selectionEnd = under;
     }
-    var startI = _.indexOf(allPseudoSteps, selectionStart.underPseudo);
-    var endI = _.indexOf(allPseudoSteps, selectionEnd.underPseudo);
+    var startI = _.indexOf(allPseudoSteps, selectionStart);
+    var endI = _.indexOf(allPseudoSteps, selectionEnd);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
         endI = temp;
     }
-    removeUnderGroup(selection.elements, selection);
-    selection.elements = realSteps(allPseudoSteps.slice(startI, endI + 1));
-    addUnderGroup(selection.elements, selection);
+    var steps = realSteps(allPseudoSteps.slice(startI, endI + 1));
+    setStretchSteps(selection.stretches[0], steps);
 
-    if (selection.elements.length) {
+    if (selection.stretches[0].steps.length) {
         saveHistoryI = selectionHistoryI;
     } else {
         saveHistoryI = selectionHistoryI - 1;
