@@ -12,11 +12,11 @@ var inputEvent = function (key, eventType) {
         insertNewStep();
         d3.event.preventDefault();
     } else if (key === 'shift' || key === 'ctrl') {
-        if (eventType === 'down') {
-            startSelection();
-        } else {
-            stopSelection();
-        }
+        // if (eventType === 'down') {
+        //     startSelection();
+        // } else {
+        //     stopSelection();
+        // }
     }
 };
 

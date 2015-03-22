@@ -50,7 +50,21 @@ var toggleExpanded = function () {
     update();
 };
 
-var startSelection = function (step) {
+var selectStepUnderMouse = function (mouse) {
+    var x = mouse[0], y = mouse[1];
+    return _.find(allPseudoSteps, function (step) {
+        if (step.y <= y && y < step.y + step.h) {
+            return selectionArea.left <= x && x < selectionArea.right;
+        }
+        return false;
+    });
+};
+
+var maybeStartSelection = function (mouse) {
+    var step = selectStepUnderMouse(mouse);
+    if (!step) {
+        return;
+    }
     selection.start = step;
     var stretch = createStretch();
     selection.left.focus = stretch;
@@ -62,6 +76,16 @@ var startSelection = function (step) {
     //     selectionHistoryI = selectionHistory.length - 1;
     // }
     changeSelection(step);
+};
+
+var maybeChangeSelection = function (mouse) {
+    if (!selection.start) {
+        return;
+    }
+    var step = selectStepUnderMouse(mouse);
+    if (step) {
+        changeSelection(step);
+    }
 };
 
 var changeSelection = function (end) {
@@ -82,7 +106,6 @@ var changeSelection = function (end) {
     //     saveHistoryI = selectionHistoryI - 1;
     // }
 
-    console.log('changeSelection');
     update();
 };
 

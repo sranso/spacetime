@@ -22,6 +22,16 @@ var mouseUp = function () {
     stopSelection();
 };
 
+var mouseMove = function () {
+    var mouse = d3.mouse(trackHtml.node());
+    maybeChangeSelection(mouse);
+};
+
+var mouseDown = function () {
+    var mouse = d3.mouse(trackHtml.node());
+    maybeStartSelection(mouse);
+};
+
 allSteps = _.map([
     {text: '4 + 1'},
     {text: '. * 3'},

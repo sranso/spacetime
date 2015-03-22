@@ -1,10 +1,13 @@
 var stepsX = 240; var stepW = 420;
-var stepsSelectW = 20;
-var stepsResultW = 120;
-var stepsExpressionW = stepW - stepsSelectW - stepsResultW - 2;
+var stepsResultW = 130;
+var stepsExpressionW = stepW - stepsResultW - 2;
 var lineHeight = 35;
 var historyWidth = 20;
 var selectionInfoWidth = 32;
+var selectionArea = {
+    right: stepsX - 20,
+    left: null,
+};
 
 var trackContainer;
 var trackHtml;
@@ -69,7 +72,7 @@ var computeSelectionHistoryPositions = function () {
 
 var computeStretchPositions = function (groups, pseudoSteps) {
     __stretches = [];
-    var x = stepsX - 20;
+    var x = selectionArea.right;
     _.each(groups, function (group) {
         _.each(group.pseudoStretches, function (stretch) {
             var first = stretch.steps[0];
@@ -87,11 +90,14 @@ var computeStretchPositions = function (groups, pseudoSteps) {
         });
         x -= 9;
     });
+    selectionArea.left = x - 100;
 };
 
 
 var drawOverallSetup = function() {
-    trackContainer = d3.select('#track');
+    trackContainer = d3.select('#track')
+        .on('mousemove', mouseMove)
+        .on('mousedown', mouseDown) ;
 
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg')
@@ -122,19 +128,7 @@ var drawSteps = function (steps) {
     var stepEls = trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.stretch.id }) ;
 
-    var stepEnterEls = stepEls.enter().append('div')
-        .on('mouseover', function (d) {
-            console.log('mouseover');
-            if (selection.start) {
-                changeSelection(d);
-            }
-        })
-
-    var selectEnterEls = stepEnterEls.append('div')
-        .classed('select-step', true)
-        .style('width', 7 + 'px')
-        .style('height', function (d) { return (d.h - 5) + 'px' })
-        .on('mousedown', startSelection) ;
+    var stepEnterEls = stepEls.enter().append('div');
 
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;

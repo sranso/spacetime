@@ -81,17 +81,6 @@ h1 {
   position: absolute;
   margin: 0px;
 }
-  .select-step {
-    float: left;
-    border: solid 1px #ddd;
-    border-radius: 3px;
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-    margin-top: 2px;
-    margin-right: 6px;
-    border-right-style: 0px;
-  }
-
 .step-box {
   float: left;
   border: solid 1px #ddd;
@@ -127,7 +116,6 @@ h1 {
 .step.selection {
   z-index: 3;
 }
-  .step.selection .select-step,
   .step.selection .step-box {
     background-color: #efe;
   }
