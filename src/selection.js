@@ -62,22 +62,39 @@ var selectStepUnderMouse = function (mouse) {
     });
 };
 
+var selectionKind = function () {
+    return d3.event.button === 2 ? 'right' : 'left';
+};
+
 var maybeStartSelection = function (mouse) {
     var step = selectStepUnderMouse(mouse);
-    if (!step) {
-        return;
+    var kind = selectionKind();
+    if (step) {
+        startSelection(step, kind);
+    } else {
+        clearSelection(kind);
     }
+};
+
+var startSelection = function (step, kind) {
     selection.start = step;
     var stretch = createStretch();
+    var group = createGroup({stretches: [stretch]});
+    allGroups.push(group);
+    selection.selecting = kind;
     selection.focus = stretch;
-    selection.left.group = createGroup({stretches: [stretch]});
-    selection.focus.group = selection.left.group;
-    allGroups.push(selection.left.group);
+    selection.focus.group = group;
+    selection[kind].group = group;
     // if (selectionHistoryI !== selectionHistory.length - 1) {
     //     selectionHistory.push({selection: selection});
     //     selectionHistoryI = selectionHistory.length - 1;
     // }
     changeSelection(step);
+};
+
+var clearSelection = function (kind) {
+    selection[kind].group = null;
+    update();
 };
 
 var maybeChangeSelection = function (mouse) {
@@ -114,4 +131,15 @@ var changeSelection = function (end) {
 var stopSelection = function () {
     selection.start = null;
     selection.end = null;
+};
+
+var computeSelectionInfo = function () {
+    var stepArrs = [];
+    if (selection.left.group) {
+        stepArrs.push(_.pluck(selection.left.group.stretches, 'steps'));
+    }
+    if (selection.right.group) {
+        stepArrs.push(_.pluck(selection.right.group.stretches, 'steps'));
+    }
+    selection.__steps = _.flatten(stepArrs);
 };

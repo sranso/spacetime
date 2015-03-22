@@ -48,6 +48,7 @@ var copySelectionSteps = function () {
         fixupStretchSteps(originalAfter);
     });
 
+    selection.focus = copy;
     update();
 };
 

@@ -1,6 +1,7 @@
 var stepsX = 240; var stepW = 420;
 var stepsResultW = 130;
-var stepsExpressionW = stepW - stepsResultW - 2;
+var stepsSelectedW = 60;
+var stepsExpressionW = stepW - stepsResultW - stepsSelectedW - 2;
 var lineHeight = 35;
 var historyWidth = 20;
 var selectionInfoWidth = 32;
@@ -97,7 +98,10 @@ var computeStretchPositions = function (groups, pseudoSteps) {
 var drawOverallSetup = function() {
     trackContainer = d3.select('#track')
         .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown) ;
+        .on('mousedown', mouseDown)
+        .on('contextmenu', function () {
+            d3.event.preventDefault();
+        }) ;
 
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg')
@@ -132,6 +136,19 @@ var drawSteps = function (steps) {
 
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;
+
+    var selectedContainerEnterEls = stepBoxEnterEls.append('div')
+        .classed('selected-container', true) ;
+
+    selectedContainerEnterEls.append('div')
+        .attr('class', 'selected-hover')
+        .text('H') ;
+    selectedContainerEnterEls.append('div')
+        .attr('class', 'selected-left')
+        .text('L') ;
+    selectedContainerEnterEls.append('div')
+        .attr('class', 'selected-right')
+        .text('R') ;
 
     var resultContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('result-container', true)
@@ -177,11 +194,6 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = [];
-            if (selection.focus) {
-                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
-                    classes.push('selection');
-                }
-            }
             classes.push('step');
             return classes.join(' ');
         })
@@ -196,6 +208,54 @@ var drawSteps = function (steps) {
     stepEls.select('.result')
         .text(function (d) {
             return d.stretch.steps[d.stretch.steps.length - 1].result;
+        }) ;
+
+    stepEls.select('.selected-hover')
+        .attr('class', function (d) {
+            var classes = ['selected-hover', 'selected-kind'];
+            if (selection.hover.group) {
+                if (_.intersection(d.stretch.steps, selection.hover.__steps).length) {
+                    classes.push('selected');
+                }
+            }
+            if (selection.focus) {
+                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
+                    classes.push('focus');
+                }
+            }
+            return classes.join(' ');
+        }) ;
+
+    stepEls.select('.selected-left')
+        .attr('class', function (d) {
+            var classes = ['selected-left', 'selected-kind'];
+            if (selection.left.group) {
+                if (_.intersection(d.stretch.steps, selection.left.__steps).length) {
+                    classes.push('selected');
+                }
+            }
+            if (selection.focus) {
+                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
+                    classes.push('focus');
+                }
+            }
+            return classes.join(' ');
+        }) ;
+
+    stepEls.select('.selected-right')
+        .attr('class', function (d) {
+            var classes = ['selected-right', 'selected-kind'];
+            if (selection.right.group) {
+                if (_.intersection(d.stretch.steps, selection.right.__steps).length) {
+                    classes.push('selected');
+                }
+            }
+            if (selection.focus) {
+                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
+                    classes.push('focus');
+                }
+            }
+            return classes.join(' ');
         }) ;
 };
 
@@ -290,7 +350,12 @@ var drawSelectionInfo = function () {
 
     selectionEls.select('.selection-color-border')
         .style('border-color', function (d) {
-            return d.group ? '#666' : '#eee';
+            return d.group ? '#555' : '#eee';
+        }) ;
+
+    selectionEls.select('.selection-kind')
+        .style('color', function (d) {
+            return d.group ? '#555' : '#eee';
         }) ;
 
     selectionEls.select('.selection-color')
@@ -347,8 +412,9 @@ var drawStretches = function (stretches) {
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
-            selection.left.group = d.stretch.group;
             selection.focus = d.stretch;
+            var kind = selectionKind();
+            selection[kind].group = d.stretch.group;
             // selectionHistoryI = saveHistoryI + 1;
             // selectionHistory[selectionHistoryI] = {selection: selection};
             update();
@@ -357,8 +423,9 @@ var drawStretches = function (stretches) {
 
     stretchEls
         .attr('class', function (d) {
-            if (d.stretch.group === selection.left.group) {
-                return 'stretch showing';
+            if (d.stretch.group === selection.left.group ||
+                d.stretch.group === selection.right.group) {
+                return 'stretch selection-group';
             }
             return 'stretch';
         })

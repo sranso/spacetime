@@ -14,6 +14,7 @@ var update = function () {
     computeSteps();
     executeSteps();
     computePseudoSteps();
+    computeSelectionInfo();
     computePositions();
     draw();
 };
