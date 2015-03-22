@@ -4,7 +4,7 @@ var copySelectionSteps = function () {
     //     return; // TODO: For multi-stretch groups: copy each stretch?
     // }
     // var original = stretches[0];
-    var original = selection.left.focus;
+    var original = selection.focus;
 
     var p = stretchPartitions(original);
 
@@ -15,9 +15,8 @@ var copySelectionSteps = function () {
         stretch.group.stretches.push(stretch);
     });
 
-    var copy = cloneStretch(original);
-    copy.group.stretches.push(copy);
-    copy.steps = _.map(original.steps, function (original) {
+    var copy = cloneMap[original.id];
+    _.each(original.steps, function (original) {
         var step = cloneStep(original);
         step.stretches = _.filter(original.stretches, function (originalStretch) {
             return _.contains(p.notCovering, originalStretch);
@@ -28,7 +27,6 @@ var copySelectionSteps = function () {
             step.stretches.push(stretch);
             return stretch;
         });
-        return step;
     });
 
     var previous = original.steps[original.steps.length - 1];

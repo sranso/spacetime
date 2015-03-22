@@ -177,8 +177,8 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = [];
-            if (selection.left.focus) {
-                if (_.intersection(d.stretch.steps, selection.left.focus.steps).length) {
+            if (selection.focus) {
+                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
                     classes.push('selection');
                 }
             }
@@ -346,11 +346,13 @@ var drawStretches = function (stretches) {
         .classed('mouse', true)
         .attr('x', 0)
         .attr('y', 0)
-        .on('click', function (d) {
-            selection = d.stretch.group;
-            selectionHistoryI = saveHistoryI + 1;
-            selectionHistory[selectionHistoryI] = {selection: selection};
+        .on('mousedown', function (d) {
+            selection.left.group = d.stretch.group;
+            selection.focus = d.stretch;
+            // selectionHistoryI = saveHistoryI + 1;
+            // selectionHistory[selectionHistoryI] = {selection: selection};
             update();
+            d3.event.stopPropagation();
         }) ;
 
     stretchEls

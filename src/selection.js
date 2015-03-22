@@ -2,7 +2,6 @@ var createSelection = function (selection) {
     selection = _.extend({
         _type: 'selection',
         kind: 'left', // || hover || right
-        focus: null,
         group: null,
     }, selection || {});
     selection.id = newId();
@@ -10,6 +9,7 @@ var createSelection = function (selection) {
 };
 
 var selection = {
+    focus: null,
     hover: createSelection({kind: 'hover', group: createGroup()}),
     left: createSelection({kind: 'left', group: createGroup()}),
     //right: createSelection({kind: 'right', group: createGroup()}),
@@ -28,7 +28,7 @@ var selection = {
 //         }
 //         return false;
 //     }
-// 
+//
 //     if (forward) {
 //         pop();
 //         selectionHistoryI += 1;
@@ -46,7 +46,9 @@ var selection = {
 // };
 
 var toggleExpanded = function () {
-    selection.stretches[0].expanded = !selection.stretches[0].expanded;
+    if (selection.focus) {
+        selection.focus.expanded = !selection.focus.expanded;
+    }
     update();
 };
 
@@ -67,9 +69,9 @@ var maybeStartSelection = function (mouse) {
     }
     selection.start = step;
     var stretch = createStretch();
-    selection.left.focus = stretch;
+    selection.focus = stretch;
     selection.left.group = createGroup({stretches: [stretch]});
-    selection.left.focus.group = selection.left.group;
+    selection.focus.group = selection.left.group;
     allGroups.push(selection.left.group);
     // if (selectionHistoryI !== selectionHistory.length - 1) {
     //     selectionHistory.push({selection: selection});
@@ -98,7 +100,7 @@ var changeSelection = function (end) {
         endI = temp;
     }
     var steps = realSteps(allPseudoSteps.slice(startI, endI + 1));
-    setStretchSteps(selection.left.focus, steps);
+    setStretchSteps(selection.focus, steps);
 
     // if (selection.stretches[0].steps.length) {
     //     saveHistoryI = selectionHistoryI;
