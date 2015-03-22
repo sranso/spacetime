@@ -1,9 +1,10 @@
 var copySelectionSteps = function () {
-    var stretches = selection.stretches;
-    if (stretches.length !== 1) {
-        return; // TODO: For multi-stretch groups: copy each stretch?
-    }
-    var original = stretches[0];
+    // var stretches = selection.stretches;
+    // if (stretches.length !== 1) {
+    //     return; // TODO: For multi-stretch groups: copy each stretch?
+    // }
+    // var original = stretches[0];
+    var original = selection.left.focus;
 
     var p = stretchPartitions(original);
 

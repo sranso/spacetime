@@ -5,30 +5,37 @@ var stepW = 400;
 var historyWidth = 20;
 var selectionInfoWidth = 32;
 
+var trackContainer;
+var trackHtml;
+var trackSvg;
+var selectionInfoEl;
+var selectionHistoryEl;
+var selectionHistoryCursor;
+
 var computePositions = function () {
     computeStepPositions(allPseudoSteps);
-    computeSelectionHistoryPositions();
+    //computeSelectionHistoryPositions();
     computeGroupPositions(groupsToDraw(allGroups));
 };
 
 var drawSetup = function () {
     drawOverallSetup();
     drawStepsSetup();
-    drawSelectionHistorySetup();
+    //drawSelectionHistorySetup();
     drawSelectionInfoSetup();
     drawGroupsSetup();
 };
 
 var draw = function () {
     drawSteps(allPseudoSteps);
-    drawSelectionHistory();
+    //drawSelectionHistory();
     drawSelectionInfo();
     drawGroups(__stretches);
 };
 
 
 var computeStepPositions = function (steps) {
-    var prevPos = {x: 0, y: 0, w: 0, h: 0};
+    var prevPos = {x: 0, y: -lineHeight, w: 0, h: 0};
     _.each(steps, function (step) {
         var pos = {
             x: stepsX,
@@ -85,9 +92,7 @@ var computeGroupPositions = function (groups) {
 
 
 var drawOverallSetup = function() {
-    trackContainer = d3.select('#track')
-        .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown) ;
+    trackContainer = d3.select('#track');
 
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg')
@@ -118,7 +123,14 @@ var drawSteps = function (steps) {
     var stepEls = trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.stretch.id }) ;
 
-    var stepEnterEls = stepEls.enter().append('div');
+    var stepEnterEls = stepEls.enter().append('div')
+        .on('mousedown', startSelection)
+        .on('mouseover', function (d) {
+            console.log('mouseover');
+            if (selection.start) {
+                changeSelection(d);
+            }
+        })
 
     var resultContainerEnterEls = stepEnterEls.append('div')
         .classed('result-container', true)
@@ -165,8 +177,10 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = [];
-            if (_.intersection(d.stretch.steps, selection.stretches[0].steps).length) {
-                classes.push('selection');
+            if (selection.left.focus) {
+                if (_.intersection(d.stretch.steps, selection.left.focus.steps).length) {
+                    classes.push('selection');
+                }
             }
             classes.push('step');
             return classes.join(' ');
@@ -202,30 +216,11 @@ var drawSelectionHistorySetup = function () {
 };
 
 var drawSelectionInfoSetup = function () {
-    selectionInfoEl = trackSvg.append('g')
-        .classed('selection-info', true)
-        .attr('transform', 'translate(850,300)') ;
-
-    selectionInfoEl.append('rect')
-        .classed('selection-cursor', true)
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', selectionInfoWidth)
-        .attr('height', selectionInfoWidth) ;
-
-    selectionInfoEl.append('rect')
-        .classed('selection-color', true)
-        .attr('x', 2)
-        .attr('y', 2)
-        .attr('width', selectionInfoWidth - 4)
-        .attr('height', selectionInfoWidth - 4) ;
-
-    selectionTextInput = d3.select('#selection-text-input')
-        .style('left', '930px')
-        .style('top', '327px') ;
-
-    selectionTextInput.select('input')
-        .property('placeholder', 'Group name') ;
+    selectionInfoEl = d3.select('#selection');
+    selectionInfoEl.selectAll('.selection-name')
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        }) ;
 };
 
 var drawSelectionHistory = function () {
@@ -284,20 +279,47 @@ var drawSelectionHistory = function () {
 };
 
 var drawSelectionInfo = function () {
-    selectionInfoEl.select('rect.selection-color')
-        .style('fill', function () {
-            var c = selection.color;
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+    var selections = [
+        selection.hover,
+        selection.left,
+        selection.right,
+    ];
+
+    var selectionEls = selectionInfoEl.selectAll('.selection-info')
+        .data(selections) ;
+
+    selectionEls.select('.selection-color-border')
+        .style('border-color', function (d) {
+            return d.group ? '#666' : '#eee';
         }) ;
 
-    selectionTextInput.select('input')
-        .property('value', selection.text)
-        .on('input', function () {
-            selection.text = this.value;
-            update();
+    selectionEls.select('.selection-color')
+        .style('background-color', function (d) {
+            if (d.group) {
+                var c = d.group.color;
+                return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+            }
+            return 'white';
+        }) ;
+
+    selectionEls.select('.selection-name')
+        .attr('disabled', function (d) {
+            return d.group ? null : 'disabled';
         })
-        .on('keypress', function () {
-            d3.event.stopPropagation();
+        .property('value', function (d) {
+            return d.group ? d.group.text : '';
+        })
+        .attr('placeholder', function (d) {
+            if (d.group && !d.group.text) {
+                return 'Unnamed group';
+            }
+            return '';
+        })
+        .on('input', function (d) {
+            if (d.group) {
+                d.group.text = this.value;
+                update();
+            }
         }) ;
 };
 

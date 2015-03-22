@@ -7,8 +7,25 @@
 </head>
 <body>
   <div id="editor">
-    <div id="selection-text-input">
-      <input type="textbox">
+    <div id="selection">
+      <div id="hover-selection" class="selection-info">
+        <div class="selection-color-border">
+          <div class="selection-color"></div>
+        </div>
+        <input type="text" class="selection-name">
+      </div>
+      <div id="left-selection" class="selection-info">
+        <div class="selection-color-border">
+          <div class="selection-color"></div>
+        </div>
+        <input type="text" class="selection-name">
+      </div>
+      <div id="right-selection" class="selection-info">
+        <div class="selection-color-border">
+          <div class="selection-color"></div>
+        </div>
+        <input type="text" class="selection-name">
+      </div>
     </div>
     <div id="track">
       <svg id="track-svg"></svg>
