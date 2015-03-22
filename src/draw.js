@@ -1,7 +1,8 @@
-var stepsX = 240;
-var stepsExpressionX = 120;
+var stepsX = 240; var stepW = 420;
+var stepsSelectW = 20;
+var stepsResultW = 120;
+var stepsExpressionW = stepW - stepsSelectW - stepsResultW - 2;
 var lineHeight = 35;
-var stepW = 400;
 var historyWidth = 20;
 var selectionInfoWidth = 32;
 
@@ -15,7 +16,7 @@ var selectionHistoryCursor;
 var computePositions = function () {
     computeStepPositions(allPseudoSteps);
     //computeSelectionHistoryPositions();
-    computeGroupPositions(groupsToDraw(allGroups));
+    computeStretchPositions(groupsToDraw(allGroups));
 };
 
 var drawSetup = function () {
@@ -23,14 +24,14 @@ var drawSetup = function () {
     drawStepsSetup();
     //drawSelectionHistorySetup();
     drawSelectionInfoSetup();
-    drawGroupsSetup();
+    drawStretchesSetup();
 };
 
 var draw = function () {
     drawSteps(allPseudoSteps);
     //drawSelectionHistory();
     drawSelectionInfo();
-    drawGroups(__stretches);
+    drawStretches(__stretches);
 };
 
 
@@ -66,9 +67,9 @@ var computeSelectionHistoryPositions = function () {
     }
 };
 
-var computeGroupPositions = function (groups) {
+var computeStretchPositions = function (groups, pseudoSteps) {
     __stretches = [];
-    var x = 230;
+    var x = stepsX - 20;
     _.each(groups, function (group) {
         _.each(group.pseudoStretches, function (stretch) {
             var first = stretch.steps[0];
@@ -87,8 +88,6 @@ var computeGroupPositions = function (groups) {
         x -= 9;
     });
 };
-
-
 
 
 var drawOverallSetup = function() {
@@ -124,7 +123,6 @@ var drawSteps = function (steps) {
         .data(steps, function (d) { return d.stretch.id }) ;
 
     var stepEnterEls = stepEls.enter().append('div')
-        .on('mousedown', startSelection)
         .on('mouseover', function (d) {
             console.log('mouseover');
             if (selection.start) {
@@ -132,17 +130,26 @@ var drawSteps = function (steps) {
             }
         })
 
-    var resultContainerEnterEls = stepEnterEls.append('div')
+    var selectEnterEls = stepEnterEls.append('div')
+        .classed('select-step', true)
+        .style('width', 7 + 'px')
+        .style('height', function (d) { return (d.h - 5) + 'px' })
+        .on('mousedown', startSelection) ;
+
+    var stepBoxEnterEls = stepEnterEls.append('div')
+        .classed('step-box', true) ;
+
+    var resultContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('result-container', true)
-        .style('width', stepsExpressionX + 'px')
+        .style('width', stepsResultW + 'px')
         .style('height', function (d) { return (d.h - 1) + 'px' }) ;
 
     resultContainerEnterEls.append('div')
         .classed('result', true) ;
 
-    var expressionContainerEnterEls = stepEnterEls.append('div')
+    var expressionContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('expression-container', true)
-        .style('width', (stepW - stepsExpressionX - 1) + 'px')
+        .style('width', stepsExpressionW + 'px')
         .style('height', function (d) { return (d.h - 1) + 'px' })
         .on('dblclick', function (d) {
             var expression = d3.select(this).select('.expression').node();
@@ -168,7 +175,6 @@ var drawSteps = function (steps) {
         .on('keyup', function () {
             d3.event.stopPropagation();
         }) ;
-
 
     stepEls.exit().remove();
 
@@ -324,21 +330,21 @@ var drawSelectionInfo = function () {
 };
 
 
-///////////////// Groups
+///////////////// Stretches
 
-var drawGroupsSetup = function () {
+var drawStretchesSetup = function () {
 };
 
-var drawGroups = function (stretches) {
-    var stretchEls = trackSvg.selectAll('g.group-stretch')
+var drawStretches = function (stretches) {
+    var stretchEls = trackSvg.selectAll('g.stretch')
         .data(stretches) ;
 
     var stretchEnterEls = stretchEls.enter().append('g');
 
     stretchEnterEls.append('rect')
         .classed('background', true)
-        .attr('x', 1)
-        .attr('y', 1)
+        .attr('x', 0.5)
+        .attr('y', 1.5)
         .attr('rx', 2)
         .attr('ry', 2) ;
 
@@ -355,10 +361,10 @@ var drawGroups = function (stretches) {
 
     stretchEls
         .attr('class', function (d) {
-            if (d.stretch.group === selection) {
-                return 'group-stretch showing';
+            if (d.stretch.group === selection.left.group) {
+                return 'stretch showing';
             }
-            return 'group-stretch';
+            return 'stretch';
         })
         .attr('transform', function (d, i) {
             return 'translate(' + d.x + ',' + d.y + ')';
@@ -366,7 +372,7 @@ var drawGroups = function (stretches) {
 
     stretchEls.select('rect.background')
         .attr('width', function (d) { return d.w - 2 })
-        .attr('height', function (d) { return d.h - 2 })
+        .attr('height', function (d) { return d.h - 4 })
         .style('fill', function (d, i) {
             if (d.stretch.group === selection) {
                 return '#afa';

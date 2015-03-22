@@ -79,20 +79,38 @@ h1 {
 
 .step {
   position: absolute;
-  border: solid 1px #ddd;
   margin: 0px;
+}
+  .select-step {
+    float: left;
+    border: solid 1px #ddd;
+    border-radius: 3px;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    margin-top: 2px;
+    margin-right: 6px;
+    border-right-style: 0px;
+  }
+
+.step-box {
+  float: left;
+  border: solid 1px #ddd;
+  border-width: 1px 0px 1px 0px;
 }
   .step .result-container {
     float: left;
-    border: solid 0px #ddd;
-    border-right-width: 1px;
   }
     .step .result {
       color: #338;
       font-size: 16px;
       text-align: center;
-      margin: 6px 4px 0px 4px;
+      margin: 4px;
+      margin-left: 7px;
       overflow: hidden;
+      border: solid 2px #aaf;
+      border-radius: 7px;
+      padding: 2px;
+      background-color: #eee;
     }
 
   .step .expression-container {
@@ -106,14 +124,13 @@ h1 {
       padding: 2px 4px;
     }
 
-  .step.selection {
+.step.selection {
+  z-index: 3;
+}
+  .step.selection .select-step,
+  .step.selection .step-box {
     background-color: #efe;
-    border-color: #aaa;
-    z-index: 3;
   }
-    .step.selection .result-container {
-      border-color: #aaa;
-    }
 
 
 .history {
@@ -129,13 +146,13 @@ h1 {
   }
 
 
-.group-stretch {
+.stretch {
 }
-  .group-stretch .mouse {
+  .stretch .mouse {
     fill: #fff;
     opacity: 0;
   }
 
-  .group-stretch.showing .background {
+  .stretch.showing .background {
     stroke: #777;
   }
