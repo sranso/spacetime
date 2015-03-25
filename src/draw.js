@@ -1,4 +1,4 @@
-var stepsX = 240; var stepW = 420;
+var stepsX = 200; var stepW = 420;
 var stepsResultW = 130;
 var stepsSelectedW = 60;
 var stepsExpressionW = stepW - stepsResultW - stepsSelectedW - 2;
@@ -7,11 +7,11 @@ var historyWidth = 20;
 var selectionInfoWidth = 32;
 
 var selectionArea = {
-    startX: stepsX - 60,
-    right: stepsX - 14,
-    left: stepsX - 28,
-    hover: stepsX - 42,
-    endX: stepsX,
+    startX: stepsX - 4,
+    right: stepsX + 26,
+    left: stepsX + 12,
+    hover: stepsX + 0,
+    endX: stepsX + 47,
 };
 
 var trackContainer;
@@ -77,7 +77,7 @@ var computeSelectionHistoryPositions = function () {
 
 var computeStretchPositions = function (groups, pseudoSteps) {
     __stretches = [];
-    var x = selectionArea.startX - 9;
+    var x = selectionArea.startX - 19;
     _.each(groups, function (group) {
         _.each(group.pseudoStretches, function (stretch) {
             var first = stretch.steps[0];
@@ -122,7 +122,7 @@ var drawOverallSetup = function() {
 
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg')
-        .attr('width', '100%')
+        .attr('width', stepsX + 40)
         .attr('height', '2000px') ;
 
     d3.select(document)
@@ -362,7 +362,7 @@ var drawStretches = function (stretches) {
     stretchEnterEls.append('rect')
         .classed('background', true)
         .attr('x', 0.5)
-        .attr('y', 1.5)
+        .attr('y', 2.5)
         .attr('rx', 2)
         .attr('ry', 2) ;
 

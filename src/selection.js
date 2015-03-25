@@ -79,11 +79,19 @@ var maybeStartSelection = function (mouse) {
 var startSelection = function (step, kind) {
     selection.start = step;
     var stretch = createStretch();
-    var group = createGroup({stretches: [stretch]});
-    allGroups.push(group);
+    var group;
+    if (d3.event.ctrlKey) {
+        group = selection[kind].group;
+    }
+    if (!group) {
+        group = createGroup();
+        allGroups.push(group);
+    }
+    stretch.group = group;
+    group.stretches.push(stretch);
+
     selection.selecting = kind;
     selection.focus = stretch;
-    selection.focus.group = group;
     selection[kind].group = group;
     // if (selectionHistoryI !== selectionHistory.length - 1) {
     //     selectionHistory.push({selection: selection});

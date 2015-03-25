@@ -27,17 +27,17 @@ h1 {
 #track-html {
   position: absolute;
   top: 0px;
-  z-index: 2;
+  z-index: 1;
 }
 
 #track-svg {
   position: absolute;
   top: 0px;
-  z-index: 1;
+  z-index: 2;
 }
 
 .background {
-  fill: #ffffff;
+  fill: transparent;
 }
 
 
@@ -85,6 +85,7 @@ h1 {
   float: left;
   border: solid 1px #ddd;
   border-width: 1px 0 1px 0;
+  padding-left: 40px;
 }
   .step .result-container {
     float: left;
