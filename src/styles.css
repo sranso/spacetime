@@ -54,12 +54,6 @@ h1 {
     margin-left: 50px;
     background-color: rgba(255,255,255,0.9);
   }
-    .selection-kind {
-      float: left;
-      font-size: 17px;
-      width: 18px;
-      padding-top: 3px;
-    }
     .selection-color-border {
       float: left;
       border: solid 2px #555;
@@ -123,26 +117,13 @@ h1 {
     float: left;
     width: 60px;
   }
-    .step .selected-kind {
-      float: left;
-      font: 17px;
-      width: 20px;
-      padding-top: 7px;
-      height: 27px;
-      text-align: center;
-      color: transparent;
-    }
-      .step .selected-kind.selected {
-        color: #999;
-      }
-      .step .selected-kind.focus {
-        background-color: #eee;
-      }
-      .step .selected-kind.selected.focus {
-        color: #555;
-      }
 
-.step.selection {
+.step.selection-n1 .step-box {
+  background-color: #f9f9f9;
+}
+.step.selection-n2 .step-box,
+.step.selection-n3 .step-box {
+  background-color: #f3f3f3;
 }
 
 .history {
@@ -165,6 +146,9 @@ h1 {
     opacity: 0;
   }
 
-  .stretch.selection-group .background {
-    stroke: #555;
+  .stretch.selected-area .background {
+    stroke: #999;
+  }
+  .stretch.selection-selected .background {
+    stroke: #ddd;
   }

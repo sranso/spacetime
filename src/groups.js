@@ -32,6 +32,8 @@ var cloneStretch = function (original) {
 var createPseudoStretch = function (stretch) {
     return {
         _type: 'pseudoStretch',
+        kind: 'unselected',
+        selectedArea: false,
         steps: [],
         stretch: stretch,
         position: null,

@@ -5,9 +5,13 @@ var stepsExpressionW = stepW - stepsResultW - stepsSelectedW - 2;
 var lineHeight = 35;
 var historyWidth = 20;
 var selectionInfoWidth = 32;
+
 var selectionArea = {
-    right: stepsX - 20,
-    left: null,
+    startX: stepsX - 60,
+    right: stepsX - 14,
+    left: stepsX - 28,
+    hover: stepsX - 42,
+    endX: stepsX,
 };
 
 var trackContainer;
@@ -73,7 +77,7 @@ var computeSelectionHistoryPositions = function () {
 
 var computeStretchPositions = function (groups, pseudoSteps) {
     __stretches = [];
-    var x = selectionArea.right;
+    var x = selectionArea.startX - 9;
     _.each(groups, function (group) {
         _.each(group.pseudoStretches, function (stretch) {
             var first = stretch.steps[0];
@@ -85,13 +89,26 @@ var computeStretchPositions = function (groups, pseudoSteps) {
                 h: last.step.y + last.step.h - first.step.y,
             };
             stretch.position = pos;
+            stretch.kind = 'unselected';
             _.extend(stretch, pos);
 
             __stretches.push(stretch);
         });
         x -= 9;
     });
-    selectionArea.left = x - 100;
+    _.each(['hover', 'left', 'right'], function (kind) {
+        if (selection[kind].group) {
+            _.each(selection[kind].group.pseudoStretches, function (originalStretch) {
+                originalStretch.kind = 'selected';
+                var stretch = _.clone(originalStretch);
+                stretch.kind = kind;
+                stretch.selectedArea = true;
+                stretch.x = selectionArea[kind];
+                stretch.w = 11;
+                __stretches.push(stretch);
+            });
+        }
+    });
 };
 
 
@@ -140,16 +157,6 @@ var drawSteps = function (steps) {
     var selectedContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('selected-container', true) ;
 
-    selectedContainerEnterEls.append('div')
-        .attr('class', 'selected-hover')
-        .text('H') ;
-    selectedContainerEnterEls.append('div')
-        .attr('class', 'selected-left')
-        .text('L') ;
-    selectedContainerEnterEls.append('div')
-        .attr('class', 'selected-right')
-        .text('R') ;
-
     var resultContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('result-container', true)
         .style('width', stepsResultW + 'px')
@@ -195,6 +202,11 @@ var drawSteps = function (steps) {
         .attr('class', function (d) {
             var classes = [];
             classes.push('step');
+            var selectionCount = _.intersection(d.stretch.steps, selection.__steps).length;
+            if (selectionCount) {
+                classes.push('selection');
+                classes.push('selection-n' + selectionCount);
+            }
             return classes.join(' ');
         })
         .style('width', function (d) { return d.w + 'px' })
@@ -208,54 +220,6 @@ var drawSteps = function (steps) {
     stepEls.select('.result')
         .text(function (d) {
             return d.stretch.steps[d.stretch.steps.length - 1].result;
-        }) ;
-
-    stepEls.select('.selected-hover')
-        .attr('class', function (d) {
-            var classes = ['selected-hover', 'selected-kind'];
-            if (selection.hover.group) {
-                if (_.intersection(d.stretch.steps, selection.hover.__steps).length) {
-                    classes.push('selected');
-                }
-            }
-            if (selection.focus) {
-                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
-                    classes.push('focus');
-                }
-            }
-            return classes.join(' ');
-        }) ;
-
-    stepEls.select('.selected-left')
-        .attr('class', function (d) {
-            var classes = ['selected-left', 'selected-kind'];
-            if (selection.left.group) {
-                if (_.intersection(d.stretch.steps, selection.left.__steps).length) {
-                    classes.push('selected');
-                }
-            }
-            if (selection.focus) {
-                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
-                    classes.push('focus');
-                }
-            }
-            return classes.join(' ');
-        }) ;
-
-    stepEls.select('.selected-right')
-        .attr('class', function (d) {
-            var classes = ['selected-right', 'selected-kind'];
-            if (selection.right.group) {
-                if (_.intersection(d.stretch.steps, selection.right.__steps).length) {
-                    classes.push('selected');
-                }
-            }
-            if (selection.focus) {
-                if (_.intersection(d.stretch.steps, selection.focus.steps).length) {
-                    classes.push('focus');
-                }
-            }
-            return classes.join(' ');
         }) ;
 };
 
@@ -353,11 +317,6 @@ var drawSelectionInfo = function () {
             return d.group ? '#555' : '#eee';
         }) ;
 
-    selectionEls.select('.selection-kind')
-        .style('color', function (d) {
-            return d.group ? '#555' : '#eee';
-        }) ;
-
     selectionEls.select('.selection-color')
         .style('background-color', function (d) {
             if (d.group) {
@@ -421,13 +380,19 @@ var drawStretches = function (stretches) {
             d3.event.stopPropagation();
         }) ;
 
+    stretchEls.exit().remove();
+
     stretchEls
         .attr('class', function (d) {
+            var classes = ['stretch', 'selection-' + d.kind];
             if (d.stretch.group === selection.left.group ||
                 d.stretch.group === selection.right.group) {
-                return 'stretch selection-group';
+                classes.push('selection-group');
             }
-            return 'stretch';
+            if (d.selectedArea) {
+                classes.push('selected-area');
+            }
+            return classes.join(' ');
         })
         .attr('transform', function (d, i) {
             return 'translate(' + d.x + ',' + d.y + ')';
@@ -437,8 +402,8 @@ var drawStretches = function (stretches) {
         .attr('width', function (d) { return d.w - 2 })
         .attr('height', function (d) { return d.h - 4 })
         .style('fill', function (d, i) {
-            if (d.stretch.group === selection) {
-                return '#afa';
+            if (d.kind === 'selected') {
+                return 'white';
             }
             // if (d.stretch.group.stretches.length === 1) {
             //     return '#ccc';

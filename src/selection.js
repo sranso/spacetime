@@ -56,7 +56,7 @@ var selectStepUnderMouse = function (mouse) {
     var x = mouse[0], y = mouse[1];
     return _.find(allPseudoSteps, function (step) {
         if (step.y <= y && y < step.y + step.h) {
-            return selectionArea.left <= x && x < selectionArea.right;
+            return selectionArea.startX <= x && x < selectionArea.endX;
         }
         return false;
     });
@@ -135,6 +135,9 @@ var stopSelection = function () {
 
 var computeSelectionInfo = function () {
     var stepArrs = [];
+    if (selection.hover.group) {
+        stepArrs.push(_.pluck(selection.hover.group.stretches, 'steps'));
+    }
     if (selection.left.group) {
         stepArrs.push(_.pluck(selection.left.group.stretches, 'steps'));
     }
