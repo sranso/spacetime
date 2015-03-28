@@ -68,40 +68,103 @@ var setStretchSteps = function (stretch, steps) {
     stretch.steps = steps;
 };
 
-var stretchPartitions = function (targetStretch) {
+var classifyStretches = function (targetStretch) {
     var firstStep = targetStretch.steps[0];
     var lastStep = targetStretch.steps[targetStretch.steps.length - 1];
-    var p = _.partition(firstStep.stretches, function (stretch) {
-        return stretch.steps[0] === firstStep;
-    });
-    var start = p[0], before = p[1];
-    p = _.partition(lastStep.stretches, function (stretch) {
-        return stretch.steps[stretch.steps.length - 1] === lastStep;
-    });
-    var end = p[0], after = p[1];
-
     var all = _.uniq(_.reduce(targetStretch.steps, function (all, step) {
         return all.concat(step.stretches);
     }, []));
-    var internal = _.difference(all, before, after);
 
-    var coveringFromStart = _.intersection(start, after);
-    var coveringToEnd = _.intersection(before, end);
-    var covering = _.union(
-        _.intersection(before, after),
-        coveringFromStart,
-        coveringToEnd
-    );
-    return {
-        covering: covering,
-        coveringFromStart: coveringFromStart,
-        coveringToEnd: coveringToEnd,
-        notCovering: _.difference(all, covering),
-        before: _.difference(before, covering),
-        after: _.difference(after, covering),
-        internal: internal,
-        matching: _.intersection(start, end),
+    return _.map(all, function (stretch) {
+        var start;
+        if (! _.contains(firstStep.stretches, stretch)) {
+            start = 'middle';
+        } else if (stretch.steps[0] === firstStep) {
+            start = 'start';
+        } else {
+            start = 'before';
+        }
+
+        var end;
+        if (! _.contains(lastStep.stretches, stretch)) {
+            end = 'middle';
+        } else if (stretch.steps[stretch.steps.length - 1] === lastStep) {
+            end = 'end';
+        } else {
+            end = 'after';
+        }
+
+        return {
+            stretch: stretch,
+            start: start,
+            end: end,
+        };
+    });
+};
+
+var stretchPartitions = function (stretch) {
+    var classified = classifyStretches(stretch);
+    return function (matcher) {
+        return selectPartitions(classified, matcher);
     };
+};
+
+// Matcher examples:
+//      "<=[====]=>"
+//      "__[<==>]__"
+//      "__[_<>_]__"
+//      "<<[<==>]>>"
+//      "__[<<>>]__"
+//      "<<[<<<<]=>"
+var selectPartitions = function (classified, matcher) {
+    if (matcher.length !== 10) {
+        throw new Error('Matcher must be ten characters long "__[____]__"');
+    }
+    if (matcher[2] !== '[' || matcher[7] !== ']') {
+        throw new Error('Matcher must have brackets at the right spot "__[____]__"');
+    }
+    if (/[^<\[\]>=_]/.test(matcher)) {
+        throw new Error('Matcher must only contain "_=[]<>"');
+    }
+    if (! /^_*<+=*>+_*$/.test(matcher.replace(/[\[\]]/g, ''))) {
+        throw new Error('Matcher arrow portion must match /^_*<+=*>+_*$/');
+    }
+
+    var start = [];
+    var end = [];
+
+    // "01[3456]89"
+    if (matcher[0] === '<' || matcher[1] === '<') {
+        start.push('before');
+    }
+    if (matcher[3] === '<') {
+        start.push('start');
+    }
+    if (matcher[4] === '<' || matcher[5] === '<') {
+        start.push('middle');
+    }
+    if (matcher.indexOf('<') >= 6) {
+        throw new Error('Matcher cannot detect if it starts at end or after');
+    }
+
+    // "01[3456]89"
+    if (matcher[9] === '>' || matcher[8] === '>') {
+        end.push('after');
+    }
+    if (matcher[6] === '>') {
+        end.push('end');
+    }
+    if (matcher[5] === '>' || matcher[4] === '>') {
+        end.push('middle');
+    }
+    if (matcher.lastIndexOf('>') <= 3) {
+        throw new Error('Matcher cannot detect if it ends at start or before');
+    }
+
+    var matching = _.filter(classified, function (s) {
+        return _.contains(start, s.start) && _.contains(end, s.end);
+    });
+    return _.pluck(matching, 'stretch');
 };
 
 var fixupStretchSteps = function (stretch) {

@@ -7,9 +7,14 @@ var copySelectionSteps = function () {
     var original = selection.focus;
 
     var p = stretchPartitions(original);
+    var notCovering = _.union(
+        p("<<[<<>_]__"),
+        p("__[_<>>]>>"),
+        p("__[<==>]__")
+    );
 
     var cloneMap = {};
-    _.each(p.notCovering, function (originalStretch) {
+    _.each(notCovering, function (originalStretch) {
         var stretch = cloneStretch(originalStretch);
         cloneMap[originalStretch.id] = stretch;
         stretch.group.stretches.push(stretch);
@@ -19,7 +24,7 @@ var copySelectionSteps = function () {
     _.each(original.steps, function (original) {
         var step = cloneStep(original);
         step.stretches = _.filter(original.stretches, function (originalStretch) {
-            return _.contains(p.notCovering, originalStretch);
+            return _.contains(notCovering, originalStretch);
         });
         step.stretches = _.map(step.stretches, function (originalStretch) {
             var stretch = cloneMap[originalStretch.id];
@@ -36,11 +41,12 @@ var copySelectionSteps = function () {
     linkSteps(copy.steps);
     linkSteps([lastCopyStep, next]);
 
-    _.each(p.coveringToEnd, function (stretch) {
+    _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(lastCopyStep);
     });
-    _.each(p.covering, fixupStretchSteps);
-    _.each(p.after, function (originalAfter) {
+
+    _.each(p("<<[<==>]>>"), fixupStretchSteps);
+    _.each(p("__[_<<<]=>"), function (originalAfter) {
         var stretch = cloneMap[originalAfter.id];
         stretch.steps.push(originalAfter.steps[originalAfter.steps.length - 1]);
         fixupStretchSteps(stretch);
@@ -62,12 +68,25 @@ var insertNewStep = function (targetPseudo) {
     linkSteps([previous, newStep, next]);
 
     var p = stretchPartitions(previousStretch);
-    _.each(p.coveringToEnd, function (stretch) {
+    _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps[stretch.steps.length - 1] = newStep;
     });
-    _.each(p.covering, fixupStretchSteps);
-    _.each(p.after, fixupStretchSteps);
+    _.each(p("<<[<==>]>>"), fixupStretchSteps);
+    _.each(p("__[_<<<]=>"), fixupStretchSteps);
 
     update();
     d3.select(newStep.underPseudo.__el__).select('.expression').node().focus();
+};
+
+var deleteSelectionSteps = function () {
+    var stretch = selection.focus;
+    var start = stretch.steps[0];
+    var end = stretch.steps[stretch.steps.length - 1];
+    var previous = start.previous;
+    var next = end.next;
+    linkSteps([previous, next]);
+
+    var p = stretchPartitions(stretch);
+
+    update();
 };

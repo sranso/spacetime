@@ -40,12 +40,14 @@ var keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === 'd' || key === 's') {
-        browseSelectionHistory(key === 'd');
+    if (key === 's' || key === 'a') {
+        browseSelectionHistory(key === 's');
     } else if (key === 'tab') {
         toggleExpanded();
     } else if (key === 'c') {
         copySelectionSteps();
+    } else if (key === 'd') {
+        deleteSelectionSteps();
     }
 
     update();
