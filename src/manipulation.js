@@ -69,7 +69,7 @@ var insertNewStep = function (targetPseudo) {
 
     var p = stretchPartitions(previousStretch);
     _.each(p("<=[===>]__"), function (stretch) {
-        stretch.steps[stretch.steps.length - 1] = newStep;
+        stretch.steps.push(newStep);
     });
     _.each(p("<<[<==>]>>"), fixupStretchSteps);
     _.each(p("__[_<<<]=>"), fixupStretchSteps);
@@ -87,6 +87,17 @@ var deleteSelectionSteps = function () {
     linkSteps([previous, next]);
 
     var p = stretchPartitions(stretch);
+    _.each(p("<=[>>>>]__"), function (stretch) {
+        stretch.steps.push(previous);
+        fixupStretchSteps(stretch);
+    });
+    _.each(p("__[<<<<]=>"), function (stretch) {
+        stretch.steps.unshift(next);
+        fixupStretchSteps(stretch);
+    });
+    _.each(p("__[<<>>]__"), function (stretch) {
+        stretch.group.stretches = _.without(stretch.group.stretches, stretch);
+    });
 
     update();
 };
