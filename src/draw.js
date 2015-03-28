@@ -409,7 +409,8 @@ var drawStretches = function (stretches) {
             //     return '#ccc';
             // }
             var c = d.stretch.group.color;
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+            var light = d.stretch === selection.focus ? c[2] - 18 : c[2];
+            return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
         }) ;
 
     stretchEls.select('rect.mouse')

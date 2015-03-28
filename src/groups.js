@@ -2,7 +2,7 @@ var createGroup = function (group) {
     group = _.extend({
         _type: 'group',
         stretches: [],
-        color: [_.random(360), _.random(70, 95), _.random(89, 92)],
+        color: [_.random(360), _.random(70, 95), _.random(84, 89)],
         text: '',
     }, group || {});
     group.id = newId();
