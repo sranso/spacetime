@@ -1,11 +1,10 @@
-var copySelectionSteps = function () {
-    // var stretches = selection.stretches;
-    // if (stretches.length !== 1) {
-    //     return; // TODO: For multi-stretch groups: copy each stretch?
-    // }
-    // var original = stretches[0];
-    var original = selection.focus;
+var copyActiveStretches = function () {
+    _.each(__active.stretches, copyStretch);
 
+    update();
+};
+
+var copyStretch = function (original) {
     var p = stretchPartitions(original);
     var notCovering = _.union(
         p("<<[<<>_]__"),
@@ -54,8 +53,9 @@ var copySelectionSteps = function () {
         fixupStretchSteps(originalAfter);
     });
 
-    selection.focus = copy;
-    update();
+    if (cloneMap[selection.focus.id]) {
+        selection.focus = cloneMap[selection.focus.id];
+    }
 };
 
 var insertNewStep = function (targetPseudo) {
@@ -78,8 +78,12 @@ var insertNewStep = function (targetPseudo) {
     d3.select(newStep.underPseudo.__el__).select('.expression').node().focus();
 };
 
-var deleteSelectionSteps = function () {
-    var stretch = selection.focus;
+var deleteActiveStretches = function () {
+    _.each(__active.stretches, deleteStretch);
+    update();
+};
+
+var deleteStretch = function (stretch) {
     var start = stretch.steps[0];
     var end = stretch.steps[stretch.steps.length - 1];
     var previous = start.previous;
@@ -98,6 +102,4 @@ var deleteSelectionSteps = function () {
     _.each(p("__[<<>>]__"), function (stretch) {
         stretch.group.stretches = _.without(stretch.group.stretches, stretch);
     });
-
-    update();
 };

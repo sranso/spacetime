@@ -1,6 +1,7 @@
 var createGroup = function (group) {
     group = _.extend({
         _type: 'group',
+        hidden: false,
         stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(84, 89)],
         text: '',
@@ -15,6 +16,7 @@ var createStretch = function (stretch) {
         text: '',
         steps: [],
         expanded: true,
+        original: null,
         group: null,
     }, stretch || {});
     stretch.id = newId();
@@ -25,6 +27,7 @@ var createStretch = function (stretch) {
 
 var cloneStretch = function (original) {
     var stretch = createStretch(original);
+    stretch.original = original;
     stretch.steps = [];
     return stretch;
 };
@@ -68,44 +71,61 @@ var setStretchSteps = function (stretch, steps) {
     stretch.steps = steps;
 };
 
-var classifyStretches = function (targetStretch) {
-    var firstStep = targetStretch.steps[0];
-    var lastStep = targetStretch.steps[targetStretch.steps.length - 1];
-    var all = _.uniq(_.reduce(targetStretch.steps, function (all, step) {
-        return all.concat(step.stretches);
-    }, []));
+var classifyAllStretches = function (targetStretch) {
+    var all = allOverlappingStretches(targetStretch);
 
     return _.map(all, function (stretch) {
-        var start;
-        if (! _.contains(firstStep.stretches, stretch)) {
-            start = 'middle';
-        } else if (stretch.steps[0] === firstStep) {
-            start = 'start';
-        } else {
-            start = 'before';
-        }
-
-        var end;
-        if (! _.contains(lastStep.stretches, stretch)) {
-            end = 'middle';
-        } else if (stretch.steps[stretch.steps.length - 1] === lastStep) {
-            end = 'end';
-        } else {
-            end = 'after';
-        }
-
-        return {
-            stretch: stretch,
-            start: start,
-            end: end,
-        };
+        return classifyStretch(targetStretch, stretch);
     });
 };
 
+var allOverlappingStretches = function (targetStretch) {
+    return _.uniq(_.reduce(targetStretch.steps, function (all, step) {
+        return all.concat(step.stretches);
+    }, []));
+};
+
+var classifyStretch = function (targetStretch, stretch) {
+    var firstStep = targetStretch.steps[0];
+    var lastStep = targetStretch.steps[targetStretch.steps.length - 1];
+
+    var start;
+    if (! _.contains(firstStep.stretches, stretch)) {
+        start = 'middle';
+    } else if (stretch.steps[0] === firstStep) {
+        start = 'start';
+    } else {
+        start = 'before';
+    }
+
+    var end;
+    if (! _.contains(lastStep.stretches, stretch)) {
+        end = 'middle';
+    } else if (stretch.steps[stretch.steps.length - 1] === lastStep) {
+        end = 'end';
+    } else {
+        end = 'after';
+    }
+
+    return {
+        stretch: stretch,
+        start: start,
+        end: end,
+    };
+};
+
 var stretchPartitions = function (stretch) {
-    var classified = classifyStretches(stretch);
+    var classified = classifyAllStretches(stretch);
     return function (matcher) {
         return selectPartitions(classified, matcher);
+    };
+};
+
+var compareStretch = function (targetStretch, stretch) {
+    var classified = classifyStretch(targetStretch, stretch);
+    return function (matcher) {
+        var m = compileMatcher(matcher);
+        return matchStretch(m, stretch);
     };
 };
 
@@ -116,7 +136,7 @@ var stretchPartitions = function (stretch) {
 //      "<<[<==>]>>"
 //      "__[<<>>]__"
 //      "<<[<<<<]=>"
-var selectPartitions = function (classified, matcher) {
+var compileMatcher = function (matcher) {
     if (matcher.length !== 10) {
         throw new Error('Matcher must be ten characters long "__[____]__"');
     }
@@ -161,8 +181,23 @@ var selectPartitions = function (classified, matcher) {
         throw new Error('Matcher cannot detect if it ends at start or before');
     }
 
+    return {
+        start: start,
+        end: end,
+    };
+};
+
+var matchStretch = function (matcher, stretch) {
+    return (
+        _.contains(matcher.start, stretch.start) &&
+        _.contains(matcher.end, stretch.end)
+    );
+};
+
+var selectPartitions = function (classified, matcher) {
+    var m = compileMatcher(matcher);
     var matching = _.filter(classified, function (s) {
-        return _.contains(start, s.start) && _.contains(end, s.end);
+        return matchStretch(m, s);
     });
     return _.pluck(matching, 'stretch');
 };
@@ -192,6 +227,9 @@ var orderGroups = function (groups) {
 
 var groupsToDraw = function (groups) {
     groups = _.filter(groups, function (group) {
+        if (group.hidden) {
+            return false;
+        }
         group.pseudoStretches = _.map(group.stretches, function (stretch) {
             computePseudoStretchSteps(stretch.pseudoStretch);
             return stretch.pseudoStretch;

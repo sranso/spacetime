@@ -5,6 +5,7 @@ var allPseudoSteps = [];
 
 var allGroups = [];
 var __stretches = [];
+var __active = createGroup({hidden: true});
 // var selectionHistory = [{selection: selection}];
 // var selectionHistoryI = 0;
 // var saveHistoryI = -1;
@@ -13,6 +14,7 @@ var __stretches = [];
 var update = function () {
     computeSteps();
     executeSteps();
+    computeActive();
     computePseudoSteps();
     computeSelectionInfo();
     computePositions();

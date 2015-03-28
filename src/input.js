@@ -45,9 +45,9 @@ var keypressEvent = function (keyCode, key) {
     } else if (key === 'tab') {
         toggleExpanded();
     } else if (key === 'c') {
-        copySelectionSteps();
+        copyActiveStretches();
     } else if (key === 'd') {
-        deleteSelectionSteps();
+        deleteActiveStretches();
     }
 
     update();

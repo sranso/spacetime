@@ -142,15 +142,5 @@ var stopSelection = function () {
 };
 
 var computeSelectionInfo = function () {
-    var stepArrs = [];
-    if (selection.hover.group) {
-        stepArrs.push(_.pluck(selection.hover.group.stretches, 'steps'));
-    }
-    if (selection.left.group) {
-        stepArrs.push(_.pluck(selection.left.group.stretches, 'steps'));
-    }
-    if (selection.right.group) {
-        stepArrs.push(_.pluck(selection.right.group.stretches, 'steps'));
-    }
-    selection.__steps = _.flatten(stepArrs);
+    __activeSteps = _.flatten(_.pluck(__active.stretches, 'steps'));
 };

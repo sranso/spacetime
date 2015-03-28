@@ -119,12 +119,8 @@ h1 {
     width: 60px;
   }
 
-.step.selection-n1 .step-box {
+.step.active .step-box {
   background-color: #f9f9f9;
-}
-.step.selection-n2 .step-box,
-.step.selection-n3 .step-box {
-  background-color: #f3f3f3;
 }
 
 .history {

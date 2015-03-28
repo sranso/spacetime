@@ -200,12 +200,9 @@ var drawSteps = function (steps) {
 
     stepEls
         .attr('class', function (d) {
-            var classes = [];
-            classes.push('step');
-            var selectionCount = _.intersection(d.stretch.steps, selection.__steps).length;
-            if (selectionCount) {
-                classes.push('selection');
-                classes.push('selection-n' + selectionCount);
+            var classes = ['step'];
+            if (_.intersection(d.stretch.steps, __activeSteps).length) {
+                classes.push('active');
             }
             return classes.join(' ');
         })
