@@ -103,3 +103,24 @@ var deleteStretch = function (stretch) {
         stretch.group.stretches = _.without(stretch.group.stretches, stretch);
     });
 };
+
+var selectActiveStretches = function () {
+    var group = createGroup();
+    group.stretches = _.map(__active.stretches, function (originalStretch) {
+        var stretch = cloneStretch(originalStretch);
+        stretch.group = group;
+        var steps = _.clone(originalStretch.steps);
+        setStretchSteps(stretch, steps);
+        return stretch;
+    });
+    allGroups.push(group);
+
+    selection.focus = _.min(group.stretches, function (stretch) {
+        var steps = _.intersection(stretch.steps, selection.focus.steps);
+        if (! steps.length) {
+            return selection.focus.steps.length;
+        }
+        return _.indexOf(selection.focus.steps, steps[0]);
+    });
+    selection.left.group = group;
+};

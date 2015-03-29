@@ -40,14 +40,16 @@ var keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === 's' || key === 'a') {
-        browseSelectionHistory(key === 's');
+    if (key === 'w' || key === 'q') {
+        browseSelectionHistory(key === 'w');
     } else if (key === 'tab') {
         toggleExpanded();
     } else if (key === 'c') {
         copyActiveStretches();
     } else if (key === 'd') {
         deleteActiveStretches();
+    } else if (key === 'a') {
+        selectActiveStretches();
     }
 
     update();

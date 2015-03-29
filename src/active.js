@@ -195,7 +195,7 @@ var activeByMatch = function (compareSteps, stretch) {
         return match.chainScore.total;
     });
 
-    if (bestChain.chain.length === 2) {
+    if (bestChain.chainScore.total < 0.2) { // TODO: figure out the threshold
         return null;
     }
 
