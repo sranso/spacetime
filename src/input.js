@@ -13,9 +13,9 @@ var inputEvent = function (key, eventType) {
         d3.event.preventDefault();
     } else if (key === 'shift' || key === 'ctrl') {
         // if (eventType === 'down') {
-        //     startSelection();
+        //     startSelecting();
         // } else {
-        //     stopSelection();
+        //     stopSelecting();
         // }
     }
 };

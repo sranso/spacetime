@@ -53,8 +53,9 @@ var copyStretch = function (original) {
         fixupStretchSteps(originalAfter);
     });
 
-    if (cloneMap[selection.focus.id]) {
-        selection.focus = cloneMap[selection.focus.id];
+    var focus = selection.foreground.focus;
+    if (cloneMap[focus.id]) {
+        selection.foreground.focus = cloneMap[focus.id];
     }
 };
 
@@ -115,12 +116,13 @@ var selectActiveStretches = function () {
     });
     allGroups.push(group);
 
-    selection.focus = _.min(group.stretches, function (stretch) {
-        var steps = _.intersection(stretch.steps, selection.focus.steps);
+    var focus = selection.foreground.focus;
+    selection.foreground.focus = _.min(group.stretches, function (stretch) {
+        var steps = _.intersection(stretch.steps, focus.steps);
         if (! steps.length) {
-            return selection.focus.steps.length;
+            return focus.steps.length;
         }
-        return _.indexOf(selection.focus.steps, steps[0]);
+        return _.indexOf(focus.steps, steps[0]);
     });
-    selection.left.group = group;
+    selection.foreground.group = selection.foreground.focus.group;
 };

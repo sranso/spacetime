@@ -22,7 +22,7 @@ var update = function () {
 };
 
 var mouseUp = function () {
-    stopSelection();
+    stopSelecting();
 };
 
 var mouseMove = function () {
@@ -32,7 +32,7 @@ var mouseMove = function () {
 
 var mouseDown = function () {
     var mouse = d3.mouse(trackHtml.node());
-    maybeStartSelection(mouse);
+    maybeStartSelecting(mouse);
 };
 
 allSteps = _.map([

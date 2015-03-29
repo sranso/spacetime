@@ -14,19 +14,19 @@ var setActiveStretches = function (stretches) {
 };
 
 var computeActive = function () {
-    var focus = selection.focus;
+    var focus = selection.foreground.focus;
     if (! focus) {
         setActiveStretches([]);
         return;
     }
 
-    if (! selection.right.group) {
+    if (! selection.background.group) {
         setActiveStretches([focus]);
         return;
     }
 
-    var foreground = focus.group.stretches;
-    var background = selection.right.group.stretches;
+    var foreground = selection.foreground.group.stretches;
+    var background = selection.background.group.stretches;
 
     var overlaps = _.reduce(background, function (overlaps, backStretch) {
         var overBack = allOverlappingStretches(backStretch);

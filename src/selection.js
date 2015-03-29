@@ -1,22 +1,20 @@
-var createSelection = function (selection) {
-    selection = _.extend({
-        _type: 'selection',
-        kind: 'left', // || hover || right
+var Selection = function () {
+    this.foreground = {
+        focus: null,
         group: null,
-    }, selection || {});
-    selection.id = newId();
-    return selection;
+    };
+    this.background = {
+        focus: null,
+        group: null,
+    };
 };
 
-var selection = {
-    focus: null,
-    hover: createSelection({kind: 'hover', group: createGroup()}),
-    left: createSelection({kind: 'left', group: createGroup()}),
-    //right: createSelection({kind: 'right', group: createGroup()}),
-    right: createSelection({kind: 'right'}),
+var selection = new Selection();
+
+var selectingData = {
+    kind: null, // 'foreground' || 'background'
     start: null,
     end: null,
-    selecting: null, // || 'left', 'right'
 };
 
 // var browseSelectionHistory = function (forward) {
@@ -46,8 +44,9 @@ var selection = {
 // };
 
 var toggleExpanded = function () {
-    if (selection.focus) {
-        selection.focus.expanded = !selection.focus.expanded;
+    var focus = selection.foreground.focus;
+    if (focus) {
+        focus.expanded = !focus.expanded;
     }
     update();
 };
@@ -63,69 +62,70 @@ var selectStepUnderMouse = function (mouse) {
 };
 
 var selectionKind = function () {
-    return d3.event.button === 2 ? 'right' : 'left';
+    return d3.event.button === 2 ? 'background' : 'foreground';
 };
 
-var maybeStartSelection = function (mouse) {
+var maybeStartSelecting = function (mouse) {
     var step = selectStepUnderMouse(mouse);
     var kind = selectionKind();
     if (step) {
-        startSelection(step, kind);
+        startSelecting(step, kind);
     } else {
         clearSelection(kind);
     }
 };
 
-var startSelection = function (step, kind) {
-    selection.start = step;
+var startSelecting = function (step, kind) {
     var stretch = createStretch();
     var group;
     if (d3.event.ctrlKey) {
         group = selection[kind].group;
     }
-    if (!group) {
+    if (! group) {
         group = createGroup();
         allGroups.push(group);
     }
     stretch.group = group;
     group.stretches.push(stretch);
 
-    selection.selecting = kind;
-    selection.focus = stretch;
+    selectingData.start = step;
+    selectingData.kind = kind;
+    selection[kind].focus = stretch;
     selection[kind].group = group;
     // if (selectionHistoryI !== selectionHistory.length - 1) {
     //     selectionHistory.push({selection: selection});
     //     selectionHistoryI = selectionHistory.length - 1;
     // }
-    changeSelection(step);
+    changeSelecting(step);
 };
 
 var clearSelection = function (kind) {
+    selection[kind].focus = null;
     selection[kind].group = null;
     update();
 };
 
 var maybeChangeSelection = function (mouse) {
-    if (!selection.start) {
+    if (!selectingData.start) {
         return;
     }
     var step = selectStepUnderMouse(mouse);
     if (step) {
-        changeSelection(step);
+        changeSelecting(step);
     }
 };
 
-var changeSelection = function (end) {
-    selection.end = end;
-    var startI = _.indexOf(allPseudoSteps, selection.start);
-    var endI = _.indexOf(allPseudoSteps, selection.end);
+var changeSelecting = function (end) {
+    selectingData.end = end;
+    var startI = _.indexOf(allPseudoSteps, selectingData.start);
+    var endI = _.indexOf(allPseudoSteps, selectingData.end);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
         endI = temp;
     }
     var steps = realSteps(allPseudoSteps.slice(startI, endI + 1));
-    setStretchSteps(selection.focus, steps);
+    setStretchSteps(selection[selectingData.kind].focus, steps);
 
     // if (selection.stretches[0].steps.length) {
     //     saveHistoryI = selectionHistoryI;
@@ -136,9 +136,10 @@ var changeSelection = function (end) {
     update();
 };
 
-var stopSelection = function () {
-    selection.start = null;
-    selection.end = null;
+var stopSelecting = function () {
+    selectingData.start = null;
+    selectingData.end = null;
+    selectingData.kind = null;
 };
 
 var computeSelectionInfo = function () {

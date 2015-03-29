@@ -8,9 +8,8 @@ var selectionInfoWidth = 32;
 
 var selectionArea = {
     startX: stepsX - 4,
-    right: stepsX + 26,
-    left: stepsX + 12,
-    hover: stepsX + 0,
+    background: stepsX + 26,
+    foreground: stepsX + 12,
     endX: stepsX + 47,
 };
 
@@ -96,7 +95,7 @@ var computeStretchPositions = function (groups, pseudoSteps) {
         });
         x -= 9;
     });
-    _.each(['hover', 'left', 'right'], function (kind) {
+    _.each(['foreground', 'background'], function (kind) {
         if (selection[kind].group) {
             _.each(selection[kind].group.pseudoStretches, function (originalStretch) {
                 originalStretch.kind = 'selected';
@@ -301,9 +300,8 @@ var drawSelectionHistory = function () {
 
 var drawSelectionInfo = function () {
     var selections = [
-        selection.hover,
-        selection.left,
-        selection.right,
+        selection.foreground,
+        selection.background,
     ];
 
     var selectionEls = selectionInfoEl.selectAll('.selection-info')
@@ -368,8 +366,8 @@ var drawStretches = function (stretches) {
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
-            selection.focus = d.stretch;
             var kind = selectionKind();
+            selection[kind].focus = d.stretch;
             selection[kind].group = d.stretch.group;
             // selectionHistoryI = saveHistoryI + 1;
             // selectionHistory[selectionHistoryI] = {selection: selection};
@@ -382,9 +380,10 @@ var drawStretches = function (stretches) {
     stretchEls
         .attr('class', function (d) {
             var classes = ['stretch', 'selection-' + d.kind];
-            if (d.stretch.group === selection.left.group ||
-                d.stretch.group === selection.right.group) {
-                classes.push('selection-group');
+            if (d.kind === 'foreground' || d.kind === 'background') {
+                if (d.stretch === selection[d.kind].focus) {
+                    classes.push('selection-focus');
+                }
             }
             if (d.selectedArea) {
                 classes.push('selected-area');
@@ -402,11 +401,12 @@ var drawStretches = function (stretches) {
             if (d.kind === 'selected') {
                 return 'white';
             }
-            // if (d.stretch.group.stretches.length === 1) {
-            //     return '#ccc';
-            // }
             var c = d.stretch.group.color;
-            var light = d.stretch === selection.focus ? c[2] - 18 : c[2];
+            var light = c[2];
+            if (d.kind === 'foreground' &&
+                d.stretch === selection.foreground.focus) {
+                light -= 20;
+            }
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
         }) ;
 

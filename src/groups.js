@@ -3,7 +3,7 @@ var createGroup = function (group) {
         _type: 'group',
         hidden: false,
         stretches: [],
-        color: [_.random(360), _.random(70, 95), _.random(84, 89)],
+        color: [_.random(360), _.random(70, 95), _.random(78, 83)],
         text: '',
     }, group || {});
     group.id = newId();

@@ -120,7 +120,7 @@ h1 {
   }
 
 .step.active .step-box {
-  background-color: #f2f2f2;
+  background-color: #eee;
 }
 
 .history {
@@ -144,8 +144,11 @@ h1 {
   }
 
   .stretch.selected-area .background {
-    stroke: #999;
+    stroke: #bbb;
   }
   .stretch.selection-selected .background {
     stroke: #ddd;
+  }
+  .stretch.selected-area.selection-focus .background {
+    stroke: #555;
   }
