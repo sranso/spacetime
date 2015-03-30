@@ -106,23 +106,10 @@ var deleteStretch = function (stretch) {
 };
 
 var selectActiveStretches = function () {
-    var group = createGroup();
-    group.stretches = _.map(__active.stretches, function (originalStretch) {
-        var stretch = cloneStretch(originalStretch);
-        stretch.group = group;
-        var steps = _.clone(originalStretch.steps);
-        setStretchSteps(stretch, steps);
-        return stretch;
-    });
-    allGroups.push(group);
+    __active.hidden = false;
+    allGroups.push(__active);
+    selection.foreground.focus = __active.focus;
+    selection.foreground.group = __active;
 
-    var focus = selection.foreground.focus;
-    selection.foreground.focus = _.min(group.stretches, function (stretch) {
-        var steps = _.intersection(stretch.steps, focus.steps);
-        if (! steps.length) {
-            return focus.steps.length;
-        }
-        return _.indexOf(focus.steps, steps[0]);
-    });
-    selection.foreground.group = selection.foreground.focus.group;
+    __active = createGroup({hidden: true});
 };

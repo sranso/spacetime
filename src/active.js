@@ -11,6 +11,14 @@ var setActiveStretches = function (stretches) {
         setStretchSteps(stretch, original.steps);
         return stretch;
     });
+    var focus = selection.foreground.focus;
+    __active.focus = _.min(__active.stretches, function (stretch) {
+        var steps = _.intersection(stretch.steps, focus.steps);
+        if (! steps.length) {
+            return focus.steps.length;
+        }
+        return _.indexOf(focus.steps, steps[0]);
+    });
 };
 
 var computeActive = function () {
@@ -52,11 +60,16 @@ var computeActive = function () {
         return overlap.foreground === focus;
     });
 
+    var focusBackgrounds = _.uniq(_.pluck(focusOverlaps, 'background'));
+    var backOverlaps = _.filter(overlaps, function (overlap) {
+        return _.contains(focusBackgrounds, overlap.background);
+    });
+
 
     if (! focusOverlaps.length) {
         setActiveStretches([focus]);
 
-    } else if (foreground.length > 1) {
+    } else if (foreground.length > backOverlaps.length) {
         var focusNths = _.uniq(_.pluck(focusOverlaps, 'nthInBackground'));
 
         var activeOverlaps = _.filter(overlaps, function (overlap) {
