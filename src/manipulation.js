@@ -113,3 +113,20 @@ var selectActiveStretches = function () {
 
     __active = createGroup({hidden: true});
 };
+
+var forgetForegroundGroup = function () {
+    forgetGroup(selection.foreground.group);
+    selection.foreground.focus = null;
+    selection.foreground.group = null;
+};
+
+var forgetGroup = function (group) {
+    if (! group) {
+        return;
+    }
+
+    _.each(group.stretches, function (stretch) {
+        setStretchSteps(stretch, []);
+    });
+    allGroups = _.without(allGroups, group);
+};

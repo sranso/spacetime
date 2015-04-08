@@ -50,6 +50,12 @@ var keypressEvent = function (keyCode, key) {
         deleteActiveStretches();
     } else if (key === 'a') {
         selectActiveStretches();
+    } else if (key === 'f') {
+        forgetForegroundGroup();
+    } else if (key === 'A') {
+        var group = selection.foreground.group;
+        selectActiveStretches();
+        forgetGroup(group);
     }
 
     update();
