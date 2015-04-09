@@ -53,9 +53,12 @@ var toggleExpanded = function () {
 
 var selectStepUnderMouse = function (mouse) {
     var x = mouse[0], y = mouse[1];
+    var selectionStartX = trackHtml.node().offsetLeft;
+    var selectionEndX = selectionStartX + 60;
     return _.find(allPseudoSteps, function (step) {
-        if (step.y <= y && y < step.y + step.h) {
-            return selectionArea.startX <= x && x < selectionArea.endX;
+        var el = step.__el__;
+        if (el.offsetTop <= y && y < el.offsetTop + el.offsetHeight) {
+            return selectionStartX <= x && x < selectionEndX;
         }
         return false;
     });

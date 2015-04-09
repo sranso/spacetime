@@ -13,34 +13,6 @@ h1 {
   margin-top: 0px;
 }
 
-#track {
-  position: relative;
-  margin-top: 60px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-#track-html {
-  position: absolute;
-  top: 0px;
-  z-index: 1;
-}
-
-#track-svg {
-  position: absolute;
-  top: 0px;
-  z-index: 2;
-}
-
-.background {
-  fill: transparent;
-}
-
-
 #selection {
   padding-top: 10px;
   position: fixed;
@@ -77,18 +49,76 @@ h1 {
       background-color: transparent;
     }
 
+
+#track {
+  position: relative;
+  margin-top: 50px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#track-svg {
+  float: left;
+  position: relative;
+  z-index: 2;
+  width: 250px;
+  height: 10000px;
+  margin-right: -50px;
+}
+
+#track-html {
+  float: left;
+  z-index: 1;
+  position: relative;
+  border: solid 1px #ddd;
+  border-width: 1px 0 0 0;
+  overflow: hidden;
+}
+
 .step {
-  position: absolute;
   margin: 0px;
+  overflow: hidden;
 }
 .step-box {
-  float: left;
   border: solid 1px #ddd;
-  border-width: 1px 0 1px 0;
-  padding-left: 40px;
+  border-width: 0 0 1px 0;
+  overflow: hidden;
+  width: 375px;
+  position: relative;
 }
-  .step .result-container {
+  .step .selection-container {
     float: left;
+    width: 50px; /* update in selection.js */
+    height: 1px;
+  }
+
+  .step .expression-container {
+    float: left;
+    width: 200;
+  }
+    .step .expression {
+      font-size: 14px;
+      float: left;
+      padding: 6px;
+      padding-right: 15px;
+      height: 22px;
+      border-width: 0px;
+      background-color: transparent;
+
+      text-align: right;
+      white-space: normal;
+      wrap: hard;
+      resize: vertical;
+    }
+
+  .step .result-container {
+    position: absolute;
+    right: 4px;
+    bottom: 0px;
   }
     .step .result {
       color: #338;
@@ -101,23 +131,9 @@ h1 {
       border-radius: 7px;
       padding: 2px;
       background-color: #eee;
+      width: 100px;
     }
 
-  .step .expression-container {
-    float: left;
-  }
-    .step .expression {
-      font-size: 14px;
-      text-align: left;
-      margin: 6px;
-      float: left;
-      padding: 2px 4px;
-    }
-
-  .step .selected-container {
-    float: left;
-    width: 60px;
-  }
 
 .step.active .step-box {
   background-color: #eee;

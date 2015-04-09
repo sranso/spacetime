@@ -17,7 +17,6 @@ var update = function () {
     computeActive();
     computePseudoSteps();
     computeSelectionInfo();
-    computePositions();
     draw();
 };
 
@@ -26,12 +25,12 @@ var mouseUp = function () {
 };
 
 var mouseMove = function () {
-    var mouse = d3.mouse(trackHtml.node());
+    var mouse = d3.mouse(trackContainer.node());
     maybeChangeSelection(mouse);
 };
 
 var mouseDown = function () {
-    var mouse = d3.mouse(trackHtml.node());
+    var mouse = d3.mouse(trackContainer.node());
     maybeStartSelecting(mouse);
 };
 

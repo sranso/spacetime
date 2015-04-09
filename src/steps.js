@@ -33,7 +33,6 @@ var createPseudoStep = function (stretch) {
     return {
         _type: 'pseudo',
         stretch: stretch,
-        position: null,
         __el__: null,
         next: null,
         previous: null,

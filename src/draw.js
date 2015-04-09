@@ -1,17 +1,4 @@
-var stepsX = 200; var stepW = 420;
-var stepsResultW = 130;
-var stepsSelectedW = 60;
-var stepsExpressionW = stepW - stepsResultW - stepsSelectedW - 2;
-var lineHeight = 35;
-var historyWidth = 20;
-var selectionInfoWidth = 32;
-
-var selectionArea = {
-    startX: stepsX - 4,
-    background: stepsX + 26,
-    foreground: stepsX + 12,
-    endX: stepsX + 47,
-};
+// var historyWidth = 20;
 
 var trackContainer;
 var trackHtml;
@@ -19,12 +6,6 @@ var trackSvg;
 var selectionInfoEl;
 var selectionHistoryEl;
 var selectionHistoryCursor;
-
-var computePositions = function () {
-    computeStepPositions(allPseudoSteps);
-    //computeSelectionHistoryPositions();
-    computeStretchPositions(groupsToDraw(allGroups));
-};
 
 var drawSetup = function () {
     drawOverallSetup();
@@ -35,26 +16,13 @@ var drawSetup = function () {
 };
 
 var draw = function () {
+    //computeSelectionHistoryPositions();
+
     drawSteps(allPseudoSteps);
+    computeStretchPositions(groupsToDraw(allGroups));
     //drawSelectionHistory();
     drawSelectionInfo();
     drawStretches(__stretches);
-};
-
-
-var computeStepPositions = function (steps) {
-    var prevPos = {x: 0, y: -lineHeight, w: 0, h: 0};
-    _.each(steps, function (step) {
-        var pos = {
-            x: stepsX,
-            y: prevPos.y + lineHeight,
-            w: stepW,
-            h: lineHeight,
-        };
-        step.position = pos;
-        _.extend(step, pos);
-        prevPos = pos;
-    });
 };
 
 var computeSelectionHistoryPositions = function () {
@@ -76,16 +44,26 @@ var computeSelectionHistoryPositions = function () {
 
 var computeStretchPositions = function (groups, pseudoSteps) {
     __stretches = [];
-    var x = selectionArea.startX - 19;
+
+    var x = trackHtml.node().offsetLeft;
+    var selectionX = {
+        foreground: x + 12,
+        background: x + 24,
+    };
+    x -= 15 + 9;
+
     _.each(groups, function (group) {
         _.each(group.pseudoStretches, function (stretch) {
             var first = stretch.steps[0];
             var last = stretch.steps[stretch.steps.length - 1];
+            var firstTop = first.step.__el__.offsetTop;
+            var lastTop = last.step.__el__.offsetTop;
+            var lastHeight = last.step.__el__.offsetHeight;
             var pos = {
                 x: x,
-                y: first.step.y,
+                y: firstTop,
                 w: 9,
-                h: last.step.y + last.step.h - first.step.y,
+                h: lastTop + lastHeight - firstTop,
             };
             stretch.position = pos;
             stretch.kind = 'unselected';
@@ -102,7 +80,7 @@ var computeStretchPositions = function (groups, pseudoSteps) {
                 var stretch = _.clone(originalStretch);
                 stretch.kind = kind;
                 stretch.selectedArea = true;
-                stretch.x = selectionArea[kind];
+                stretch.x = selectionX[kind];
                 stretch.w = 11;
                 __stretches.push(stretch);
             });
@@ -114,28 +92,19 @@ var computeStretchPositions = function (groups, pseudoSteps) {
 var drawOverallSetup = function() {
     trackContainer = d3.select('#track')
         .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown)
-        .on('contextmenu', function () {
-            d3.event.preventDefault();
-        }) ;
+        .on('mousedown', mouseDown) ;
 
     trackHtml = d3.select('div#track-html');
-    trackSvg = d3.select('svg#track-svg')
-        .attr('width', stepsX + 40)
-        .attr('height', '2000px') ;
+    trackSvg = d3.select('svg#track-svg');
 
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
         .on('keypress', function () { keypressEvent(d3.event.keyCode) })
-        .on('mouseup', mouseUp) ;
-
-    var background = trackSvg.append('rect')
-        .classed('background', true)
-        .attr('x', -10000)
-        .attr('y', -10000)
-        .attr('width', 20000)
-        .attr('height', 20000) ;
+        .on('mouseup', mouseUp)
+        .on('contextmenu', function () {
+            d3.event.preventDefault();
+        }) ;
 };
 
 
@@ -153,36 +122,16 @@ var drawSteps = function (steps) {
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;
 
-    var selectedContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('selected-container', true) ;
-
-    var resultContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('result-container', true)
-        .style('width', stepsResultW + 'px')
-        .style('height', function (d) { return (d.h - 1) + 'px' }) ;
-
-    resultContainerEnterEls.append('div')
-        .classed('result', true) ;
+    var selectionContainerEnterEls = stepBoxEnterEls.append('div')
+        .classed('selection-container', true) ;
 
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('expression-container', true)
-        .style('width', stepsExpressionW + 'px')
-        .style('height', function (d) { return (d.h - 1) + 'px' })
-        .on('dblclick', function (d) {
-            var expression = d3.select(this).select('.expression').node();
-            expression.focus();
-            var range = document.createRange();
-            range.selectNodeContents(expression);
-            var sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }) ;
+        .classed('expression-container', true) ;
 
-    expressionContainerEnterEls.append('div')
+    expressionContainerEnterEls.append('textarea')
         .classed('expression', true)
-        .attr('contenteditable', true)
         .on('input', function (d) {
-            d.stretch.text = this.textContent;
+            d.stretch.text = this.value;
             update();
         })
         .on('keypress', function () {
@@ -191,11 +140,21 @@ var drawSteps = function (steps) {
         .on('keydown', function (d) { textInputEvent(d, keyForEvent()) })
         .on('keyup', function () {
             d3.event.stopPropagation();
+        })
+        .on('mouseup', function () {
+            update();
         }) ;
+
+    var resultContainerEnterEls = stepBoxEnterEls.append('div')
+        .classed('result-container', true) ;
+
+    resultContainerEnterEls.append('div')
+        .classed('result', true) ;
 
     stepEls.exit().remove();
 
     stepEls.each(function (d) { d.__el__ = this });
+    stepEls.order();
 
     stepEls
         .attr('class', function (d) {
@@ -205,7 +164,6 @@ var drawSteps = function (steps) {
             }
             return classes.join(' ');
         })
-        .style('width', function (d) { return d.w + 'px' })
         .style('height', function (d) { return (d.h - 1) + 'px' })
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' }) ;
