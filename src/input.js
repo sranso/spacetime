@@ -48,6 +48,7 @@ var keypressEvent = function (keyCode, key) {
         copyActiveStretches();
     } else if (key === 'd') {
         deleteActiveStretches();
+        d3.event.stopPropagation();
     } else if (key === 'a') {
         selectActiveStretches();
     } else if (key === 'f') {
@@ -56,6 +57,8 @@ var keypressEvent = function (keyCode, key) {
         var group = selection.foreground.group;
         selectActiveStretches();
         forgetGroup(group);
+    } else {
+        return;
     }
 
     update();

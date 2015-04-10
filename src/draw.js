@@ -113,6 +113,70 @@ var drawOverallSetup = function() {
 var drawStepsSetup = function () {
 };
 
+var currentRangeUnder = function (element) {
+    var selection = window.getSelection();
+    if (selection.rangeCount === 0) {
+        return null;
+    }
+
+    var range = selection.getRangeAt(0);
+    var end = range.endContainer;
+    var found = false;
+    while (end.parentNode) {
+        if (end === element) {
+            return range;
+        }
+        end = end.parentNode;
+    }
+    return null;
+};
+
+var currentCaretOffset = function (element) {
+    var range = currentRangeUnder(element);
+    if (!range) {
+        return -1;
+    }
+    var preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(element);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    return preCaretRange.toString().length;
+};
+
+var setCurrentCaretOffset = function (element, targetOffset) {
+    var range = currentRangeUnder(element);
+    if (!range) {
+        return;
+    }
+    range.selectNodeContents(element);
+
+    while (range.toString().length > targetOffset) {
+        if (range.endOffset > 0) {
+            range.setEnd(range.endContainer, range.endOffset - 1);
+        } else {
+            range.setEndBefore(range.endContainer);
+        }
+    }
+
+    range.collapse(false);  // collapse to end boundary
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+};
+
+var stepHtml = function (pseudo) {
+    if (pseudo.stretch._type === 'stretch') {
+        return pseudo.stretch.text;  // TODO: make stretches parseable
+    }
+    var parsed = parseStep(pseudo.stretch);
+    var htmls = _.map(parsed, function (segment) {
+        if (segment.type === 'reference') {
+            return '<span class="reference">' + segment.text + '</span>';
+        }
+        return segment.text;
+    });
+    return htmls.join('');
+};
+
 var drawSteps = function (steps) {
     var stepEls = trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.stretch.id }) ;
@@ -128,21 +192,35 @@ var drawSteps = function (steps) {
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('expression-container', true) ;
 
-    expressionContainerEnterEls.append('textarea')
+    var down = true;
+
+    expressionContainerEnterEls.append('div')
         .classed('expression', true)
+        .attr('contenteditable', true)
         .on('input', function (d) {
-            d.stretch.text = this.value;
-            update();
+            if (down) {
+                d.stretch.text = this.textContent;
+                update();
+            } else {
+                // TODO: is this a browser bug?
+                var el = document.activeElement;
+                if (el) {
+                    el.blur();
+                }
+                update();
+            }
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
         })
-        .on('keydown', function (d) { textInputEvent(d, keyForEvent()) })
-        .on('keyup', function () {
-            d3.event.stopPropagation();
+        .on('keydown', function (d) {
+            down = true;
+            textInputEvent(d, keyForEvent());
         })
-        .on('mouseup', function () {
+        .on('keyup', function () {
+            down = false;
             update();
+            d3.event.stopPropagation();
         }) ;
 
     var resultContainerEnterEls = stepBoxEnterEls.append('div')
@@ -150,6 +228,9 @@ var drawSteps = function (steps) {
 
     resultContainerEnterEls.append('div')
         .classed('result', true) ;
+
+    stepBoxEnterEls.append('div')
+        .style('clear', 'both') ;
 
     stepEls.exit().remove();
 
@@ -169,7 +250,19 @@ var drawSteps = function (steps) {
         .style('left', function (d) { return d.x + 'px' }) ;
 
     stepEls.select('.expression')
-        .text(function (d) { return d.stretch.text }) ;
+        .each(function (d) {
+            var html = stepHtml(d);
+            var sel = window.getSelection();
+            var updateRange = false;
+            var caretOffset = currentCaretOffset(this);
+            if (this.innerHTML !== html) {
+                this.innerHTML = html;
+
+                if (caretOffset !== -1) {
+                    setCurrentCaretOffset(this, caretOffset);
+                }
+            }
+        });
 
     stepEls.select('.result')
         .text(function (d) {

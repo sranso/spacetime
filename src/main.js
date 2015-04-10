@@ -22,6 +22,7 @@ var update = function () {
 
 var mouseUp = function () {
     stopSelecting();
+    update();
 };
 
 var mouseMove = function () {

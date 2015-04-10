@@ -137,6 +137,12 @@ var changeSelecting = function (end) {
     // }
 
     update();
+
+    // TODO: is this a browser bug?
+    var el = document.activeElement;
+    if (el && el.isContentEditable) {
+        el.blur();
+    }
 };
 
 var stopSelecting = function () {
