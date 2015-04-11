@@ -185,14 +185,14 @@ var stepHtml = function (parsed) {
     var htmls = _.map(parsed, function (segment) {
         if (segment.type === 'reference') {
             ref += 1;
-            var resultLen = ('' + segment.reference.result).length;
+            var result = clipNumber(segment.reference.result, 11);
             var width;
-            if (resultLen <= 3) {
+            if (result.length <= 3) {
                 width = '34px';
-            } else if (resultLen <= 5) {
-                width = '64px';
+            } else if (result.length <= 6) {
+                width = '58px';
             } else {
-                width = '94px';
+                width = '102px';
             }
             return '<span class="reference-text reference-' +
                     ref + '" style="width: ' + width + ';">' +
@@ -288,7 +288,8 @@ var drawSteps = function (steps) {
 
     stepEls.select('.result')
         .text(function (d) {
-            return d.stretch.steps[d.stretch.steps.length - 1].result;
+            var step = d.stretch.steps[d.stretch.steps.length - 1];
+            return clipNumber(step.result, 11);
         }) ;
 };
 
@@ -309,7 +310,7 @@ var drawReferences = function (expressionContainerEls) {
 
         referenceEls.each(function (reference) {
             d3.select(this)
-                .text(reference.reference.result) ;
+                .text(clipNumber(reference.reference.result, 11)) ;
         });
 
         referenceEls.each(function (reference, i) {
@@ -516,4 +517,28 @@ var drawStretches = function (stretches) {
     stretchEls.select('rect.mouse')
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
+};
+
+var clipNumber = function (number, length) {
+    var numString = '' + number;
+    if (numString.length <= length) {
+        return numString;
+    }
+    var before = numString.slice(0, length);
+    if (before.indexOf('.') === -1 || numString.slice(0, 4) === '0.000') {
+        numString = number.toExponential(20);
+    }
+
+    var eIndex = numString.indexOf('e');
+    if (eIndex !== -1) {
+        var exponent = numString.slice(eIndex);
+        var mantissaLength = length - exponent.length;
+        var pointAndBeforeLength = numString.indexOf('.') + 1;
+        var fractionDigits = mantissaLength - pointAndBeforeLength;
+        return number.toExponential(fractionDigits);
+    }
+
+    var pointIndex = numString.indexOf('.');
+    var fractionDigits = length - pointIndex - 1;
+    return number.toFixed(fractionDigits);
 };
