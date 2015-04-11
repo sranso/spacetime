@@ -84,7 +84,7 @@ h1 {
 .step-box {
   border: solid 1px #ddd;
   border-width: 0 0 1px 0;
-  width: 375px;
+  width: 410px;
   position: relative;
 }
   .step .selection-container {
@@ -136,18 +136,42 @@ h1 {
     .step .result {
       color: #338;
       font-size: 16px;
-      text-align: center;
+      text-align: right;
       margin: 4px;
       margin-left: 7px;
       overflow: hidden;
-      border: solid 2px #aaf;
+      border: solid 2px black;
       border-radius: 7px;
-      padding: 2px;
+      padding: 2px 6px;
       background-color: #eee;
       height: 18px;
-      width: 114px;
+      width: 132px;
     }
 
+    .step .reference-color-1 {
+      border-color: #bbb;
+    }
+    .step .reference-color-2 {
+      border-color: #888;
+    }
+    .step .reference-color-3 {
+      border-color: blue;
+    }
+    .step .reference-color-4 {
+      border-color: blue;
+    }
+    .step .reference-color-5 {
+      border-color: red;
+    }
+    .step .reference-color-6 {
+      border-color: red;
+    }
+    .step .reference-color-7 {
+      border-color: red;
+    }
+    .step .reference-color-8-or-more {
+      border-color: red;
+    }
 
 .step.active .step-box {
   background-color: #eee;

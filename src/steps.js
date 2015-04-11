@@ -10,8 +10,10 @@ var createStep = function (step) {
     step = _.extend({
         _type: 'step',
         text: '',
+        parsedText: null,
         expanded: true,
         stretches: [],
+        referencedBy: [],
         next: null,
         previous: null,
         underPseudo: null,
@@ -94,5 +96,26 @@ var linkSteps = function (steps) {
             step.previous = previous;
         }
         previous = step;
+    });
+};
+
+
+// TODO: make this work right for pseudoSteps
+var computeReferenceInfo = function () {
+    _.each(allSteps, function (step, i) {
+        step.__index = i;
+        step.referencedBy = [];
+        var references = _.filter(step.parsedText, function (d) {
+            return d._type === 'reference';
+        });
+        _.each(references, function (reference) {
+            reference.reference.__maxReferenceI = i;
+            reference.reference.referencedBy.push(step);
+        });
+    });
+    _.each(allSteps, function (step) {
+        step.farthestReferenceAway = (step.__maxReferenceI - step.__index) || 1;
+        delete step.__index;
+        delete step.__maxReferenceI;
     });
 };

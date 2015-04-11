@@ -173,29 +173,25 @@ var parsePseudo = function (pseudo) {
     // TODO: make stretches parseable
     if (pseudo.stretch._type === 'stretch') {
         return [{
-            type: 'text',
+            _type: 'text',
             text: pseudo.stretch.text,
         }];
     }
-    return parseStep(pseudo.stretch);
+    return pseudo.stretch.parsedText;
 };
 
 var stepHtml = function (parsed) {
     var ref = -1;
     var htmls = _.map(parsed, function (segment) {
-        if (segment.type === 'reference') {
+        if (segment._type === 'reference') {
             ref += 1;
-            var result = clipNumber(segment.reference.result, 11);
-            var width;
-            if (result.length <= 3) {
-                width = '34px';
-            } else if (result.length <= 6) {
-                width = '58px';
-            } else {
-                width = '102px';
+            var result = clipNumber(segment.reference.result, 6);
+            var width = 7 + 9 * result.length;
+            if (result.indexOf('.') !== -1) {
+                width -= 4;
             }
             return '<span class="reference-text reference-' +
-                    ref + '" style="width: ' + width + ';">' +
+                    ref + '" style="width: ' + width + 'px;">' +
                     segment.text + '</span>';
         }
         return segment.text;
@@ -287,18 +283,30 @@ var drawSteps = function (steps) {
     drawReferences(stepEls.select('.expression-container'));
 
     stepEls.select('.result')
+        .attr('class', function (d) {
+            var step = d.stretch.steps[d.stretch.steps.length - 1];
+            return 'result ' + referenceColorClass(step);
+        })
         .text(function (d) {
             var step = d.stretch.steps[d.stretch.steps.length - 1];
-            return clipNumber(step.result, 11);
+            return clipNumber(step.result, 13);
         }) ;
 };
+
+var referenceColorClass = function (step) {
+    if (step.farthestReferenceAway <= 7) {
+        return 'reference-color-' + step.farthestReferenceAway;
+    } else {
+        return 'reference-color-8-or-more';
+    }
+}
 
 var drawReferences = function (expressionContainerEls) {
     expressionContainerEls.each(function (d) {
         var container = d3.select(this);
 
         var references = _.filter(parsePseudo(d), function (d) {
-            return d.type === 'reference';
+            return d._type === 'reference';
         });
         var referenceEls = container.selectAll('.reference')
             .data(references) ;
@@ -310,12 +318,13 @@ var drawReferences = function (expressionContainerEls) {
 
         referenceEls.each(function (reference) {
             d3.select(this)
-                .text(clipNumber(reference.reference.result, 11)) ;
+                .text(clipNumber(reference.reference.result, 6)) ;
         });
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
             d3.select(this)
+                .attr('class', 'reference ' + referenceColorClass(reference.reference))
                 .style('top', textEl.offsetTop + 'px')
                 .style('left', textEl.offsetLeft + 'px')
                 .style('width', textEl.offsetWidth + 'px') ;

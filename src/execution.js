@@ -7,7 +7,7 @@ var parseStep = function (step) {
     var lastChar = '';
     var parsed = [];
     var segment = {
-        type: 'text',
+        _type: 'text',
         text: '',
     };
     parsed.push(segment);
@@ -19,7 +19,7 @@ var parseStep = function (step) {
             !('0' <= nextChar && nextChar <= '9')
         ) {
             var segment = {
-                type: 'reference',
+                _type: 'reference',
                 text: '',
                 reference: step,
             }
@@ -35,7 +35,7 @@ var parseStep = function (step) {
             }
 
             var segment = {
-                type: 'text',
+                _type: 'text',
                 text: '',
             };
             parsed.push(segment);
@@ -50,9 +50,9 @@ var parseStep = function (step) {
 };
 
 var executeStep = function (step) {
-    var parsed = parseStep(step);
-    var toEval = _.map(parsed, function (segment) {
-        if (segment.type === 'reference') {
+    step.parsedText = parseStep(step);
+    var toEval = _.map(step.parsedText, function (segment) {
+        if (segment._type === 'reference') {
             return '(' + segment.reference.result + ')';
         }
         return segment.text;
