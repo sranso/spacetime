@@ -100,8 +100,14 @@ var drawOverallSetup = function() {
     d3.select(document)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
-        .on('keypress', function () { keypressEvent(d3.event.keyCode) })
+        .on('keypress', function () {
+            window.getSelection().removeAllRanges();
+            keypressEvent(d3.event.keyCode)
+        })
         .on('mouseup', mouseUp)
+        .on('mousedown', function () {
+            window.getSelection().removeAllRanges();
+        })
         .on('contextmenu', function () {
             d3.event.preventDefault();
         }) ;
@@ -163,14 +169,34 @@ var setCurrentCaretOffset = function (element, targetOffset) {
     selection.addRange(range);
 };
 
-var stepHtml = function (pseudo) {
+var parsePseudo = function (pseudo) {
+    // TODO: make stretches parseable
     if (pseudo.stretch._type === 'stretch') {
-        return pseudo.stretch.text;  // TODO: make stretches parseable
+        return [{
+            type: 'text',
+            text: pseudo.stretch.text,
+        }];
     }
-    var parsed = parseStep(pseudo.stretch);
+    return parseStep(pseudo.stretch);
+};
+
+var stepHtml = function (parsed) {
+    var ref = -1;
     var htmls = _.map(parsed, function (segment) {
         if (segment.type === 'reference') {
-            return '<span class="reference">' + segment.text + '</span>';
+            ref += 1;
+            var resultLen = ('' + segment.reference.result).length;
+            var width;
+            if (resultLen <= 3) {
+                width = '34px';
+            } else if (resultLen <= 5) {
+                width = '64px';
+            } else {
+                width = '94px';
+            }
+            return '<span class="reference-text reference-' +
+                    ref + '" style="width: ' + width + ';">' +
+                    segment.text + '</span>';
         }
         return segment.text;
     });
@@ -192,23 +218,17 @@ var drawSteps = function (steps) {
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('expression-container', true) ;
 
-    var down = true;
+    var down = false;
 
     expressionContainerEnterEls.append('div')
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('input', function (d) {
-            if (down) {
-                d.stretch.text = this.textContent;
-                update();
-            } else {
-                // TODO: is this a browser bug?
-                var el = document.activeElement;
-                if (el) {
-                    el.blur();
-                }
-                update();
-            }
+            d.stretch.text = this.textContent;
+            update();
+        })
+        .on('mousedown', function () {
+            d3.event.stopPropagation();
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
@@ -249,25 +269,57 @@ var drawSteps = function (steps) {
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' }) ;
 
-    stepEls.select('.expression')
-        .each(function (d) {
-            var html = stepHtml(d);
-            var sel = window.getSelection();
-            var updateRange = false;
-            var caretOffset = currentCaretOffset(this);
-            if (this.innerHTML !== html) {
-                this.innerHTML = html;
+    stepEls.select('.expression-container').each(function (d) {
+        var container = d3.select(this);
+        var expressionEl = container.select('.expression').node();
 
-                if (caretOffset !== -1) {
-                    setCurrentCaretOffset(this, caretOffset);
-                }
+        var parsed = parsePseudo(d);
+        var html = stepHtml(parsed);
+        var caretOffset = currentCaretOffset(expressionEl);
+        if (expressionEl.innerHTML !== html) {
+            expressionEl.innerHTML = html;
+            if (caretOffset !== -1) {
+                setCurrentCaretOffset(expressionEl, caretOffset);
             }
-        });
+        }
+    });
+
+    drawReferences(stepEls.select('.expression-container'));
 
     stepEls.select('.result')
         .text(function (d) {
             return d.stretch.steps[d.stretch.steps.length - 1].result;
         }) ;
+};
+
+var drawReferences = function (expressionContainerEls) {
+    expressionContainerEls.each(function (d) {
+        var container = d3.select(this);
+
+        var references = _.filter(parsePseudo(d), function (d) {
+            return d.type === 'reference';
+        });
+        var referenceEls = container.selectAll('.reference')
+            .data(references) ;
+
+        referenceEls.enter().append('div')
+            .attr('class', 'reference') ;
+
+        referenceEls.exit().remove();
+
+        referenceEls.each(function (reference) {
+            d3.select(this)
+                .text(reference.reference.result) ;
+        });
+
+        referenceEls.each(function (reference, i) {
+            var textEl = container.select('.reference-text.reference-' + i).node();
+            d3.select(this)
+                .style('top', textEl.offsetTop + 'px')
+                .style('left', textEl.offsetLeft + 'px')
+                .style('width', textEl.offsetWidth + 'px') ;
+        });
+    });
 };
 
 

@@ -97,23 +97,41 @@ h1 {
     float: left;
     width: 190px;
     margin-right: 15px;
+    position: relative;
   }
     .step .expression {
       font-size: 14px;
       float: left;
-      padding: 6px;
+      padding: 7px;
       width: 100%;
-      min-height: 22px;
+      min-height: 20px;
       border-width: 0px;
       background-color: transparent;
 
       white-space: pre-wrap;
+      line-height: 24px;
+    }
+
+      .expression .reference-text {
+        display: inline-block;
+        margin-right: 3px;
+      }
+
+    .step .reference {
+      position: absolute;
+      background-color: #eee;
+      text-align: center;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      margin-top: 1px;
+      border: solid 1px black;
+      border-radius: 4px;
     }
 
   .step .result-container {
     position: absolute;
     right: 4px;
-    bottom: 0px;
+    bottom: 1px;
   }
     .step .result {
       color: #338;
