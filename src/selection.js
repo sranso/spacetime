@@ -52,16 +52,9 @@ var toggleExpanded = function () {
 };
 
 var selectStepUnderMouse = function (mouse) {
-    var x = mouse[0], y = mouse[1];
-    var selectionStartX = trackHtml.node().offsetLeft;
-    var selectionEndX = selectionStartX + 60;
-    return _.find(allPseudoSteps, function (step) {
-        var el = step.__el__;
-        if (el.offsetTop <= y && y < el.offsetTop + el.offsetHeight) {
-            return selectionStartX <= x && x < selectionEndX;
-        }
-        return false;
-    });
+    var step = findStepUnderMouse(mouse);
+    var selectionEndX = trackHtml.node().offsetLeft + 50;
+    return (mouse[0] <= selectionEndX) && step;
 };
 
 var selectionKind = function () {

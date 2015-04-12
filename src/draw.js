@@ -90,9 +90,7 @@ var computeStretchPositions = function (groups, pseudoSteps) {
 
 
 var drawOverallSetup = function() {
-    trackContainer = d3.select('#track')
-        .on('mousemove', mouseMove)
-        .on('mousedown', mouseDown) ;
+    trackContainer = d3.select('#track');
 
     trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg');
@@ -104,10 +102,9 @@ var drawOverallSetup = function() {
             window.getSelection().removeAllRanges();
             keypressEvent(d3.event.keyCode)
         })
+        .on('mousemove', mouseMove)
         .on('mouseup', mouseUp)
-        .on('mousedown', function () {
-            window.getSelection().removeAllRanges();
-        })
+        .on('mousedown', mouseDown)
         .on('contextmenu', function () {
             d3.event.preventDefault();
         }) ;
@@ -294,11 +291,20 @@ var drawSteps = function (steps) {
 };
 
 var referenceColorClass = function (step) {
-    if (step.farthestReferenceAway <= 7) {
-        return 'reference-color-' + step.farthestReferenceAway;
-    } else {
-        return 'reference-color-8-or-more';
+    if (step.referencedByIndex != null) {
+        if (step.referencedByIndex == 0) {
+            return 'referenced-by-color-1';
+        } else {
+            return 'referenced-by-color-2-or-more';
+        }
+    } else if (step.referencesIndex != null) {
+        if (step.referencesIndex <= 1) {
+            return 'references-color-1';
+        } else {
+            return 'references-color-2-or-more';
+        }
     }
+    return '';
 }
 
 var drawReferences = function (expressionContainerEls) {
