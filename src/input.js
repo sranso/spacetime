@@ -5,6 +5,7 @@ var keyForEvent = function () {
 var inputEvent = function (key, eventType) {
     if (key === '\\') {
         debugger;
+        go();  // define go to test something out
     } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
         keypressEvent(null, 'tab');
@@ -23,6 +24,7 @@ var inputEvent = function (key, eventType) {
 var textInputEvent = function (step, key) {
     if (key === '\\') {
         debugger;
+        go();  // define go to test something out
     } else if (key === 'enter') {
         insertNewStep(step);
         d3.event.preventDefault();

@@ -2,7 +2,11 @@ var allStepsHead = {head: true, next: null, previous: null};
 var allStepsTail = {tail: true, next: null, previous: null};
 var allSteps = [];
 var allPseudoSteps = [];
-var targetStep = null;
+var hoverStep = null;
+var insertStep = null;
+var insertReferences = [];
+var targetResult = null;
+var targetReference = null;
 
 var allGroups = [];
 var __stretches = [];
@@ -22,6 +26,18 @@ var update = function () {
     draw();
 };
 
+var maybeUpdate = function (cb) {
+    var lastTargetStep = targetStep();
+    cb();
+    if (targetStep() !== lastTargetStep) {
+        update();
+    }
+};
+
+var targetStep = function () {
+    return insertStep || hoverStep;
+};
+
 var mouseUp = function () {
     stopSelecting();
     update();
@@ -29,16 +45,15 @@ var mouseUp = function () {
 
 var mouseMove = function () {
     var mouse = d3.mouse(trackContainer.node());
-    var lastTargetStep = targetStep;
-    targetStep = findStepUnderMouse(mouse);
+    maybeUpdate(function () {
+        hoverStep = findStepUnderMouse(mouse);
+    });
     maybeChangeSelection(mouse);
-    if (targetStep !== lastTargetStep) {
-        update();
-    }
 };
 
 var mouseDown = function () {
     window.getSelection().removeAllRanges();
+    maybeUpdate(function () { insertStep = null });
     var mouse = d3.mouse(trackContainer.node());
     maybeStartSelecting(mouse);
 };

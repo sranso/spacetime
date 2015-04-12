@@ -114,18 +114,19 @@ h1 {
 
       .expression .reference-text {
         display: inline-block;
-        margin-right: 3px;
+        margin-right: 4px;
+        font-size: 1px;
+        height: 1px;
       }
 
     .step .reference {
       position: absolute;
-      background-color: #eee;
       text-align: center;
       padding-top: 1px;
       padding-bottom: 1px;
-      margin-top: 1px;
-      border: solid 1px #bbb;
-      border-radius: 4px;
+      margin-top: -5px;
+      border: solid 2px #ddd;
+      border-radius: 6px;
     }
 
   .step .result-container {
@@ -140,26 +141,31 @@ h1 {
       margin: 4px;
       margin-left: 7px;
       overflow: hidden;
-      border: solid 2px #bbb;
+      border: solid 2px #ddd;
       border-radius: 7px;
       padding: 2px 6px;
-      background-color: #eee;
       height: 18px;
       width: 132px;
     }
 
-    .step .references-color-1 {
-      border-color: #66e;
-    }
-    .step .references-color-2-or-more {
-      border-color: #999;
+    .step .reference-inserting {
+      background-color: #ddd;
     }
 
-    .step .referenced-by-color-1 {
-      border-color: #e66;
+    .step .reference-color-1 {
+      border-color: #22f;
     }
-    .step .referenced-by-color-2-or-more {
-      border-color: #999;
+    .step .reference-color-2 {
+      border-color: #282;
+    }
+    .step .reference-color-3 {
+      border-color: #80f;
+    }
+    .step .reference-color-4 {
+      border-color: #0ad;
+    }
+    .step .reference-color-5-or-more {
+      border-color: red;
     }
 
 .step.active .step-box {
