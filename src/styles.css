@@ -132,7 +132,8 @@ h1 {
   .step .result-container {
     position: absolute;
     right: 4px;
-    bottom: 1px;
+    bottom: -11px;
+    z-index: 2;
   }
     .step .result {
       color: #338;
@@ -146,6 +147,7 @@ h1 {
       padding: 2px 6px;
       height: 18px;
       width: 132px;
+      background-color: white;
     }
 
     .step .reference-inserting {
@@ -169,6 +171,9 @@ h1 {
     }
 
 .step.active .step-box {
+  background-color: #eee;
+}
+.step.active .result {
   background-color: #eee;
 }
 
