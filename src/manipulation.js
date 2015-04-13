@@ -130,3 +130,75 @@ var forgetGroup = function (group) {
     });
     allGroups = _.without(allGroups, group);
 };
+
+var computeGroupIntersection = function () {
+    if (!selection.foreground.group || !selection.background.group) {
+        return;
+    }
+    var intersection = createGroup();
+    allGroups.push(intersection);
+    var stepsById = {};
+    var steps = [];
+    _.each(selection.foreground.group.stretches, function (stretch) {
+        _.each(stretch.steps, function (step) {
+            var stepInfo = {
+                step: step,
+                foreStretch: stretch.id,
+            };
+            stepsById[step.id] = stepInfo;
+            steps.push(stepInfo);
+        });
+    });
+    _.each(selection.background.group.stretches, function (stretch) {
+        _.each(stretch.steps, function (step) {
+            if (stepsById[step.id]) {
+                stepsById[step.id].backStretch = stretch.id;
+            }
+        });
+    });
+    var stretches = [];
+    var stretch = null;
+    var lastStep = null;
+    _.each(steps, function (step) {
+        if (!step.backStretch) {
+            lastStep = step;
+            return;
+        }
+        if (
+            stretch &&
+            lastStep.step.next === step.step &&
+            lastStep.foreStretch === step.foreStretch &&
+            lastStep.backStretch === step.backStretch
+        ) {
+            stretch.push(step.step);
+        } else {
+            if (stretch) {
+                stretches.push(stretch);
+            }
+            stretch = [step.step];
+        }
+        lastStep = step;
+    });
+    if (stretch) {
+        stretches.push(stretch);
+    }
+    intersection.stretches = _.map(stretches, function (steps) {
+        var stretch = createStretch({group: intersection});
+        setStretchSteps(stretch, steps);
+        return stretch;
+    });
+    selection.foreground.group = intersection;
+    selection.background.group = intersection;
+    var foreFocus = selection.foreground.focus;
+    var backFocus = selection.background.focus;
+    _.each(intersection.stretches, function (stretch) {
+        if (_.intersection(stretch.steps, foreFocus.steps)) {
+            foreFocus = stretch;
+        }
+        if (_.intersection(stretch.steps, backFocus.steps)) {
+            backFocus = stretch;
+        }
+    });
+    selection.foreground.focus = foreFocus;
+    selection.background.focus = backFocus;
+};
