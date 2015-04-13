@@ -62,6 +62,6 @@ var executeStep = function (step) {
         step.result = eval(toEval);
     } catch (exception) {
         console.log(exception);
-        step.result = null;
+        step.result = NaN;
     }
 };

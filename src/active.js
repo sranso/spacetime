@@ -1,4 +1,5 @@
-var setActiveStretches = function (stretches) {
+var setActiveStretches = function (stretches, byMatch) {
+    __active.byMatch = byMatch;
     _.each(__active.stretches, function (stretch) {
         setStretchSteps(stretch, []);
     });
@@ -24,12 +25,12 @@ var setActiveStretches = function (stretches) {
 var computeActive = function () {
     var focus = selection.foreground.focus;
     if (! focus) {
-        setActiveStretches([]);
+        setActiveStretches([], false);
         return;
     }
 
     if (! selection.background.group) {
-        setActiveStretches([focus]);
+        setActiveStretches([focus], false);
         return;
     }
 
@@ -67,7 +68,7 @@ var computeActive = function () {
 
 
     if (! focusOverlaps.length) {
-        setActiveStretches([focus]);
+        setActiveStretches([focus], false);
 
     } else if (foreground.length > backOverlaps.length) {
         var focusNths = _.uniq(_.pluck(focusOverlaps, 'nthInBackground'));
@@ -83,7 +84,7 @@ var computeActive = function () {
             return stretch;
         });
 
-        setActiveStretches(activeStretches);
+        setActiveStretches(activeStretches, false);
 
     } else {
 
@@ -129,7 +130,7 @@ var computeActiveByMatch = function (focusOverlaps, background) {
         });
     });
 
-    setActiveStretches(activeStretches);
+    setActiveStretches(activeStretches, true);
 };
 
 var activeByMatch = function (compareSteps, stretch) {

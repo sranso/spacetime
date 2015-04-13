@@ -44,10 +44,19 @@ var selectingData = {
 // };
 
 var toggleExpanded = function () {
-    var focus = selection.foreground.focus;
-    if (focus) {
-        focus.expanded = !focus.expanded;
+    if (__active.byMatch) {
+        return;  // TODO: make this work with non-group stretches
     }
+    if (!selection.foreground.group) {
+        return;
+    }
+    var expanded = !selection.foreground.focus.expanded;
+    var activeSteps = _.flatten(_.pluck(__active.stretches, 'steps'));
+    _.each(selection.foreground.group.stretches, function (stretch) {
+        if (_.intersection(activeSteps, stretch.steps).length) {
+            stretch.expanded = expanded;
+        }
+    });
     update();
 };
 

@@ -387,7 +387,13 @@ var updateInsertingReference = function () {
     var stepEl = d3.select(end);
     var container = stepEl.select('.expression-container');
     var pseudo = stepEl.datum();
-    var step = pseudo.stretch.steps[pseudo.stretch.steps.length - 1];
+    var references = _.filter(parsePseudo(pseudo), function (d) {
+        return d._type === 'reference';
+    });
+    if (!references.length) {
+        insertReferences = [];
+        return;
+    }
 
     cursorRange = cursorRange.cloneRange();
     var start = cursorRange.startContainer;
@@ -415,7 +421,7 @@ var updateInsertingReference = function () {
         }
     }
 
-    _.each(step.references, function (reference, i) {
+    _.each(references, function (reference, i) {
         var textEl = container.select('.reference-text.reference-' + i).node();
         var range = document.createRange();
         range.selectNodeContents(textEl);
@@ -439,7 +445,7 @@ var updateInsertingReference = function () {
             return;
         }
         insertReferences.push({
-            reference: reference,
+            reference: reference.reference,
             referenceI: i,
         });
     });
@@ -680,6 +686,9 @@ var clipNumber = function (number, length) {
         return numString;
     }
     var before = numString.slice(0, length);
+    if (! _.isNumber(number)) {
+        return before;
+    }
     if (before.indexOf('.') === -1 || numString.slice(0, 4) === '0.000') {
         numString = number.toExponential(20);
     }
