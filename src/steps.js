@@ -14,6 +14,7 @@ var createStep = function (step) {
         expanded: true,
         stretches: [],
         references: [],
+        implicitReference: null,
         next: null,
         previous: null,
         underPseudo: null,
@@ -103,16 +104,12 @@ var linkSteps = function (steps) {
 // TODO: make this work right for pseudoSteps
 var computeReferenceInfo = function () {
     _.each(allSteps, function (step, i) {
-        step.referencedBy = [];
         step.__index = i;
         step.referenceAway = null;
         var references = _.filter(step.parsedText, function (d) {
             return d._type === 'reference';
         });
-        step.references = _.map(references, function (r) {
-            r.reference.referencedBy.push(step);
-            return r.reference;
-        });
+        step.references = _.pluck(references, 'reference');
     });
     if (!targetStep()) {
         return;
@@ -121,4 +118,8 @@ var computeReferenceInfo = function () {
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });
+    if (step.implicitReference) {
+        var reference = step.implicitReference;
+        reference.referenceAway = step.__index - reference.__index;
+    }
 };

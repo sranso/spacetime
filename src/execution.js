@@ -58,10 +58,36 @@ var executeStep = function (step) {
         return segment.text;
     });
     toEval = toEval.join('');
-    try {
-        step.result = eval(toEval);
-    } catch (exception) {
-        console.log(exception);
-        step.result = NaN;
+
+    step.implicitReference = null;
+    var tryWithImplicit = (
+        /^ *$/.test(toEval) ||
+        toEval.slice(0, 2) === '+ ' ||
+        toEval.slice(0, 2) === '- '
+    );
+
+    var originalException = null;
+    if (!tryWithImplicit) {
+        try {
+            step.result = eval(toEval);
+        } catch (exception) {
+            originalException = exception;
+        }
+    }
+    if (originalException) {
+        tryWithImplicit = true;
+    }
+    if (tryWithImplicit) {
+        if (step.previous) {
+            toEval = '(' + step.previous.result + ')' + toEval;
+        }
+        try {
+            step.result = eval(toEval);
+            step.implicitReference = step.previous;
+        } catch (exception) {
+            originalException = originalException || exception;
+            console.log(originalException);
+            step.result = NaN;
+        }
     }
 };
