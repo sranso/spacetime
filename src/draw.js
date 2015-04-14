@@ -47,8 +47,8 @@ var computeStretchPositions = function (groups, pseudoSteps) {
 
     var x = trackHtml.node().offsetLeft;
     var selectionX = {
-        foreground: x + 12,
-        background: x + 24,
+        foreground: x + 10,
+        background: x + 28,
     };
     x -= 15 + 9;
 
@@ -238,8 +238,8 @@ var drawSteps = function (steps) {
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;
 
-    var selectionContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('selection-container', true) ;
+    var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
+        .classed('selection-edge', true) ;
 
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
         .classed('expression-container', true) ;
@@ -302,6 +302,9 @@ var drawSteps = function (steps) {
             var classes = ['step'];
             if (_.intersection(d.stretch.steps, __activeSteps).length) {
                 classes.push('active');
+            }
+            if (hoverStep && d === hoverStep) {
+                classes.push('hover');
             }
             return classes.join(' ');
         })

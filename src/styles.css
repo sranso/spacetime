@@ -84,19 +84,32 @@ h1 {
 .step-box {
   border: solid 1px #ddd;
   border-width: 0 0 1px 0;
-  width: 410px;
+  width: 425px;
   position: relative;
 }
   .step .selection-container {
     float: left;
-    width: 50px; /* update in selection.js */
     height: 1px;
+  }
+
+  .step .selection-edge {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    width: 1px;
+    left: 44px; /* update in selection.js and below */
+    background-color: transparent;
+  }
+
+  .step.hover .selection-edge {
+    background-color: #ddd;
   }
 
   .step .expression-container {
     float: left;
     width: 190px;
     margin-right: 15px;
+    margin-left: 50px; /* update above */
     position: relative;
   }
     .step .expression {
@@ -131,7 +144,7 @@ h1 {
 
   .step .result-container {
     position: absolute;
-    right: 4px;
+    right: 6px;
     bottom: -11px;
     z-index: 2;
   }

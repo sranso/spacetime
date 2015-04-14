@@ -62,7 +62,8 @@ var toggleExpanded = function () {
 
 var selectStepUnderMouse = function (mouse) {
     var step = findStepUnderMouse(mouse);
-    var selectionEndX = trackHtml.node().offsetLeft + 50;
+    var selectionWidth = 44; // change in styles.css
+    var selectionEndX = trackHtml.node().offsetLeft + selectionWidth;
     return (mouse[0] <= selectionEndX) && step;
 };
 

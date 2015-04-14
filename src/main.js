@@ -27,9 +27,13 @@ var update = function () {
 };
 
 var maybeUpdate = function (cb) {
+    var lastHoverStep = hoverStep;
     var lastTargetStep = targetStep();
     cb();
-    if (targetStep() !== lastTargetStep) {
+    if (
+        targetStep() !== lastTargetStep ||
+        hoverStep !== lastHoverStep
+    ) {
         update();
     }
 };
