@@ -118,8 +118,4 @@ var computeReferenceInfo = function () {
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });
-    if (step.implicitReference) {
-        var reference = step.implicitReference;
-        reference.referenceAway = step.__index - reference.__index;
-    }
 };
