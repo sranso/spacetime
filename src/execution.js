@@ -97,4 +97,7 @@ var executeStep = function (step) {
     if (_.isFunction(step.result)) {
         step.result.toString = function () { return this.name };
     }
+    if (step.result == null) {
+        step.result = NaN;
+    }
 };

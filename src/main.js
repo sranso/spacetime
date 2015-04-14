@@ -76,9 +76,7 @@ var findStepUnderMouse = function (mouse) {
 };
 
 allSteps = _.map([
-    {text: '4 + 1'},
-    {text: '. * 3'},
-    {text: '. - 12'},
+    {text: ''},
 ], createStep);
 
 linkSteps(allSteps);

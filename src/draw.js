@@ -176,20 +176,25 @@ var setCurrentCursorOffset = function (element, targetOffset) {
     range.selectNodeContents(element);
 
     while (range.toString().length > targetOffset) {
-        if (range.endOffset.nodeType === 3) {
+        if (range.endContainer.nodeType === 3) {
             if (range.endOffset > 0) {
                 range.setEnd(range.endContainer, range.endOffset - 1);
+            } else if (range.endContainer.previousSibling) {
+                range.setEndAfter(range.endContainer.previousSibling);
             } else {
-                range.setEndBefore(range.endContainer);
+                range.setEndAfter(range.endContainer.parentNode.previousSibling);
             }
         } else {
+            var end = range.endContainer;
             if (range.endOffset === 0) {
-                // Shouldn't happen
-                debugger;
+                end = end.childNodes[range.endOffset];
+                end = leafNode(end, 'firstChild');
+                range.setEnd(end, 0);
+            } else {
+                end = end.childNodes[range.endOffset - 1]
+                end = leafNode(end, 'lastChild');
+                range.setEnd(end, nodeLength(end));
             }
-            var end = range.endContainer.childNodes[range.endOffset - 1];
-            end = leafNode(end, 'lastChild');
-            range.setEnd(end, nodeLength(end));
         }
     }
 
@@ -312,7 +317,6 @@ var drawSteps = function (steps) {
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' }) ;
 
-    insertReferences = [];
     stepEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
@@ -339,6 +343,9 @@ var drawSteps = function (steps) {
         })
         .text(function (d) {
             var step = d.stretch.steps[d.stretch.steps.length - 1];
+            if (_.isNaN(step.result)) {
+                return '';
+            }
             return clipNumber(step.result, 13);
         }) ;
 };
@@ -371,9 +378,9 @@ var referenceClass = function (step, containingStep, referenceI) {
 }
 
 var updateInsertingReference = function () {
+    insertReferences = [];
     var cursorRange = currentRange();
     if (!cursorRange) {
-        insertReferences = [];
         return;
     }
     var end = cursorRange.endContainer;
@@ -384,7 +391,6 @@ var updateInsertingReference = function () {
         end = end.parentNode;
     }
     if (!end.parentNode) {
-        insertReferences = [];
         return;
     }
     var stepEl = d3.select(end);
@@ -394,7 +400,6 @@ var updateInsertingReference = function () {
         return d._type === 'reference';
     });
     if (!references.length) {
-        insertReferences = [];
         return;
     }
 
@@ -414,12 +419,12 @@ var updateInsertingReference = function () {
     var end = cursorRange.endContainer;
     if (end.childNodes.length) {
         if (cursorRange.endOffset === 0) {
-            end = start.childNodes[cursorRange.endOffset];
+            end = end.childNodes[cursorRange.endOffset];
             end = leafNode(end, 'firstChild');
             cursorRange.setEnd(end, 0);
         } else {
             end = end.childNodes[cursorRange.endOffset - 1]
-            end = leafNode(start, 'lastChild');
+            end = leafNode(end, 'lastChild');
             cursorRange.setEnd(end, nodeLength(end));
         }
     }
@@ -702,10 +707,16 @@ var clipNumber = function (number, length) {
         var mantissaLength = length - exponent.length;
         var pointAndBeforeLength = numString.indexOf('.') + 1;
         var fractionDigits = mantissaLength - pointAndBeforeLength;
+        if (fractionDigits < 0) {
+            fractionDigits = 0;
+        }
         return number.toExponential(fractionDigits);
     }
 
     var pointIndex = numString.indexOf('.');
     var fractionDigits = length - pointIndex - 1;
+    if (fractionDigits < 0) {
+        fractionDigits = 0;
+    }
     return number.toFixed(fractionDigits);
 };

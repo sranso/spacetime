@@ -145,7 +145,7 @@ h1 {
   .step .result-container {
     position: absolute;
     right: 6px;
-    bottom: -11px;
+    bottom: -10px;
     z-index: 2;
   }
     .step .result {
