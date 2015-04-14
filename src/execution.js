@@ -69,7 +69,9 @@ var executeStep = function (step) {
     var originalException = null;
     if (!tryWithImplicit) {
         try {
-            step.result = eval(toEval);
+            with (Math) {
+                step.result = eval(toEval);
+            }
         } catch (exception) {
             originalException = exception;
         }
@@ -82,12 +84,17 @@ var executeStep = function (step) {
             toEval = '(' + step.previous.result + ')' + toEval;
         }
         try {
-            step.result = eval(toEval);
+            with (Math) {
+                step.result = eval(toEval);
+            }
             step.implicitReference = step.previous;
         } catch (exception) {
             originalException = originalException || exception;
             console.log(originalException);
             step.result = NaN;
         }
+    }
+    if (_.isFunction(step.result)) {
+        step.result.toString = function () { return this.name };
     }
 };
