@@ -119,3 +119,53 @@ var computeReferenceInfo = function () {
         reference.referenceAway = step.__index - reference.__index;
     });
 };
+
+var insertOrUpdateReference = function (resultPseudo) {
+    if (insertStep._type === 'stretch') {
+        return;
+    }
+    var resultStep = resultPseudo.stretch.steps[resultPseudo.stretch.steps.length - 1];
+    var pseudo = insertStep.steps[0].underPseudo;
+    var expressionEl = d3.select(pseudo.__el__).select('.expression').node();
+
+    var referenceAway = insertStep.__index - resultStep.__index;
+    if (referenceAway <= 0) {
+        return;
+    }
+    var innerText = Array(referenceAway + 1).join('.');
+
+    if (insertReferences.length) {
+        _.each(insertReferences, function (reference) {
+            reference.textEl.textContent = innerText;
+        });
+        var text = expressionEl.textContent;
+        _.each(__active.stretches, function (stretch) {
+            stretch.steps[0].text = text;
+        });
+        var range = currentRange();
+        if (range) {
+            var lastRef = insertReferences[insertReferences.length - 1];
+            range.setEnd(lastRef.textEl.firstChild, innerText.length);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    } else {
+        var cursorOffset = currentCursorOffset(expressionEl);
+        var fullRange = document.createRange();
+        fullRange.selectNodeContents(expressionEl);
+        var before = fullRange.toString().slice(0, cursorOffset);
+        var after = fullRange.toString().slice(cursorOffset);
+        if (before && before[before.length - 1] !== ' ') {
+            innerText = ' ' + innerText;
+        }
+        var text = before + innerText + after;
+        expressionEl.textContent = text;
+        _.each(__active.stretches, function (stretch) {
+            stretch.steps[0].text = text;
+        });
+        setCurrentCursorOffset(expressionEl, (before + innerText).length);
+    }
+
+    update();
+};

@@ -127,7 +127,7 @@ h1 {
 
       .expression .reference-text {
         display: inline-block;
-        margin-right: 4px;
+        margin-right: 1px;
         font-size: 1px;
         height: 1px;
       }
@@ -138,6 +138,7 @@ h1 {
       padding-top: 1px;
       padding-bottom: 1px;
       margin-top: -5px;
+      margin-left: -2px;
       border: solid 2px #ddd;
       border-radius: 6px;
     }

@@ -5,7 +5,6 @@ var allPseudoSteps = [];
 var hoverStep = null;
 var insertStep = null;
 var insertReferences = [];
-var targetResult = null;
 var targetReference = null;
 
 var allGroups = [];

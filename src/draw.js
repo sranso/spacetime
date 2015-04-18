@@ -294,14 +294,14 @@ var drawSteps = function (steps) {
 
     resultContainerEnterEls.append('div')
         .classed('result', true)
-        .on('mouseenter', function (d) {
-            targetResult = d.stretch.steps[d.stretch.steps.length - 1];
-            update();
-        })
-        .on('mouseleave', function (d) {
-            targetResult = null;
-            update();
-        }) ;
+        .on('mousedown', function (d) {
+            console.log('mousedown');
+            if (insertStep) {
+                insertOrUpdateReference(d);
+            }
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+        });
 
     stepBoxEnterEls.append('div')
         .style('clear', 'both') ;
@@ -467,6 +467,7 @@ var updateInsertingReference = function () {
         insertReferences.push({
             reference: reference.reference,
             referenceI: i,
+            textEl: textEl,
         });
     });
 };
