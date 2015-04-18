@@ -53,7 +53,12 @@ var executeStep = function (step) {
     step.parsedText = parseStep(step);
     var toEval = _.map(step.parsedText, function (segment) {
         if (segment._type === 'reference') {
-            return '(' + segment.reference.result + ')';
+            if (segment.reference) {
+                var result = segment.reference.result;
+            } else {
+                var result = NaN;
+            }
+            return '(' + result + ')';
         }
         return segment.text;
     });

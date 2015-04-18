@@ -138,7 +138,6 @@ var computeGroupIntersection = function () {
     var intersection = createGroup();
     allGroups.push(intersection);
     var stepsById = {};
-    var steps = [];
     _.each(selection.foreground.group.stretches, function (stretch) {
         _.each(stretch.steps, function (step) {
             var stepInfo = {
@@ -146,7 +145,6 @@ var computeGroupIntersection = function () {
                 foreStretch: stretch.id,
             };
             stepsById[step.id] = stepInfo;
-            steps.push(stepInfo);
         });
     });
     _.each(selection.background.group.stretches, function (stretch) {
@@ -155,6 +153,9 @@ var computeGroupIntersection = function () {
                 stepsById[step.id].backStretch = stretch.id;
             }
         });
+    });
+    var steps = _.sortBy(stepsById, function (step) {
+        return _.indexOf(allSteps, step.step);
     });
     var stretches = [];
     var stretch = null;
