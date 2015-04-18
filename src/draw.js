@@ -221,7 +221,7 @@ var stepHtml = function (parsed) {
         if (segment._type === 'reference') {
             ref += 1;
             var result = clipNumber(segment.reference.result, 6);
-            var width = 7 + 9 * result.length;
+            var width = 9 + 9 * result.length;
             if (result.indexOf('.') !== -1) {
                 width -= 4;
             }
@@ -295,7 +295,6 @@ var drawSteps = function (steps) {
     resultContainerEnterEls.append('div')
         .classed('result', true)
         .on('mousedown', function (d) {
-            console.log('mousedown');
             if (insertStep) {
                 insertOrUpdateReference(d);
             }
@@ -484,7 +483,10 @@ var drawReferences = function (expressionContainerEls) {
             .data(references) ;
 
         referenceEls.enter().append('div')
-            .attr('class', 'reference') ;
+            .attr('class', 'reference')
+            .on('click', function (d, i) {
+                selectReference(container, i);
+            }) ;
 
         referenceEls.exit().remove();
 
@@ -500,9 +502,20 @@ var drawReferences = function (expressionContainerEls) {
                 .attr('class', 'reference ' + color)
                 .style('top', textEl.offsetTop + 'px')
                 .style('left', textEl.offsetLeft + 'px')
-                .style('width', textEl.offsetWidth + 'px') ;
+                .style('width', (textEl.offsetWidth - 2) + 'px') ;
         });
     });
+};
+
+var selectReference = function (container, i) {
+    var textEl = container.select('.reference-text.reference-' + i).node();
+
+    var range = document.createRange();
+    range.setEnd(textEl, 1);
+    range.collapse(false);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
 };
 
 
