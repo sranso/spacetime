@@ -536,10 +536,6 @@ var drawSelectionHistorySetup = function () {
 
 var drawSelectionInfoSetup = function () {
     selectionInfoEl = d3.select('#selection');
-    selectionInfoEl.selectAll('.selection-name')
-        .on('keypress', function () {
-            d3.event.stopPropagation();
-        }) ;
 };
 
 var drawSelectionHistory = function () {
@@ -618,26 +614,6 @@ var drawSelectionInfo = function () {
                 return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
             }
             return 'white';
-        }) ;
-
-    selectionEls.select('.selection-name')
-        .attr('disabled', function (d) {
-            return d.group ? null : 'disabled';
-        })
-        .property('value', function (d) {
-            return d.group ? d.group.text : '';
-        })
-        .attr('placeholder', function (d) {
-            if (d.group && !d.group.text) {
-                return 'Unnamed group';
-            }
-            return '';
-        })
-        .on('input', function (d) {
-            if (d.group) {
-                d.group.text = this.value;
-                update();
-            }
         }) ;
 };
 
