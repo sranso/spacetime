@@ -255,16 +255,25 @@ var drawSteps = function (steps) {
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('focus', function (d) {
-            maybeUpdate(function () { insertStep = d });
+            maybeUpdate(function () { insertStep = d.stretch });
         })
         .on('blur', function (d) {
             maybeUpdate(function () { insertStep = null });
         })
         .on('input', function (d) {
-            d.stretch.text = this.textContent;
+            var text = this.textContent;
+            if (insertStep._type === 'step') {
+                _.each(__active.stretches, function (stretch) {
+                    stretch.steps[0].text = text;
+                });
+            } else {
+                // TODO: make this work for stretches
+                d.stretch.text = text;
+            }
             update();
         })
-        .on('mousedown', function () {
+        .on('mousedown', function (d) {
+            maybeUpdate(function () { insertStep = d.stretch });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {
@@ -308,8 +317,11 @@ var drawSteps = function (steps) {
             if (_.intersection(d.stretch.steps, __activeSteps).length) {
                 classes.push('active');
             }
-            if (hoverStep && d === hoverStep) {
+            if (d.stretch === hoverStep) {
                 classes.push('hover');
+            }
+            if (d.stretch === insertStep) {
+                classes.push('inserting');
             }
             return classes.join(' ');
         })
@@ -354,7 +366,7 @@ var referenceClass = function (step, containingStep, referenceI) {
     if (step.referenceAway == null || !targetStep()) {
         return '';
     }
-    var lastTargetStep = targetStep().stretch.steps[targetStep().stretch.steps.length - 1];
+    var lastTargetStep = targetStep().steps[targetStep().steps.length - 1];
     if (containingStep && containingStep !== lastTargetStep) {
         return '';
     }

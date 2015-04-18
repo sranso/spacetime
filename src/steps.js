@@ -101,7 +101,7 @@ var linkSteps = function (steps) {
 };
 
 
-// TODO: make this work right for pseudoSteps
+// TODO: make this work right for stretches (pseudoSteps)
 var computeReferenceInfo = function () {
     _.each(allSteps, function (step, i) {
         step.__index = i;
@@ -111,10 +111,10 @@ var computeReferenceInfo = function () {
         });
         step.references = _.pluck(references, 'reference');
     });
-    if (!targetStep()) {
+    var step = targetStep();
+    if (!step || step._type !== 'step') {
         return;
     };
-    var step = targetStep().stretch;
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });

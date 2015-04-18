@@ -28,11 +28,11 @@ var update = function () {
 
 var maybeUpdate = function (cb) {
     var lastHoverStep = hoverStep;
-    var lastTargetStep = targetStep();
+    var lastInsertStep = insertStep;
     cb();
     if (
-        targetStep() !== lastTargetStep ||
-        hoverStep !== lastHoverStep
+        hoverStep !== lastHoverStep ||
+        insertStep !== lastInsertStep
     ) {
         update();
     }
@@ -50,7 +50,8 @@ var mouseUp = function () {
 var mouseMove = function () {
     var mouse = d3.mouse(trackContainer.node());
     maybeUpdate(function () {
-        hoverStep = findStepUnderMouse(mouse);
+        var step = findStepUnderMouse(mouse);
+        hoverStep = step ? step.stretch : null;
     });
     maybeChangeSelection(mouse);
 };

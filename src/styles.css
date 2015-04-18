@@ -142,6 +142,10 @@ h1 {
       border-radius: 6px;
     }
 
+    .step.active .reference {
+      border-color: #ccc;
+    }
+
   .step .result-container {
     position: absolute;
     right: 6px;
@@ -163,23 +167,32 @@ h1 {
       background-color: white;
     }
 
+    .step.active .result {
+      border-color: #ccc;
+    }
+
     .step .reference-inserting {
       background-color: #ddd;
     }
 
-    .step .reference-color-1 {
+    .step .reference.reference-color-1,
+    .step .result.reference-color-1 {
       border-color: #22f;
     }
-    .step .reference-color-2 {
+    .step .reference.reference-color-2,
+    .step .result.reference-color-2 {
       border-color: #282;
     }
-    .step .reference-color-3 {
+    .step .reference.reference-color-3,
+    .step .result.reference-color-3 {
       border-color: #80f;
     }
-    .step .reference-color-4 {
+    .step .reference.reference-color-4,
+    .step .result.reference-color-4 {
       border-color: #0ad;
     }
-    .step .reference-color-5-or-more {
+    .step .reference.reference-color-5-or-more,
+    .step .result.reference-color-5-or-more {
       border-color: red;
     }
 
