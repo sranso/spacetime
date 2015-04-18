@@ -59,8 +59,15 @@ var copyStretch = function (original) {
     }
 };
 
-var insertNewStep = function (targetPseudo) {
-    var previousPseudo = targetPseudo; // TODO: default for if there is none. || {stretch: [allStepsLinkedList]};
+var insertNewStep = function () {
+    _.each(__active.stretches, _insertNewStep);
+
+    update();
+    d3.select(insertStep.underPseudo.__el__).select('.expression').node().focus();
+};
+
+var _insertNewStep = function (stretch) {
+    var previousPseudo = stretch.steps[0].underPseudo;
     var previousStretch = previousPseudo.stretch;
     var previous = previousStretch.steps[previousStretch.steps.length - 1];
     var next = previous.next;
@@ -75,8 +82,9 @@ var insertNewStep = function (targetPseudo) {
     _.each(p("<<[<==>]>>"), fixupStretchSteps);
     _.each(p("__[_<<<]=>"), fixupStretchSteps);
 
-    update();
-    d3.select(newStep.underPseudo.__el__).select('.expression').node().focus();
+    if (_.intersection(insertStep.steps, previousStretch.steps).length) {
+        insertStep = newStep;
+    }
 };
 
 var deleteActiveStretches = function () {

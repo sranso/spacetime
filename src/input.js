@@ -2,16 +2,14 @@ var keyForEvent = function () {
     return keyMap[d3.event.keyCode];
 };
 
+var go = function () { debugger; };
+
 var inputEvent = function (key, eventType) {
     if (key === '\\') {
-        debugger;
         go();  // define go to test something out
     } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
         keypressEvent(null, 'tab');
-    } else if (key === 'enter') {
-        insertNewStep();
-        d3.event.preventDefault();
     } else if (key === 'shift' || key === 'ctrl') {
         // if (eventType === 'down') {
         //     startSelecting();
@@ -23,10 +21,9 @@ var inputEvent = function (key, eventType) {
 
 var textInputEvent = function (step, key) {
     if (key === '\\') {
-        debugger;
         go();  // define go to test something out
     } else if (key === 'enter') {
-        insertNewStep(step);
+        insertNewStep();
         d3.event.preventDefault();
     } else if (key === 'tab') {
         d3.event.preventDefault();

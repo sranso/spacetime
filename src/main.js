@@ -19,8 +19,8 @@ var __active = createGroup({hidden: true});
 var update = function () {
     computeSteps();
     executeSteps();
-    computeActive();
     computePseudoSteps();
+    computeActive();
     computeReferenceInfo();
     computeSelectionInfo();
     draw();

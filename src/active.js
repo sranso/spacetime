@@ -9,6 +9,7 @@ var setActiveStretches = function (stretches, byMatch) {
         }
         stretch = cloneStretch(original);
         stretch.group = __active;
+        stretch.expanded = true;
         setStretchSteps(stretch, original.steps);
         return stretch;
     });
@@ -86,6 +87,7 @@ var computeActive = function () {
         var activeStretches = _.map(activeOverlaps, function (overlap) {
             var stretch = cloneStretch(overlap.foreground);
             stretch.group = __active;
+            stretch.expanded = true;
             setStretchSteps(stretch, overlap.steps);
             return stretch;
         });
