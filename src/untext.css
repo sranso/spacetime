@@ -102,3 +102,17 @@ svg#string {
   left: 0px;
   top: 50px;
 }
+
+#help {
+  display: none;
+  position: absolute;
+  margin: auto;
+  top: 10%;
+  left: 50%;
+  width: 400px;
+  margin-left: -230px;
+  z-index: 2;
+  background-color: white;
+  border: solid 1px black;
+  padding: 30px;
+}

@@ -314,7 +314,7 @@ var handleKeypress = function (key) {
             if (left) {
                 toggleReference(left);
             }
-        } else if (ins.reference || !ins.tower || !_.isNaN(+ins.text)) {
+        } else {
             if (doneInserting(ins, 'keepIncomplete') === 'incomplete') {
                 return;
             }

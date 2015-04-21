@@ -194,10 +194,27 @@ var drawSetup = function () {
 
     d3.select(document)
         .on('mouseup', mouseUp)
+        .on('click', function () {
+            d3.select('#help').style('display', 'none');
+        })
         .on('scroll', mouseScroll)
         .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
         .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
         .on('keypress', function () { keypressEvent(d3.event.keyCode) }) ;
+
+    d3.select('#help').style('display', 'none');
+    d3.select('#toggle-help')
+        .on('click', function () {
+            var display = d3.select('#help').style('display');
+            if (display === 'block') {
+                display = 'none';
+            } else {
+                display = 'block';
+            }
+            d3.select('#help').style('display', display);
+            d3.select('#toggle-help').node().blur();
+            d3.event.stopPropagation();
+        }) ;
 
     var background = camera.append('rect')
         .classed('background', true)

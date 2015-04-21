@@ -6,7 +6,37 @@
   <link rel="stylesheet" type="text/css" href="./untext.css">
 </head>
 <body>
-<h1>Untext Editor</h1>
+  <button id="toggle-help">Toggle Help</button>
+  <div id="help">
+    <h4>Things To Try</h4>
+    <ul>
+      <li>Hover over one of the bold "fibonaci"s and hit tab.</li>
+      <li>Hover over the non-bold "fibonaci" and give it a new name by typing "newfib".</li>
+      <li>From anywhere (hovering over any node), press space and type "cool". Hit tab while over that new node to expand it. Now move (drag) any of the nodes under the two identical child nodes (see help for more info).</li>
+    </ul>
+    <h4>Help</h4>
+    <ul>
+      <li>Nodes can appear in multiple places. The dot will show if nodes are the same.</li>
+      <li>Expand/collapse nodes by hovering over them and hitting tab.</li>
+      <li>Move nodes tree-wise by clicking below the dot and dragging.</li>
+      <li>Move nodes "tower"-wise by clicking well below the text and dragging up/down/left/right.</li>
+      <li>Moving nodes "tower"-wise reshapes the tree.</li>
+      <li>Select multiple towers by holding shift while hovering over them.</li>
+      <li>Delete nodes by pressing 3.</li>
+      <li>Copy nodes by pressing 2.</li>
+      <li>Copying nodes by reference (bold) will make another instance of the same node. Editing either node will edit the other one as well.</li>
+      <li>Copying nodes by value (non-bold) will make a different node, but the value will initially be the same until one or the other is edited.</li>
+      <li>Insert a node by hovering over the node to insert after and then pressing space.</li>
+      <li>Edit the text of a node by hovering over it and typing.</li>
+      <li>Editing the text of a reference (bold node), changes what node should appear at that location.</li>
+      <li>Editing the text of a value node (non-bold) changes the text in any location that node appears.</li>
+      <li>Tabbing a value node (non-bold) creates a reference, allowing it to be autocompleted or copied by reference.</li>
+      <li>Autocomplete does a copy by reference.</li>
+      <li>Try '(', ')', '[', or ']' while typing to change the height.</li>
+      <li>Typing ',' is like typing a ')' followed by a '('. It separates two nodes that are at the same height.</li>
+      <li>Press '#' to enter/increment a number, followed by any number keys.</li>
+    </ul>
+  </div>
   <div id="editor">
     <svg id="string" class="">
     </svg>

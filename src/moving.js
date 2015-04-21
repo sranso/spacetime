@@ -39,7 +39,6 @@ var mouseLeave = doStuffAroundStateChanges(function () {
 
 var mouseScroll = function () {
     var scrollX = document.body.scrollTop;
-    console.log(scrollX);
     cameraX = cameraStartX - scrollX;
     computeOtherPositions();
     draw(nullSelection());
