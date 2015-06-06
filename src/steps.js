@@ -14,7 +14,6 @@ var createStep = function (step) {
         expanded: true,
         stretches: [],
         references: [],
-        implicitReference: null,
         next: null,
         previous: null,
         underPseudo: null,

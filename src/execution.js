@@ -64,40 +64,13 @@ var executeStep = function (step) {
     });
     toEval = toEval.join('');
 
-    step.implicitReference = null;
-    var tryWithImplicit = (
-        /^ *$/.test(toEval) ||
-        toEval.slice(0, 2) === '+ ' ||
-        toEval.slice(0, 2) === '- '
-    );
-
-    var originalException = null;
-    if (!tryWithImplicit) {
-        try {
-            with (Math) {
-                step.result = eval(toEval);
-            }
-        } catch (exception) {
-            originalException = exception;
+    try {
+        with (Math) {
+            step.result = eval(toEval);
         }
-    }
-    if (originalException) {
-        tryWithImplicit = true;
-    }
-    if (tryWithImplicit) {
-        if (step.previous) {
-            toEval = '(' + step.previous.result + ')' + toEval;
-        }
-        try {
-            with (Math) {
-                step.result = eval(toEval);
-            }
-            step.implicitReference = step.previous;
-        } catch (exception) {
-            originalException = originalException || exception;
-            console.log(originalException);
-            step.result = NaN;
-        }
+    } catch (exception) {
+        console.log(exception);
+        step.result = NaN;
     }
     if (_.isFunction(step.result)) {
         step.result.toString = function () { return this.name };
