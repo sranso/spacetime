@@ -1,0 +1,121 @@
+
+
+# steps
+
+linked list of ~fixed sized arrays. As one array fills up, you make a new one right after and copy half the elements.
+
+0 =>
+[
+  ["some step with no refs"],
+  ["some step with ref (&) ", -1],
+  ["some step with two refs (& and &) ", -1, -2],
+]
+
+// want: to be able to have the result array detached from the step instructions, so that you can look at results from past invocations of the script. However, that would mean that changes to the steps might change how you look up results, or invalidate looking up past results. That would not be good. Maybe one can take the edit history used to implement undo and apply it on the past result arrays to get a result array that shows the past results as best as possible for the current steps.
+
+// how to do refs?
+
+1) absolute indeces that need to be fixed upon insert/delete
+2) absolute indeces within a block, negative indeces for refs outside the block, which must be explicitly listed both in blocks used, and in the source block. Kinda like source files with explicit imports and exports.
+
+0:
+  steps: [
+    ["step1"],
+    ...
+  ],
+  exports: [
+    79, // index within 0
+    ...
+  ],
+...
+4:
+  steps: [
+    ...
+    ["step43", 42, -1, ...]  // [stepText, positiveIndexInCurrentBlock, negativeIndexMinusOneInImports, ...],
+    ...
+    // eventually
+    [1, 0b01, 42, -1]  // 1 is ADD in the list of all base steps. 0b01 means that 42 is referenced absolutely, -1 relatively
+    // note: some things will need a stretch as part of the step (e.g. dynamically adding a repetition of the stretch, or disabling a stretch of steps).
+    [3, <reference_to_a_stretch>],
+    ...
+  ],
+  importBlocks: [
+    0,  // first block
+    3,  // fourth block
+  ],
+  importExportNumbers: [
+    0,  // first in exports list in first block
+    5,  // sixth in exports list in fourth block
+  ],
+
+lookupReference = function (blocks, currentBlock, resultBlocks, currentResults, r) {
+  if (r < 0) {
+    // could actually simplify this by extracting all imports at the start of the current
+    // block.
+    var i = -r - 1;
+    var b = currentBlock.importBlocks[i];
+    var e = currentBlock.importExportNumbers[i];
+    var idx = blocks[b].exports[e];
+    return resultBlocks[b][idx];
+  } else {
+    return currentResults[r];
+  }
+}
+
+// this gives you roughly sqrt(n) insert performance
+// if the insert doesn't need the creation of a new block, all modifications are
+// local to that block.
+// if a new block needs to be created, then you need to update the block indicies of blocks past that block.
+// if you are executing and dynamically adding more repetitions, then only update blocks past that/those blocks
+// once the last repetition finishes.
+// if an export changes blocks, then you move that export to a new block, and then search all remaining blocks'
+// import lists to see if they used that export. If so, then update the import list to the new export.
+
+
+# stretches
+
+// execution can be done completely disregarding stretches, so it's fine to keep them separate from the steps.
+// (with the exception of dynamic repetition/disabling)
+
+* Given a stretch, how do you get the steps it contains?
+* Given a step, how do you know what stretches it is under?
+
+0:
+  steps: [],
+  exports: [],
+  importBlocks: [],
+  importExportNumbers: [],
+
+  // stretches that cover the entire block
+  coveringStretches: [
+    <reference_to_stretch_23>,
+    <reference_to_stretch_31>,
+    ...
+  ],
+  stretches: [
+    <reference_to_stretch_48>,
+    <reference_to_stretch_58>,
+    <reference_to_stretch_59>,
+    ...
+  ],
+  stretchPointType: [
+    0, // start of 48
+    1, // end of 58
+    0, // start of 59
+    ...
+  ],
+  stretchIndices: [
+    4,
+    7,
+    ...
+  ],
+
+// stretches are referenced by pointer or id, and they are only listed in a hash table from id to stretch.
+stretch:
+  [
+    3, 13,  // starts in fourth block, fourteenth stretch in block
+    4, 7,   // ends in fifth block, eighth stretch in block
+  ]
+  .expanded = true/false
+  .text
+  .group
