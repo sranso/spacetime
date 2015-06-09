@@ -123,14 +123,14 @@ var maybeChangeSelection = function (mouse) {
 
 var changeSelecting = function (end) {
     selectingData.end = end;
-    var startI = _.indexOf(allPseudoSteps, selectingData.start);
-    var endI = _.indexOf(allPseudoSteps, selectingData.end);
+    var startI = _.indexOf(allStepViews, selectingData.start);
+    var endI = _.indexOf(allStepViews, selectingData.end);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
         endI = temp;
     }
-    var steps = realSteps(allPseudoSteps.slice(startI, endI + 1));
+    var steps = realSteps(allStepViews.slice(startI, endI + 1));
     setStretchSteps(selection[selectingData.kind].focus, steps);
 
     // if (selection.stretches[0].steps.length) {

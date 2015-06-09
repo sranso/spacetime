@@ -1,7 +1,7 @@
 var allStepsHead = {head: true, next: null, previous: null};
 var allStepsTail = {tail: true, next: null, previous: null};
 var allSteps = [];
-var allPseudoSteps = [];
+var allStepViews = [];
 var hoverStep = null;
 var insertStep = null;
 var insertReferences = [];
@@ -18,7 +18,7 @@ var __active = createGroup({hidden: true});
 var update = function () {
     computeSteps();
     executeSteps();
-    computePseudoSteps();
+    computeStepViews();
     computeActive();
     computeReferenceInfo();
     computeSelectionInfo();
@@ -66,7 +66,7 @@ var findStepUnderMouse = function (mouse) {
     var x = mouse[0], y = mouse[1];
     var startX = trackHtml.node().offsetLeft;
     var endX = startX + trackHtml.node().offsetWidth;
-    return _.find(allPseudoSteps, function (step) {
+    return _.find(allStepViews, function (step) {
         var el = step.__el__;
         if (el.offsetTop <= y && y < el.offsetTop + el.offsetHeight) {
             return startX <= x && x < endX;

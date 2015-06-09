@@ -18,7 +18,7 @@ var drawSetup = function () {
 var draw = function () {
     //computeSelectionHistoryPositions();
 
-    drawSteps(allPseudoSteps);
+    drawSteps(allStepViews);
     computeStretchPositions(groupsToDraw(allGroups));
     //drawSelectionHistory();
     drawSelectionInfo();
@@ -42,7 +42,7 @@ var computeSelectionHistoryPositions = function () {
     }
 };
 
-var computeStretchPositions = function (groups, pseudoSteps) {
+var computeStretchPositions = function (groups, stepViews) {
     __stretches = [];
 
     var x = trackHtml.node().offsetLeft;
@@ -53,7 +53,7 @@ var computeStretchPositions = function (groups, pseudoSteps) {
     x -= 15 + 9;
 
     _.each(groups, function (group) {
-        _.each(group.pseudoStretches, function (stretch) {
+        _.each(group.stretchViews, function (stretch) {
             var first = stretch.steps[0];
             var last = stretch.steps[stretch.steps.length - 1];
             var firstTop = first.step.__el__.offsetTop;
@@ -75,7 +75,7 @@ var computeStretchPositions = function (groups, pseudoSteps) {
     });
     _.each(['foreground', 'background'], function (kind) {
         if (selection[kind].group) {
-            _.each(selection[kind].group.pseudoStretches, function (originalStretch) {
+            _.each(selection[kind].group.stretchViews, function (originalStretch) {
                 originalStretch.kind = 'selected';
                 var stretch = _.clone(originalStretch);
                 stretch.kind = kind;
@@ -204,15 +204,15 @@ var setCurrentCursorOffset = function (element, targetOffset) {
     selection.addRange(range);
 };
 
-var parsePseudo = function (pseudo) {
+var parseStepView = function (stepView) {
     // TODO: make stretches parseable
-    if (pseudo.stretch._type === 'stretch') {
+    if (stepView.stretch._type === 'stretch') {
         return [{
             _type: 'text',
-            text: pseudo.stretch.text,
+            text: stepView.stretch.text,
         }];
     }
-    return parseStep(pseudo.stretch);
+    return parseStep(stepView.stretch);
 };
 
 var stepHtml = function (parsed) {
@@ -332,7 +332,7 @@ var drawSteps = function (steps) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
-        var parsed = parsePseudo(d);
+        var parsed = parseStepView(d);
         var html = stepHtml(parsed);
         var cursorOffset = currentCursorOffset(expressionEl);
         if (expressionEl.innerHTML !== html) {
@@ -406,8 +406,8 @@ var updateInsertingReference = function () {
     }
     var stepEl = d3.select(end);
     var container = stepEl.select('.expression-container');
-    var pseudo = stepEl.datum();
-    var references = _.filter(parsePseudo(pseudo), function (d) {
+    var stepView = stepEl.datum();
+    var references = _.filter(parseStepView(stepView), function (d) {
         return d._type === 'reference';
     });
     if (!references.length) {
@@ -476,7 +476,7 @@ var drawReferences = function (expressionContainerEls) {
         var container = d3.select(this);
 
         var containingStep = d.stretch.steps[d.stretch.steps.length - 1];
-        var references = _.filter(parsePseudo(d), function (d) {
+        var references = _.filter(parseStepView(d), function (d) {
             return d._type === 'reference';
         });
         var referenceEls = container.selectAll('.reference')

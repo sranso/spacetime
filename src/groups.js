@@ -19,8 +19,8 @@ var createStretch = function (stretch) {
         group: null,
     }, stretch || {});
     stretch.id = newId();
-    stretch.pseudo = createPseudoStep(stretch);
-    stretch.pseudoStretch = createPseudoStretch(stretch);
+    stretch.stepView = createStepView(stretch);
+    stretch.stretchView = createStretchView(stretch);
     return stretch;
 };
 
@@ -30,9 +30,9 @@ var cloneStretch = function (original) {
     return stretch;
 };
 
-var createPseudoStretch = function (stretch) {
+var createStretchView = function (stretch) {
     return {
-        _type: 'pseudoStretch',
+        _type: 'stretchView',
         kind: 'unselected',
         selectedArea: false,
         steps: [],
@@ -41,18 +41,18 @@ var createPseudoStretch = function (stretch) {
     };
 };
 
-var computePseudoStretchSteps = function (pseudoStretch) {
-    pseudoStretch.steps = [];
+var computeStretchViewSteps = function (stretchView) {
+    stretchView.steps = [];
     var i = 0;
-    var steps = pseudoStretch.stretch.steps;
+    var steps = stretchView.stretch.steps;
     var real = steps[i];
     while (real) {
-        var pseudo = real.underPseudo;
-        var pseudoStep = {step: pseudo};
-        pseudoStretch.steps.push(pseudoStep);
-        var missingSteps = _.difference(pseudo.stretch.steps, steps);
-        pseudoStep.partial = missingSteps.length > 0;
-        while (real && real.underPseudo === pseudo) {
+        var stepView = real.underStepView;
+        var stepViewBoxed = {step: stepView};
+        stretchView.steps.push(stepViewBoxed);
+        var missingSteps = _.difference(stepView.stretch.steps, steps);
+        stepViewBoxed.partial = missingSteps.length > 0;
+        while (real && real.underStepView === stepView) {
             i += 1;
             real = steps[i];
         }
@@ -228,14 +228,14 @@ var groupsToDraw = function (groups) {
         if (group.hidden) {
             return false;
         }
-        group.pseudoStretches = _.map(group.stretches, function (stretch) {
-            computePseudoStretchSteps(stretch.pseudoStretch);
-            return stretch.pseudoStretch;
+        group.stretchViews = _.map(group.stretches, function (stretch) {
+            computeStretchViewSteps(stretch.stretchView);
+            return stretch.stretchView;
         });
-        group.pseudoStretches = _.filter(group.pseudoStretches, function (stretch) {
+        group.stretchViews = _.filter(group.stretchViews, function (stretch) {
             return stretch.steps.length;
         });
-        return group.pseudoStretches.length > 0;
+        return group.stretchViews.length > 0;
     });
     return orderGroups(groups);
 };

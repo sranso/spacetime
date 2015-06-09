@@ -15,12 +15,12 @@ var createStep = function (step) {
         references: [],
         next: null,
         previous: null,
-        underPseudo: null,
+        underStepView: null,
         result: null,
     }, step || {});
     step.steps = [step];
     step.id = newId();
-    step.pseudo = createPseudoStep(step);
+    step.stepView = createStepView(step);
     return step;
 };
 
@@ -30,9 +30,9 @@ var cloneStep = function (original) {
     return step;
 };
 
-var createPseudoStep = function (stretch) {
+var createStepView = function (stretch) {
     return {
-        _type: 'pseudo',
+        _type: 'stepView',
         stretch: stretch,
         __el__: null,
         next: null,
@@ -40,9 +40,9 @@ var createPseudoStep = function (stretch) {
     };
 };
 
-var realSteps = function (pseudoSteps) {
-    return _.reduce(pseudoSteps, function (steps, pseudo) {
-        return steps.concat(pseudo.stretch.steps);
+var realSteps = function (stepViews) {
+    return _.reduce(stepViews, function (steps, stepView) {
+        return steps.concat(stepView.stretch.steps);
     }, []);
 };
 
@@ -55,9 +55,9 @@ var computeSteps = function () {
     }
 };
 
-var computePseudoSteps = function () {
-    allPseudoSteps = [];
-    var pseudo = null;
+var computeStepViews = function () {
+    allStepViews = [];
+    var stepView = null;
 
     var real = allSteps[0];
     while (real) {
@@ -73,15 +73,15 @@ var computePseudoSteps = function () {
         if (!maxStretch.steps.length) {
             maxStretch = real;
         }
-        allPseudoSteps.push(maxStretch.pseudo);
+        allStepViews.push(maxStretch.stepView);
         var nextReal = maxStretch.steps[maxStretch.steps.length - 1].next;
         while (real && real !== nextReal) {
-            real.underPseudo = maxStretch.pseudo;
+            real.underStepView = maxStretch.stepView;
             real = real.next;
         }
     }
 
-    linkSteps(allPseudoSteps);
+    linkSteps(allStepViews);
 };
 
 var linkSteps = function (steps) {
@@ -99,7 +99,7 @@ var linkSteps = function (steps) {
 };
 
 
-// TODO: make this work right for stretches (pseudoSteps)
+// TODO: make this work right for stretches (stepViews)
 var computeReferenceInfo = function () {
     _.each(allSteps, function (step, i) {
         step.__index = i;
@@ -118,13 +118,13 @@ var computeReferenceInfo = function () {
     });
 };
 
-var insertOrUpdateReference = function (resultPseudo) {
+var insertOrUpdateReference = function (resultStepView) {
     if (insertStep._type === 'stretch') {
         return;
     }
-    var resultStep = resultPseudo.stretch.steps[resultPseudo.stretch.steps.length - 1];
-    var pseudo = insertStep.steps[0].underPseudo;
-    var expressionEl = d3.select(pseudo.__el__).select('.expression').node();
+    var resultStep = resultStepView.stretch.steps[resultStepView.stretch.steps.length - 1];
+    var stepView = insertStep.steps[0].underStepView;
+    var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
     var referenceAway = insertStep.__index - resultStep.__index;
     if (referenceAway <= 0) {

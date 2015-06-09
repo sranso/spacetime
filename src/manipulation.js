@@ -63,12 +63,12 @@ var insertNewStep = function () {
     _.each(__active.stretches, _insertNewStep);
 
     update();
-    d3.select(insertStep.underPseudo.__el__).select('.expression').node().focus();
+    d3.select(insertStep.underStepView.__el__).select('.expression').node().focus();
 };
 
 var _insertNewStep = function (stretch) {
-    var previousPseudo = stretch.steps[0].underPseudo;
-    var previousStretch = previousPseudo.stretch;
+    var previousView = stretch.steps[0].underStepView;
+    var previousStretch = previousView.stretch;
     var previous = previousStretch.steps[previousStretch.steps.length - 1];
     var next = previous.next;
     var newStep = createStep();

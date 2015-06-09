@@ -110,13 +110,12 @@ var computeActiveByMatch = function (focusOverlaps, background) {
     _.each(focusOverlaps, function (overlap) {
         var bg = overlap.background;
         var overBack = stretchPartitions(bg)("__[<<>>]__");
-        var backPseudoSteps = _.uniq(_.pluck(bg.steps, 'underPseudo'));
-        var pseudoSteps = _.uniq(_.pluck(overlap.steps, 'underPseudo'));
+        var stepViews = _.uniq(_.pluck(overlap.steps, 'underStepView'));
         var compareSteps = [];
-        _.each(pseudoSteps, function (pseudo) {
-            var match = pseudo.stretch;
+        _.each(stepViews, function (stepView) {
+            var match = stepView.stretch;
             var matches;
-            if (pseudo.stretch._type === 'step') {
+            if (stepView.stretch._type === 'step') {
                 matches = findStepMatches(bg, match);
             } else {
                 matches = findGroupMatches(bg, overBack, match);
