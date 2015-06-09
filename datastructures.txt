@@ -5,9 +5,9 @@ simple linked list of JS objects.
 step: {
   text: '3 + &',
   next: <nextStep>
-  references: [<step>, <step>],
-  absoluteReferences: [true, false], // TODO
-  stretches: [<stretch>, <stretch>],
+  references: [<step>, <step>, ...],
+  absoluteReferences: [true, false, ...], // TODO
+  stretches: [<stretch>, <stretch>, ...],
 
   //////// REMOVE the below?
   previous: <previousStep>,
@@ -26,3 +26,25 @@ TODO:
 * make a step not be its own stretch
 * make pseudo steps only be for things displayed (or nearby)
 * absolute references
+
+stretch: {
+  text: 'stretch name/description',
+  start: <step>,  // TODO
+  end: <step>,    // TODO
+  expanded: true,
+  group: <group>
+
+  // REMOVE?
+  id: 2,
+
+  // REMOVE
+  _type,
+  original,
+  steps: [<step>, <step>, ...],
+  pseudo: ...,
+  pseudoStretch: ...,
+}
+
+TODO:
+* separate out a stretch (start to end range with a group) and a
+  multi-step (start to end range, text, expanded).
