@@ -50,8 +50,8 @@ var parseStep = function (step) {
 };
 
 var executeStep = function (step) {
-    step.parsedText = parseStep(step);
-    var toEval = _.map(step.parsedText, function (segment) {
+    var parsed = parseStep(step);
+    var toEval = _.map(parsed, function (segment) {
         if (segment._type === 'reference') {
             if (segment.reference) {
                 var result = segment.reference.result;

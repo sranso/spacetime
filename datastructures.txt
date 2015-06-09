@@ -15,7 +15,6 @@ step: {
 
   //////// REMOVE
   _type: 'step',
-  parsedText: ...,
   expanded: true,
   steps: [],
   pseudo: <pseudo>,

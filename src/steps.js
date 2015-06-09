@@ -10,7 +10,6 @@ var createStep = function (step) {
     step = _.extend({
         _type: 'step',
         text: '',
-        parsedText: null,
         expanded: true,
         stretches: [],
         references: [],
@@ -105,7 +104,7 @@ var computeReferenceInfo = function () {
     _.each(allSteps, function (step, i) {
         step.__index = i;
         step.referenceAway = null;
-        var references = _.filter(step.parsedText, function (d) {
+        var references = _.filter(parseStep(step), function (d) {
             return d._type === 'reference';
         });
         step.references = _.pluck(references, 'reference');

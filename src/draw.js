@@ -212,7 +212,7 @@ var parsePseudo = function (pseudo) {
             text: pseudo.stretch.text,
         }];
     }
-    return pseudo.stretch.parsedText;
+    return parseStep(pseudo.stretch);
 };
 
 var stepHtml = function (parsed) {
