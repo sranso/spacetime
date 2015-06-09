@@ -16,7 +16,6 @@ var createStretch = function (stretch) {
         text: '',
         steps: [],
         expanded: true,
-        original: null,
         group: null,
     }, stretch || {});
     stretch.id = newId();
@@ -27,7 +26,6 @@ var createStretch = function (stretch) {
 
 var cloneStretch = function (original) {
     var stretch = createStretch(original);
-    stretch.original = original;
     stretch.steps = [];
     return stretch;
 };

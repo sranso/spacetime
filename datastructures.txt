@@ -39,7 +39,6 @@ stretch: {
 
   // REMOVE
   _type,
-  original,
   steps: [<step>, <step>, ...],
   pseudo: ...,
   pseudoStretch: ...,
