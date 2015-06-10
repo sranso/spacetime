@@ -13,8 +13,8 @@ Active.computeActive = function () {
     }
 
     if (Global.insertStep) {
-        focus = Stretch.createStretch();
-        Stretch.setStretchSteps(focus, [Global.insertStep]);
+        focus = Stretch.create();
+        Stretch.setSteps(focus, [Global.insertStep]);
         var foreground = [focus];
     } else {
         var foreground = Global.selection.foreground.group.stretches;
@@ -22,7 +22,7 @@ Active.computeActive = function () {
     var background = Global.selection.background.group.stretches;
 
     var overlaps = _.reduce(background, function (overlaps, backStretch) {
-        var overBack = Stretch.allOverlappingStretches(backStretch);
+        var overBack = Stretch.allOverlapping(backStretch);
         var foreStretches = _.intersection(foreground, overBack);
         var laps = _.map(foreStretches, function (foreStretch) {
             return {
@@ -62,10 +62,10 @@ Active.computeActive = function () {
         });
 
         var activeStretches = _.map(activeOverlaps, function (overlap) {
-            var stretch = Stretch.cloneStretch(overlap.foreground);
+            var stretch = Stretch.clone(overlap.foreground);
             stretch.group = Global.active;
             stretch.expanded = true;
-            Stretch.setStretchSteps(stretch, overlap.steps);
+            Stretch.setSteps(stretch, overlap.steps);
             return stretch;
         });
 
@@ -77,23 +77,23 @@ Active.computeActive = function () {
     }
 
     if (Global.insertStep) {
-        Stretch.setStretchSteps(focus, []);
+        Stretch.setSteps(focus, []);
     }
 };
 
 var setActiveStretches = function (stretches, byMatch) {
     Global.active.byMatch = byMatch;
     _.each(Global.active.stretches, function (stretch) {
-        Stretch.setStretchSteps(stretch, []);
+        Stretch.setSteps(stretch, []);
     });
     Global.active.stretches = _.map(stretches, function (original) {
         if (original.group === Global.active) {
             return original;
         }
-        stretch = Stretch.cloneStretch(original);
+        stretch = Stretch.clone(original);
         stretch.group = Global.active;
         stretch.expanded = true;
-        Stretch.setStretchSteps(stretch, original.steps);
+        Stretch.setSteps(stretch, original.steps);
         return stretch;
     });
     var focus = Global.insertStep || Global.selection.foreground.focus;
@@ -111,7 +111,7 @@ var computeActiveByMatch = function (focusOverlaps, background) {
 
     _.each(focusOverlaps, function (overlap) {
         var bg = overlap.background;
-        var overBack = Stretch.stretchPartitions(bg)("__[<<>>]__");
+        var overBack = Stretch.overlappingPartitions(bg)("__[<<>>]__");
         var stepViews = _.uniq(_.pluck(overlap.steps, 'underStepView'));
         var compareSteps = [];
         _.each(stepViews, function (stepView) {
@@ -147,7 +147,7 @@ var computeActiveByMatch = function (focusOverlaps, background) {
 };
 
 var activeByMatch = function (compareSteps, stretch) {
-    var overBack = Stretch.stretchPartitions(stretch)("__[<<>>]__");
+    var overBack = Stretch.overlappingPartitions(stretch)("__[<<>>]__");
 
     var matchChains = [
         {
@@ -226,12 +226,12 @@ var activeByMatch = function (compareSteps, stretch) {
         return null;
     }
 
-    var active = Stretch.createStretch({group: Global.active});
+    var active = Stretch.create({group: Global.active});
     var firstMatch = bestChain.chain[1];
     var lastMatch = bestChain.chain[bestChain.chain.length - 2];
     active.steps.push(firstMatch.match.steps[0]);
     active.steps.push(lastMatch.match.steps[lastMatch.match.steps.length - 1]);
-    Stretch.fixupStretchSteps(active);
+    Stretch.fixupSteps(active);
     return active;
 };
 

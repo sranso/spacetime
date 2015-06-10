@@ -1,10 +1,10 @@
 var StepExecution = {};
 
-StepExecution.executeSteps = function () {
+StepExecution.execute = function () {
     _.each(Global.steps, executeStep);
 };
 
-StepExecution.parseStep = function (step) {
+StepExecution.parse = function (step) {
     var text = step.text;
     var lastChar = '';
     var parsed = [];
@@ -52,7 +52,7 @@ StepExecution.parseStep = function (step) {
 };
 
 var executeStep = function (step) {
-    var parsed = StepExecution.parseStep(step);
+    var parsed = StepExecution.parse(step);
     var toEval = _.map(parsed, function (segment) {
         if (segment._type === 'reference') {
             if (segment.reference) {

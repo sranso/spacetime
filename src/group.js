@@ -1,6 +1,6 @@
 var Group = {};
 
-Group.createGroup = function (group) {
+Group.create = function (group) {
     group = _.extend({
         _type: 'group',
         hidden: false,
@@ -18,7 +18,7 @@ Group.groupsToDraw = function (groups) {
             return false;
         }
         group.stretchViews = _.map(group.stretches, function (stretch) {
-            StretchView.computeStretchViewSteps(stretch.stretchView);
+            StretchView.computeSteps(stretch.stretchView);
             return stretch.stretchView;
         });
         group.stretchViews = _.filter(group.stretchViews, function (stretch) {

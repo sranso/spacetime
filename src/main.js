@@ -7,11 +7,11 @@ Main.newId = function () {
 
 Main.update = function () {
     Step.computeSteps();
-    StepExecution.executeSteps();
-    StepView.computeStepViews();
+    StepExecution.execute();
+    StepView.computeViews();
     Active.computeActive();
     Step.computeReferenceInfo();
-    Selection.computeSelectionInfo();
+    Selection.computeInfo();
     Draw.draw();
 };
 
@@ -32,7 +32,7 @@ Main.targetStep = function () {
 };
 
 Main.mouseUp = function () {
-    Selection.stopSelecting();
+    Selection.stop();
     Main.update();
 };
 
@@ -42,14 +42,14 @@ Main.mouseMove = function () {
         var step = Main.findStepUnderMouse(mouse);
         Global.hoverStep = step ? step.stretch : null;
     });
-    Selection.maybeChangeSelection(mouse);
+    Selection.maybeChange(mouse);
 };
 
 Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
     Main.maybeUpdate(function () { Global.insertStep = null });
     var mouse = d3.mouse(Draw.trackContainer.node());
-    Selection.maybeStartSelecting(mouse);
+    Selection.maybeStart(mouse);
 };
 
 Main.findStepUnderMouse = function (mouse) {
@@ -67,12 +67,12 @@ Main.findStepUnderMouse = function (mouse) {
 
 Global.steps = _.map([
     {text: ''},
-], Step.createStep);
+], Step.create);
 
 Step.linkSteps(Global.steps);
 Global.stepsHead.next = Global.steps[0];
 Global.stepsTail.previous = Global.steps[0];
-Global.active = Group.createGroup({hidden: true});
+Global.active = Group.create({hidden: true});
 Global.selection = new Selection();
 
 Input.dvorak();

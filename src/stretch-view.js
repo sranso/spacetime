@@ -1,6 +1,6 @@
 var StretchView = {};
 
-StretchView.createStretchView = function (stretch) {
+StretchView.create = function (stretch) {
     return {
         _type: 'stretchView',
         kind: 'unselected',
@@ -11,7 +11,7 @@ StretchView.createStretchView = function (stretch) {
     };
 };
 
-StretchView.computeStretchViewSteps = function (stretchView) {
+StretchView.computeSteps = function (stretchView) {
     stretchView.steps = [];
     var i = 0;
     var steps = stretchView.stretch.steps;

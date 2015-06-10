@@ -41,5 +41,5 @@ DrawHelper.parseStepView = function (stepView) {
             text: stepView.stretch.text,
         }];
     }
-    return StepExecution.parseStep(stepView.stretch);
+    return StepExecution.parse(stepView.stretch);
 };

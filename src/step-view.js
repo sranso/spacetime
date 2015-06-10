@@ -1,6 +1,6 @@
 var StepView = {};
 
-StepView.createStepView = function (stretch) {
+StepView.create = function (stretch) {
     return {
         _type: 'stepView',
         stretch: stretch,
@@ -16,7 +16,7 @@ StepView.realSteps = function (stepViews) {
     }, []);
 };
 
-StepView.computeStepViews = function () {
+StepView.computeViews = function () {
     Global.stepViews = [];
     var stepView = null;
 

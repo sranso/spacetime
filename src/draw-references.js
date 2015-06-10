@@ -27,7 +27,7 @@ DrawReferences.referenceClass = function (step, containingStep, referenceI) {
     return classes.join(' ');
 }
 
-DrawReferences.updateInsertingReference = function () {
+DrawReferences.updateInserting = function () {
     Global.insertReferences = [];
     var cursorRange = DomRange.currentRange();
     if (!cursorRange) {
@@ -110,7 +110,7 @@ DrawReferences.updateInsertingReference = function () {
     });
 };
 
-DrawReferences.drawReferences = function (expressionContainerEls) {
+DrawReferences.draw = function (expressionContainerEls) {
     expressionContainerEls.each(function (d) {
         var container = d3.select(this);
 

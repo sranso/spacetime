@@ -1,6 +1,6 @@
 var Stretch = {};
 
-Stretch.createStretch = function (stretch) {
+Stretch.create = function (stretch) {
     stretch = _.extend({
         _type: 'stretch',
         text: '',
@@ -9,18 +9,18 @@ Stretch.createStretch = function (stretch) {
         group: null,
     }, stretch || {});
     stretch.id = Main.newId();
-    stretch.stepView = StepView.createStepView(stretch);
-    stretch.stretchView = StretchView.createStretchView(stretch);
+    stretch.stepView = StepView.create(stretch);
+    stretch.stretchView = StretchView.create(stretch);
     return stretch;
 };
 
-Stretch.cloneStretch = function (original) {
-    var stretch = Stretch.createStretch(original);
+Stretch.clone = function (original) {
+    var stretch = Stretch.create(original);
     stretch.steps = [];
     return stretch;
 };
 
-Stretch.setStretchSteps = function (stretch, steps) {
+Stretch.setSteps = function (stretch, steps) {
     _.each(stretch.steps, function (oldStep) {
         oldStep.stretches = _.without(oldStep.stretches, stretch);
     });
@@ -31,14 +31,14 @@ Stretch.setStretchSteps = function (stretch, steps) {
 };
 
 var classifyAllStretches = function (targetStretch) {
-    var all = Stretch.allOverlappingStretches(targetStretch);
+    var all = Stretch.allOverlapping(targetStretch);
 
     return _.map(all, function (stretch) {
         return classifyStretch(targetStretch, stretch);
     });
 };
 
-Stretch.allOverlappingStretches = function (targetStretch) {
+Stretch.allOverlapping = function (targetStretch) {
     return _.uniq(_.reduce(targetStretch.steps, function (all, step) {
         return all.concat(step.stretches);
     }, []));
@@ -73,7 +73,7 @@ var classifyStretch = function (targetStretch, stretch) {
     };
 };
 
-Stretch.stretchPartitions = function (stretch) {
+Stretch.overlappingPartitions = function (stretch) {
     var classified = classifyAllStretches(stretch);
     return function (matcher) {
         return selectPartitions(classified, matcher);
@@ -153,7 +153,7 @@ var selectPartitions = function (classified, matcher) {
     return _.pluck(matching, 'stretch');
 };
 
-Stretch.fixupStretchSteps = function (stretch) {
+Stretch.fixupSteps = function (stretch) {
     var end = stretch.steps[stretch.steps.length - 1];
     var steps = [];
     var step = stretch.steps[0];
@@ -164,5 +164,5 @@ Stretch.fixupStretchSteps = function (stretch) {
         }
         step = step.next;
     }
-    Stretch.setStretchSteps(stretch, steps);
+    Stretch.setSteps(stretch, steps);
 };

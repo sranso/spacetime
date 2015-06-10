@@ -248,9 +248,9 @@ var drawSteps = function (steps) {
         }
     });
 
-    DrawReferences.updateInsertingReference();
+    DrawReferences.updateInserting();
 
-    DrawReferences.drawReferences(stepEls.select('.expression-container'));
+    DrawReferences.draw(stepEls.select('.expression-container'));
 
     stepEls.select('.result')
         .attr('class', function (d) {
@@ -389,7 +389,7 @@ var drawStretches = function (stretches) {
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
-            var kind = Selection.selectionKind();
+            var kind = Selection.buttonSelectionKind();
             Global.selection[kind].focus = d.stretch;
             Global.selection[kind].group = d.stretch.group;
             // selectionHistoryI = saveHistoryI + 1;

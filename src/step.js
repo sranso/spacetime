@@ -1,7 +1,7 @@
 var Step = {};
 
 // A step is its own stretch.
-Step.createStep = function (step) {
+Step.create = function (step) {
     step = _.extend({
         _type: 'step',
         text: '',
@@ -15,12 +15,12 @@ Step.createStep = function (step) {
     }, step || {});
     step.steps = [step];
     step.id = Main.newId();
-    step.stepView = StepView.createStepView(step);
+    step.stepView = StepView.create(step);
     return step;
 };
 
-Step.cloneStep = function (original) {
-    var step = Step.createStep(original);
+Step.clone = function (original) {
+    var step = Step.create(original);
     step.stretches = [];
     return step;
 };
@@ -54,7 +54,7 @@ Step.computeReferenceInfo = function () {
     _.each(Global.steps, function (step, i) {
         step.__index = i;
         step.referenceAway = null;
-        var references = _.filter(StepExecution.parseStep(step), function (d) {
+        var references = _.filter(StepExecution.parse(step), function (d) {
             return d._type === 'reference';
         });
         step.references = _.pluck(references, 'reference');

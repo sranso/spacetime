@@ -29,8 +29,8 @@ var selectingData = {
 //         pop();
 //         selectionHistoryI += 1;
 //         if (selectionHistoryI === selectionHistory.length) {
-//             var stretch = Stretch.createStretch();
-//             var nextSelection = Group.createGroup({stretches: [stretch]});
+//             var stretch = Stretch.create();
+//             var nextSelection = Group.create({stretches: [stretch]});
 //             stretch.group = nextSelection;
 //             selectionHistory.push({selection: nextSelection});
 //             Global.groups.push(nextSelection);
@@ -65,13 +65,13 @@ var selectStepUnderMouse = function (mouse) {
     return (mouse[0] <= selectionEndX) && step;
 };
 
-Selection.selectionKind = function () {
+Selection.buttonSelectionKind = function () {
     return d3.event.button === 2 ? 'background' : 'foreground';
 };
 
-Selection.maybeStartSelecting = function (mouse) {
+Selection.maybeStart = function (mouse) {
     var step = selectStepUnderMouse(mouse);
-    var kind = Selection.selectionKind();
+    var kind = Selection.buttonSelectionKind();
     if (step) {
         startSelecting(step, kind);
     } else {
@@ -80,13 +80,13 @@ Selection.maybeStartSelecting = function (mouse) {
 };
 
 var startSelecting = function (step, kind) {
-    var stretch = Stretch.createStretch();
+    var stretch = Stretch.create();
     var group;
     if (d3.event.ctrlKey) {
         group = Global.selection[kind].group;
     }
     if (! group) {
-        group = Group.createGroup();
+        group = Group.create();
         Global.groups.push(group);
     }
     stretch.group = group;
@@ -109,7 +109,7 @@ var clearSelection = function (kind) {
     Main.update();
 };
 
-Selection.maybeChangeSelection = function (mouse) {
+Selection.maybeChange = function (mouse) {
     if (!selectingData.start) {
         return;
     }
@@ -129,7 +129,7 @@ var changeSelecting = function (end) {
         endI = temp;
     }
     var steps = StepView.realSteps(Global.stepViews.slice(startI, endI + 1));
-    Stretch.setStretchSteps(Global.selection[selectingData.kind].focus, steps);
+    Stretch.setSteps(Global.selection[selectingData.kind].focus, steps);
 
     // if (Global.selection.stretches[0].steps.length) {
     //     saveHistoryI = selectionHistoryI;
@@ -140,12 +140,12 @@ var changeSelecting = function (end) {
     Main.update();
 };
 
-Selection.stopSelecting = function () {
+Selection.stop = function () {
     selectingData.start = null;
     selectingData.end = null;
     selectingData.kind = null;
 };
 
-Selection.computeSelectionInfo = function () {
+Selection.computeInfo = function () {
     Selection.__activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
 };
