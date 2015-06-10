@@ -1,14 +1,16 @@
-var referenceClass = function (step, containingStep, referenceI) {
-    if (step.referenceAway == null || !targetStep()) {
+var DrawReferences = {};
+
+DrawReferences.referenceClass = function (step, containingStep, referenceI) {
+    if (step.referenceAway == null || !Main.targetStep()) {
         return '';
     }
-    var lastTargetStep = targetStep().steps[targetStep().steps.length - 1];
+    var lastTargetStep = Main.targetStep().steps[Main.targetStep().steps.length - 1];
     if (containingStep && containingStep !== lastTargetStep) {
         return '';
     }
 
     var classes = [];
-    var insertRef = _.find(insertReferences, function (ref) {
+    var insertRef = _.find(Global.insertReferences, function (ref) {
         return (
             ref.reference === step &&
             (!containingStep || ref.referenceI === referenceI)
@@ -25,9 +27,9 @@ var referenceClass = function (step, containingStep, referenceI) {
     return classes.join(' ');
 }
 
-var updateInsertingReference = function () {
-    insertReferences = [];
-    var cursorRange = currentRange();
+DrawReferences.updateInsertingReference = function () {
+    Global.insertReferences = [];
+    var cursorRange = DomRange.currentRange();
     if (!cursorRange) {
         return;
     }
@@ -44,7 +46,7 @@ var updateInsertingReference = function () {
     var stepEl = d3.select(end);
     var container = stepEl.select('.expression-container');
     var stepView = stepEl.datum();
-    var references = _.filter(parseStepView(stepView), function (d) {
+    var references = _.filter(DrawHelper.parseStepView(stepView), function (d) {
         return d._type === 'reference';
     });
     if (!references.length) {
@@ -56,11 +58,11 @@ var updateInsertingReference = function () {
     if (start.childNodes.length) {
         if (cursorRange.startOffset === start.childNodes.length) {
             start = start.childNodes[cursorRange.startOffset - 1];
-            start = leafNode(start, 'lastChild');
-            cursorRange.setStart(start, nodeLength(start));
+            start = DomRange.leafNode(start, 'lastChild');
+            cursorRange.setStart(start, DomRange.nodeLength(start));
         } else {
             start = start.childNodes[cursorRange.startOffset];
-            start = leafNode(start, 'firstChild');
+            start = DomRange.leafNode(start, 'firstChild');
             cursorRange.setStart(start, 0);
         }
     }
@@ -68,12 +70,12 @@ var updateInsertingReference = function () {
     if (end.childNodes.length) {
         if (cursorRange.endOffset === 0) {
             end = end.childNodes[cursorRange.endOffset];
-            end = leafNode(end, 'firstChild');
+            end = DomRange.leafNode(end, 'firstChild');
             cursorRange.setEnd(end, 0);
         } else {
             end = end.childNodes[cursorRange.endOffset - 1]
-            end = leafNode(end, 'lastChild');
-            cursorRange.setEnd(end, nodeLength(end));
+            end = DomRange.leafNode(end, 'lastChild');
+            cursorRange.setEnd(end, DomRange.nodeLength(end));
         }
     }
 
@@ -100,7 +102,7 @@ var updateInsertingReference = function () {
         if (cursorStartToRefEnd > 0 || cursorEndToRefStart < 0) {
             return;
         }
-        insertReferences.push({
+        Global.insertReferences.push({
             reference: reference.reference,
             referenceI: i,
             textEl: textEl,
@@ -108,12 +110,12 @@ var updateInsertingReference = function () {
     });
 };
 
-var drawReferences = function (expressionContainerEls) {
+DrawReferences.drawReferences = function (expressionContainerEls) {
     expressionContainerEls.each(function (d) {
         var container = d3.select(this);
 
         var containingStep = d.stretch.steps[d.stretch.steps.length - 1];
-        var references = _.filter(parseStepView(d), function (d) {
+        var references = _.filter(DrawHelper.parseStepView(d), function (d) {
             return d._type === 'reference';
         });
         var referenceEls = container.selectAll('.reference')
@@ -129,12 +131,12 @@ var drawReferences = function (expressionContainerEls) {
 
         referenceEls.each(function (reference) {
             d3.select(this)
-                .text(clipNumber(reference.reference.result, 6)) ;
+                .text(DrawHelper.clipNumber(reference.reference.result, 6)) ;
         });
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
-            var color = referenceClass(reference.reference, containingStep, i);
+            var color = DrawReferences.referenceClass(reference.reference, containingStep, i);
             d3.select(this)
                 .attr('class', 'reference ' + color)
                 .style('top', textEl.offsetTop + 'px')

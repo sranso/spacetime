@@ -1,4 +1,6 @@
-var createStretch = function (stretch) {
+var Stretch = {};
+
+Stretch.createStretch = function (stretch) {
     stretch = _.extend({
         _type: 'stretch',
         text: '',
@@ -6,19 +8,19 @@ var createStretch = function (stretch) {
         expanded: true,
         group: null,
     }, stretch || {});
-    stretch.id = newId();
-    stretch.stepView = createStepView(stretch);
-    stretch.stretchView = createStretchView(stretch);
+    stretch.id = Main.newId();
+    stretch.stepView = StepView.createStepView(stretch);
+    stretch.stretchView = StretchView.createStretchView(stretch);
     return stretch;
 };
 
-var cloneStretch = function (original) {
-    var stretch = createStretch(original);
+Stretch.cloneStretch = function (original) {
+    var stretch = Stretch.createStretch(original);
     stretch.steps = [];
     return stretch;
 };
 
-var setStretchSteps = function (stretch, steps) {
+Stretch.setStretchSteps = function (stretch, steps) {
     _.each(stretch.steps, function (oldStep) {
         oldStep.stretches = _.without(oldStep.stretches, stretch);
     });
@@ -29,14 +31,14 @@ var setStretchSteps = function (stretch, steps) {
 };
 
 var classifyAllStretches = function (targetStretch) {
-    var all = allOverlappingStretches(targetStretch);
+    var all = Stretch.allOverlappingStretches(targetStretch);
 
     return _.map(all, function (stretch) {
         return classifyStretch(targetStretch, stretch);
     });
 };
 
-var allOverlappingStretches = function (targetStretch) {
+Stretch.allOverlappingStretches = function (targetStretch) {
     return _.uniq(_.reduce(targetStretch.steps, function (all, step) {
         return all.concat(step.stretches);
     }, []));
@@ -71,18 +73,10 @@ var classifyStretch = function (targetStretch, stretch) {
     };
 };
 
-var stretchPartitions = function (stretch) {
+Stretch.stretchPartitions = function (stretch) {
     var classified = classifyAllStretches(stretch);
     return function (matcher) {
         return selectPartitions(classified, matcher);
-    };
-};
-
-var compareStretch = function (targetStretch, stretch) {
-    var classified = classifyStretch(targetStretch, stretch);
-    return function (matcher) {
-        var m = compileMatcher(matcher);
-        return matchStretch(m, stretch);
     };
 };
 
@@ -159,7 +153,7 @@ var selectPartitions = function (classified, matcher) {
     return _.pluck(matching, 'stretch');
 };
 
-var fixupStretchSteps = function (stretch) {
+Stretch.fixupStretchSteps = function (stretch) {
     var end = stretch.steps[stretch.steps.length - 1];
     var steps = [];
     var step = stretch.steps[0];
@@ -170,5 +164,5 @@ var fixupStretchSteps = function (stretch) {
         }
         step = step.next;
     }
-    setStretchSteps(stretch, steps);
+    Stretch.setStretchSteps(stretch, steps);
 };

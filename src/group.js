@@ -1,4 +1,6 @@
-var createGroup = function (group) {
+var Group = {};
+
+Group.createGroup = function (group) {
     group = _.extend({
         _type: 'group',
         hidden: false,
@@ -6,8 +8,25 @@ var createGroup = function (group) {
         color: [_.random(360), _.random(70, 95), _.random(78, 83)],
         text: '',
     }, group || {});
-    group.id = newId();
+    group.id = Main.newId();
     return group;
+};
+
+Group.groupsToDraw = function (groups) {
+    groups = _.filter(groups, function (group) {
+        if (group.hidden) {
+            return false;
+        }
+        group.stretchViews = _.map(group.stretches, function (stretch) {
+            StretchView.computeStretchViewSteps(stretch.stretchView);
+            return stretch.stretchView;
+        });
+        group.stretchViews = _.filter(group.stretchViews, function (stretch) {
+            return stretch.steps.length;
+        });
+        return group.stretchViews.length > 0;
+    });
+    return orderGroups(groups);
 };
 
 var orderGroups = function (groups) {
@@ -17,21 +36,4 @@ var orderGroups = function (groups) {
         }
         return 0;
     });
-};
-
-var groupsToDraw = function (groups) {
-    groups = _.filter(groups, function (group) {
-        if (group.hidden) {
-            return false;
-        }
-        group.stretchViews = _.map(group.stretches, function (stretch) {
-            computeStretchViewSteps(stretch.stretchView);
-            return stretch.stretchView;
-        });
-        group.stretchViews = _.filter(group.stretchViews, function (stretch) {
-            return stretch.steps.length;
-        });
-        return group.stretchViews.length > 0;
-    });
-    return orderGroups(groups);
 };

@@ -1,4 +1,6 @@
-var currentRange = function () {
+var DomRange = {};
+
+DomRange.currentRange = function () {
     var selection = window.getSelection();
     if (selection.rangeCount === 0) {
         return null;
@@ -7,7 +9,7 @@ var currentRange = function () {
 };
 
 var currentRangeUnder = function (element) {
-    var range = currentRange();
+    var range = DomRange.currentRange();
     if (!range) {
         return null;
     }
@@ -22,7 +24,7 @@ var currentRangeUnder = function (element) {
     return null;
 };
 
-var currentCursorOffset = function (element) {
+DomRange.currentCursorOffset = function (element) {
     var range = currentRangeUnder(element);
     if (!range) {
         return -1;
@@ -33,7 +35,7 @@ var currentCursorOffset = function (element) {
     return preCursorRange.toString().length;
 };
 
-var leafNode = function (node, which) {
+DomRange.leafNode = function (node, which) {
     var lower;
     while (lower = node[which]) {
         node = lower;
@@ -41,7 +43,7 @@ var leafNode = function (node, which) {
     return node;
 };
 
-var nodeLength = function (node) {
+DomRange.nodeLength = function (node) {
     if (node.nodeType === 3) {
         return node.nodeValue.length;
     } else {
@@ -69,12 +71,12 @@ var setCurrentCursorOffset = function (element, targetOffset) {
             var end = range.endContainer;
             if (range.endOffset === 0) {
                 end = end.childNodes[range.endOffset];
-                end = leafNode(end, 'firstChild');
+                end = DomRange.leafNode(end, 'firstChild');
                 range.setEnd(end, 0);
             } else {
                 end = end.childNodes[range.endOffset - 1]
-                end = leafNode(end, 'lastChild');
-                range.setEnd(end, nodeLength(end));
+                end = DomRange.leafNode(end, 'lastChild');
+                range.setEnd(end, DomRange.nodeLength(end));
             }
         }
     }

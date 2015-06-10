@@ -9,8 +9,6 @@ var Selection = function () {
     };
 };
 
-var selection = new Selection();
-
 var selectingData = {
     kind: null, // 'foreground' || 'background'
     start: null,
@@ -31,49 +29,49 @@ var selectingData = {
 //         pop();
 //         selectionHistoryI += 1;
 //         if (selectionHistoryI === selectionHistory.length) {
-//             var stretch = createStretch();
-//             var nextSelection = createGroup({stretches: [stretch]});
+//             var stretch = Stretch.createStretch();
+//             var nextSelection = Group.createGroup({stretches: [stretch]});
 //             stretch.group = nextSelection;
 //             selectionHistory.push({selection: nextSelection});
-//             allGroups.push(nextSelection);
+//             Global.groups.push(nextSelection);
 //         }
 //     } else if (selectionHistoryI > 0 && !pop()) {
 //         selectionHistoryI -= 1;
 //     }
-//     selection = selectionHistory[selectionHistoryI].selection;
+//     Global.selection = selectionHistory[selectionHistoryI].selection;
 // };
 
-var toggleExpanded = function () {
-    if (__active.byMatch) {
+Selection.toggleExpanded = function () {
+    if (Global.active.byMatch) {
         return;  // TODO: make this work with non-group stretches
     }
-    if (!selection.foreground.group) {
+    if (!Global.selection.foreground.group) {
         return;
     }
-    var expanded = !selection.foreground.focus.expanded;
-    var activeSteps = _.flatten(_.pluck(__active.stretches, 'steps'));
-    _.each(selection.foreground.group.stretches, function (stretch) {
+    var expanded = !Global.selection.foreground.focus.expanded;
+    var activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
+    _.each(Global.selection.foreground.group.stretches, function (stretch) {
         if (_.intersection(activeSteps, stretch.steps).length) {
             stretch.expanded = expanded;
         }
     });
-    update();
+    Main.update();
 };
 
 var selectStepUnderMouse = function (mouse) {
-    var step = findStepUnderMouse(mouse);
+    var step = Main.findStepUnderMouse(mouse);
     var selectionWidth = 44; // change in styles.css
-    var selectionEndX = trackHtml.node().offsetLeft + selectionWidth;
+    var selectionEndX = Draw.trackHtml.node().offsetLeft + selectionWidth;
     return (mouse[0] <= selectionEndX) && step;
 };
 
-var selectionKind = function () {
+Selection.selectionKind = function () {
     return d3.event.button === 2 ? 'background' : 'foreground';
 };
 
-var maybeStartSelecting = function (mouse) {
+Selection.maybeStartSelecting = function (mouse) {
     var step = selectStepUnderMouse(mouse);
-    var kind = selectionKind();
+    var kind = Selection.selectionKind();
     if (step) {
         startSelecting(step, kind);
     } else {
@@ -82,22 +80,22 @@ var maybeStartSelecting = function (mouse) {
 };
 
 var startSelecting = function (step, kind) {
-    var stretch = createStretch();
+    var stretch = Stretch.createStretch();
     var group;
     if (d3.event.ctrlKey) {
-        group = selection[kind].group;
+        group = Global.selection[kind].group;
     }
     if (! group) {
-        group = createGroup();
-        allGroups.push(group);
+        group = Group.createGroup();
+        Global.groups.push(group);
     }
     stretch.group = group;
     group.stretches.push(stretch);
 
     selectingData.start = step;
     selectingData.kind = kind;
-    selection[kind].focus = stretch;
-    selection[kind].group = group;
+    Global.selection[kind].focus = stretch;
+    Global.selection[kind].group = group;
     // if (selectionHistoryI !== selectionHistory.length - 1) {
     //     selectionHistory.push({selection: selection});
     //     selectionHistoryI = selectionHistory.length - 1;
@@ -106,12 +104,12 @@ var startSelecting = function (step, kind) {
 };
 
 var clearSelection = function (kind) {
-    selection[kind].focus = null;
-    selection[kind].group = null;
-    update();
+    Global.selection[kind].focus = null;
+    Global.selection[kind].group = null;
+    Main.update();
 };
 
-var maybeChangeSelection = function (mouse) {
+Selection.maybeChangeSelection = function (mouse) {
     if (!selectingData.start) {
         return;
     }
@@ -123,31 +121,31 @@ var maybeChangeSelection = function (mouse) {
 
 var changeSelecting = function (end) {
     selectingData.end = end;
-    var startI = _.indexOf(allStepViews, selectingData.start);
-    var endI = _.indexOf(allStepViews, selectingData.end);
+    var startI = _.indexOf(Global.stepViews, selectingData.start);
+    var endI = _.indexOf(Global.stepViews, selectingData.end);
     if (endI < startI) {
         var temp = startI;
         startI = endI;
         endI = temp;
     }
-    var steps = realSteps(allStepViews.slice(startI, endI + 1));
-    setStretchSteps(selection[selectingData.kind].focus, steps);
+    var steps = StepView.realSteps(Global.stepViews.slice(startI, endI + 1));
+    Stretch.setStretchSteps(Global.selection[selectingData.kind].focus, steps);
 
-    // if (selection.stretches[0].steps.length) {
+    // if (Global.selection.stretches[0].steps.length) {
     //     saveHistoryI = selectionHistoryI;
     // } else {
     //     saveHistoryI = selectionHistoryI - 1;
     // }
 
-    update();
+    Main.update();
 };
 
-var stopSelecting = function () {
+Selection.stopSelecting = function () {
     selectingData.start = null;
     selectingData.end = null;
     selectingData.kind = null;
 };
 
-var computeSelectionInfo = function () {
-    __activeSteps = _.flatten(_.pluck(__active.stretches, 'steps'));
+Selection.computeSelectionInfo = function () {
+    Selection.__activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
 };

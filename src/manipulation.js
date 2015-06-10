@@ -1,11 +1,13 @@
-var copyActiveStretches = function () {
-    _.each(__active.stretches, copyStretch);
+var Manipulation = {};
 
-    update();
+Manipulation.copyActiveStretches = function () {
+    _.each(Global.active.stretches, copyStretch);
+
+    Main.update();
 };
 
 var copyStretch = function (original) {
-    var p = stretchPartitions(original);
+    var p = Stretch.stretchPartitions(original);
     var notCovering = _.union(
         p("<<[<<>_]__"),
         p("__[_<>>]>>"),
@@ -14,14 +16,14 @@ var copyStretch = function (original) {
 
     var cloneMap = {};
     _.each(notCovering, function (originalStretch) {
-        var stretch = cloneStretch(originalStretch);
+        var stretch = Stretch.cloneStretch(originalStretch);
         cloneMap[originalStretch.id] = stretch;
         stretch.group.stretches.push(stretch);
     });
 
     var copy = cloneMap[original.id];
     _.each(original.steps, function (original) {
-        var step = cloneStep(original);
+        var step = Step.cloneStep(original);
         step.stretches = _.filter(original.stretches, function (originalStretch) {
             return _.contains(notCovering, originalStretch);
         });
@@ -36,34 +38,34 @@ var copyStretch = function (original) {
     var previous = original.steps[original.steps.length - 1];
     var next = previous.next;
     var lastCopyStep = copy.steps[copy.steps.length - 1];
-    linkSteps([previous, copy.steps[0]]);
-    linkSteps(copy.steps);
-    linkSteps([lastCopyStep, next]);
+    Step.linkSteps([previous, copy.steps[0]]);
+    Step.linkSteps(copy.steps);
+    Step.linkSteps([lastCopyStep, next]);
 
     _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(lastCopyStep);
     });
 
-    _.each(p("<<[<==>]>>"), fixupStretchSteps);
+    _.each(p("<<[<==>]>>"), Stretch.fixupStretchSteps);
     _.each(p("__[_<<<]=>"), function (originalAfter) {
         var stretch = cloneMap[originalAfter.id];
         stretch.steps.push(originalAfter.steps[originalAfter.steps.length - 1]);
-        fixupStretchSteps(stretch);
+        Stretch.fixupStretchSteps(stretch);
         originalAfter.steps.push(original.steps[original.steps.length - 1]);
-        fixupStretchSteps(originalAfter);
+        Stretch.fixupStretchSteps(originalAfter);
     });
 
-    var focus = selection.foreground.focus;
+    var focus = Global.selection.foreground.focus;
     if (cloneMap[focus.id]) {
-        selection.foreground.focus = cloneMap[focus.id];
+        Global.selection.foreground.focus = cloneMap[focus.id];
     }
 };
 
-var insertNewStep = function () {
-    _.each(__active.stretches, _insertNewStep);
+Manipulation.insertNewStep = function () {
+    _.each(Global.active.stretches, _insertNewStep);
 
-    update();
-    d3.select(insertStep.underStepView.__el__).select('.expression').node().focus();
+    Main.update();
+    d3.select(Global.insertStep.underStepView.__el__).select('.expression').node().focus();
 };
 
 var _insertNewStep = function (stretch) {
@@ -71,25 +73,25 @@ var _insertNewStep = function (stretch) {
     var previousStretch = previousView.stretch;
     var previous = previousStretch.steps[previousStretch.steps.length - 1];
     var next = previous.next;
-    var newStep = createStep();
+    var newStep = Step.createStep();
 
-    linkSteps([previous, newStep, next]);
+    Step.linkSteps([previous, newStep, next]);
 
-    var p = stretchPartitions(previousStretch);
+    var p = Stretch.stretchPartitions(previousStretch);
     _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(newStep);
     });
-    _.each(p("<<[<==>]>>"), fixupStretchSteps);
-    _.each(p("__[_<<<]=>"), fixupStretchSteps);
+    _.each(p("<<[<==>]>>"), Stretch.fixupStretchSteps);
+    _.each(p("__[_<<<]=>"), Stretch.fixupStretchSteps);
 
-    if (_.intersection(insertStep.steps, previousStretch.steps).length) {
-        insertStep = newStep;
+    if (_.intersection(Global.insertStep.steps, previousStretch.steps).length) {
+        Global.insertStep = newStep;
     }
 };
 
-var deleteActiveStretches = function () {
-    _.each(__active.stretches, deleteStretch);
-    update();
+Manipulation.deleteActiveStretches = function () {
+    _.each(Global.active.stretches, deleteStretch);
+    Main.update();
 };
 
 var deleteStretch = function (stretch) {
@@ -97,56 +99,56 @@ var deleteStretch = function (stretch) {
     var end = stretch.steps[stretch.steps.length - 1];
     var previous = start.previous;
     var next = end.next;
-    linkSteps([previous, next]);
+    Step.linkSteps([previous, next]);
 
-    var p = stretchPartitions(stretch);
+    var p = Stretch.stretchPartitions(stretch);
     _.each(p("<=[>>>>]__"), function (stretch) {
         stretch.steps.push(previous);
-        fixupStretchSteps(stretch);
+        Stretch.fixupStretchSteps(stretch);
     });
     _.each(p("__[<<<<]=>"), function (stretch) {
         stretch.steps.unshift(next);
-        fixupStretchSteps(stretch);
+        Stretch.fixupStretchSteps(stretch);
     });
     _.each(p("__[<<>>]__"), function (stretch) {
         stretch.group.stretches = _.without(stretch.group.stretches, stretch);
     });
 };
 
-var selectActiveStretches = function () {
-    __active.hidden = false;
-    allGroups.push(__active);
-    selection.foreground.focus = __active.focus;
-    selection.foreground.group = __active;
+Manipulation.selectActiveStretches = function () {
+    Global.active.hidden = false;
+    Global.groups.push(Global.active);
+    Global.selection.foreground.focus = Global.active.focus;
+    Global.selection.foreground.group = Global.active;
 
-    __active = createGroup({hidden: true});
+    Global.active = Group.createGroup({hidden: true});
 };
 
-var forgetForegroundGroup = function () {
-    forgetGroup(selection.foreground.group);
-    selection.foreground.focus = null;
-    selection.foreground.group = null;
+Manipulation.forgetForegroundGroup = function () {
+    Manipulation.forgetGroup(Global.selection.foreground.group);
+    Global.selection.foreground.focus = null;
+    Global.selection.foreground.group = null;
 };
 
-var forgetGroup = function (group) {
+Manipulation.forgetGroup = function (group) {
     if (! group) {
         return;
     }
 
     _.each(group.stretches, function (stretch) {
-        setStretchSteps(stretch, []);
+        Stretch.setStretchSteps(stretch, []);
     });
-    allGroups = _.without(allGroups, group);
+    Global.groups = _.without(Global.groups, group);
 };
 
-var computeGroupIntersection = function () {
-    if (!selection.foreground.group || !selection.background.group) {
+Manipulation.computeGroupIntersection = function () {
+    if (!Global.selection.foreground.group || !Global.selection.background.group) {
         return;
     }
-    var intersection = createGroup();
-    allGroups.push(intersection);
+    var intersection = Group.createGroup();
+    Global.groups.push(intersection);
     var stepsById = {};
-    _.each(selection.foreground.group.stretches, function (stretch) {
+    _.each(Global.selection.foreground.group.stretches, function (stretch) {
         _.each(stretch.steps, function (step) {
             var stepInfo = {
                 step: step,
@@ -155,7 +157,7 @@ var computeGroupIntersection = function () {
             stepsById[step.id] = stepInfo;
         });
     });
-    _.each(selection.background.group.stretches, function (stretch) {
+    _.each(Global.selection.background.group.stretches, function (stretch) {
         _.each(stretch.steps, function (step) {
             if (stepsById[step.id]) {
                 stepsById[step.id].backStretch = stretch.id;
@@ -163,7 +165,7 @@ var computeGroupIntersection = function () {
         });
     });
     var steps = _.sortBy(stepsById, function (step) {
-        return _.indexOf(allSteps, step.step);
+        return _.indexOf(Global.steps, step.step);
     });
     var stretches = [];
     var stretch = null;
@@ -192,14 +194,14 @@ var computeGroupIntersection = function () {
         stretches.push(stretch);
     }
     intersection.stretches = _.map(stretches, function (steps) {
-        var stretch = createStretch({group: intersection});
-        setStretchSteps(stretch, steps);
+        var stretch = Stretch.createStretch({group: intersection});
+        Stretch.setStretchSteps(stretch, steps);
         return stretch;
     });
-    selection.foreground.group = intersection;
-    selection.background.group = intersection;
-    var foreFocus = selection.foreground.focus;
-    var backFocus = selection.background.focus;
+    Global.selection.foreground.group = intersection;
+    Global.selection.background.group = intersection;
+    var foreFocus = Global.selection.foreground.focus;
+    var backFocus = Global.selection.background.focus;
     _.each(intersection.stretches, function (stretch) {
         if (_.intersection(stretch.steps, foreFocus.steps)) {
             foreFocus = stretch;
@@ -208,6 +210,6 @@ var computeGroupIntersection = function () {
             backFocus = stretch;
         }
     });
-    selection.foreground.focus = foreFocus;
-    selection.background.focus = backFocus;
+    Global.selection.foreground.focus = foreFocus;
+    Global.selection.background.focus = backFocus;
 };

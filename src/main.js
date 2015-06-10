@@ -1,72 +1,62 @@
-var allStepsHead = {head: true, next: null, previous: null};
-var allStepsTail = {tail: true, next: null, previous: null};
-var allSteps = [];
-var allStepViews = [];
-var hoverStep = null;
-var insertStep = null;
-var insertReferences = [];
-var targetReference = null;
+var Main = {};
 
-var allGroups = [];
-var __stretches = [];
-var __active = createGroup({hidden: true});
-// var selectionHistory = [{selection: selection}];
-// var selectionHistoryI = 0;
-// var saveHistoryI = -1;
-// var __selectionHistoryAll = selectionHistory;
-
-var update = function () {
-    computeSteps();
-    executeSteps();
-    computeStepViews();
-    computeActive();
-    computeReferenceInfo();
-    computeSelectionInfo();
-    draw();
+Main.newId = function () {
+    Global.idSequence += 1;
+    return Global.idSequence;
 };
 
-var maybeUpdate = function (cb) {
-    var lastHoverStep = hoverStep;
-    var lastInsertStep = insertStep;
+Main.update = function () {
+    Step.computeSteps();
+    StepExecution.executeSteps();
+    StepView.computeStepViews();
+    Active.computeActive();
+    Step.computeReferenceInfo();
+    Selection.computeSelectionInfo();
+    Draw.draw();
+};
+
+Main.maybeUpdate = function (cb) {
+    var lastHoverStep = Global.hoverStep;
+    var lastInsertStep = Global.insertStep;
     cb();
     if (
-        hoverStep !== lastHoverStep ||
-        insertStep !== lastInsertStep
+        Global.hoverStep !== lastHoverStep ||
+        Global.insertStep !== lastInsertStep
     ) {
-        update();
+        Main.update();
     }
 };
 
-var targetStep = function () {
-    return insertStep || hoverStep;
+Main.targetStep = function () {
+    return Global.insertStep || Global.hoverStep;
 };
 
-var mouseUp = function () {
-    stopSelecting();
-    update();
+Main.mouseUp = function () {
+    Selection.stopSelecting();
+    Main.update();
 };
 
-var mouseMove = function () {
-    var mouse = d3.mouse(trackContainer.node());
-    maybeUpdate(function () {
-        var step = findStepUnderMouse(mouse);
-        hoverStep = step ? step.stretch : null;
+Main.mouseMove = function () {
+    var mouse = d3.mouse(Draw.trackContainer.node());
+    Main.maybeUpdate(function () {
+        var step = Main.findStepUnderMouse(mouse);
+        Global.hoverStep = step ? step.stretch : null;
     });
-    maybeChangeSelection(mouse);
+    Selection.maybeChangeSelection(mouse);
 };
 
-var mouseDown = function () {
+Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
-    maybeUpdate(function () { insertStep = null });
-    var mouse = d3.mouse(trackContainer.node());
-    maybeStartSelecting(mouse);
+    Main.maybeUpdate(function () { Global.insertStep = null });
+    var mouse = d3.mouse(Draw.trackContainer.node());
+    Selection.maybeStartSelecting(mouse);
 };
 
-var findStepUnderMouse = function (mouse) {
+Main.findStepUnderMouse = function (mouse) {
     var x = mouse[0], y = mouse[1];
-    var startX = trackHtml.node().offsetLeft;
-    var endX = startX + trackHtml.node().offsetWidth;
-    return _.find(allStepViews, function (step) {
+    var startX = Draw.trackHtml.node().offsetLeft;
+    var endX = startX + Draw.trackHtml.node().offsetWidth;
+    return _.find(Global.stepViews, function (step) {
         var el = step.__el__;
         if (el.offsetTop <= y && y < el.offsetTop + el.offsetHeight) {
             return startX <= x && x < endX;
@@ -75,14 +65,16 @@ var findStepUnderMouse = function (mouse) {
     });
 };
 
-allSteps = _.map([
+Global.steps = _.map([
     {text: ''},
-], createStep);
+], Step.createStep);
 
-linkSteps(allSteps);
-allStepsHead.next = allSteps[0];
-allStepsTail.previous = allSteps[0];
+Step.linkSteps(Global.steps);
+Global.stepsHead.next = Global.steps[0];
+Global.stepsTail.previous = Global.steps[0];
+Global.active = Group.createGroup({hidden: true});
+Global.selection = new Selection();
 
-dvorak();
-drawSetup();
-update();
+Input.dvorak();
+Draw.setup();
+Main.update();

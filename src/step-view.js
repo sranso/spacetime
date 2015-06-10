@@ -1,4 +1,6 @@
-var createStepView = function (stretch) {
+var StepView = {};
+
+StepView.createStepView = function (stretch) {
     return {
         _type: 'stepView',
         stretch: stretch,
@@ -8,17 +10,17 @@ var createStepView = function (stretch) {
     };
 };
 
-var realSteps = function (stepViews) {
+StepView.realSteps = function (stepViews) {
     return _.reduce(stepViews, function (steps, stepView) {
         return steps.concat(stepView.stretch.steps);
     }, []);
 };
 
-var computeStepViews = function () {
-    allStepViews = [];
+StepView.computeStepViews = function () {
+    Global.stepViews = [];
     var stepView = null;
 
-    var real = allSteps[0];
+    var real = Global.steps[0];
     while (real) {
         var maxStretch = {steps: []};
         _.each(real.stretches, function (stretch) {
@@ -32,7 +34,7 @@ var computeStepViews = function () {
         if (!maxStretch.steps.length) {
             maxStretch = real;
         }
-        allStepViews.push(maxStretch.stepView);
+        Global.stepViews.push(maxStretch.stepView);
         var nextReal = maxStretch.steps[maxStretch.steps.length - 1].next;
         while (real && real !== nextReal) {
             real.underStepView = maxStretch.stepView;
@@ -40,5 +42,5 @@ var computeStepViews = function () {
         }
     }
 
-    linkSteps(allStepViews);
+    Step.linkSteps(Global.stepViews);
 };

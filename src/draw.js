@@ -1,13 +1,16 @@
-// var historyWidth = 20;
+var Draw = {};
 
-var trackContainer;
-var trackHtml;
+Draw.trackContainer = null;
+Draw.trackHtml = null;
+
+// var historyWidth = 20;
 var trackSvg;
 var selectionInfoEl;
 var selectionHistoryEl;
 var selectionHistoryCursor;
+var __stretches = [];
 
-var drawSetup = function () {
+Draw.setup = function () {
     drawOverallSetup();
     drawStepsSetup();
     //drawSelectionHistorySetup();
@@ -15,11 +18,11 @@ var drawSetup = function () {
     drawStretchesSetup();
 };
 
-var draw = function () {
+Draw.draw = function () {
     //computeSelectionHistoryPositions();
 
-    drawSteps(allStepViews);
-    computeStretchPositions(groupsToDraw(allGroups));
+    drawSteps(Global.stepViews);
+    computeStretchPositions(Group.groupsToDraw(Global.groups));
     //drawSelectionHistory();
     drawSelectionInfo();
     drawStretches(__stretches);
@@ -45,7 +48,7 @@ var computeSelectionHistoryPositions = function () {
 var computeStretchPositions = function (groups, stepViews) {
     __stretches = [];
 
-    var x = trackHtml.node().offsetLeft;
+    var x = Draw.trackHtml.node().offsetLeft;
     var selectionX = {
         foreground: x + 10,
         background: x + 28,
@@ -74,8 +77,8 @@ var computeStretchPositions = function (groups, stepViews) {
         x -= 9;
     });
     _.each(['foreground', 'background'], function (kind) {
-        if (selection[kind].group) {
-            _.each(selection[kind].group.stretchViews, function (originalStretch) {
+        if (Global.selection[kind].group) {
+            _.each(Global.selection[kind].group.stretchViews, function (originalStretch) {
                 originalStretch.kind = 'selected';
                 var stretch = _.clone(originalStretch);
                 stretch.kind = kind;
@@ -90,22 +93,22 @@ var computeStretchPositions = function (groups, stepViews) {
 
 
 var drawOverallSetup = function() {
-    trackContainer = d3.select('#track');
+    Draw.trackContainer = d3.select('#track');
 
-    trackHtml = d3.select('div#track-html');
+    Draw.trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg');
 
     d3.select(document)
-        .on('keydown', function () { inputEvent(keyForEvent(), 'down') })
-        .on('keyup', function () { inputEvent(keyForEvent(), 'up') })
+        .on('keydown', function () { Input.inputEvent(Input.keyForEvent(), 'down') })
+        .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
         .on('keypress', function () {
             window.getSelection().removeAllRanges();
-            maybeUpdate(function () { insertStep = null });
-            keypressEvent(d3.event.keyCode)
+            Main.maybeUpdate(function () { Global.insertStep = null });
+            Input.keypressEvent(d3.event.keyCode)
         })
-        .on('mousemove', mouseMove)
-        .on('mouseup', mouseUp)
-        .on('mousedown', mouseDown)
+        .on('mousemove', Main.mouseMove)
+        .on('mouseup', Main.mouseUp)
+        .on('mousedown', Main.mouseDown)
         .on('contextmenu', function () {
             d3.event.preventDefault();
         }) ;
@@ -117,23 +120,12 @@ var drawOverallSetup = function() {
 var drawStepsSetup = function () {
 };
 
-var parseStepView = function (stepView) {
-    // TODO: make stretches parseable
-    if (stepView.stretch._type === 'stretch') {
-        return [{
-            _type: 'text',
-            text: stepView.stretch.text,
-        }];
-    }
-    return parseStep(stepView.stretch);
-};
-
 var stepHtml = function (parsed) {
     var ref = -1;
     var htmls = _.map(parsed, function (segment) {
         if (segment._type === 'reference') {
             ref += 1;
-            var result = clipNumber(segment.reference.result, 6);
+            var result = DrawHelper.clipNumber(segment.reference.result, 6);
             var width = 9 + 9 * result.length;
             if (result.indexOf('.') !== -1) {
                 width -= 4;
@@ -148,7 +140,7 @@ var stepHtml = function (parsed) {
 };
 
 var drawSteps = function (steps) {
-    var stepEls = trackHtml.selectAll('div.step')
+    var stepEls = Draw.trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.stretch.id }) ;
 
     var stepEnterEls = stepEls.enter().append('div');
@@ -168,25 +160,25 @@ var drawSteps = function (steps) {
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('focus', function (d) {
-            maybeUpdate(function () { insertStep = d.stretch });
+            Main.maybeUpdate(function () { Global.insertStep = d.stretch });
         })
         .on('blur', function (d) {
-            maybeUpdate(function () { insertStep = null });
+            Main.maybeUpdate(function () { Global.insertStep = null });
         })
         .on('input', function (d) {
             var text = this.textContent;
-            if (insertStep._type === 'step') {
-                _.each(__active.stretches, function (stretch) {
+            if (Global.insertStep._type === 'step') {
+                _.each(Global.active.stretches, function (stretch) {
                     stretch.steps[0].text = text;
                 });
             } else {
                 // TODO: make this work for stretches
                 d.stretch.text = text;
             }
-            update();
+            Main.update();
         })
         .on('mousedown', function (d) {
-            maybeUpdate(function () { insertStep = d.stretch });
+            Main.maybeUpdate(function () { Global.insertStep = d.stretch });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {
@@ -194,11 +186,11 @@ var drawSteps = function (steps) {
         })
         .on('keydown', function (d) {
             down = true;
-            textInputEvent(d, keyForEvent());
+            Input.textInputEvent(d, Input.keyForEvent());
         })
         .on('keyup', function () {
             down = false;
-            update();
+            Main.update();
             d3.event.stopPropagation();
         }) ;
 
@@ -208,8 +200,8 @@ var drawSteps = function (steps) {
     resultContainerEnterEls.append('div')
         .classed('result', true)
         .on('mousedown', function (d) {
-            if (insertStep) {
-                insertOrUpdateReference(d);
+            if (Global.insertStep) {
+                Step.insertOrUpdateReference(d);
             }
             d3.event.stopPropagation();
             d3.event.preventDefault();
@@ -226,13 +218,13 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = ['step'];
-            if (_.intersection(d.stretch.steps, __activeSteps).length) {
+            if (_.intersection(d.stretch.steps, Selection.__activeSteps).length) {
                 classes.push('active');
             }
-            if (d.stretch === hoverStep) {
+            if (d.stretch === Global.hoverStep) {
                 classes.push('hover');
             }
-            if (d.stretch === insertStep) {
+            if (d.stretch === Global.insertStep) {
                 classes.push('inserting');
             }
             return classes.join(' ');
@@ -245,9 +237,9 @@ var drawSteps = function (steps) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
-        var parsed = parseStepView(d);
+        var parsed = DrawHelper.parseStepView(d);
         var html = stepHtml(parsed);
-        var cursorOffset = currentCursorOffset(expressionEl);
+        var cursorOffset = DomRange.currentCursorOffset(expressionEl);
         if (expressionEl.innerHTML !== html) {
             expressionEl.innerHTML = html;
             if (cursorOffset !== -1) {
@@ -256,21 +248,21 @@ var drawSteps = function (steps) {
         }
     });
 
-    updateInsertingReference();
+    DrawReferences.updateInsertingReference();
 
-    drawReferences(stepEls.select('.expression-container'));
+    DrawReferences.drawReferences(stepEls.select('.expression-container'));
 
     stepEls.select('.result')
         .attr('class', function (d) {
             var step = d.stretch.steps[d.stretch.steps.length - 1];
-            return 'result ' + referenceClass(step, null);
+            return 'result ' + DrawReferences.referenceClass(step, null);
         })
         .text(function (d) {
             var step = d.stretch.steps[d.stretch.steps.length - 1];
             if (_.isNaN(step.result)) {
                 return '';
             }
-            return clipNumber(step.result, 13);
+            return DrawHelper.clipNumber(step.result, 13);
         }) ;
 };
 
@@ -320,8 +312,8 @@ var drawSelectionHistory = function () {
         .attr('height', _.property('h'))
         .on('click', function (d, i) {
             selectionHistoryI = i;
-            selection = selectionHistory[selectionHistoryI].selection;
-            update();
+            Global.selection = selectionHistory[selectionHistoryI].selection;
+            Main.update();
         }) ;
 
     historyEls.exit().remove();
@@ -351,8 +343,8 @@ var drawSelectionHistory = function () {
 
 var drawSelectionInfo = function () {
     var selections = [
-        selection.foreground,
-        selection.background,
+        Global.selection.foreground,
+        Global.selection.background,
     ];
 
     var selectionEls = selectionInfoEl.selectAll('.selection-info')
@@ -397,12 +389,12 @@ var drawStretches = function (stretches) {
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
-            var kind = selectionKind();
-            selection[kind].focus = d.stretch;
-            selection[kind].group = d.stretch.group;
+            var kind = Selection.selectionKind();
+            Global.selection[kind].focus = d.stretch;
+            Global.selection[kind].group = d.stretch.group;
             // selectionHistoryI = saveHistoryI + 1;
-            // selectionHistory[selectionHistoryI] = {selection: selection};
-            update();
+            // selectionHistory[selectionHistoryI] = {selection: Global.selection};
+            Main.update();
             d3.event.stopPropagation();
         }) ;
 
@@ -412,7 +404,7 @@ var drawStretches = function (stretches) {
         .attr('class', function (d) {
             var classes = ['stretch', 'selection-' + d.kind];
             if (d.kind === 'foreground' || d.kind === 'background') {
-                if (d.stretch === selection[d.kind].focus) {
+                if (d.stretch === Global.selection[d.kind].focus) {
                     classes.push('selection-focus');
                 }
             }
@@ -435,7 +427,7 @@ var drawStretches = function (stretches) {
             var c = d.stretch.group.color;
             var light = c[2];
             if (d.kind === 'foreground' &&
-                d.stretch === selection.foreground.focus) {
+                d.stretch === Global.selection.foreground.focus) {
                 light -= 20;
             }
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
@@ -444,37 +436,4 @@ var drawStretches = function (stretches) {
     stretchEls.select('rect.mouse')
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
-};
-
-var clipNumber = function (number, length) {
-    var numString = '' + number;
-    if (numString.length <= length) {
-        return numString;
-    }
-    var before = numString.slice(0, length);
-    if (! _.isNumber(number)) {
-        return before;
-    }
-    if (before.indexOf('.') === -1 || numString.slice(0, 4) === '0.000') {
-        numString = number.toExponential(20);
-    }
-
-    var eIndex = numString.indexOf('e');
-    if (eIndex !== -1) {
-        var exponent = numString.slice(eIndex);
-        var mantissaLength = length - exponent.length;
-        var pointAndBeforeLength = numString.indexOf('.') + 1;
-        var fractionDigits = mantissaLength - pointAndBeforeLength;
-        if (fractionDigits < 0) {
-            fractionDigits = 0;
-        }
-        return number.toExponential(fractionDigits);
-    }
-
-    var pointIndex = numString.indexOf('.');
-    var fractionDigits = length - pointIndex - 1;
-    if (fractionDigits < 0) {
-        fractionDigits = 0;
-    }
-    return number.toFixed(fractionDigits);
 };
