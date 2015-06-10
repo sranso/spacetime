@@ -10,12 +10,6 @@ var inputEvent = function (key, eventType) {
     } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
         keypressEvent(null, 'tab');
-    } else if (key === 'shift' || key === 'ctrl') {
-        // if (eventType === 'down') {
-        //     startSelecting();
-        // } else {
-        //     stopSelecting();
-        // }
     }
 };
 
