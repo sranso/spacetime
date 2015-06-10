@@ -1,4 +1,5 @@
 var Draw = {};
+(function () {
 
 Draw.trackContainer = null;
 Draw.trackHtml = null;
@@ -243,7 +244,7 @@ var drawSteps = function (steps) {
         if (expressionEl.innerHTML !== html) {
             expressionEl.innerHTML = html;
             if (cursorOffset !== -1) {
-                setCurrentCursorOffset(expressionEl, cursorOffset);
+                DomRange.setCurrentCursorOffset(expressionEl, cursorOffset);
             }
         }
     });
@@ -437,3 +438,5 @@ var drawStretches = function (stretches) {
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
 };
+
+})();

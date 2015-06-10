@@ -1,4 +1,5 @@
 var DrawReferences = {};
+(function () {
 
 DrawReferences.referenceClass = function (step, containingStep, referenceI) {
     if (step.referenceAway == null || !Main.targetStep()) {
@@ -156,3 +157,5 @@ var selectReference = function (container, i) {
     selection.removeAllRanges();
     selection.addRange(range);
 };
+
+})();

@@ -1,4 +1,5 @@
 var StepExecution = {};
+(function () {
 
 StepExecution.execute = function () {
     _.each(Global.steps, executeStep);
@@ -81,3 +82,5 @@ var executeStep = function (step) {
         step.result = NaN;
     }
 };
+
+})();

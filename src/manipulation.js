@@ -1,4 +1,5 @@
 var Manipulation = {};
+(function () {
 
 Manipulation.copyActiveStretches = function () {
     _.each(Global.active.stretches, copyStretch);
@@ -213,3 +214,5 @@ Manipulation.computeGroupIntersection = function () {
     Global.selection.foreground.focus = foreFocus;
     Global.selection.background.focus = backFocus;
 };
+
+})();

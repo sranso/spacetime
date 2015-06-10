@@ -1,4 +1,5 @@
 var DomRange = {};
+(function() {
 
 DomRange.currentRange = function () {
     var selection = window.getSelection();
@@ -51,7 +52,7 @@ DomRange.nodeLength = function (node) {
     }
 }
 
-var setCurrentCursorOffset = function (element, targetOffset) {
+DomRange.setCurrentCursorOffset = function (element, targetOffset) {
     var range = currentRangeUnder(element);
     if (!range) {
         return;
@@ -86,3 +87,5 @@ var setCurrentCursorOffset = function (element, targetOffset) {
     selection.removeAllRanges();
     selection.addRange(range);
 };
+
+})();

@@ -1,4 +1,5 @@
 var Main = {};
+(function () {
 
 Main.newId = function () {
     Global.idSequence += 1;
@@ -78,3 +79,5 @@ Global.selection = new Selection();
 Input.dvorak();
 Draw.setup();
 Main.update();
+
+})();

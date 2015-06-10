@@ -1,4 +1,5 @@
 var Input = {};
+(function () {
 
 Input.keyForEvent = function () {
     return keyMap[d3.event.keyCode];
@@ -130,3 +131,5 @@ Input.dvorak = function () {
 Input.qwerty = function () {
     keypressMap = qwertyKeypressMap;
 };
+
+})();

@@ -1,4 +1,5 @@
 var StretchView = {};
+(function () {
 
 StretchView.create = function (stretch) {
     return {
@@ -28,3 +29,5 @@ StretchView.computeSteps = function (stretchView) {
         }
     }
 };
+
+})();

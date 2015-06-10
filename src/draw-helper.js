@@ -1,4 +1,5 @@
 var DrawHelper = {};
+(function () {
 
 DrawHelper.clipNumber = function (number, length) {
     var numString = '' + number;
@@ -43,3 +44,5 @@ DrawHelper.parseStepView = function (stepView) {
     }
     return StepExecution.parse(stepView.stretch);
 };
+
+})();

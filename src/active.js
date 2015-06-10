@@ -1,4 +1,5 @@
 var Active = {};
+(function () {
 
 Active.computeActive = function () {
     var focus = Global.insertStep || Global.selection.foreground.focus;
@@ -306,3 +307,5 @@ var scoreMatchChain = function (backStretch, overBack, compareSteps, chain) {
 
     return score;
 };
+
+})();

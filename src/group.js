@@ -1,4 +1,5 @@
 var Group = {};
+(function () {
 
 Group.create = function (group) {
     group = _.extend({
@@ -37,3 +38,5 @@ var orderGroups = function (groups) {
         return 0;
     });
 };
+
+})();

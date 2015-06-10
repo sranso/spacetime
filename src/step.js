@@ -1,4 +1,5 @@
 var Step = {};
+(function () {
 
 // A step is its own stretch.
 Step.create = function (step) {
@@ -112,8 +113,10 @@ Step.insertOrUpdateReference = function (resultStepView) {
         _.each(Global.active.stretches, function (stretch) {
             stretch.steps[0].text = text;
         });
-        setCurrentCursorOffset(expressionEl, (before + innerText).length);
+        DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     }
 
     Main.update();
 };
+
+})();

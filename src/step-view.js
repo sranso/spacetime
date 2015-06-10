@@ -1,4 +1,5 @@
 var StepView = {};
+(function () {
 
 StepView.create = function (stretch) {
     return {
@@ -44,3 +45,5 @@ StepView.computeViews = function () {
 
     Step.linkSteps(Global.stepViews);
 };
+
+})();

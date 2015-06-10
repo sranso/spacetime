@@ -8,6 +8,7 @@ var Selection = function () {
         group: null,
     };
 };
+(function () {
 
 var selectingData = {
     kind: null, // 'foreground' || 'background'
@@ -149,3 +150,5 @@ Selection.stop = function () {
 Selection.computeInfo = function () {
     Selection.__activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
 };
+
+})();

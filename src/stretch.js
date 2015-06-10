@@ -1,4 +1,5 @@
 var Stretch = {};
+(function () {
 
 Stretch.create = function (stretch) {
     stretch = _.extend({
@@ -166,3 +167,5 @@ Stretch.fixupSteps = function (stretch) {
     }
     Stretch.setSteps(stretch, steps);
 };
+
+})();
