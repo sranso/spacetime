@@ -4,7 +4,6 @@ var Step = {};
 // A step is its own stretch.
 Step.create = function (step) {
     step = _.extend({
-        _type: 'step',
         text: '',
         stretches: [],
         references: [],

@@ -3,7 +3,6 @@ var StretchView = {};
 
 StretchView.create = function (stretch) {
     return {
-        _type: 'stretchView',
         kind: 'unselected',
         selectedArea: false,
         steps: [],

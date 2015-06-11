@@ -14,7 +14,6 @@ step: {
   id: 1,
 
   //////// REMOVE
-  _type: 'step',
   steps: [],
   underStepView: <stepView>,
   result: <result>,
@@ -38,7 +37,6 @@ stretch: {
   id: 2,
 
   // REMOVE
-  _type,
   steps: [<step>, <step>, ...],
   stepView: ...,
   stretchView: ...,

@@ -3,7 +3,6 @@ var StepView = {};
 
 StepView.create = function (stretch) {
     return {
-        _type: 'stepView',
         stretch: stretch,
         __el__: null,
         next: null,

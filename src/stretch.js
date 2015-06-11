@@ -3,7 +3,6 @@ var Stretch = {};
 
 Stretch.create = function (stretch) {
     stretch = _.extend({
-        _type: 'stretch',
         text: '',
         steps: [],
         expanded: true,

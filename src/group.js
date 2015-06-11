@@ -3,7 +3,6 @@ var Group = {};
 
 Group.create = function (group) {
     group = _.extend({
-        _type: 'group',
         hidden: false,
         stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(78, 83)],
