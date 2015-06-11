@@ -64,7 +64,7 @@ Active.computeActive = function () {
         });
 
         var activeStretches = _.map(activeOverlaps, function (overlap) {
-            var stretch = Stretch.clone(overlap.foreground);
+            var stretch = Stretch.create();
             stretch.group = Global.active;
             stretch.expanded = true;
             Stretch.setSteps(stretch, overlap.steps);
@@ -92,7 +92,7 @@ var setActiveStretches = function (stretches, byMatch) {
         if (original.group === Global.active) {
             return original;
         }
-        stretch = Stretch.clone(original);
+        stretch = Stretch.create();
         stretch.group = Global.active;
         stretch.expanded = true;
         Stretch.setSteps(stretch, original.steps);
@@ -229,7 +229,8 @@ var activeByMatch = function (compareSteps, stretch) {
         return null;
     }
 
-    var active = Stretch.create({group: Global.active});
+    var active = Stretch.create();
+    active.group = Global.active;
     var firstMatch = bestChain.chain[1];
     var lastMatch = bestChain.chain[bestChain.chain.length - 2];
     if (firstMatch.match.group) {

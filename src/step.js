@@ -1,9 +1,9 @@
 var Step = {};
 (function () {
 
-// A step is its own stretch.
-Step.create = function (step) {
-    step = _.extend({
+Step.create = function () {
+    var step = {
+        id: Main.newId(),
         text: '',
         stretches: [],
         references: [],
@@ -11,19 +11,11 @@ Step.create = function (step) {
         previous: null,
         underStepView: null,
         result: null,
-    }, step || {});
-    step.id = Main.newId();
-    step.stretch = Stretch.create({  // TODO: remove this
-        text: step.text,
-        steps: [step],
-        expression: true,
-    });
-    return step;
-};
-
-Step.clone = function (original) {
-    var step = Step.create(original);
-    step.stretches = [];
+    };
+    // TODO: remove this
+    step.stretch = Stretch.create();
+    step.stretch.steps = [step];
+    step.stretch.expression = true;
     return step;
 };
 

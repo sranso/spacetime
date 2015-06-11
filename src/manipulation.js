@@ -17,14 +17,18 @@ var copyStretch = function (original) {
 
     var cloneMap = {};
     _.each(notCovering, function (originalStretch) {
-        var stretch = Stretch.clone(originalStretch);
+        var stretch = Stretch.create();
+        stretch.text = originalStretch.text;
+        stretch.group = originalStretch.group;
+        stretch.expanded = originalStretch.expanded;
         cloneMap[originalStretch.id] = stretch;
         stretch.group.stretches.push(stretch);
     });
 
     var copy = cloneMap[original.id];
     _.each(original.steps, function (original) {
-        var step = Step.clone(original);
+        var step = Step.create();
+        step.text = original.text;
         step.stretches = _.filter(original.stretches, function (originalStretch) {
             return _.contains(notCovering, originalStretch);
         });
@@ -122,7 +126,8 @@ Manipulation.selectActiveStretches = function () {
     Global.selection.foreground.focus = Global.active.focus;
     Global.selection.foreground.group = Global.active;
 
-    Global.active = Group.create({hidden: true});
+    Global.active = Group.create();
+    Global.active.hidden = true;
 };
 
 Manipulation.forgetForegroundGroup = function () {
@@ -195,7 +200,8 @@ Manipulation.computeGroupIntersection = function () {
         stretches.push(stretch);
     }
     intersection.stretches = _.map(stretches, function (steps) {
-        var stretch = Stretch.create({group: intersection});
+        var stretch = Stretch.create();
+        stretch.group = intersection;
         Stretch.setSteps(stretch, steps);
         return stretch;
     });

@@ -14,7 +14,6 @@ step: {
   id: 1,
 
   //////// REMOVE
-  steps: [],
   underStepView: <stepView>,
   result: <result>,
 }
@@ -24,10 +23,7 @@ TODO:
 * absolute references
 
 stretch: {
-  text: 'stretch name/description',
-  start: <step>,  // TODO
-  end: <step>,    // TODO
-  expanded: true,
+  steps: [<step>, <step>, ...],
   group: <group>
 
   // TEMPORARY
@@ -37,7 +33,8 @@ stretch: {
   id: 2,
 
   // REMOVE
-  steps: [<step>, <step>, ...],
+  text: 'stretch name/description',
+  expanded: true,
   stepView: ...,
   stretchView: ...,
 }
@@ -45,3 +42,9 @@ stretch: {
 TODO:
 * separate out a stretch (start to end range with a group) and a
   multi-step (start to end range, text, expanded).
+
+multiStep: {
+  text: 'step description',    // expression if text is null
+  steps: [<step>, <step>, ...],
+  expanded: true/false,
+}

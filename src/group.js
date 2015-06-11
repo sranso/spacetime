@@ -1,15 +1,14 @@
 var Group = {};
 (function () {
 
-Group.create = function (group) {
-    group = _.extend({
+Group.create = function () {
+    return {
+        id: Main.newId(),
         hidden: false,
         stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(78, 83)],
         text: '',
-    }, group || {});
-    group.id = Main.newId();
-    return group;
+    };
 };
 
 Group.groupsToDraw = function (groups) {

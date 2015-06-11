@@ -66,14 +66,13 @@ Main.findStepUnderMouse = function (mouse) {
     });
 };
 
-Global.steps = _.map([
-    {text: ''},
-], Step.create);
+Global.steps = [Step.create()];
 
 Step.linkSteps(Global.steps);
 Global.stepsHead.next = Global.steps[0];
 Global.stepsTail.previous = Global.steps[0];
-Global.active = Group.create({hidden: true});
+Global.active = Group.create();
+Global.active.hidden = true;
 Global.selection = new Selection();
 
 Input.dvorak();

@@ -31,7 +31,8 @@ var selectingData = {
 //         selectionHistoryI += 1;
 //         if (selectionHistoryI === selectionHistory.length) {
 //             var stretch = Stretch.create();
-//             var nextSelection = Group.create({stretches: [stretch]});
+//             var nextSelection = Group.create();
+//             nextSelection.stretches = [stretch];
 //             stretch.group = nextSelection;
 //             selectionHistory.push({selection: nextSelection});
 //             Global.groups.push(nextSelection);

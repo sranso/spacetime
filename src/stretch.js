@@ -1,23 +1,17 @@
 var Stretch = {};
 (function () {
 
-Stretch.create = function (stretch) {
-    stretch = _.extend({
+Stretch.create = function () {
+    var stretch = {
+        id: Main.newId(),
         text: '',
         steps: [],
         expanded: true,
         group: null,
         expression: false,
-    }, stretch || {});
-    stretch.id = Main.newId();
+    };
     stretch.stepView = StepView.create(stretch);
     stretch.stretchView = StretchView.create(stretch);
-    return stretch;
-};
-
-Stretch.clone = function (original) {
-    var stretch = Stretch.create(original);
-    stretch.steps = [];
     return stretch;
 };
 
