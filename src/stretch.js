@@ -8,6 +8,7 @@ Stretch.create = function (stretch) {
         steps: [],
         expanded: true,
         group: null,
+        expression: false,
     }, stretch || {});
     stretch.id = Main.newId();
     stretch.stepView = StepView.create(stretch);

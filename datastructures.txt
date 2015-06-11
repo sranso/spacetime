@@ -15,16 +15,13 @@ step: {
 
   //////// REMOVE
   _type: 'step',
-  expanded: true,
   steps: [],
-  pseudo: <pseudo>,
-  underPseudo: <pseudo>,
+  underStepView: <stepView>,
   result: <result>,
 }
 
 TODO:
-* make a step not be its own stretch
-* make pseudo steps only be for things displayed (or nearby)
+* make stepView steps only be for things displayed (or nearby)
 * absolute references
 
 stretch: {
@@ -34,14 +31,17 @@ stretch: {
   expanded: true,
   group: <group>
 
+  // TEMPORARY
+  expression: true/false,
+
   // REMOVE?
   id: 2,
 
   // REMOVE
   _type,
   steps: [<step>, <step>, ...],
-  pseudo: ...,
-  pseudoStretch: ...,
+  stepView: ...,
+  stretchView: ...,
 }
 
 TODO:

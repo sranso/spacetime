@@ -6,7 +6,6 @@ Step.create = function (step) {
     step = _.extend({
         _type: 'step',
         text: '',
-        expanded: true,
         stretches: [],
         references: [],
         next: null,
@@ -14,9 +13,12 @@ Step.create = function (step) {
         underStepView: null,
         result: null,
     }, step || {});
-    step.steps = [step];
     step.id = Main.newId();
-    step.stepView = StepView.create(step);
+    step.stretch = Stretch.create({  // TODO: remove this
+        text: step.text,
+        steps: [step],
+        expression: true,
+    });
     return step;
 };
 
@@ -61,23 +63,24 @@ Step.computeReferenceInfo = function () {
         step.references = _.pluck(references, 'reference');
     });
     var step = Main.targetStep();
-    if (!step || step._type !== 'step') {
+    if (!step || !step.expression) {
         return;
     };
+    step = step.steps[0];
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {
-    if (Global.insertStep._type === 'stretch') {
+    if (!Global.insertStep.expression) {
         return;
     }
     var resultStep = resultStepView.stretch.steps[resultStepView.stretch.steps.length - 1];
     var stepView = Global.insertStep.steps[0].underStepView;
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
-    var referenceAway = Global.insertStep.__index - resultStep.__index;
+    var referenceAway = Global.insertStep.steps[0].__index - resultStep.__index;
     if (referenceAway <= 0) {
         return;
     }
@@ -90,6 +93,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
         var text = expressionEl.textContent;
         _.each(Global.active.stretches, function (stretch) {
             stretch.steps[0].text = text;
+            stretch.steps[0].stretch.text = text;
         });
         var range = DomRange.currentRange();
         if (range) {
@@ -112,6 +116,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
         expressionEl.textContent = text;
         _.each(Global.active.stretches, function (stretch) {
             stretch.steps[0].text = text;
+            stretch.steps[0].stretch.text = text;
         });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     }

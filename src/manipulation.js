@@ -66,7 +66,7 @@ Manipulation.insertNewStep = function () {
     _.each(Global.active.stretches, _insertNewStep);
 
     Main.update();
-    d3.select(Global.insertStep.underStepView.__el__).select('.expression').node().focus();
+    d3.select(Global.insertStep.steps[0].underStepView.__el__).select('.expression').node().focus();
 };
 
 var _insertNewStep = function (stretch) {
@@ -86,7 +86,7 @@ var _insertNewStep = function (stretch) {
     _.each(p("__[_<<<]=>"), Stretch.fixupSteps);
 
     if (_.intersection(Global.insertStep.steps, previousStretch.steps).length) {
-        Global.insertStep = newStep;
+        Global.insertStep = newStep.stretch;
     }
 };
 

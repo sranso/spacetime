@@ -33,7 +33,7 @@ StepView.computeViews = function () {
         });
 
         if (!maxStretch.steps.length) {
-            maxStretch = real;
+            maxStretch = real.stretch;
         }
         Global.stepViews.push(maxStretch.stepView);
         var nextReal = maxStretch.steps[maxStretch.steps.length - 1].next;

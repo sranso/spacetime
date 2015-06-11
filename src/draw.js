@@ -168,9 +168,12 @@ var drawSteps = function (steps) {
         })
         .on('input', function (d) {
             var text = this.textContent;
-            if (Global.insertStep._type === 'step') {
+            // TODO: this isn't really the right conditional, but
+            // it's all going to change when multi-steps are added.
+            if (Global.insertStep.expression) {
                 _.each(Global.active.stretches, function (stretch) {
                     stretch.steps[0].text = text;
+                    stretch.steps[0].stretch.text = text; // TODO: make dynamic
                 });
             } else {
                 // TODO: make this work for stretches

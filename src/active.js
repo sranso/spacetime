@@ -14,8 +14,9 @@ Active.computeActive = function () {
     }
 
     if (Global.insertStep) {
+        // TODO: fix this to not need to create a stretch
         focus = Stretch.create();
-        Stretch.setSteps(focus, [Global.insertStep]);
+        Stretch.setSteps(focus, Global.insertStep.steps.slice());
         var foreground = [focus];
     } else {
         var foreground = Global.selection.foreground.group.stretches;
@@ -118,10 +119,11 @@ var computeActiveByMatch = function (focusOverlaps, background) {
         _.each(stepViews, function (stepView) {
             var match = stepView.stretch;
             var matches;
-            if (stepView.stretch._type === 'step') {
-                matches = findStepMatches(bg, match);
-            } else {
+            if (match.group) {
                 matches = findGroupMatches(bg, overBack, match);
+            } else {
+                match = match.steps[0];
+                matches = findStepMatches(bg, match);
             }
             var individualMatch = {
                 match: match,
@@ -179,10 +181,10 @@ var activeByMatch = function (compareSteps, stretch) {
     _.each(compareSteps, function (compare, stepI) {
         lengthToLookAt = matchNumber;
         var matches;
-        if (compare.match._type === 'step') {
-            matches = findStepMatches(stretch, compare.match);
-        } else {
+        if (compare.match.group) {
             matches = findGroupMatches(stretch, overBack, compare.match);
+        } else {
+            matches = findStepMatches(stretch, compare.match);
         }
         _.each(matches, function (match, matchI) {
             var individualMatch = {
@@ -230,8 +232,16 @@ var activeByMatch = function (compareSteps, stretch) {
     var active = Stretch.create({group: Global.active});
     var firstMatch = bestChain.chain[1];
     var lastMatch = bestChain.chain[bestChain.chain.length - 2];
-    active.steps.push(firstMatch.match.steps[0]);
-    active.steps.push(lastMatch.match.steps[lastMatch.match.steps.length - 1]);
+    if (firstMatch.match.group) {
+        active.steps.push(firstMatch.match.steps[0]);
+    } else {
+        active.steps.push(firstMatch.match);
+    }
+    if (lastMatch.match.group) {
+        active.steps.push(lastMatch.match.steps[lastMatch.match.steps.length - 1]);
+    } else {
+        active.steps.push(lastMatch.match);
+    }
     Stretch.fixupSteps(active);
     return active;
 };
@@ -252,12 +262,12 @@ var findGroupMatches = function (backStretch, overBack, compareStretch) {
 };
 
 var scoreIndividualMatch = function (backStretch, overBack, match) {
-    if (match.match._type === 'step') {
-        match.startStepIndex = _.indexOf(backStretch.steps, match.match);
-        match.endStepIndex = match.startStepIndex;
-    } else {
+    if (match.match.group) {
         match.startStepIndex = _.indexOf(backStretch.steps, match.match.steps[0]);
         match.endStepIndex = _.indexOf(backStretch.steps, match.match.steps[match.match.steps.length - 1]);
+    } else {
+        match.startStepIndex = _.indexOf(backStretch.steps, match.match);
+        match.endStepIndex = match.startStepIndex;
     }
     var compare = match.compare;
     var score = {};
