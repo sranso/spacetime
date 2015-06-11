@@ -1,3 +1,4 @@
+'use strict';
 var Global = {};
 
 Global.stepsHead = {head: true, next: null, previous: null};

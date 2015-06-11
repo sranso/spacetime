@@ -1,3 +1,4 @@
+'use strict';
 var Active = {};
 (function () {
 
@@ -92,7 +93,7 @@ var setActiveStretches = function (stretches, byMatch) {
         if (original.group === Global.active) {
             return original;
         }
-        stretch = Stretch.create();
+        var stretch = Stretch.create();
         stretch.group = Global.active;
         stretch.expanded = true;
         Stretch.setSteps(stretch, original.steps);

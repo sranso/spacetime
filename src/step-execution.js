@@ -1,3 +1,4 @@
+'use strict';
 var StepExecution = {};
 (function () {
 
@@ -68,9 +69,7 @@ var executeStep = function (step) {
     toEval = toEval.join('');
 
     try {
-        with (Math) {
-            step.result = eval(toEval);
-        }
+        step.result = eval(toEval);
     } catch (exception) {
         console.log(exception);
         step.result = NaN;
