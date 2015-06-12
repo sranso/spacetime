@@ -2,7 +2,6 @@
 var MultiStep = {};
 (function () {
 
-MultiStep.__steps = [];
 MultiStep.create = function () {
     var multiStep = {
         id: Main.newId(),
@@ -11,7 +10,6 @@ MultiStep.create = function () {
         collapsed: false,
     };
     multiStep.stepView = StepView.create(multiStep);
-    MultiStep.__steps.push(multiStep);
     return multiStep;
 };
 

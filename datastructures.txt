@@ -37,8 +37,6 @@ stretch: {
 }
 
 TODO:
-* separate out a stretch (start to end range with a group) and a
-  multi-step (start to end range, text, collapsed).
 
 multiStep: {
   text: 'step description',    // expression if text is null
