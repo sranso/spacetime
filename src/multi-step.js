@@ -2,9 +2,35 @@
 var MultiStep = {};
 (function () {
 
-MultiStep.create = function (multiStep) {
-    multiStep = _.extend({
-    }, multiStep || {});
+MultiStep.__steps = [];
+MultiStep.create = function () {
+    var multiStep = {
+        id: Main.newId(),
+        text: '',
+        steps: [],
+        collapsed: false,
+    };
+    multiStep.stepView = StepView.create(multiStep);
+    MultiStep.__steps.push(multiStep);
+    return multiStep;
+};
+
+MultiStep.isMultiStep = function (step) {
+    return step.steps && step.hasOwnProperty('text');
+};
+
+MultiStep.isExpression = function (multiStep) {
+    return multiStep.text === null;
+};
+
+MultiStep.findFromSteps = function (steps) {
+    var candidates = steps[0].stretches;
+    return _.find(candidates, function (stretch) {
+        if (!MultiStep.isMultiStep(stretch)) {
+            return false;
+        }
+        return stretch.steps[0] === steps[0] && stretch.steps[stretch.steps.length - 1] === steps[steps.length - 1];
+    });
 };
 
 })();

@@ -2,18 +2,27 @@
 var StepView = {};
 (function () {
 
-StepView.create = function (stretch) {
-    return {
-        stretch: stretch,
+StepView.create = function (step) {
+    var stepView = {
+        step: step,
+        steps: [],
         __el__: null,
         next: null,
         previous: null,
     };
+
+    // TODO: remove this.
+    Object.defineProperty(stepView, 'steps', {
+        get: function () {
+            return MultiStep.isMultiStep(stepView.step) ? stepView.step.steps : [stepView.step];
+        },
+    });
+    return stepView;
 };
 
 StepView.realSteps = function (stepViews) {
     return _.reduce(stepViews, function (steps, stepView) {
-        return steps.concat(stepView.stretch.steps);
+        return steps.concat(stepView.steps);
     }, []);
 };
 
@@ -23,24 +32,27 @@ StepView.computeViews = function () {
 
     var real = Global.steps[0];
     while (real) {
-        var maxStretch = {steps: []};
-        _.each(real.stretches, function (stretch) {
-            if (!stretch.expanded) {
-                if (stretch.steps.length > maxStretch.steps.length) {
-                    maxStretch = stretch;
+        var maxStep = {steps: []};
+        _.each(real.stretches, function (multiStep) {
+            if (MultiStep.isMultiStep(multiStep) && multiStep.collapsed) {
+                if (multiStep.steps.length > maxStep.steps.length) {
+                    maxStep = multiStep;
                 }
             }
         });
 
-        if (!maxStretch.steps.length) {
-            maxStretch = real.stretch;
+        var nextReal;
+        if (maxStep.steps.length) {
+            nextReal = maxStep.steps[maxStep.steps.length - 1].next;
+        } else {
+            maxStep = real;
+            nextReal = real.next;
         }
-        Global.stepViews.push(maxStretch.stepView);
-        var nextReal = maxStretch.steps[maxStretch.steps.length - 1].next;
         while (real && real !== nextReal) {
-            real.underStepView = maxStretch.stepView;
+            real.underStepView = maxStep.stepView;
             real = real.next;
         }
+        Global.stepViews.push(maxStep.stepView);
     }
 
     Step.linkSteps(Global.stepViews);

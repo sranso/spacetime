@@ -13,10 +13,7 @@ Step.create = function () {
         underStepView: null,
         result: null,
     };
-    // TODO: remove this
-    step.stretch = Stretch.create();
-    step.stretch.steps = [step];
-    step.stretch.expression = true;
+    step.stepView = StepView.create(step);
     return step;
 };
 
@@ -44,7 +41,7 @@ Step.linkSteps = function (steps) {
 };
 
 
-// TODO: make this work right for stretches (stepViews)
+// TODO: make this work right for multi-steps (stepViews)
 Step.computeReferenceInfo = function () {
     _.each(Global.steps, function (step, i) {
         step.__index = i;
@@ -55,24 +52,26 @@ Step.computeReferenceInfo = function () {
         step.references = _.pluck(references, 'reference');
     });
     var stepView = Main.targetStepView();
-    if (!stepView || !stepView.stretch.expression) {
+    if (!stepView || MultiStep.isMultiStep(stepView.step)) {
         return;
     };
-    var step = stepView.stretch.steps[0];
+    var step = stepView.steps[0];
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {
-    if (!Global.insertStepView.stretch.expression) {
+
+    // TODO: get this working for multi-step
+    if (MultiStep.isMultiStep(Global.insertStepView.step)) {
         return;
     }
-    var resultStep = resultStepView.stretch.steps[resultStepView.stretch.steps.length - 1];
-    var stepView = Global.insertStepView.stretch.steps[0].underStepView;
+    var resultStep = resultStepView.steps[resultStepView.stretch.steps.length - 1];
+    var stepView = Global.insertStepView;
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
-    var referenceAway = Global.insertStepView.stretch.steps[0].__index - resultStep.__index;
+    var referenceAway = stepView.steps[0].__index - resultStep.__index;
     if (referenceAway <= 0) {
         return;
     }
@@ -85,7 +84,6 @@ Step.insertOrUpdateReference = function (resultStepView) {
         var text = expressionEl.textContent;
         _.each(Global.active.stretches, function (stretch) {
             stretch.steps[0].text = text;
-            stretch.steps[0].stretch.text = text;
         });
         var range = DomRange.currentRange();
         if (range) {
@@ -108,7 +106,6 @@ Step.insertOrUpdateReference = function (resultStepView) {
         expressionEl.textContent = text;
         _.each(Global.active.stretches, function (stretch) {
             stretch.steps[0].text = text;
-            stretch.steps[0].stretch.text = text;
         });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     }

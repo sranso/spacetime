@@ -7,7 +7,7 @@ step: {
   next: <nextStep>
   references: [<step>, <step>, ...],
   absoluteReferences: [true, false, ...], // TODO
-  stretches: [<stretch>, <stretch>, ...],
+  stretches: [<multiStep>, <stretch>, ...],
 
   //////// REMOVE the below?
   previous: <previousStep>,
@@ -26,9 +26,6 @@ stretch: {
   steps: [<step>, <step>, ...],
   group: <group>
 
-  // TEMPORARY
-  expression: true/false,
-
   // REMOVE?
   id: 2,
 
@@ -41,10 +38,13 @@ stretch: {
 
 TODO:
 * separate out a stretch (start to end range with a group) and a
-  multi-step (start to end range, text, expanded).
+  multi-step (start to end range, text, collapsed).
 
 multiStep: {
   text: 'step description',    // expression if text is null
   steps: [<step>, <step>, ...],
-  expanded: true/false,
+  collapsed: true/false,
+
+  // REMOVE?
+  id: 3,
 }

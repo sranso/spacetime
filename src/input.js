@@ -40,7 +40,7 @@ Input.keypressEvent = function (keyCode, key) {
     if (key === 'w' || key === 'q') {
         browseSelectionHistory(key === 'w');
     } else if (key === 'tab') {
-        Selection.toggleExpanded();
+        Selection.toggleCollapsed();
     } else if (key === 'c') {
         Manipulation.copyActiveStretches();
     } else if (key === 'd') {

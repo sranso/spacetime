@@ -21,7 +21,7 @@ StretchView.computeSteps = function (stretchView) {
         var stepView = real.underStepView;
         var stepViewBoxed = {step: stepView};
         stretchView.steps.push(stepViewBoxed);
-        var missingSteps = _.difference(stepView.stretch.steps, steps);
+        var missingSteps = _.difference(stepView.steps, steps);
         stepViewBoxed.partial = missingSteps.length > 0;
         while (real && real.underStepView === stepView) {
             i += 1;

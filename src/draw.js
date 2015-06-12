@@ -143,7 +143,7 @@ var stepHtml = function (parsed) {
 
 var drawSteps = function (steps) {
     var stepEls = Draw.trackHtml.selectAll('div.step')
-        .data(steps, function (d) { return d.stretch.id }) ;
+        .data(steps, function (d) { return d.step.id }) ;
 
     var stepEnterEls = stepEls.enter().append('div');
 
@@ -171,14 +171,13 @@ var drawSteps = function (steps) {
             var text = this.textContent;
             // TODO: this isn't really the right conditional, but
             // it's all going to change when multi-steps are added.
-            if (Global.insertStepView.stretch.expression) {
+            if (MultiStep.isMultiStep(d.step)) {
+                // TODO: make this work for multi-steps
+                d.step.text = text;
+            } else {
                 _.each(Global.active.stretches, function (stretch) {
                     stretch.steps[0].text = text;
-                    stretch.steps[0].stretch.text = text; // TODO: make dynamic
                 });
-            } else {
-                // TODO: make this work for stretches
-                d.stretch.text = text;
             }
             Main.update();
         })
@@ -223,7 +222,7 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = ['step'];
-            if (_.intersection(d.stretch.steps, Selection.__activeSteps).length) {
+            if (_.intersection(d.steps, Selection.__activeSteps).length) {
                 classes.push('active');
             }
             if (d === Global.hoverStepView) {
@@ -259,11 +258,14 @@ var drawSteps = function (steps) {
 
     stepEls.select('.result')
         .attr('class', function (d) {
-            var step = d.stretch.steps[d.stretch.steps.length - 1];
+            var step = d.steps[d.steps.length - 1];
+            if (!step) {
+                debugger;
+            }
             return 'result ' + DrawReferences.referenceClass(step, null);
         })
         .text(function (d) {
-            var step = d.stretch.steps[d.stretch.steps.length - 1];
+            var step = d.steps[d.steps.length - 1];
             if (_.isNaN(step.result)) {
                 return '';
             }

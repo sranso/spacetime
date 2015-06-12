@@ -2,18 +2,22 @@
 var Stretch = {};
 (function () {
 
-Stretch.create = function () {
-    var stretch = {
+Stretch.createBasicStretch = function () {
+    return {
         id: Main.newId(),
-        text: '',
         steps: [],
-        expanded: true,
-        group: null,
-        expression: false,
     };
-    stretch.stepView = StepView.create(stretch);
+};
+
+Stretch.createGroupStretch = function () {
+    var stretch = Stretch.createBasicStretch();
+    stretch.group = null;
     stretch.stretchView = StretchView.create(stretch);
     return stretch;
+};
+
+Stretch.isGroupStretch = function (stretch) {
+    return stretch.group;
 };
 
 Stretch.setSteps = function (stretch, steps) {

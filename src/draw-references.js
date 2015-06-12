@@ -6,7 +6,7 @@ DrawReferences.referenceClass = function (step, containingStep, referenceI) {
     if (step.referenceAway == null || !Main.targetStepView()) {
         return '';
     }
-    var lastTargetStep = Main.targetStepView().stretch.steps[Main.targetStepView().stretch.steps.length - 1];
+    var lastTargetStep = Main.targetStepView().steps[Main.targetStepView().steps.length - 1];
     if (containingStep && containingStep !== lastTargetStep) {
         return '';
     }
@@ -116,7 +116,7 @@ DrawReferences.draw = function (expressionContainerEls) {
     expressionContainerEls.each(function (d) {
         var container = d3.select(this);
 
-        var containingStep = d.stretch.steps[d.stretch.steps.length - 1];
+        var containingStep = d.steps[d.steps.length - 1];
         var references = _.filter(DrawHelper.parseStepView(d), function (d) {
             return d._type === 'reference';
         });

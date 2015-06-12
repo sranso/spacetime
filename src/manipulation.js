@@ -18,12 +18,17 @@ var copyStretch = function (original) {
 
     var cloneMap = {};
     _.each(notCovering, function (originalStretch) {
-        var stretch = Stretch.create();
-        stretch.text = originalStretch.text;
-        stretch.group = originalStretch.group;
-        stretch.expanded = originalStretch.expanded;
-        cloneMap[originalStretch.id] = stretch;
-        stretch.group.stretches.push(stretch);
+        if (Stretch.isGroupStretch(originalStretch)) {
+            var stretch = Stretch.createGroupStretch();
+            stretch.group = originalStretch.group;
+            stretch.group.stretches.push(stretch);
+            cloneMap[originalStretch.id] = stretch;
+        } else {
+            var stretch = MultiStep.create();
+            stretch.text = originalStretch.text;
+            stretch.collapsed = originalStretch.collapsed;
+            cloneMap[originalStretch.id] = stretch;
+        }
     });
 
     var copy = cloneMap[original.id];
@@ -36,7 +41,6 @@ var copyStretch = function (original) {
         step.stretches = _.map(step.stretches, function (originalStretch) {
             var stretch = cloneMap[originalStretch.id];
             stretch.steps.push(step);
-            step.stretches.push(stretch);
             return stretch;
         });
     });
@@ -71,27 +75,25 @@ Manipulation.insertNewStep = function () {
     _.each(Global.active.stretches, _insertNewStep);
 
     Main.update();
-    d3.select(Global.insertStepView.stretch.steps[0].underStepView.__el__).select('.expression').node().focus();
+    d3.select(Global.insertStepView.__el__).select('.expression').node().focus();
 };
 
 var _insertNewStep = function (stretch) {
-    var previousView = stretch.steps[0].underStepView;
-    var previousStretch = previousView.stretch;
-    var previous = previousStretch.steps[previousStretch.steps.length - 1];
+    var previous = stretch.steps[stretch.steps.length - 1];
     var next = previous.next;
     var newStep = Step.create();
 
     Step.linkSteps([previous, newStep, next]);
 
-    var p = Stretch.overlappingPartitions(previousStretch);
+    var p = Stretch.overlappingPartitions(stretch);
     _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(newStep);
     });
     _.each(p("<<[<==>]>>"), Stretch.fixupSteps);
     _.each(p("__[_<<<]=>"), Stretch.fixupSteps);
 
-    if (_.intersection(Global.insertStepView.stretch.steps, previousStretch.steps).length) {
-        Global.insertStepView = newStep.stretch.stepView;
+    if (_.intersection(Global.insertStepView.steps, stretch.steps).length) {
+        Global.insertStepView = newStep.stepView;
     }
 };
 
@@ -117,7 +119,9 @@ var deleteStretch = function (stretch) {
         Stretch.fixupSteps(stretch);
     });
     _.each(p("__[<<>>]__"), function (stretch) {
-        stretch.group.stretches = _.without(stretch.group.stretches, stretch);
+        if (Stretch.isGroupStretch(stretch)) {
+            stretch.group.stretches = _.without(stretch.group.stretches, stretch);
+        }
     });
 };
 
@@ -201,7 +205,7 @@ Manipulation.computeGroupIntersection = function () {
         stretches.push(stretch);
     }
     intersection.stretches = _.map(stretches, function (steps) {
-        var stretch = Stretch.create();
+        var stretch = Stretch.createGroupStretch();
         stretch.group = intersection;
         Stretch.setSteps(stretch, steps);
         return stretch;

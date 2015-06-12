@@ -36,15 +36,14 @@ DrawHelper.clipNumber = function (number, length) {
 };
 
 DrawHelper.parseStepView = function (stepView) {
-    if (stepView.stretch.expression) {
-        // TODO: handle multi-step expressions
-        return StepExecution.parse(stepView.stretch.steps[0]);
-    } else {
-        // TODO: make stretches parseable
+    if (MultiStep.isMultiStep(stepView.step)) {
+        // TODO: make multi-steps parseable
         return [{
             _type: 'text',
-            text: stepView.stretch.text,
+            text: stepView.step.text,
         }];
+    } else {
+        return StepExecution.parse(stepView.step);
     }
 };
 

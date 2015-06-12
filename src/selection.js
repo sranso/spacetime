@@ -31,7 +31,7 @@ var selectingData = {
 //         pop();
 //         selectionHistoryI += 1;
 //         if (selectionHistoryI === selectionHistory.length) {
-//             var stretch = Stretch.create();
+//             var stretch = Stretch.createGroupStretch();
 //             var nextSelection = Group.create();
 //             nextSelection.stretches = [stretch];
 //             stretch.group = nextSelection;
@@ -44,19 +44,26 @@ var selectingData = {
 //     Global.selection = selectionHistory[selectionHistoryI].selection;
 // };
 
-Selection.toggleExpanded = function () {
+Selection.toggleCollapsed = function () {
     if (Global.active.byMatch) {
         return;  // TODO: make this work with non-group stretches
     }
     if (!Global.selection.foreground.group) {
         return;
     }
-    var expanded = !Global.selection.foreground.focus.expanded;
     var activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
-    _.each(Global.selection.foreground.group.stretches, function (stretch) {
-        if (_.intersection(activeSteps, stretch.steps).length) {
-            stretch.expanded = expanded;
+    var focusSteps = Global.selection.foreground.focus.steps;
+    var intersectSteps = _.intersection(activeSteps, focusSteps);
+    var multiStep = MultiStep.findFromSteps(intersectSteps);
+    var collapsed = multiStep && multiStep.collapsed;
+
+    _.each(Global.active.stretches, function (stretch) {
+        var multiStep = MultiStep.findFromSteps(stretch.steps);
+        if (!multiStep) {
+            multiStep = MultiStep.create();
+            Stretch.setSteps(multiStep, stretch.steps);
         }
+        multiStep.collapsed = !collapsed;
     });
     Main.update();
 };
@@ -83,7 +90,7 @@ Selection.maybeStart = function (mouse) {
 };
 
 var startSelecting = function (step, kind) {
-    var stretch = Stretch.create();
+    var stretch = Stretch.createGroupStretch();
     var group;
     if (d3.event.ctrlKey) {
         group = Global.selection[kind].group;
