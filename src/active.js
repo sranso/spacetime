@@ -3,7 +3,12 @@ var Active = {};
 (function () {
 
 Active.computeActive = function () {
-    var focus = Global.insertStep || Global.selection.foreground.focus;
+    var focus;
+    if (Global.insertStepView) {
+      focus = Global.insertStepView.stretch;
+    } else {
+      focus = Global.selection.foreground.focus;
+    }
     if (! focus) {
         setActiveStretches([], false);
         return;
@@ -14,10 +19,10 @@ Active.computeActive = function () {
         return;
     }
 
-    if (Global.insertStep) {
+    if (Global.insertStepView) {
         // TODO: fix this to not need to create a stretch
         focus = Stretch.create();
-        Stretch.setSteps(focus, Global.insertStep.steps.slice());
+        Stretch.setSteps(focus, Global.insertStepView.stretch.steps.slice());
         var foreground = [focus];
     } else {
         var foreground = Global.selection.foreground.group.stretches;
@@ -79,7 +84,7 @@ Active.computeActive = function () {
         computeActiveByMatch(focusOverlaps, background);
     }
 
-    if (Global.insertStep) {
+    if (Global.insertStepView) {
         Stretch.setSteps(focus, []);
     }
 };
@@ -99,7 +104,11 @@ var setActiveStretches = function (stretches, byMatch) {
         Stretch.setSteps(stretch, original.steps);
         return stretch;
     });
-    var focus = Global.insertStep || Global.selection.foreground.focus;
+    if (Global.insertStepView) {
+        var focus = Global.insertStepView.stretch;
+    } else {
+        var focus = Global.selection.foreground.focus;
+    }
     Global.active.focus = _.min(Global.active.stretches, function (stretch) {
         var steps = _.intersection(stretch.steps, focus.steps);
         if (! steps.length) {

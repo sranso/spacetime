@@ -105,7 +105,7 @@ var drawOverallSetup = function() {
         .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
         .on('keypress', function () {
             window.getSelection().removeAllRanges();
-            Main.maybeUpdate(function () { Global.insertStep = null });
+            Main.maybeUpdate(function () { Global.insertStepView = null });
             Input.keypressEvent(d3.event.keyCode)
         })
         .on('mousemove', Main.mouseMove)
@@ -162,16 +162,16 @@ var drawSteps = function (steps) {
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('focus', function (d) {
-            Main.maybeUpdate(function () { Global.insertStep = d.stretch });
+            Main.maybeUpdate(function () { Global.insertStepView = d });
         })
         .on('blur', function (d) {
-            Main.maybeUpdate(function () { Global.insertStep = null });
+            Main.maybeUpdate(function () { Global.insertStepView = null });
         })
         .on('input', function (d) {
             var text = this.textContent;
             // TODO: this isn't really the right conditional, but
             // it's all going to change when multi-steps are added.
-            if (Global.insertStep.expression) {
+            if (Global.insertStepView.stretch.expression) {
                 _.each(Global.active.stretches, function (stretch) {
                     stretch.steps[0].text = text;
                     stretch.steps[0].stretch.text = text; // TODO: make dynamic
@@ -183,7 +183,7 @@ var drawSteps = function (steps) {
             Main.update();
         })
         .on('mousedown', function (d) {
-            Main.maybeUpdate(function () { Global.insertStep = d.stretch });
+            Main.maybeUpdate(function () { Global.insertStepView = d });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {
@@ -205,7 +205,7 @@ var drawSteps = function (steps) {
     resultContainerEnterEls.append('div')
         .classed('result', true)
         .on('mousedown', function (d) {
-            if (Global.insertStep) {
+            if (Global.insertStepView) {
                 Step.insertOrUpdateReference(d);
             }
             d3.event.stopPropagation();
@@ -226,10 +226,10 @@ var drawSteps = function (steps) {
             if (_.intersection(d.stretch.steps, Selection.__activeSteps).length) {
                 classes.push('active');
             }
-            if (d.stretch === Global.hoverStep) {
+            if (d === Global.hoverStepView) {
                 classes.push('hover');
             }
-            if (d.stretch === Global.insertStep) {
+            if (d === Global.insertStepView) {
                 classes.push('inserting');
             }
             return classes.join(' ');

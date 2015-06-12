@@ -18,19 +18,19 @@ Main.update = function () {
 };
 
 Main.maybeUpdate = function (cb) {
-    var lastHoverStep = Global.hoverStep;
-    var lastInsertStep = Global.insertStep;
+    var lastHoverStepView = Global.hoverStepView;
+    var lastInsertStepView = Global.insertStepView;
     cb();
     if (
-        Global.hoverStep !== lastHoverStep ||
-        Global.insertStep !== lastInsertStep
+        Global.hoverStepView !== lastHoverStepView ||
+        Global.insertStepView !== lastInsertStepView
     ) {
         Main.update();
     }
 };
 
-Main.targetStep = function () {
-    return Global.insertStep || Global.hoverStep;
+Main.targetStepView = function () {
+    return Global.insertStepView || Global.hoverStepView;
 };
 
 Main.mouseUp = function () {
@@ -41,15 +41,14 @@ Main.mouseUp = function () {
 Main.mouseMove = function () {
     var mouse = d3.mouse(Draw.trackContainer.node());
     Main.maybeUpdate(function () {
-        var step = Main.findStepUnderMouse(mouse);
-        Global.hoverStep = step ? step.stretch : null;
+        Global.hoverStepView = Main.findStepUnderMouse(mouse);
     });
     Selection.maybeChange(mouse);
 };
 
 Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
-    Main.maybeUpdate(function () { Global.insertStep = null });
+    Main.maybeUpdate(function () { Global.insertStepView = null });
     var mouse = d3.mouse(Draw.trackContainer.node());
     Selection.maybeStart(mouse);
 };

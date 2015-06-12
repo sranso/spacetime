@@ -3,10 +3,10 @@ var DrawReferences = {};
 (function () {
 
 DrawReferences.referenceClass = function (step, containingStep, referenceI) {
-    if (step.referenceAway == null || !Main.targetStep()) {
+    if (step.referenceAway == null || !Main.targetStepView()) {
         return '';
     }
-    var lastTargetStep = Main.targetStep().steps[Main.targetStep().steps.length - 1];
+    var lastTargetStep = Main.targetStepView().stretch.steps[Main.targetStepView().stretch.steps.length - 1];
     if (containingStep && containingStep !== lastTargetStep) {
         return '';
     }

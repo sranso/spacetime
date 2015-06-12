@@ -54,25 +54,25 @@ Step.computeReferenceInfo = function () {
         });
         step.references = _.pluck(references, 'reference');
     });
-    var step = Main.targetStep();
-    if (!step || !step.expression) {
+    var stepView = Main.targetStepView();
+    if (!stepView || !stepView.stretch.expression) {
         return;
     };
-    step = step.steps[0];
+    var step = stepView.stretch.steps[0];
     _.each(step.references, function (reference) {
         reference.referenceAway = step.__index - reference.__index;
     });
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {
-    if (!Global.insertStep.expression) {
+    if (!Global.insertStepView.stretch.expression) {
         return;
     }
     var resultStep = resultStepView.stretch.steps[resultStepView.stretch.steps.length - 1];
-    var stepView = Global.insertStep.steps[0].underStepView;
+    var stepView = Global.insertStepView.stretch.steps[0].underStepView;
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
-    var referenceAway = Global.insertStep.steps[0].__index - resultStep.__index;
+    var referenceAway = Global.insertStepView.stretch.steps[0].__index - resultStep.__index;
     if (referenceAway <= 0) {
         return;
     }
