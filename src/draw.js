@@ -169,11 +169,13 @@ var drawSteps = function (steps) {
         })
         .on('input', function (d) {
             var text = this.textContent;
-            // TODO: this isn't really the right conditional, but
-            // it's all going to change when multi-steps are added.
             if (MultiStep.isMultiStep(d.step)) {
-                // TODO: make this work for multi-steps
-                d.step.text = text;
+                _.each(Global.active.stretches, function (stretch) {
+                    var multiStep = MultiStep.findFromSteps(stretch.steps);
+                    if (multiStep) {
+                        multiStep.text = text;
+                    }
+                });
             } else {
                 _.each(Global.active.stretches, function (stretch) {
                     stretch.steps[0].text = text;
