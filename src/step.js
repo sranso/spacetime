@@ -8,6 +8,7 @@ Step.create = function () {
         text: '',
         stretches: [],
         references: [],
+        referencedBy: [],
         next: null,
         previous: null,
         underStepView: null,
@@ -40,6 +41,16 @@ Step.linkSteps = function (steps) {
     });
 };
 
+Step.setReferences = function (step, references) {
+    _.each(step.references, function (oldReference) {
+        oldReference.source.referencedBy = _.without(oldReference.source.referencedBy, oldReference);
+    });
+    _.each(references, function (newReference) {
+        newReference.source.referencedBy.push(newReference);
+    });
+    step.references = references;
+};
+
 
 // TODO: make this work right for multi-steps (stepViews)
 Step.computeReferenceInfo = function () {
@@ -53,7 +64,7 @@ Step.computeReferenceInfo = function () {
     };
     var step = stepView.steps[0];
     _.each(step.references, function (reference) {
-        reference.step.referenceAway = step.__index - reference.step.__index;
+        reference.source.referenceAway = step.__index - reference.source.__index;
     });
 };
 
@@ -92,16 +103,19 @@ Step.insertOrUpdateReference = function (resultStepView) {
             var step = stretch.steps[0];
             step.text = text;
             var reference = Reference.create();
-            reference.step = Global.steps[step.__index - referenceAway];
+            reference.source = Global.steps[step.__index - referenceAway];
+            reference.sink = step;
             step.references.splice(insertBeforeI, 0, reference);
+            Step.setReferences(step, step.references);
         });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     } else {
         _.each(Global.active.stretches, function (stretch) {
-            var step = stretch.steps[0];
-            var refStep = Global.steps[step.__index - referenceAway];
+            var sink = stretch.steps[0];
+            var source = Global.steps[sink.__index - referenceAway];
             _.each(Global.insertReferenceIs, function (referenceI) {
-                step.references[referenceI].step = refStep;
+                var reference = sink.references[referenceI];
+                Reference.setSource(reference, source);
             });
         });
     }
@@ -135,9 +149,10 @@ Step.updateText = function (expressionEl) {
 
 var _updateText = function (step, expressionEl, referenceIs) {
     step.text = expressionEl.textContent;
-    step.references = _.map(referenceIs, function (referenceI) {
+    var references = _.map(referenceIs, function (referenceI) {
         return step.references[referenceI];
     });
+    Step.setReferences(step, references);
 }
 
 })();

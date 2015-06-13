@@ -127,8 +127,8 @@ var stepHtml = function (stepView) {
     var references = stepView.step.references;
     var htmls = _.map(parsed, function (segment) {
         if (segment.type === 'reference') {
-            var refStep = references[segment.referenceI].step;
-            var result = DrawHelper.clipNumber(refStep.result, 6);
+            var source = references[segment.referenceI].source;
+            var result = DrawHelper.clipNumber(source.result, 6);
             var width = 9 + 9 * result.length;
             if (result.indexOf('.') !== -1) {
                 width -= 4;

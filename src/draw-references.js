@@ -120,12 +120,12 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         referenceEls.each(function (reference) {
             d3.select(this)
-                .text(DrawHelper.clipNumber(reference.step.result, 6)) ;
+                .text(DrawHelper.clipNumber(reference.source.result, 6)) ;
         });
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
-            var color = DrawReferences.referenceClass(reference.step, containingStep, i);
+            var color = DrawReferences.referenceClass(reference.source, containingStep, i);
             d3.select(this)
                 .attr('class', 'reference ' + color)
                 .style('top', textEl.offsetTop + 'px')

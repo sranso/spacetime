@@ -41,7 +41,7 @@ var executeStep = function (step) {
     var parsed = StepExecution.parse(step);
     var toEval = _.map(parsed, function (segment) {
         if (segment.type === 'reference') {
-            var result = step.references[segment.referenceI].step.result;
+            var result = step.references[segment.referenceI].source.result;
             return '(' + result + ')';
         }
         return segment.text;

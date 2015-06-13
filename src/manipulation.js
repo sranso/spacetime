@@ -46,7 +46,12 @@ var copyStretch = function (original) {
 
         // fixed below
         step.references = _.map(originalStep.references, function (originalReference) {
-            return originalStep.__index - originalReference.step.__index;
+            return originalStep.__index - originalReference.source.__index;
+        });
+        _.each(originalStep.referencedBy, function (originalReference) {
+            if (!_.contains(original.steps, originalReference.sink)) {
+                Reference.setSource(originalReference, step);
+            }
         });
     });
 
@@ -60,11 +65,14 @@ var copyStretch = function (original) {
     Step.computeSteps();
     Step.computeReferenceInfo();
     _.each(copy.steps, function (step) {
-        step.references = _.map(step.references, function (referenceAway) {
+        var references = _.map(step.references, function (referenceAway) {
             var reference = Reference.create();
-            reference.step = Global.steps[step.__index - referenceAway];
+            reference.source = Global.steps[step.__index - referenceAway];
+            reference.sink = step;
             return reference;
         });
+        step.references = [];
+        Step.setReferences(step, references);
     });
 
     _.each(p("<=[===>]__"), function (stretch) {
@@ -123,6 +131,15 @@ var deleteStretch = function (stretch) {
     var previous = start.previous;
     var next = end.next;
     Step.linkSteps([previous, next]);
+
+    _.each(stretch.steps, function (step) {
+        _.each(step.referencedBy, function (reference) {
+            if (!_.contains(stretch.steps, reference.sink)) {
+                var source = Global.steps[step.__index - stretch.steps.length];
+                Reference.setSource(reference, source);
+            }
+        });
+    });
 
     var p = Stretch.overlappingPartitions(stretch);
     _.each(p("<=[>>>>]__"), function (stretch) {
