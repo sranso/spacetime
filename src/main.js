@@ -12,7 +12,6 @@ Main.update = function () {
     StepExecution.execute();
     StepView.computeViews();
     Active.computeActive();
-    Step.computeReferenceInfo();
     Selection.computeInfo();
     Draw.draw();
 };

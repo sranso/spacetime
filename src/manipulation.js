@@ -69,7 +69,6 @@ var copyStretch = function (original) {
     Step.linkSteps([lastCopyStep, next]);
 
     Step.computeSteps();
-    Step.computeReferenceInfo();
     _.each(copy.steps, function (step) {
         var references = _.map(step.references, function (r) {
             var reference = Reference.create();

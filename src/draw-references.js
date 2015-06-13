@@ -2,21 +2,38 @@
 var DrawReferences = {};
 (function () {
 
-DrawReferences.referenceClass = function (step, containingStep, referenceI) {
-    if (step.referenceAway == null || !Main.targetStepView()) {
-        return '';
-    }
-    var lastTargetStep = Main.targetStepView().steps[Main.targetStepView().steps.length - 1];
-    if (containingStep && containingStep !== lastTargetStep) {
-        return '';
-    }
+DrawReferences.referenceForStep = function (step) {
+    var stepView = Main.targetStepView();
+    if (!stepView || MultiStep.isMultiStep(stepView.step)) {
+        return;
+    };
+    return _.find(stepView.step.references, function (reference, referenceI) {
+        return reference.source === step && _.contains(Global.insertReferenceIs, referenceI);
+    }) || _.find(stepView.step.references, function (reference) {
+        return reference.source === step;
+    });
+};
 
+DrawReferences.referenceClass = function (reference) {
+    if (!reference) {
+        return;
+    };
     var classes = [];
+    if (reference.absolute) {
+        classes.push('reference-absolute');
+    }
+    var stepView = Main.targetStepView();
+    if (!stepView || reference.sink !== stepView.step) {
+        return classes.join(' ');
+    }
+    var referenceAway = reference.sink.__index - reference.source.__index;
+
+    var referenceI = _.indexOf(reference.sink.references, reference);
     if (_.contains(Global.insertReferenceIs, referenceI)) {
         classes.push('reference-inserting');
     }
-    if (step.referenceAway <= 4) {
-        classes.push('reference-color-' + step.referenceAway);
+    if (referenceAway <= 4) {
+        classes.push('reference-color-' + referenceAway);
     } else {
         classes.push('reference-color-5-or-more');
     }
@@ -125,7 +142,7 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
-            var color = DrawReferences.referenceClass(reference.source, containingStep, i);
+            var color = DrawReferences.referenceClass(reference);
             d3.select(this)
                 .attr('class', 'reference ' + color)
                 .style('top', textEl.offsetTop + 'px')

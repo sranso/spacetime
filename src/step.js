@@ -21,9 +21,12 @@ Step.create = function () {
 Step.computeSteps = function () {
     Global.steps = [];
     var step = Global.stepsHead.next;
+    var i = 0;
     while (step) {
+        step.__index = i;
         Global.steps.push(step);
         step = step.next;
+        i += 1;
     }
 };
 
@@ -49,23 +52,6 @@ Step.setReferences = function (step, references) {
         newReference.source.referencedBy.push(newReference);
     });
     step.references = references;
-};
-
-
-// TODO: make this work right for multi-steps (stepViews)
-Step.computeReferenceInfo = function () {
-    _.each(Global.steps, function (step, i) {
-        step.__index = i;
-        step.referenceAway = null;
-    });
-    var stepView = Main.targetStepView();
-    if (!stepView || MultiStep.isMultiStep(stepView.step)) {
-        return;
-    };
-    var step = stepView.steps[0];
-    _.each(step.references, function (reference) {
-        reference.source.referenceAway = step.__index - reference.source.__index;
-    });
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {

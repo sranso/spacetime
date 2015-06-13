@@ -176,6 +176,10 @@ h1 {
       background-color: #ddd;
     }
 
+    .step .reference.reference-absolute {
+      border-radius: 0px;
+    }
+
     .step .reference.reference-color-1,
     .step .result.reference-color-1 {
       border-color: #22f;

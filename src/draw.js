@@ -250,7 +250,8 @@ var drawSteps = function (steps) {
             if (!step) {
                 debugger;
             }
-            return 'result ' + DrawReferences.referenceClass(step, null);
+            var reference = DrawReferences.referenceForStep(step);
+            return 'result ' + DrawReferences.referenceClass(reference);
         })
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
