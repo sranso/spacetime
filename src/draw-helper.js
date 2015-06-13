@@ -39,7 +39,7 @@ DrawHelper.parseStepView = function (stepView) {
     if (MultiStep.isMultiStep(stepView.step)) {
         // TODO: make multi-steps parseable
         return [{
-            _type: 'text',
+            type: 'text',
             text: stepView.step.text,
         }];
     } else {

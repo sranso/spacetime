@@ -8,46 +8,30 @@ StepExecution.execute = function () {
 
 StepExecution.parse = function (step) {
     var text = step.text;
-    var lastChar = '';
     var parsed = [];
     var segment = {
-        _type: 'text',
+        type: 'text',
         text: '',
     };
     parsed.push(segment);
-    while (text.length) {
-        var nextChar = text[1];
-        if (
-            text[0] === '.' &&
-            !('0' <= lastChar && lastChar <= '9') &&
-            !('0' <= nextChar && nextChar <= '9')
-        ) {
+    var referenceI = 0;
+    for (var i = 0; i < text.length; i++) {
+        if (text[i] === Reference.sentinelCharacter) {
             var segment = {
-                _type: 'reference',
-                text: '',
-                reference: step,
+                type: 'reference',
+                referenceI: referenceI,
             }
+            referenceI += 1;
             parsed.push(segment);
-            while (text[0] === '.') {
-                segment.reference = segment.reference && segment.reference.previous;
-                segment.text += '.';
-                text = text.slice(1);
-            }
-
-            if (!text.length) {
-                break;
-            }
 
             var segment = {
-                _type: 'text',
+                type: 'text',
                 text: '',
             };
             parsed.push(segment);
+        } else {
+            segment.text += text[i];
         }
-
-        segment.text += text[0];
-        lastChar = text[0];
-        text = text.slice(1);
     }
 
     return parsed;
@@ -56,12 +40,8 @@ StepExecution.parse = function (step) {
 var executeStep = function (step) {
     var parsed = StepExecution.parse(step);
     var toEval = _.map(parsed, function (segment) {
-        if (segment._type === 'reference') {
-            if (segment.reference) {
-                var result = segment.reference.result;
-            } else {
-                var result = NaN;
-            }
+        if (segment.type === 'reference') {
+            var result = step.references[segment.referenceI].step.result;
             return '(' + result + ')';
         }
         return segment.text;

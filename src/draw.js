@@ -122,19 +122,20 @@ var drawOverallSetup = function() {
 var drawStepsSetup = function () {
 };
 
-var stepHtml = function (parsed) {
-    var ref = -1;
+var stepHtml = function (stepView) {
+    var parsed = DrawHelper.parseStepView(stepView);
+    var references = stepView.step.references;
     var htmls = _.map(parsed, function (segment) {
-        if (segment._type === 'reference') {
-            ref += 1;
-            var result = DrawHelper.clipNumber(segment.reference.result, 6);
+        if (segment.type === 'reference') {
+            var refStep = references[segment.referenceI].step;
+            var result = DrawHelper.clipNumber(refStep.result, 6);
             var width = 9 + 9 * result.length;
             if (result.indexOf('.') !== -1) {
                 width -= 4;
             }
             return '<span class="reference-text reference-' +
-                    ref + '" style="width: ' + width + 'px;">' +
-                    segment.text + '</span>';
+                    segment.referenceI + '" style="width: ' + width + 'px;">' +
+                    Reference.sentinelCharacter + '</span>';
         }
         return segment.text;
     });
@@ -168,20 +169,8 @@ var drawSteps = function (steps) {
             Main.maybeUpdate(function () { Global.insertStepView = null });
         })
         .on('input', function (d) {
-            var text = this.textContent;
-            if (MultiStep.isMultiStep(d.step)) {
-                _.each(Global.active.stretches, function (stretch) {
-                    var multiStep = MultiStep.findFromSteps(stretch.steps);
-                    if (multiStep) {
-                        multiStep.text = text;
-                    }
-                });
-            } else {
-                _.each(Global.active.stretches, function (stretch) {
-                    stretch.steps[0].text = text;
-                });
-            }
-            Main.update();
+            Global.insertStepView = d;
+            Step.updateText(this);
         })
         .on('mousedown', function (d) {
             Main.maybeUpdate(function () { Global.insertStepView = d });
@@ -206,9 +195,7 @@ var drawSteps = function (steps) {
     resultContainerEnterEls.append('div')
         .classed('result', true)
         .on('mousedown', function (d) {
-            if (Global.insertStepView) {
-                Step.insertOrUpdateReference(d);
-            }
+            Step.insertOrUpdateReference(d);
             d3.event.stopPropagation();
             d3.event.preventDefault();
         });
@@ -243,8 +230,7 @@ var drawSteps = function (steps) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
-        var parsed = DrawHelper.parseStepView(d);
-        var html = stepHtml(parsed);
+        var html = stepHtml(d);
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
         if (expressionEl.innerHTML !== html) {
             expressionEl.innerHTML = html;

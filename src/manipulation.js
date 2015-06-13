@@ -32,16 +32,21 @@ var copyStretch = function (original) {
     });
 
     var copy = cloneMap[original.id];
-    _.each(original.steps, function (original) {
+    _.each(original.steps, function (originalStep) {
         var step = Step.create();
-        step.text = original.text;
-        step.stretches = _.filter(original.stretches, function (originalStretch) {
+        step.text = originalStep.text;
+        step.stretches = _.filter(originalStep.stretches, function (originalStretch) {
             return _.contains(notCovering, originalStretch);
         });
         step.stretches = _.map(step.stretches, function (originalStretch) {
             var stretch = cloneMap[originalStretch.id];
             stretch.steps.push(step);
             return stretch;
+        });
+
+        // fixed below
+        step.references = _.map(originalStep.references, function (originalReference) {
+            return originalStep.__index - originalReference.step.__index;
         });
     });
 
@@ -51,6 +56,16 @@ var copyStretch = function (original) {
     Step.linkSteps([previous, copy.steps[0]]);
     Step.linkSteps(copy.steps);
     Step.linkSteps([lastCopyStep, next]);
+
+    Step.computeSteps();
+    Step.computeReferenceInfo();
+    _.each(copy.steps, function (step) {
+        step.references = _.map(step.references, function (referenceAway) {
+            var reference = Reference.create();
+            reference.step = Global.steps[step.__index - referenceAway];
+            return reference;
+        });
+    });
 
     _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(lastCopyStep);

@@ -12,13 +12,7 @@ DrawReferences.referenceClass = function (step, containingStep, referenceI) {
     }
 
     var classes = [];
-    var insertRef = _.find(Global.insertReferences, function (ref) {
-        return (
-            ref.reference === step &&
-            (!containingStep || ref.referenceI === referenceI)
-        );
-    });
-    if (insertRef) {
+    if (_.contains(Global.insertReferenceIs, referenceI)) {
         classes.push('reference-inserting');
     }
     if (step.referenceAway <= 4) {
@@ -30,30 +24,18 @@ DrawReferences.referenceClass = function (step, containingStep, referenceI) {
 }
 
 DrawReferences.updateInserting = function () {
-    Global.insertReferences = [];
+    Global.insertReferenceIs = [];
+    if (!Global.insertStepView) {
+        return;
+    }
     var cursorRange = DomRange.currentRange();
     if (!cursorRange) {
         return;
     }
-    var end = cursorRange.endContainer;
-    while (
-        end.parentNode &&
-        (end.nodeType !== 1 || !end.classList.contains('step'))
-    ) {
-        end = end.parentNode;
-    }
-    if (!end.parentNode) {
-        return;
-    }
-    var stepEl = d3.select(end);
+    var stepView = Global.insertStepView;
+    var stepEl = d3.select(stepView.__el__);
     var container = stepEl.select('.expression-container');
-    var stepView = stepEl.datum();
-    var references = _.filter(DrawHelper.parseStepView(stepView), function (d) {
-        return d._type === 'reference';
-    });
-    if (!references.length) {
-        return;
-    }
+    var references = stepView.step.references;
 
     cursorRange = cursorRange.cloneRange();
     var start = cursorRange.startContainer;
@@ -81,6 +63,7 @@ DrawReferences.updateInserting = function () {
         }
     }
 
+    var cursorIndex = -0.5;
     _.each(references, function (reference, i) {
         var textEl = container.select('.reference-text.reference-' + i).node();
         var range = document.createRange();
@@ -101,27 +84,31 @@ DrawReferences.updateInserting = function () {
         // -1 means cursor is before, +1 means it is after.
         var cursorStartToRefEnd = cursorRange.compareBoundaryPoints(Range.END_TO_START, range);
         var cursorEndToRefStart = cursorRange.compareBoundaryPoints(Range.START_TO_END, range);
+        var cursorEndToRefEnd = cursorRange.compareBoundaryPoints(Range.END_TO_END, range);
+        if (cursorEndToRefEnd > 0) {
+            cursorIndex = i + 0.5;
+        }
         if (cursorStartToRefEnd > 0 || cursorEndToRefStart < 0) {
             return;
         }
-        Global.insertReferences.push({
-            reference: reference.reference,
-            referenceI: i,
-            textEl: textEl,
-        });
+        Global.insertReferenceIs.push(i);
     });
+    if (!Global.insertReferenceIs.length) {
+        Global.insertReferenceIs = [cursorIndex];
+    }
 };
 
 DrawReferences.draw = function (expressionContainerEls) {
     expressionContainerEls.each(function (d) {
         var container = d3.select(this);
 
-        var containingStep = d.steps[d.steps.length - 1];
-        var references = _.filter(DrawHelper.parseStepView(d), function (d) {
-            return d._type === 'reference';
-        });
+        var containingStep = d.step;
+        if (MultiStep.isMultiStep(containingStep)) {
+            return;
+        }
+
         var referenceEls = container.selectAll('.reference')
-            .data(references) ;
+            .data(containingStep.references) ;
 
         referenceEls.enter().append('div')
             .attr('class', 'reference')
@@ -133,12 +120,12 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         referenceEls.each(function (reference) {
             d3.select(this)
-                .text(DrawHelper.clipNumber(reference.reference.result, 6)) ;
+                .text(DrawHelper.clipNumber(reference.step.result, 6)) ;
         });
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
-            var color = DrawReferences.referenceClass(reference.reference, containingStep, i);
+            var color = DrawReferences.referenceClass(reference.step, containingStep, i);
             d3.select(this)
                 .attr('class', 'reference ' + color)
                 .style('top', textEl.offsetTop + 'px')
