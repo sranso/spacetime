@@ -25,6 +25,8 @@ Input.textInputEvent = function (step, key) {
         d3.event.preventDefault();
     } else if (key === 'tab') {
         d3.event.preventDefault();
+    } else if (key === 'A') {
+        Reference.toggleAbsolute();
     }
     d3.event.stopPropagation();
 };

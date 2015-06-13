@@ -86,8 +86,23 @@ Step.insertOrUpdateReference = function (resultStepView) {
         return;
     }
 
-    var insertBeforeI = Math.ceil(Global.insertReferenceIs[0]);
-    if (Global.insertReferenceIs[0] + 0.5 === insertBeforeI) {
+    if (Global.insertReferenceIs.length) {
+        var insertReferences = Global.insertStepView.step.references;
+        var absolute = insertReferences[Global.insertReferenceIs[0]].absolute;
+        _.each(Global.active.stretches, function (stretch) {
+            var sink = stretch.steps[0];
+            if (absolute) {
+                var source = resultStep;
+            } else {
+                var source = Global.steps[sink.__index - referenceAway];
+            }
+            _.each(Global.insertReferenceIs, function (referenceI) {
+                var reference = sink.references[referenceI];
+                Reference.setSource(reference, source);
+            });
+        });
+    } else {
+        var insertBeforeI = Global.insertReferenceIs.cursorIndex;
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
         var fullRange = document.createRange();
         fullRange.selectNodeContents(expressionEl);
@@ -109,15 +124,6 @@ Step.insertOrUpdateReference = function (resultStepView) {
             Step.setReferences(step, step.references);
         });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
-    } else {
-        _.each(Global.active.stretches, function (stretch) {
-            var sink = stretch.steps[0];
-            var source = Global.steps[sink.__index - referenceAway];
-            _.each(Global.insertReferenceIs, function (referenceI) {
-                var reference = sink.references[referenceI];
-                Reference.setSource(reference, source);
-            });
-        });
     }
 
     Main.update();

@@ -63,7 +63,7 @@ DrawReferences.updateInserting = function () {
         }
     }
 
-    var cursorIndex = -0.5;
+    var cursorIndex = 0;
     _.each(references, function (reference, i) {
         var textEl = container.select('.reference-text.reference-' + i).node();
         var range = document.createRange();
@@ -86,7 +86,7 @@ DrawReferences.updateInserting = function () {
         var cursorEndToRefStart = cursorRange.compareBoundaryPoints(Range.START_TO_END, range);
         var cursorEndToRefEnd = cursorRange.compareBoundaryPoints(Range.END_TO_END, range);
         if (cursorEndToRefEnd > 0) {
-            cursorIndex = i + 0.5;
+            cursorIndex = i + 1;
         }
         if (cursorStartToRefEnd > 0 || cursorEndToRefStart < 0) {
             return;
@@ -94,7 +94,7 @@ DrawReferences.updateInserting = function () {
         Global.insertReferenceIs.push(i);
     });
     if (!Global.insertReferenceIs.length) {
-        Global.insertReferenceIs = [cursorIndex];
+        Global.insertReferenceIs.cursorIndex = cursorIndex;
     }
 };
 

@@ -5,8 +5,8 @@ simple linked list of JS objects.
 step: {
   text: '3 + &',
   next: <nextStep>
-  references: [<step>, <step>, ...],
-  absoluteReferences: [true, false, ...], // TODO
+  references: [<reference>, <reference>, ...],
+  referencedBy: [<reference>, <reference>, ...],
   stretches: [<multiStep>, <stretch>, ...],
 
   //////// REMOVE the below?
@@ -46,3 +46,9 @@ multiStep: {
   // REMOVE?
   id: 3,
 }
+
+reference: {
+  sink: <step>,
+  source: <step>,
+  absolute: true/false,
+};

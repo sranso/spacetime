@@ -46,10 +46,16 @@ var copyStretch = function (original) {
 
         // fixed below
         step.references = _.map(originalStep.references, function (originalReference) {
-            return originalStep.__index - originalReference.source.__index;
+            return {
+                reference: originalReference,
+                referenceAway: originalStep.__index - originalReference.source.__index,
+            };
         });
         _.each(originalStep.referencedBy, function (originalReference) {
-            if (!_.contains(original.steps, originalReference.sink)) {
+            if (
+                !_.contains(original.steps, originalReference.sink) &&
+                !originalReference.absolute
+            ) {
                 Reference.setSource(originalReference, step);
             }
         });
@@ -65,10 +71,15 @@ var copyStretch = function (original) {
     Step.computeSteps();
     Step.computeReferenceInfo();
     _.each(copy.steps, function (step) {
-        var references = _.map(step.references, function (referenceAway) {
+        var references = _.map(step.references, function (r) {
             var reference = Reference.create();
-            reference.source = Global.steps[step.__index - referenceAway];
             reference.sink = step;
+            if (r.reference.absolute) {
+                reference.absolute = true;
+                reference.source = r.reference.source;
+            } else {
+                reference.source = Global.steps[step.__index - r.referenceAway];
+            }
             return reference;
         });
         step.references = [];

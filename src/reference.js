@@ -6,6 +6,7 @@ Reference.create = function () {
     return {
         sink: null,
         source: null,
+        absolute: false,
     };
 };
 
@@ -17,6 +18,22 @@ Reference.setSource = function (reference, source) {
     }
     source.referencedBy.push(reference);
     reference.source = source;
+};
+
+Reference.toggleAbsolute = function () {
+    if (Global.insertReferenceIs.length) {
+        var references = Global.insertStepView.step.references;
+        var absolute = references[Global.insertReferenceIs[0]].absolute;
+        var sources = _.pluck(references, 'source');
+        _.each(Global.active.stretches, function (stretch) {
+            var references = stretch.steps[0].references;
+            _.each(Global.insertReferenceIs, function (referenceI) {
+                references[referenceI].absolute = !absolute;
+                Reference.setSource(references[referenceI], sources[referenceI]);
+            });
+        });
+        d3.event.preventDefault();
+    }
 };
 
 })();
