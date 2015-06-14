@@ -41,22 +41,27 @@ StepExecution.parse = function (step) {
 };
 
 var executeStep = function (step) {
-    var parsed = StepExecution.parse(step);
-    var toEval = _.map(parsed, function (segment) {
-        if (segment.type === 'reference') {
-            var result = step.references[segment.referenceI].source.result;
-            return '(' + result + ')';
-        }
-        return segment.text;
-    });
-    toEval = toEval.join('');
+    if (step.enabled) {
+        var parsed = StepExecution.parse(step);
+        var toEval = _.map(parsed, function (segment) {
+            if (segment.type === 'reference') {
+                var result = step.references[segment.referenceI].source.result;
+                return '(' + result + ')';
+            }
+            return segment.text;
+        });
+        toEval = toEval.join('');
 
-    try {
-        step.result = eval(toEval);
-    } catch (exception) {
-        console.log(exception);
-        step.result = NaN;
+        try {
+            step.result = eval(toEval);
+        } catch (exception) {
+            console.log(exception);
+            step.result = NaN;
+        }
+    } else {
+        step.result = step.previous ? step.previous.result : NaN;
     }
+
     if (_.isFunction(step.result)) {
         step.result.toString = function () { return this.name };
     }

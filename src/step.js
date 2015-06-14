@@ -13,6 +13,7 @@ Step.create = function () {
         previous: null,
         underStepView: null,
         result: null,
+        enabled: true,
     };
     step.stepView = StepView.create(step);
     return step;
@@ -146,5 +147,13 @@ var _updateText = function (step, expressionEl, referenceIs) {
     });
     Step.setReferences(step, references);
 }
+
+Step.clickEnableRegion = function (stepView) {
+    var enabled = MultiStep.isEnabled(stepView);
+    _.each(stepView.steps, function (step) {
+        step.enabled = !enabled;
+    });
+    Main.update();
+};
 
 })();

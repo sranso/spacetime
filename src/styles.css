@@ -101,6 +101,7 @@ h1 {
     border-right-style: dotted;
     background-color: #fff;
     z-index: 3;
+    cursor: pointer;
   }
 
   .step .selection-edge {
@@ -122,6 +123,7 @@ h1 {
     margin-right: 15px;
     margin-left: 53px; /* update above */
     position: relative;
+    z-index: 4;
   }
     .step .expression {
       font-size: 14px;
@@ -227,8 +229,21 @@ h1 {
 .step.active .step-box,
 .step.active .result,
 .step.active .enable-disable {
-  background-color: #eee;
+  background-color: #eef;
 }
+
+.step.disabled .enable-disable {
+  background-color: #ddd;
+}
+.step.active.disabled .enable-disable {
+  background-color: #ccd;
+}
+.step.disabled .expression-container,
+.step.disabled .result-content {
+  color: #ccc;
+}
+
+
 
 .history {
 }

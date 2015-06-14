@@ -154,11 +154,10 @@ var drawSteps = function (steps) {
     var enableDisableEnterEls = stepBoxEnterEls.append('div')
         .classed('enable-disable', true)
         .on('mousedown', function (d) {
-            console.log('clicked');
             d3.event.stopPropagation();
         })
         .on('click', function (d) {
-            console.log('clicked');
+            Step.clickEnableRegion(d);
             d3.event.stopPropagation();
         }) ;
 
@@ -226,6 +225,11 @@ var drawSteps = function (steps) {
     stepEls
         .attr('class', function (d) {
             var classes = ['step'];
+            if (MultiStep.isEnabled(d)) {
+                classes.push('enabled');
+            } else {
+                classes.push('disabled');
+            }
             if (_.intersection(d.steps, Selection.__activeSteps).length) {
                 classes.push('active');
             }

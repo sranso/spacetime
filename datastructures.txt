@@ -8,6 +8,7 @@ step: {
   references: [<reference>, <reference>, ...],
   referencedBy: [<reference>, <reference>, ...],
   stretches: [<multiStep>, <stretch>, ...],
+  enabled: true/false/[<reference>, <reference>, ...],
 
   //////// REMOVE the below?
   previous: <previousStep>,
