@@ -105,7 +105,7 @@ var drawOverallSetup = function() {
         .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
         .on('keypress', function () {
             window.getSelection().removeAllRanges();
-            Main.maybeUpdate(function () { Global.insertStepView = null });
+            Main.maybeUpdate(function () { Global.inputStepView = null });
             Input.keypressEvent(d3.event.keyCode)
         })
         .on('mousemove', Main.mouseMove)
@@ -173,17 +173,17 @@ var drawSteps = function (steps) {
         .classed('expression', true)
         .attr('contenteditable', true)
         .on('focus', function (d) {
-            Main.maybeUpdate(function () { Global.insertStepView = d });
+            Main.maybeUpdate(function () { Global.inputStepView = d });
         })
         .on('blur', function (d) {
-            Main.maybeUpdate(function () { Global.insertStepView = null });
+            Main.maybeUpdate(function () { Global.inputStepView = null });
         })
         .on('input', function (d) {
-            Global.insertStepView = d;
+            Global.inputStepView = d;
             Step.updateText(this);
         })
         .on('mousedown', function (d) {
-            Main.maybeUpdate(function () { Global.insertStepView = d });
+            Main.maybeUpdate(function () { Global.inputStepView = d });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {
@@ -249,7 +249,7 @@ var drawSteps = function (steps) {
             if (d === Global.hoverStepView) {
                 classes.push('hover');
             }
-            if (d === Global.insertStepView) {
+            if (d === Global.inputStepView) {
                 classes.push('inserting');
             }
             return classes.join(' ');

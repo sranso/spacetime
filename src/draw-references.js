@@ -7,9 +7,9 @@ DrawReferences.referenceForStep = function (step) {
     if (!stepView || MultiStep.isMultiStep(stepView.step)) {
         return;
     };
-    if (Global.insertReferenceIs.length) {
+    if (Global.inputReferenceIs.length) {
         return _.find(stepView.step.references, function (reference, referenceI) {
-            return reference.source === step && _.contains(Global.insertReferenceIs, referenceI);
+            return reference.source === step && _.contains(Global.inputReferenceIs, referenceI);
         });
     } else {
         return _.find(stepView.step.references, function (reference) {
@@ -33,9 +33,9 @@ DrawReferences.referenceClass = function (reference) {
     var referenceAway = reference.sink.__index - reference.source.__index;
 
     var referenceI = _.indexOf(reference.sink.references, reference);
-    if (_.contains(Global.insertReferenceIs, referenceI)) {
+    if (_.contains(Global.inputReferenceIs, referenceI)) {
         classes.push('reference-inserting');
-    } else if (Global.insertReferenceIs.length) {
+    } else if (Global.inputReferenceIs.length) {
         return classes.join(' ');
     }
     if (referenceAway <= 4) {
@@ -47,15 +47,15 @@ DrawReferences.referenceClass = function (reference) {
 }
 
 DrawReferences.updateInserting = function () {
-    Global.insertReferenceIs = [];
-    if (!Global.insertStepView) {
+    Global.inputReferenceIs = [];
+    if (!Global.inputStepView) {
         return;
     }
     var cursorRange = DomRange.currentRange();
     if (!cursorRange) {
         return;
     }
-    var stepView = Global.insertStepView;
+    var stepView = Global.inputStepView;
     var stepEl = d3.select(stepView.__el__);
     var container = stepEl.select('.expression-container');
     var references = stepView.step.references;
@@ -114,10 +114,10 @@ DrawReferences.updateInserting = function () {
         if (cursorStartToRefEnd > 0 || cursorEndToRefStart < 0) {
             return;
         }
-        Global.insertReferenceIs.push(i);
+        Global.inputReferenceIs.push(i);
     });
-    if (!Global.insertReferenceIs.length) {
-        Global.insertReferenceIs.cursorIndex = cursorIndex;
+    if (!Global.inputReferenceIs.length) {
+        Global.inputReferenceIs.cursorIndex = cursorIndex;
     }
 };
 

@@ -11,25 +11,25 @@ Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
     StepView.computeViews();
-    Active.computeActive(Global.insertStepView);
+    Active.computeActive(Global.inputStepView);
     Selection.computeInfo();
     Draw.draw();
 };
 
 Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
-    var lastInsertStepView = Global.insertStepView;
+    var lastInsertStepView = Global.inputStepView;
     cb();
     if (
         Global.hoverStepView !== lastHoverStepView ||
-        Global.insertStepView !== lastInsertStepView
+        Global.inputStepView !== lastInsertStepView
     ) {
         Main.update();
     }
 };
 
 Main.targetStepView = function () {
-    return Global.insertStepView || Global.hoverStepView;
+    return Global.inputStepView || Global.hoverStepView;
 };
 
 Main.mouseUp = function () {
@@ -47,7 +47,7 @@ Main.mouseMove = function () {
 
 Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
-    Main.maybeUpdate(function () { Global.insertStepView = null });
+    Main.maybeUpdate(function () { Global.inputStepView = null });
     var mouse = d3.mouse(Draw.trackContainer.node());
     Selection.maybeStart(mouse);
 };

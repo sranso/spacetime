@@ -56,16 +56,16 @@ Step.setReferences = function (step, references) {
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {
-    if (!Global.insertStepView) {
+    if (!Global.inputStepView) {
         return;
     }
 
     // TODO: get this working for multi-step
-    if (MultiStep.isMultiStep(Global.insertStepView.step)) {
+    if (MultiStep.isMultiStep(Global.inputStepView.step)) {
         return;
     }
     var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
-    var stepView = Global.insertStepView;
+    var stepView = Global.inputStepView;
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
     var referenceAway = stepView.step.__index - resultStep.__index;
@@ -73,9 +73,9 @@ Step.insertOrUpdateReference = function (resultStepView) {
         return;
     }
 
-    if (Global.insertReferenceIs.length) {
-        var insertReferences = Global.insertStepView.step.references;
-        var absolute = insertReferences[Global.insertReferenceIs[0]].absolute;
+    if (Global.inputReferenceIs.length) {
+        var inputReferences = Global.inputStepView.step.references;
+        var absolute = inputReferences[Global.inputReferenceIs[0]].absolute;
         _.each(Global.active.stretches, function (stretch) {
             var sink = stretch.steps[0];
             if (absolute) {
@@ -83,13 +83,13 @@ Step.insertOrUpdateReference = function (resultStepView) {
             } else {
                 var source = Global.steps[sink.__index - referenceAway];
             }
-            _.each(Global.insertReferenceIs, function (referenceI) {
+            _.each(Global.inputReferenceIs, function (referenceI) {
                 var reference = sink.references[referenceI];
                 Reference.setSource(reference, source);
             });
         });
     } else {
-        var insertBeforeI = Global.insertReferenceIs.cursorIndex;
+        var insertBeforeI = Global.inputReferenceIs.cursorIndex;
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
         var fullRange = document.createRange();
         fullRange.selectNodeContents(expressionEl);
@@ -117,7 +117,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
 };
 
 Step.updateText = function (expressionEl) {
-    if (MultiStep.isMultiStep(Global.insertStepView.step)) {
+    if (MultiStep.isMultiStep(Global.inputStepView.step)) {
         _.each(Global.active.stretches, function (stretch) {
             var multiStep = MultiStep.findFromSteps(stretch.steps);
             if (multiStep) {
