@@ -19,10 +19,12 @@ Main.update = function () {
 Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
     var lastInsertStepView = Global.inputStepView;
+    var lastConnectStepView = Global.connectStepView;
     cb();
     if (
         Global.hoverStepView !== lastHoverStepView ||
-        Global.inputStepView !== lastInsertStepView
+        Global.inputStepView !== lastInsertStepView ||
+        Global.connectStepView !== lastConnectStepView
     ) {
         Main.update();
     }
@@ -47,7 +49,10 @@ Main.mouseMove = function () {
 
 Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
-    Main.maybeUpdate(function () { Global.inputStepView = null });
+    Main.maybeUpdate(function () {
+        Global.inputStepView = null;
+        Global.connectStepView = null;
+    });
     var mouse = d3.mouse(Draw.trackContainer.node());
     Selection.maybeStart(mouse);
 };

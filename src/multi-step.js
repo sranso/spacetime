@@ -33,7 +33,7 @@ MultiStep.findFromSteps = function (steps) {
 
 MultiStep.isEnabled = function (multiStep) {
     return _.some(multiStep.steps, function (step) {
-        return step.enabled;
+        return Step.isEnabled(step);
     });
 };
 

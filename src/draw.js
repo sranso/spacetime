@@ -105,7 +105,10 @@ var drawOverallSetup = function() {
         .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
         .on('keypress', function () {
             window.getSelection().removeAllRanges();
-            Main.maybeUpdate(function () { Global.inputStepView = null });
+            Main.maybeUpdate(function () {
+                Global.inputStepView = null;
+                Global.connectStepView = null;
+            });
             Input.keypressEvent(d3.event.keyCode)
         })
         .on('mousemove', Main.mouseMove)
@@ -222,7 +225,8 @@ var drawSteps = function (steps) {
             d3.event.stopPropagation();
         })
         .on('click', function (d) {
-            console.log('clicked');
+            Global.connectStepView = d;
+            Main.update();
             d3.event.stopPropagation();
         }) ;
 
@@ -251,6 +255,9 @@ var drawSteps = function (steps) {
             }
             if (d === Global.inputStepView) {
                 classes.push('inserting');
+            }
+            if (d === Global.connectStepView) {
+                classes.push('connecting');
             }
             return classes.join(' ');
         })
@@ -424,6 +431,7 @@ var drawStretches = function (stretches) {
             Global.selection[kind].group = d.stretch.group;
             // selectionHistoryI = saveHistoryI + 1;
             // selectionHistory[selectionHistoryI] = {selection: Global.selection};
+            Global.connectStepView = null;
             Main.update();
             d3.event.stopPropagation();
         }) ;

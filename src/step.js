@@ -55,6 +55,18 @@ Step.setReferences = function (step, references) {
     step.references = references;
 };
 
+Step.isEnabled = function (step) {
+    if (step.enabled === true) {
+        return true;
+    }
+    if (step.enabled === false) {
+        return false;
+    }
+    return _.every(step.enabled, function (step) {
+        return step.result;
+    });
+};
+
 Step.insertOrUpdateReference = function (resultStepView) {
     if (!Global.inputStepView) {
         return;
@@ -150,10 +162,22 @@ var _updateText = function (step, expressionEl, referenceIs) {
 
 Step.clickEnableRegion = function (stepView) {
     Active.computeActive(stepView);
-    var enabled = MultiStep.isEnabled(stepView);
+    if (Global.connectStepView) {
+        var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
+        var enabled = [resultStep];
+        Global.connectStepView = null;
+
+        var referenceAway = stepView.step.__index - resultStep.__index;
+        if (referenceAway <= 0) {
+            Main.update();
+            return;
+        }
+    } else {
+        var enabled = !MultiStep.isEnabled(stepView);
+    }
     _.each(Global.active.stretches, function (stretch) {
         _.each(stretch.steps, function (step) {
-            step.enabled = !enabled;
+            step.enabled = enabled;
         });
     });
     // TODO: remove this after fixing active for multi-steps.

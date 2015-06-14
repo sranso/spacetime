@@ -41,7 +41,7 @@ StepExecution.parse = function (step) {
 };
 
 var executeStep = function (step) {
-    if (step.enabled) {
+    if (Step.isEnabled(step)) {
         var parsed = StepExecution.parse(step);
         var toEval = _.map(parsed, function (segment) {
             if (segment.type === 'reference') {
