@@ -7,16 +7,20 @@ DrawReferences.referenceForStep = function (step) {
     if (!stepView || MultiStep.isMultiStep(stepView.step)) {
         return;
     };
-    return _.find(stepView.step.references, function (reference, referenceI) {
-        return reference.source === step && _.contains(Global.insertReferenceIs, referenceI);
-    }) || _.find(stepView.step.references, function (reference) {
-        return reference.source === step;
-    });
+    if (Global.insertReferenceIs.length) {
+        return _.find(stepView.step.references, function (reference, referenceI) {
+            return reference.source === step && _.contains(Global.insertReferenceIs, referenceI);
+        });
+    } else {
+        return _.find(stepView.step.references, function (reference) {
+            return reference.source === step;
+        });
+    }
 };
 
 DrawReferences.referenceClass = function (reference) {
     if (!reference) {
-        return;
+        return '';
     };
     var classes = [];
     if (reference.absolute) {
@@ -31,6 +35,8 @@ DrawReferences.referenceClass = function (reference) {
     var referenceI = _.indexOf(reference.sink.references, reference);
     if (_.contains(Global.insertReferenceIs, referenceI)) {
         classes.push('reference-inserting');
+    } else if (Global.insertReferenceIs.length) {
+        return classes.join(' ');
     }
     if (referenceAway <= 4) {
         classes.push('reference-color-' + referenceAway);

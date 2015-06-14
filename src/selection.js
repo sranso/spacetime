@@ -70,7 +70,7 @@ Selection.toggleCollapsed = function () {
 
 var selectStepUnderMouse = function (mouse) {
     var step = Main.findStepUnderMouse(mouse);
-    var selectionWidth = 44; // change in styles.css
+    var selectionWidth = 47; // change in styles.css
     var selectionEndX = Draw.trackHtml.node().offsetLeft + selectionWidth;
     return (mouse[0] <= selectionEndX) && step;
 };

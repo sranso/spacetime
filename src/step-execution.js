@@ -3,7 +3,10 @@ var StepExecution = {};
 (function () {
 
 StepExecution.execute = function () {
+    var start = +Date.now();
     _.each(Global.steps, executeStep);
+    var end = +Date.now();
+    console.log(end - start);
 };
 
 StepExecution.parse = function (step) {

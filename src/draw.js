@@ -52,10 +52,10 @@ var computeStretchPositions = function (groups, stepViews) {
 
     var x = Draw.trackHtml.node().offsetLeft;
     var selectionX = {
-        foreground: x + 10,
-        background: x + 28,
+        foreground: x + 13,
+        background: x + 31,
     };
-    x -= 15 + 9;
+    x -= 19 + 9;
 
     _.each(groups, function (group) {
         _.each(group.stretchViews, function (stretch) {
@@ -151,6 +151,17 @@ var drawSteps = function (steps) {
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;
 
+    var enableDisableEnterEls = stepBoxEnterEls.append('div')
+        .classed('enable-disable', true)
+        .on('mousedown', function (d) {
+            console.log('clicked');
+            d3.event.stopPropagation();
+        })
+        .on('click', function (d) {
+            console.log('clicked');
+            d3.event.stopPropagation();
+        }) ;
+
     var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
         .classed('selection-edge', true) ;
 
@@ -189,16 +200,20 @@ var drawSteps = function (steps) {
             d3.event.stopPropagation();
         }) ;
 
-    var resultContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('result-container', true) ;
-
-    resultContainerEnterEls.append('div')
+    var resultEnterEls = stepBoxEnterEls.append('div')
         .classed('result', true)
         .on('mousedown', function (d) {
             Step.insertOrUpdateReference(d);
             d3.event.stopPropagation();
             d3.event.preventDefault();
-        });
+        }) ;
+
+    resultEnterEls.append('div')
+        .classed('result-content', true) ;
+
+    resultEnterEls.append('div')
+        .classed('result-border', true) ;
+
 
     stepBoxEnterEls.append('div')
         .style('clear', 'both') ;
@@ -252,7 +267,9 @@ var drawSteps = function (steps) {
             }
             var reference = DrawReferences.referenceForStep(step);
             return 'result ' + DrawReferences.referenceClass(reference);
-        })
+        }) ;
+
+    stepEls.select('.result-content')
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
             if (_.isNaN(step.result)) {
