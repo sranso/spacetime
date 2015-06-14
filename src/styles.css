@@ -1,6 +1,6 @@
 body {
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
@@ -10,13 +10,13 @@ a {
 
 h1 {
   font-size: 18px;
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 #selection {
   padding-top: 10px;
   position: fixed;
-  top: 0px;
+  top: 0;
   left: 50px;
   z-index: 4;
 }
@@ -80,7 +80,7 @@ h1 {
 }
 
 .step {
-  margin: 0px;
+  margin: 0;
 }
 .step-box {
   border: solid 1px #ddd;
@@ -131,7 +131,7 @@ h1 {
       padding: 7px;
       width: 100%;
       min-height: 20px;
-      border-width: 0px;
+      border-width: 0;
       background-color: transparent;
 
       white-space: pre-wrap;
@@ -162,39 +162,56 @@ h1 {
 
   .step .result {
     position: absolute;
-    right: 0px;
-    bottom: 0px;
-    top: 0px;
+    right: 0;
+    bottom: 0;
+    top: 0;
     z-index: 2;
     width: 135px;
     background-color: white;
   }
     .step .result-content {
       position: absolute;
-      right: 0px;
-      left: 0px;
-      bottom: 0px;
+      right: 0;
+      left: 0;
+      bottom: 0;
       color: #338;
       font-size: 16px;
       text-align: right;
-      margin: 0px;
-      overflow: hidden;
-      padding: 2px 6px;
+      margin: 0;
+      padding: 3px 10px 4px 6px;
     }
 
     .step .result-border {
       position: absolute;
-      left: 0px;
-      right: 0px;
+      left: 0;
+      right: 0;
       bottom: -1px;
       border-style: solid;
       border-width: 0 0 2px 2px;
-      height: 3px;
+      height: 4px;
       border-color: #ddd;
     }
 
-    .step.active .result-border {
-      border-color: #ccc;
+    .step .result-corner-container {
+      position: absolute;
+      right: -1px;
+      bottom: -1px;
+      overflow: hidden;
+      width: 30px;
+      height: 30px;
+    }
+
+    .step .result-corner {
+      position: absolute;
+      right: -15px;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 12px solid #ddd;
+      border-top-width: 0px;
+      cursor: pointer;
     }
 
     .step .reference.reference-inserting {
@@ -202,26 +219,31 @@ h1 {
     }
 
     .step .reference.reference-absolute {
-      border-radius: 0px;
+      border-radius: 0;
     }
 
     .step .reference.reference-color-1,
+    .step .result.reference-color-1 .result-corner,
     .step .result.reference-color-1 .result-border {
       border-color: #22f;
     }
     .step .reference.reference-color-2,
+    .step .result.reference-color-2 .result-corner,
     .step .result.reference-color-2 .result-border {
       border-color: #282;
     }
     .step .reference.reference-color-3,
+    .step .result.reference-color-3 .result-corner,
     .step .result.reference-color-3 .result-border {
       border-color: #80f;
     }
     .step .reference.reference-color-4,
+    .step .result.reference-color-4 .result-corner,
     .step .result.reference-color-4 .result-border {
       border-color: #0ad;
     }
     .step .reference.reference-color-5-or-more,
+    .step .result.reference-color-5-or-more .result-corner,
     .step .result.reference-color-5-or-more .result-border {
       border-color: red;
     }
@@ -232,11 +254,24 @@ h1 {
   background-color: #eef;
 }
 
+.step.active .result-corner,
+.step.active .result-border {
+  border-color: #ccc;
+}
+
+/* reset result-corner border color */
+.step.active .result-corner,
+.step .result.reference-color-1 .result-corner,
+.step .result.reference-color-2 .result-corner,
+.step .result.reference-color-3 .result-corner,
+.step .result.reference-color-4 .result-corner,
+.step .result.reference-color-5-or-more .result-corner {
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
 .step.disabled .enable-disable {
   background-color: #ddd;
-}
-.step.active.disabled .enable-disable {
-  background-color: #ccd;
 }
 .step.disabled .expression-container,
 .step.disabled .result-content {

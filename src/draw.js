@@ -213,6 +213,19 @@ var drawSteps = function (steps) {
     resultEnterEls.append('div')
         .classed('result-border', true) ;
 
+    var resultCornerContainerEnterEls = resultEnterEls.append('div')
+        .classed('result-corner-container', true) ;
+
+    resultCornerContainerEnterEls.append('div')
+        .classed('result-corner', true)
+        .on('mousedown', function (d) {
+            d3.event.stopPropagation();
+        })
+        .on('click', function (d) {
+            console.log('clicked');
+            d3.event.stopPropagation();
+        }) ;
+
 
     stepBoxEnterEls.append('div')
         .style('clear', 'both') ;
@@ -279,7 +292,7 @@ var drawSteps = function (steps) {
             if (_.isNaN(step.result)) {
                 return '';
             }
-            return DrawHelper.clipNumber(step.result, 13);
+            return DrawHelper.clipNumber(step.result, 12);
         }) ;
 };
 
