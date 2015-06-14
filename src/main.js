@@ -11,7 +11,7 @@ Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
     StepView.computeViews();
-    Active.computeActive();
+    Active.computeActive(Global.insertStepView);
     Selection.computeInfo();
     Draw.draw();
 };

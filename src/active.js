@@ -2,27 +2,27 @@
 var Active = {};
 (function () {
 
-Active.computeActive = function () {
+Active.computeActive = function (specialStepView) {
     var focus;
-    if (Global.insertStepView) {
+    if (specialStepView) {
         // TODO?: fix this to not need to create a stretch?
         focus = Stretch.createBasicStretch();
-        focus.steps = Global.insertStepView.steps;
+        focus.steps = specialStepView.steps;
     } else if (Global.selection.foreground.focus) {
         focus = Global.selection.foreground.focus;
     } else {
-        setActiveStretches([], false);
+        setActiveStretches([], false, specialStepView);
         return;
     }
 
     if (! Global.selection.background.group) {
-        setActiveStretches([focus], false);
+        setActiveStretches([focus], false, specialStepView);
         return;
     }
 
     var foreground;
-    if (Global.insertStepView) {
-        Stretch.setSteps(focus, Global.insertStepView.steps);
+    if (specialStepView) {
+        Stretch.setSteps(focus, specialStepView.steps);
         foreground = [focus];
     } else {
         foreground = Global.selection.foreground.group.stretches;
@@ -61,7 +61,7 @@ Active.computeActive = function () {
 
 
     if (! focusOverlaps.length) {
-        setActiveStretches([focus], false);
+        setActiveStretches([focus], false, specialStepView);
 
     } else if (foreground.length > backOverlaps.length) {
         var focusNths = _.uniq(_.pluck(focusOverlaps, 'nthInBackground'));
@@ -77,19 +77,19 @@ Active.computeActive = function () {
             return stretch;
         });
 
-        setActiveStretches(activeStretches, false);
+        setActiveStretches(activeStretches, false, specialStepView);
 
     } else {
 
-        computeActiveByMatch(focusOverlaps, background);
+        computeActiveByMatch(focusOverlaps, background, specialStepView);
     }
 
-    if (Global.insertStepView) {
+    if (specialStepView) {
         Stretch.setSteps(focus, []);
     }
 };
 
-var setActiveStretches = function (stretches, byMatch) {
+var setActiveStretches = function (stretches, byMatch, specialStepView) {
     Global.active.byMatch = byMatch;
     _.each(Global.active.stretches, function (stretch) {
         Stretch.setSteps(stretch, []);
@@ -103,8 +103,8 @@ var setActiveStretches = function (stretches, byMatch) {
         Stretch.setSteps(stretch, original.steps);
         return stretch;
     });
-    if (Global.insertStepView) {
-        var focus = Global.insertStepView;
+    if (specialStepView) {
+        var focus = specialStepView;
     } else {
         var focus = Global.selection.foreground.focus;
     }
@@ -117,7 +117,7 @@ var setActiveStretches = function (stretches, byMatch) {
     });
 };
 
-var computeActiveByMatch = function (focusOverlaps, background) {
+var computeActiveByMatch = function (focusOverlaps, background, specialStepView) {
     var activeStretches = [];
 
     _.each(focusOverlaps, function (overlap) {
@@ -148,7 +148,7 @@ var computeActiveByMatch = function (focusOverlaps, background) {
         });
     });
 
-    setActiveStretches(activeStretches, true);
+    setActiveStretches(activeStretches, true, specialStepView);
 };
 
 var activeByMatch = function (compareSteps, stretch) {

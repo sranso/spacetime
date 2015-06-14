@@ -149,10 +149,17 @@ var _updateText = function (step, expressionEl, referenceIs) {
 }
 
 Step.clickEnableRegion = function (stepView) {
+    Active.computeActive(stepView);
     var enabled = MultiStep.isEnabled(stepView);
-    _.each(stepView.steps, function (step) {
-        step.enabled = !enabled;
+    _.each(Global.active.stretches, function (stretch) {
+        _.each(stretch.steps, function (step) {
+            step.enabled = !enabled;
+        });
     });
+    // TODO: remove this after fixing active for multi-steps.
+    // _.each(stepView.steps, function (step) {
+    //     step.enabled = !enabled;
+    // });
     Main.update();
 };
 
