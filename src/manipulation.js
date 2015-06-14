@@ -73,12 +73,15 @@ var copyStretch = function (original) {
         var references = _.map(step.references, function (r) {
             var reference = Reference.create();
             reference.sink = step;
-            if (r.reference.absolute) {
-                reference.absolute = true;
+            if (
+                !_.contains(original.steps, r.reference.source) &&
+                r.reference.absolute
+            ) {
                 reference.source = r.reference.source;
             } else {
                 reference.source = Global.steps[step.__index - r.referenceAway];
             }
+            reference.absolute = r.reference.absolute;
             return reference;
         });
         step.references = [];
