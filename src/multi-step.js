@@ -37,4 +37,8 @@ MultiStep.isEnabled = function (multiStep) {
     });
 };
 
+MultiStep.enabledBy = function (multiStep) {
+    return _.intersection(_.pluck(multiStep.steps, 'enabledBy'));
+};
+
 })();
