@@ -160,17 +160,29 @@ Step.clickEnableRegion = function (stepView) {
         var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
         Global.connectStepView = null;
         var referenceAway = stepView.step.__index - resultStep.__index;
-        //if (referenceAway <= 0) {
+        if (referenceAway <= 0) {
             Main.update();
             return;
-        //}
+        }
         var enabledBy = MultiStep.enabledBy(stepView);
         var add = !_.contains(enabledBy, resultStep);
+
+        // TODO: make this work with a different "resultStep" per stretch
+        _.each(Global.active.stretches, function (stretch) {
+            _.each(stretch.steps, function (step) {
+                step.enabledBy = _.without(step.enabledBy, resultStep);
+                resultStep.enables = _.without(resultStep.enables, step);
+                if (add) {
+                    step.enabledBy.push(resultStep);
+                    resultStep.enabledBy.push(step);
+                }
+            });
+        });
     } else {
         var enable = !MultiStep.isEnabled(stepView);
         _.each(Global.active.stretches, function (stretch) {
             if (enable) {
-                var diff = -_.min(_.pluck(stretch.steps, 'forceDisabled'));
+                var diff = -MultiStep.forceDisabled(stretch);
             } else {
                 var diff = +1;
             }

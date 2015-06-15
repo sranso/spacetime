@@ -37,8 +37,12 @@ MultiStep.isEnabled = function (multiStep) {
     });
 };
 
+MultiStep.forceDisabled = function (multiStep) {
+    return _.min(_.pluck(multiStep.steps, 'forceDisabled'));
+};
+
 MultiStep.enabledBy = function (multiStep) {
-    return _.intersection(_.pluck(multiStep.steps, 'enabledBy'));
+    return _.intersection.apply(_, _.pluck(multiStep.steps, 'enabledBy'));
 };
 
 })();

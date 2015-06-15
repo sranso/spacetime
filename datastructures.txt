@@ -8,7 +8,9 @@ step: {
   references: [<reference>, <reference>, ...],
   referencedBy: [<reference>, <reference>, ...],
   stretches: [<multiStep>, <stretch>, ...],
-  enabled: true/false/[<reference>, <reference>, ...],
+  enabledBy: [false, <step>, <step>, ...],
+  enables: [<step>, <step>, ...],
+  forceDisabled: 2, // disabled twice
 
   //////// REMOVE the below?
   previous: <previousStep>,
@@ -21,7 +23,6 @@ step: {
 
 TODO:
 * make stepView steps only be for things displayed (or nearby)
-* absolute references
 
 stretch: {
   steps: [<step>, <step>, ...],
