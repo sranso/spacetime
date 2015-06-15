@@ -16,6 +16,7 @@ Step.create = function () {
         enabledBy: [],
         enables: [],
         forceDisabled: 0,
+        forceEnabled: [],
     };
     step.stepView = StepView.create(step);
     return step;
@@ -58,7 +59,15 @@ Step.setReferences = function (step, references) {
 };
 
 Step.isEnabled = function (step) {
-    return step.forceDisabled === 0 && _.every(step.enabledBy, 'result');
+    if (step.forceDisabled) {
+        return false;
+    }
+    if (step.forceEnabled) {
+        var enabledBy = _.difference(step.enabledBy, step.forceEnabled);
+    } else {
+        var enabledBy = step.enabledBy;
+    }
+    return _.every(enabledBy, 'result');
 };
 
 Step.insertOrUpdateReference = function (resultStepView) {
@@ -159,42 +168,54 @@ Step.clickEnableRegion = function (stepView) {
     if (Global.connectStepView) {
         var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
         Global.connectStepView = null;
-        var referenceAway = stepView.step.__index - resultStep.__index;
-        if (referenceAway <= 0) {
-            Main.update();
-            return;
-        }
         var enabledBy = MultiStep.enabledBy(stepView);
         var add = !_.contains(enabledBy, resultStep);
 
         // TODO: make this work with a different "resultStep" per stretch
         _.each(Global.active.stretches, function (stretch) {
+            var referenceAway = stretch.steps[0].__index - resultStep.__index;
+            if (referenceAway <= 0) {
+                return;
+            }
             _.each(stretch.steps, function (step) {
                 step.enabledBy = _.without(step.enabledBy, resultStep);
                 resultStep.enables = _.without(resultStep.enables, step);
                 if (add) {
                     step.enabledBy.push(resultStep);
-                    resultStep.enabledBy.push(step);
+                    resultStep.enables.push(step);
                 }
             });
         });
+
     } else {
-        var enable = !MultiStep.isEnabled(stepView);
+        var clearDisabled = MultiStep.forceDisabled(stepView);
+        var clearEnabled = MultiStep.forceEnabled(stepView);
+        if (clearDisabled || clearEnabled) {
+            var forceEnabled = false;
+            var forceDisabled = false;
+        } else {
+            var forceEnabled = d3.event.ctrlKey;
+            var forceDisabled = !d3.event.ctrlKey;
+        }
         _.each(Global.active.stretches, function (stretch) {
-            if (enable) {
-                var diff = -MultiStep.forceDisabled(stretch);
+            if (forceDisabled) {
+                var disableDiff = +1;
             } else {
-                var diff = +1;
+                var disableDiff = -MultiStep.forceDisabled(stretch);
+            }
+            if (forceEnabled) {
+                var forceEnabledBy = MultiStep.enabledBy(stretch);
+                forceEnabledBy.push(true);
+            } else {
+                var forceEnabledBy = [];
             }
             _.each(stretch.steps, function (step) {
-                step.forceDisabled += diff;
+                step.forceDisabled += disableDiff;
+                step.forceEnabled = forceEnabledBy;
             });
         });
     }
-    // TODO: remove this after fixing active for multi-steps.
-    // _.each(stepView.steps, function (step) {
-    //     step.enabled = !enabled;
-    // });
+
     Main.update();
 };
 

@@ -80,6 +80,7 @@ Selection.buttonSelectionKind = function () {
 };
 
 Selection.maybeStart = function (mouse) {
+    console.log('maybeStart');
     var step = selectStepUnderMouse(mouse);
     var kind = Selection.buttonSelectionKind();
     if (step) {
@@ -92,7 +93,9 @@ Selection.maybeStart = function (mouse) {
 var startSelecting = function (step, kind) {
     var stretch = Stretch.createGroupStretch();
     var group;
+    console.log('startSelecting');
     if (d3.event.ctrlKey) {
+        console.log('ctrlKey');
         group = Global.selection[kind].group;
     }
     if (! group) {

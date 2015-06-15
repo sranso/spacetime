@@ -41,6 +41,12 @@ MultiStep.forceDisabled = function (multiStep) {
     return _.min(_.pluck(multiStep.steps, 'forceDisabled'));
 };
 
+MultiStep.forceEnabled = function (multiStep) {
+    return _.some(multiStep.steps, function (step) {
+        return step.forceEnabled.length && Step.isEnabled(step);
+    });
+};
+
 MultiStep.enabledBy = function (multiStep) {
     return _.intersection.apply(_, _.pluck(multiStep.steps, 'enabledBy'));
 };

@@ -11,6 +11,7 @@ step: {
   enabledBy: [false, <step>, <step>, ...],
   enables: [<step>, <step>, ...],
   forceDisabled: 2, // disabled twice
+  forceEnabled: [<step>, <step>], // force these enabledBy steps to enabled
 
   //////// REMOVE the below?
   previous: <previousStep>,

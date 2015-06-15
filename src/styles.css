@@ -273,6 +273,13 @@ h1 {
 .step.disabled .enable-disable {
   background-color: #ddd;
 }
+.step.force-enabled .enable-disable {
+  background-color: #b4f4b6;
+}
+.step.force-disabled .enable-disable {
+  background-color: #f5dcbc;
+}
+
 .step.disabled .expression-container,
 .step.disabled .result-content {
   color: #ccc;
