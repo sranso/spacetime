@@ -2,49 +2,93 @@
 var DrawReferences = {};
 (function () {
 
-DrawReferences.referenceForStep = function (step) {
-    var stepView = Main.targetStepView();
-    if (!stepView || MultiStep.isMultiStep(stepView.step)) {
-        return;
-    };
-    if (Global.inputReferenceIs.length) {
-        return _.find(stepView.step.references, function (reference, referenceI) {
-            return reference.source === step && _.contains(Global.inputReferenceIs, referenceI);
-        });
+DrawReferences.colorForResult = function (resultStepView) {
+    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    if (!targetStepView) {
+        return '';
+    }
+    if (targetStepView === Global.hoverResultStepView) {
+        if (resultStepView !== Global.hoverResultStepView) {
+            return '';
+        }
+        return 'referenced-by-color';
+    }
+
+    var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
+    return referenceColorInputAware(targetStepView, resultStep);
+};
+
+var colorForReference = function (reference) {
+    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    if (!targetStepView) {
+        return '';
+    }
+    if (targetStepView === Global.hoverResultStepView) {
+        var resultStep = targetStepView.steps[targetStepView.steps.length - 1];
+        if (reference.source === resultStep) {
+            return 'referenced-by-color';
+        } else {
+            return '';
+        }
+    }
+
+    if (reference.sink !== targetStepView.step) {
+        return '';
+    }
+    return referenceColorInputAware(targetStepView, reference.source);
+};
+
+var referenceColor = function (targetStepView, referenceStep) {
+    if (MultiStep.isMultiStep(targetStepView.step)) {
+        var expressionReferences = [];
     } else {
-        return _.find(stepView.step.references, function (reference) {
-            return reference.source === step;
-        });
+        var expressionReferences = targetStepView.step.references;
+    }
+    var enabledBy = MultiStep.enabledBy(targetStepView);
+
+    var referenceSteps = _.union(enabledBy, _.pluck(expressionReferences, 'source'));
+    if (!_.contains(referenceSteps, referenceStep)) {
+        return '';
+    }
+    referenceSteps = _.sortBy(referenceSteps, '__index');
+
+    var colorIndex = referenceSteps.length - _.indexOf(referenceSteps, referenceStep);
+    if (colorIndex <= 4) {
+        return 'reference-color-' + colorIndex;
+    } else {
+        return 'reference-color-5-or-more';
     }
 };
 
-DrawReferences.referenceClass = function (reference) {
-    if (!reference) {
-        return '';
-    };
-    var classes = [];
+var referenceColorInputAware = function (targetStepView, referenceStep) {
+    if (Global.inputReferenceIs.length) {
+        var inputReferenceSteps = _.map(Global.inputReferenceIs, function (referenceI) {
+            return targetStepView.step.references[referenceI].source;
+        });
+        if (!_.contains(inputReferenceSteps, referenceStep)) {
+            return '';
+        }
+    }
+
+    return referenceColor(targetStepView, referenceStep);
+};
+
+var referenceClass = function (reference, referenceI) {
+    var color = colorForReference(reference);
+    var classes = ['reference'];
+    if (Global.inputReferenceIs.length) {
+        if (color && _.contains(Global.inputReferenceIs, referenceI)) {
+            classes.push('reference-inserting');
+            classes.push(color);
+        }
+    } else if (color) {
+        classes.push(color);
+    }
     if (reference.absolute) {
         classes.push('reference-absolute');
     }
-    var stepView = Main.targetStepView();
-    if (!stepView || reference.sink !== stepView.step) {
-        return classes.join(' ');
-    }
-    var referenceAway = reference.sink.__index - reference.source.__index;
-
-    var referenceI = _.indexOf(reference.sink.references, reference);
-    if (_.contains(Global.inputReferenceIs, referenceI)) {
-        classes.push('reference-inserting');
-    } else if (Global.inputReferenceIs.length) {
-        return classes.join(' ');
-    }
-    if (referenceAway <= 4) {
-        classes.push('reference-color-' + referenceAway);
-    } else {
-        classes.push('reference-color-5-or-more');
-    }
     return classes.join(' ');
-}
+};
 
 DrawReferences.updateInserting = function () {
     Global.inputReferenceIs = [];
@@ -148,9 +192,8 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         referenceEls.each(function (reference, i) {
             var textEl = container.select('.reference-text.reference-' + i).node();
-            var color = DrawReferences.referenceClass(reference);
             d3.select(this)
-                .attr('class', 'reference ' + color)
+                .attr('class', referenceClass(reference, i))
                 .style('top', textEl.offsetTop + 'px')
                 .style('left', textEl.offsetLeft + 'px')
                 .style('width', (textEl.offsetWidth - 2) + 'px') ;

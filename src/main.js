@@ -18,20 +18,18 @@ Main.update = function () {
 
 Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
+    var lastHoverResultStepView = Global.hoverResultStepView;
     var lastInsertStepView = Global.inputStepView;
     var lastConnectStepView = Global.connectStepView;
     cb();
     if (
         Global.hoverStepView !== lastHoverStepView ||
+        Global.hoverResultStepView !== lastHoverResultStepView ||
         Global.inputStepView !== lastInsertStepView ||
         Global.connectStepView !== lastConnectStepView
     ) {
         Main.update();
     }
-};
-
-Main.targetStepView = function () {
-    return Global.inputStepView || Global.hoverStepView;
 };
 
 Main.mouseUp = function () {
@@ -41,9 +39,6 @@ Main.mouseUp = function () {
 
 Main.mouseMove = function () {
     var mouse = d3.mouse(Draw.trackContainer.node());
-    Main.maybeUpdate(function () {
-        Global.hoverStepView = Main.findStepUnderMouse(mouse);
-    });
     Selection.maybeChange(mouse);
 };
 
@@ -55,19 +50,6 @@ Main.mouseDown = function () {
     });
     var mouse = d3.mouse(Draw.trackContainer.node());
     Selection.maybeStart(mouse);
-};
-
-Main.findStepUnderMouse = function (mouse) {
-    var x = mouse[0], y = mouse[1];
-    var startX = Draw.trackHtml.node().offsetLeft;
-    var endX = startX + Draw.trackHtml.node().offsetWidth;
-    return _.find(Global.stepViews, function (step) {
-        var el = step.__el__;
-        if (el.offsetTop <= y && y < el.offsetTop + el.offsetHeight) {
-            return startX <= x && x < endX;
-        }
-        return false;
-    });
 };
 
 Global.steps = [Step.create()];

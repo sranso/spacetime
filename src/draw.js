@@ -149,7 +149,21 @@ var drawSteps = function (steps) {
     var stepEls = Draw.trackHtml.selectAll('div.step')
         .data(steps, function (d) { return d.step.id }) ;
 
-    var stepEnterEls = stepEls.enter().append('div');
+    var stepEnterEls = stepEls.enter().append('div')
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverStepView === d) {
+                        Global.hoverStepView = null;
+                    }
+                });
+            }, 0);
+        }) ;
 
     var stepBoxEnterEls = stepEnterEls.append('div')
         .classed('step-box', true) ;
@@ -204,6 +218,20 @@ var drawSteps = function (steps) {
 
     var resultEnterEls = stepBoxEnterEls.append('div')
         .classed('result', true)
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverResultStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverResultStepView === d) {
+                        Global.hoverResultStepView = null;
+                    }
+                });
+            }, 0);
+        })
         .on('mousedown', function (d) {
             Step.insertOrUpdateReference(d);
             d3.event.stopPropagation();
@@ -294,8 +322,7 @@ var drawSteps = function (steps) {
             if (!step) {
                 debugger;
             }
-            var reference = DrawReferences.referenceForStep(step);
-            return 'result ' + DrawReferences.referenceClass(reference);
+            return 'result ' + DrawReferences.colorForResult(d);
         }) ;
 
     stepEls.select('.result-content')

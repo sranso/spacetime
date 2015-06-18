@@ -6,6 +6,7 @@ Global.stepsTail = {tail: true, next: null, previous: null};
 Global.steps = [];
 Global.stepViews = [];
 Global.hoverStepView = null;
+Global.hoverResultStepView = null;
 Global.inputStepView = null;
 Global.connectStepView = null;
 Global.inputReferenceIs = [];

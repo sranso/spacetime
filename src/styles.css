@@ -225,27 +225,33 @@ h1 {
     .step .reference.reference-color-1,
     .step .result.reference-color-1 .result-corner,
     .step .result.reference-color-1 .result-border {
-      border-color: #22f;
+      border-color: #f0c;
     }
     .step .reference.reference-color-2,
     .step .result.reference-color-2 .result-corner,
     .step .result.reference-color-2 .result-border {
-      border-color: #282;
+      border-color: #22f;
     }
     .step .reference.reference-color-3,
     .step .result.reference-color-3 .result-corner,
     .step .result.reference-color-3 .result-border {
-      border-color: #80f;
+      border-color: #282;
     }
     .step .reference.reference-color-4,
     .step .result.reference-color-4 .result-corner,
     .step .result.reference-color-4 .result-border {
-      border-color: #0ad;
+      border-color: #80f;
     }
     .step .reference.reference-color-5-or-more,
     .step .result.reference-color-5-or-more .result-corner,
     .step .result.reference-color-5-or-more .result-border {
-      border-color: red;
+      border-color: #0ad;
+    }
+
+    .step .reference.referenced-by-color,
+    .step .result.referenced-by-color .result-corner,
+    .step .result.referenced-by-color .result-border {
+      border-color: #000;
     }
 
 .step.active .step-box,
@@ -265,7 +271,8 @@ h1 {
 .step .result.reference-color-2 .result-corner,
 .step .result.reference-color-3 .result-corner,
 .step .result.reference-color-4 .result-corner,
-.step .result.reference-color-5-or-more .result-corner {
+.step .result.reference-color-5-or-more .result-corner,
+.step .result.referenced-by-color .result-corner {
   border-left-color: transparent;
   border-right-color: transparent;
 }
