@@ -47,4 +47,30 @@ DrawHelper.parseStepView = function (stepView) {
     }
 };
 
+DrawHelper.updateEnableOuterConnectors = function () {
+    Draw.trackHtml.selectAll('.enable-outer-connector').remove();
+
+    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    if (targetStepView === Global.hoverResultStepView) {
+        return;
+    }
+
+    var stepEl = targetStepView.__el__;
+    var allEnabledBy = MultiStep.enabledBy(targetStepView);
+    allEnabledBy = _.sortBy(allEnabledBy, '__index');
+    var container = d3.select(stepEl).select('.enable-connector-container');
+    var enableOuterConnectorEls = container.selectAll('.enable-outer-connector')
+        .data(allEnabledBy).enter().append('div');
+
+    enableOuterConnectorEls
+        .attr('class', function (d) {
+            var color = DrawReferences.colorForEnableOuterConnector(targetStepView, d);
+            return 'enable-outer-connector ' + color;
+        })
+        .style('top', function (d, i) {
+            var px = i * 10 - 5 * allEnabledBy.length + 5;
+            return px + 'px';
+        }) ;
+};
+
 })();

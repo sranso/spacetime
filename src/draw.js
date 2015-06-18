@@ -178,6 +178,11 @@ var drawSteps = function (steps) {
             d3.event.stopPropagation();
         }) ;
 
+    var enableConnectorContainer = enableDisableEnterEls.append('div')
+        .classed('enable-connector-container', true) ;
+    enableConnectorContainer.append('div')
+        .classed('enable-connector', true) ;
+
     var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
         .classed('selection-edge', true) ;
 
@@ -315,6 +320,22 @@ var drawSteps = function (steps) {
     DrawReferences.updateInserting();
 
     DrawReferences.draw(stepEls.select('.expression-container'));
+
+    /////////////////// must be after updateInserting
+
+    stepEls.select('.enable-connector')
+        .attr('class', function (d) {
+            var enabledBy = MultiStep.enabledBy(d);
+            var classes = ['enable-connector'];
+            if (enabledBy.length) {
+                var color = DrawReferences.colorForEnableConnector(d, enabledBy);
+                classes.push(color);
+                classes.push('enable-connector-connected');
+            }
+            return classes.join(' ');
+        }) ;
+
+    DrawHelper.updateEnableOuterConnectors();
 
     stepEls.select('.result')
         .attr('class', function (d) {

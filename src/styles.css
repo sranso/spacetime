@@ -103,6 +103,37 @@ h1 {
     z-index: 3;
     cursor: pointer;
   }
+    .step .enable-connector-container {
+      position: absolute;
+      top: 50%;
+      left: 1px;
+      margin-top: -3px;
+    }
+    .step .enable-connector {
+      border-radius: 5px;
+      border: solid 1px #ddd;
+      border-width: 1px;
+      border-color: transparent;
+      background-color: transparent;
+      width: 5px;
+      height: 5px;
+    }
+
+    .step .enable-outer-connector {
+      position: absolute;
+      left: -13px;
+      border-radius: 5px;
+      border: solid 1px #ddd;
+      border-width: 1px;
+      border-color: transparent;
+      background-color: transparent;
+      width: 5px;
+      height: 5px;
+    }
+
+    .step .enable-connector.enable-connector-connected {
+      border-color: #ddd;
+    }
 
   .step .selection-edge {
     position: absolute;
@@ -252,6 +283,32 @@ h1 {
     .step .result.referenced-by-color .result-corner,
     .step .result.referenced-by-color .result-border {
       border-color: #000;
+    }
+
+    .step .enable-outer-connector.reference-color-1 {
+      border-color: #f0c;
+      background-color: #f0c;
+    }
+    .step .enable-outer-connector.reference-color-2 {
+      border-color: #22f;
+      background-color: #22f;
+    }
+    .step .enable-outer-connector.reference-color-3 {
+      border-color: #282;
+      background-color: #282;
+    }
+    .step .enable-outer-connector.reference-color-4 {
+      border-color: #80f;
+      background-color: #80f;
+    }
+    .step .enable-outer-connector.reference-color-5-or-more {
+      border-color: #0ad;
+      background-color: #0ad;
+    }
+    .step .enable-outer-connector.referenced-by-color,
+    .step .enable-connector.referenced-by-color {
+      border-color: #000;
+      background: #000;
     }
 
 .step.active .step-box,

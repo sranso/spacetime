@@ -8,10 +8,11 @@ DrawReferences.colorForResult = function (resultStepView) {
         return '';
     }
     if (targetStepView === Global.hoverResultStepView) {
-        if (resultStepView !== Global.hoverResultStepView) {
+        if (resultStepView === Global.hoverResultStepView) {
+            return 'referenced-by-color';
+        } else {
             return '';
         }
-        return 'referenced-by-color';
     }
 
     var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
@@ -36,6 +37,47 @@ var colorForReference = function (reference) {
         return '';
     }
     return referenceColorInputAware(targetStepView, reference.source);
+};
+
+DrawReferences.colorForEnableConnector = function (enableConnectorStepView, enabledBySteps) {
+    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    if (!targetStepView) {
+        return '';
+    }
+    if (targetStepView === Global.hoverResultStepView) {
+        var resultStep = targetStepView.steps[targetStepView.steps.length - 1];
+        if (_.contains(enabledBySteps, resultStep)) {
+            return 'referenced-by-color';
+        } else {
+            return '';
+        }
+    }
+
+    if (enableConnectorStepView !== targetStepView) {
+        return '';
+    }
+    if (Global.inputReferenceIs.length) {
+        return '';
+    }
+    return 'referenced-by-color';
+};
+
+DrawReferences.colorForEnableOuterConnector = function (enableConnectorStepView, enabledByStep) {
+    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    if (!targetStepView) {
+        return '';
+    }
+    if (targetStepView === Global.hoverResultStepView) {
+        return '';
+    }
+
+    if (enableConnectorStepView !== targetStepView) {
+        return '';
+    }
+    if (Global.inputReferenceIs.length) {
+        return '';
+    }
+    return referenceColor(targetStepView, enabledByStep);
 };
 
 var referenceColor = function (targetStepView, referenceStep) {
