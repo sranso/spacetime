@@ -117,6 +117,14 @@ var drawOverallSetup = function() {
         .on('contextmenu', function () {
             d3.event.preventDefault();
         }) ;
+
+    d3.select('#canvas')
+        .on('mousemove', function () {
+            var mouse = d3.mouse(this);
+            Global.mouseX = mouse[0];
+            Global.mouseY = mouse[1];
+            Main.update();
+        }) ;
 };
 
 
@@ -255,12 +263,16 @@ var drawSteps = function (steps) {
     resultCornerContainerEnterEls.append('div')
         .classed('result-corner', true)
         .on('mousedown', function (d) {
-            d3.event.stopPropagation();
+            if (!Global.inputStepView) {
+                d3.event.stopPropagation();
+            }
         })
         .on('click', function (d) {
-            Global.connectStepView = d;
-            Main.update();
-            d3.event.stopPropagation();
+            if (!Global.inputStepView) {
+                Global.connectStepView = d;
+                Main.update();
+                d3.event.stopPropagation();
+            }
         }) ;
 
 

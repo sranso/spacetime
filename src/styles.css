@@ -51,6 +51,7 @@ h1 {
 
 
 #track {
+  float: left;
   position: relative;
   margin-top: 50px;
   -webkit-touch-callout: none;
@@ -65,7 +66,7 @@ h1 {
   float: left;
   position: relative;
   z-index: 2;
-  width: 320px;
+  width: 200px;
   height: 10000px;
   margin-right: -50px;
   pointer-events: none;
@@ -77,6 +78,21 @@ h1 {
   position: relative;
   border: solid 1px #ddd;
   border-width: 1px 0 0 0;
+}
+
+#right-side {
+  float: left;
+}
+
+#canvas {
+  border: solid 1px #ddd;
+  width: 640px;
+  height: 480px;
+  margin: 25px 20px 20px 20px;
+}
+
+.clear {
+  clear: both;
 }
 
 .step {

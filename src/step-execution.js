@@ -53,6 +53,8 @@ var executeStep = function (step) {
         toEval = toEval.join('');
 
         try {
+            var mouseX = Global.mouseX;
+            var mouseY = Global.mouseY;
             step.result = eval(toEval);
         } catch (exception) {
             console.log(exception);
