@@ -11,10 +11,12 @@ var selectionInfoEl;
 var selectionHistoryEl;
 var selectionHistoryCursor;
 var __stretches = [];
+var environmentContainer;
 
 Draw.setup = function () {
     drawOverallSetup();
     drawStepsSetup();
+    drawEnvironmentSetup();
     //drawSelectionHistorySetup();
     drawSelectionInfoSetup();
     drawStretchesSetup();
@@ -24,6 +26,7 @@ Draw.draw = function () {
     //computeSelectionHistoryPositions();
 
     drawSteps(Global.stepViews);
+    drawEnvironment();
     computeStretchPositions(Group.groupsToDraw(Global.groups));
     //drawSelectionHistory();
     drawSelectionInfo();
@@ -121,8 +124,8 @@ var drawOverallSetup = function() {
     d3.select('#canvas')
         .on('mousemove', function () {
             var mouse = d3.mouse(this);
-            Global.mouseX = mouse[0];
-            Global.mouseY = mouse[1];
+            Global.mouseX.result = Math.max(0, Math.min(mouse[0], 639));
+            Global.mouseY.result = Math.max(0, Math.min(479 - mouse[1], 479));
             Main.update();
         }) ;
 };
@@ -366,6 +369,108 @@ var drawSteps = function (steps) {
             }
             return DrawHelper.clipNumber(step.result, 12);
         }) ;
+};
+
+
+///////////////// Environment
+
+var drawEnvironmentSetup = function () {
+    environmentContainer = d3.select('#environment');
+};
+
+var drawEnvironment = function () {
+    var environmentEls = environmentContainer.selectAll('.environment')
+        .data(Global.environment) ;
+
+    var environmentEnterEls = environmentEls.enter().append('div')
+        .classed('environment', true)
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverResultStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverResultStepView === d) {
+                        Global.hoverResultStepView = null;
+                    }
+                });
+            }, 0);
+        }) ;
+
+    var nameEnterEls = environmentEnterEls.append('div')
+        .classed('name', true) ;
+
+    var resultEnterEls = environmentEnterEls.append('div')
+        .classed('result', true)
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverResultStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverResultStepView === d) {
+                        Global.hoverResultStepView = null;
+                    }
+                });
+            }, 0);
+        })
+        .on('mousedown', function (d) {
+            Step.insertOrUpdateReference(d);
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+        }) ;
+
+    resultEnterEls.append('div')
+        .classed('result-content', true) ;
+
+    resultEnterEls.append('div')
+        .classed('result-border', true) ;
+
+    var resultCornerContainerEnterEls = resultEnterEls.append('div')
+        .classed('result-corner-container', true) ;
+
+    resultCornerContainerEnterEls.append('div')
+        .classed('result-corner', true)
+        .on('mousedown', function (d) {
+            if (!Global.inputStepView) {
+                d3.event.stopPropagation();
+            }
+        })
+        .on('click', function (d) {
+            if (!Global.inputStepView) {
+                Global.connectStepView = d;
+                Main.update();
+                d3.event.stopPropagation();
+            }
+        }) ;
+
+    environmentEnterEls.append('div')
+        .style('clear', 'both') ;
+
+
+    environmentEls.exit().remove();
+
+    environmentEls.each(function (d) { d.__el__ = this });
+
+    environmentEls
+        .attr('class', function (d) {
+            return 'environment';
+        }) ;
+
+    environmentEls.select('.result')
+        .attr('class', function (d) {
+            return 'result ' + DrawReferences.colorForResult(d);
+        }) ;
+
+    environmentEls.select('.name')
+        .text(function (d) { return d.step.text }) ;
+
+    environmentEls.select('.result-content')
+        .text(function (d) { return d.step.result }) ;
 };
 
 

@@ -61,6 +61,19 @@ Global.active = Group.create();
 Global.active.hidden = true;
 Global.selection = new Selection();
 
+Global.mouseX = Step.create();
+Global.mouseX.text = 'Mouse X';
+Global.mouseX.result = 0;
+Global.mouseX.__index = -1;
+Global.mouseY = Step.create();
+Global.mouseY.text = 'Mouse Y';
+Global.mouseY.result = 0;
+Global.mouseY.__index = -1;
+Global.environment = [
+    StepView.create(Global.mouseX),
+    StepView.create(Global.mouseY),
+];
+
 Input.dvorak();
 Draw.setup();
 Main.update();

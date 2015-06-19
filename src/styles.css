@@ -216,7 +216,7 @@ h1 {
     width: 135px;
     background-color: white;
   }
-    .step .result-content {
+    .result-content {
       position: absolute;
       right: 0;
       left: 0;
@@ -228,7 +228,7 @@ h1 {
       padding: 3px 10px 4px 6px;
     }
 
-    .step .result-border {
+    .result-border {
       position: absolute;
       left: 0;
       right: 0;
@@ -239,7 +239,7 @@ h1 {
       border-color: #ddd;
     }
 
-    .step .result-corner-container {
+    .result-corner-container {
       position: absolute;
       right: -1px;
       bottom: -1px;
@@ -248,7 +248,7 @@ h1 {
       height: 30px;
     }
 
-    .step .result-corner {
+    .result-corner {
       position: absolute;
       right: -15px;
       bottom: 0;
@@ -270,34 +270,34 @@ h1 {
     }
 
     .step .reference.reference-color-1,
-    .step .result.reference-color-1 .result-corner,
-    .step .result.reference-color-1 .result-border {
+    .result.reference-color-1 .result-corner,
+    .result.reference-color-1 .result-border {
       border-color: #f0c;
     }
     .step .reference.reference-color-2,
-    .step .result.reference-color-2 .result-corner,
-    .step .result.reference-color-2 .result-border {
+    .result.reference-color-2 .result-corner,
+    .result.reference-color-2 .result-border {
       border-color: #22f;
     }
     .step .reference.reference-color-3,
-    .step .result.reference-color-3 .result-corner,
-    .step .result.reference-color-3 .result-border {
+    .result.reference-color-3 .result-corner,
+    .result.reference-color-3 .result-border {
       border-color: #282;
     }
     .step .reference.reference-color-4,
-    .step .result.reference-color-4 .result-corner,
-    .step .result.reference-color-4 .result-border {
+    .result.reference-color-4 .result-corner,
+    .result.reference-color-4 .result-border {
       border-color: #80f;
     }
     .step .reference.reference-color-5-or-more,
-    .step .result.reference-color-5-or-more .result-corner,
-    .step .result.reference-color-5-or-more .result-border {
+    .result.reference-color-5-or-more .result-corner,
+    .result.reference-color-5-or-more .result-border {
       border-color: #0ad;
     }
 
     .step .reference.referenced-by-color,
-    .step .result.referenced-by-color .result-corner,
-    .step .result.referenced-by-color .result-border {
+    .result.referenced-by-color .result-corner,
+    .result.referenced-by-color .result-border {
       border-color: #000;
     }
 
@@ -340,12 +340,12 @@ h1 {
 
 /* reset result-corner border color */
 .step.active .result-corner,
-.step .result.reference-color-1 .result-corner,
-.step .result.reference-color-2 .result-corner,
-.step .result.reference-color-3 .result-corner,
-.step .result.reference-color-4 .result-corner,
-.step .result.reference-color-5-or-more .result-corner,
-.step .result.referenced-by-color .result-corner {
+.result.reference-color-1 .result-corner,
+.result.reference-color-2 .result-corner,
+.result.reference-color-3 .result-corner,
+.result.reference-color-4 .result-corner,
+.result.reference-color-5-or-more .result-corner,
+.result.referenced-by-color .result-corner {
   border-left-color: transparent;
   border-right-color: transparent;
 }
@@ -365,6 +365,33 @@ h1 {
   color: #ccc;
 }
 
+
+#environment {
+  margin: 20px 0 0 20px;
+}
+
+.environment {
+  float: left;
+  border: solid 1px #ddd;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+  .environment .name {
+    padding: 4px 7px;
+  }
+
+  .environment .result {
+    position: relative;
+    float: left;
+    min-width: 100px;
+    min-height: 30px;
+    z-index: 2;
+  }
+
+  .environment .result-border {
+    left: -1px;
+  }
 
 
 .history {

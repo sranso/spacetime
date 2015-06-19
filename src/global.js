@@ -14,8 +14,8 @@ Global.groups = [];
 Global.active = null;
 Global.selection = null;
 Global.idSequence = 0;
-Global.mouseX = 0;
-Global.mouseY = 0;
+Global.mouseX = null;
+Global.mouseY = null;
 
 // var selectionHistory = [{selection: Global.selection}];
 // var selectionHistoryI = 0;

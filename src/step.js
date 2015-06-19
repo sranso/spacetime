@@ -120,7 +120,12 @@ Step.insertOrUpdateReference = function (resultStepView) {
             var step = stretch.steps[0];
             step.text = text;
             var reference = Reference.create();
-            reference.source = Global.steps[step.__index - referenceAway];
+            if (resultStep.__index === -1) {  // TODO: better way of doing this
+                reference.source = resultStep;
+                reference.absolute = true;
+            } else {
+                reference.source = Global.steps[step.__index - referenceAway];
+            }
             reference.sink = step;
             step.references.splice(insertBeforeI, 0, reference);
             Step.setReferences(step, step.references);
