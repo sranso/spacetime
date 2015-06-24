@@ -4,7 +4,6 @@ var canvas;
 var devicePixelRatio = window.devicePixelRatio || 1;
 var positionIndices;
 var positionIndicesBuffer;
-var quads;
 var projectionMatrix;
 
 var numQuadCoordinates = 4 * 2;
@@ -27,7 +26,6 @@ var createQuads = function () {
 
 var setup = function () {
     glMatrix.setMatrixArrayType = Float32Array;
-    quads = createQuads();
 
     canvas = document.getElementById('canvas');
     try {
@@ -132,27 +130,47 @@ var draw = function () {
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-    addRectangle();
+    // quads1
 
-    //translate([1, 1]);
-    scale([10, 10]);
+    var quads1 = createQuads();
 
-    translate([20, 30]);
-    translate([20, 30]);
+    addRectangle(quads1);
 
-    setOrigin([45, 65]);
+    translate(quads1, [1, 1]);
+    scale(quads1, [10, 10]);
 
-    scale([10, 10]);
+    translate(quads1, [20, 30]);
+    translate(quads1, [20, 30]);
 
-    translate([300, 200]);
+    setOrigin(quads1, [35, 55]);
+    addRectangle(quads1);
+    setOrigin(quads1, [45, 65]);
 
-    rotate(Math.PI / 4);
+    scale(quads1, [10, 10]);
 
-    //scale([0.2, 1]);
-    //addRectangle();
+    translate(quads1, [300, 200]);
 
-    //scale([10, 10]);
-    //translate([100, 100]);
+    rotate(quads1, Math.PI / 4);
+
+    // quads2
+
+    var quads2 = createQuads();
+
+    setOrigin(quads2, [150, 100]);
+    addRectangle(quads2);
+    scale(quads2, [15, 2]);
+    rotate(quads2, Math.PI / 3);
+    setOrigin(quads2, [120, 100]);
+    addRectangle(quads2);
+    scale(quads2, [5, 1]);
+    setOrigin(quads2, [220, 90]);
+    addRectangle(quads2);
+    scale(quads2, [2, 3]);
+
+    // quads
+
+    merge(quads1, quads2);
+    var quads = quads1;
 
     var matrix = mat2d.multiply(mat2d.create(), createProjectionMatrix(), quads.matrix);
     var matrix3 = mat3.fromMat2d(mat3.create(), matrix);
@@ -175,7 +193,7 @@ var createProjectionMatrix = function () {
     ];
 };
 
-var expandQuads = function (length) {
+var expandQuads = function (quads, length) {
     var requiredCapacity = length * 4;
     var capacity = quads.buffer.byteLength;
 
@@ -195,20 +213,64 @@ var expandQuads = function (length) {
     }
 };
 
-var quadInitialPoints = new Float32Array([
-    0, 0,
-    0, 1,
-    1, 1,
-    1, 0,
-]);
 var inverseMatrix = mat2d.create();
 
-var addRectangle = function () {
-    var newBytes = quads.coords.byteLength + quadBytes;
-    expandQuads(quads.coords.length + numQuadCoordinates);
+var addRectangle = function (quads) {
+    expandQuads(quads, quads.coords.length + numQuadCoordinates);
     var targetCoords = quads.coords.subarray(-numQuadCoordinates);
     mat2d.invert(inverseMatrix, quads.matrix)
+    var x = quads.origin[0];
+    var y = quads.origin[1];
+    var quadInitialPoints = new Float32Array([
+        x, y,
+        x, y + 1,
+        x + 1, y + 1,
+        x + 1, y,
+    ]);
     vec2TransformMat2d_all(targetCoords, quadInitialPoints, inverseMatrix);
+};
+
+var scale = function (quads, v) {
+    var scaled = mat2d.create();
+    mat2d.translate(scaled, scaled, quads.origin);
+
+    mat2d.scale(scaled, scaled, v);
+
+    var postTranslation = vec2.negate(vec2.create(), quads.origin);
+    mat2d.translate(scaled, scaled, postTranslation);
+
+    mat2d.multiply(quads.matrix, scaled, quads.matrix);
+};
+
+var rotate = function (quads, rad) {
+    var rotated = mat2d.create();
+    mat2d.translate(rotated, rotated, quads.origin);
+
+    mat2d.rotate(rotated, rotated, rad);
+
+    var postTranslation = vec2.negate(vec2.create(), quads.origin);
+    mat2d.translate(rotated, rotated, postTranslation);
+
+    mat2d.multiply(quads.matrix, rotated, quads.matrix);
+};
+
+var translate = function (quads, v) {
+    mat2dPreTranslate(quads.matrix, quads.matrix, v);
+    quads.origin[0] += v[0];
+    quads.origin[1] += v[1];
+};
+
+var setOrigin = function (quads, v) {
+    quads.origin[0] = v[0];
+    quads.origin[1] = v[1];
+};
+
+var merge = function (quads1, quads2, v) {
+    mat2d.invert(inverseMatrix, quads1.matrix);
+    var matrix = mat2d.multiply(inverseMatrix, inverseMatrix, quads2.matrix);
+    expandQuads(quads1, quads1.coords.length + quads2.coords.length);
+    var targetCoords = quads1.coords.subarray(-quads2.coords.length);
+    vec2TransformMat2d_all(targetCoords, quads2.coords, matrix);
 };
 
 
@@ -220,52 +282,6 @@ var vec2TransformMat2d_all = function (out, a, m) {
         out[i] = m[0] * x + m[2] * y + m[4];
         out[i + 1] = m[1] * x + m[3] * y + m[5];
     }
-};
-
-var scale = function (v) {
-    mat2d.invert(inverseMatrix, quads.matrix);
-    var preTranslation = vec2.transformMat2d(vec2.create(), quads.origin, inverseMatrix);
-    mat2d.translate(quads.matrix, quads.matrix, preTranslation);
-
-    mat2d.scale(quads.matrix, quads.matrix, v);
-
-    var postTranslation = vec2.negate(preTranslation, preTranslation);
-    mat2d.translate(quads.matrix, quads.matrix, postTranslation);
-};
-
-var rotate = function (rad) {
-    mat2d.invert(inverseMatrix, quads.matrix);
-    var preTranslation = vec2.transformMat2d(vec2.create(), quads.origin, inverseMatrix);
-    mat2d.translate(quads.matrix, quads.matrix, preTranslation);
-
-    mat2d.rotate(quads.matrix, quads.matrix, rad);
-
-    var postTranslation = vec2.negate(preTranslation, preTranslation);
-    mat2d.translate(quads.matrix, quads.matrix, postTranslation);
-};
-
-var translate = function (v) {
-    mat2dPreTranslate(quads.matrix, quads.matrix, v);
-    quads.origin[0] += v[0];
-    quads.origin[1] += v[1];
-    //var translate = mat2d.create();
-    //mat2d.multiply(quads.matrix, mat2d.translate(translate, translate, v), quads.matrix);
-};
-
-var setOrigin = function (v) {
-    quads.origin[0] = v[0];
-    quads.origin[1] = v[1];
-};
-
-mat2d.create = function() {
-    var out = new glMatrix.ARRAY_TYPE(6);
-    out[0] = 1;
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 1;
-    out[4] = 0;
-    out[5] = 0;
-    return out;
 };
 
 // simplified mat2d.multiply(out, mat2d.translate(mat2d.create(), mat2d.create(), v), b);
