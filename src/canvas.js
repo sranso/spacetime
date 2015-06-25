@@ -294,6 +294,28 @@ var rotate = function (quads, rad) {
     return quads;
 };
 
+Canvas.shear = function (quads, amount) {
+    return shear(quads, +amount);
+};
+
+var shear = function (quads, amount) {
+    var sheared = mat2d.create();
+    mat2d.translate(sheared, sheared, quads.pin);
+
+    var shearMatrix = [
+        1, 0,
+        amount, 1,
+        0, 0,
+    ];
+    mat2d.multiply(sheared, sheared, shearMatrix);
+
+    var postTranslation = vec2.negate(vec2.create(), quads.pin);
+    mat2d.translate(sheared, sheared, postTranslation);
+
+    mat2d.multiply(quads.matrix, sheared, quads.matrix);
+    return quads;
+};
+
 Canvas.move = function (quads, x, y) {
     return move(quads, [+x, +y]);
 };

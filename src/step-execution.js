@@ -52,6 +52,7 @@ StepExecution.lex = function (step) {
 
 var actions = {
     combine: {args: [2, 2], execute: Canvas.combine},
+    shear: {args: [2, 2], execute: Canvas.shear},
     move: {args: [3, 3], execute: Canvas.move},
     pin: {args: [2, 3], execute: Canvas.pin},
     pixel: {args: [0, 1], execute: Canvas.pixel},
