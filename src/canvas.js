@@ -1,3 +1,11 @@
+'use strict';
+var Canvas = {};
+(function () {
+
+Canvas.isQuads = function (quads) {
+    return _.isObject(quads) && quads.coords;
+};
+
 var gl;
 var program;
 var canvas;
@@ -5,6 +13,11 @@ var devicePixelRatio = window.devicePixelRatio || 1;
 var positionIndices;
 var positionIndicesBuffer;
 var projectionMatrix;
+
+var positionLocation;
+var colorLocation;
+var matrixLocation;
+var positionBuffer;
 
 var numQuadCoordinates = 4 * 2;
 var quadBytes = numQuadCoordinates * 4;
@@ -18,7 +31,7 @@ var createQuads = function () {
     var buffer = new ArrayBuffer(startingCapacity);
     return {
         matrix: mat2d.create(),
-        origin: new Float32Array(2),
+        pin: new Float32Array(2),
         buffer: buffer,
         coords: new Float32Array(buffer, 0, 0),
     };
@@ -57,6 +70,15 @@ var setup = function () {
     positionIndicesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIndicesBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, positionIndices, gl.STATIC_DRAW);
+
+    positionLocation = gl.getAttribLocation(program, 'a_position');
+    colorLocation = gl.getUniformLocation(program, 'u_color');
+    matrixLocation = gl.getUniformLocation(program, 'u_matrix');
+
+    positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 };
 
 var resize = function () {
@@ -116,20 +138,7 @@ var createShader = function (id) {
     return shader;
 }
 
-var draw = function () {
-    resize();
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    var positionLocation = gl.getAttribLocation(program, 'a_position');
-    var colorLocation = gl.getUniformLocation(program, 'u_color');
-    var matrixLocation = gl.getUniformLocation(program, 'u_matrix');
-
-    var positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
+var setupQuads = function () {
     // quads1
 
     var quads1 = createQuads();
@@ -170,14 +179,27 @@ var draw = function () {
     // quads
 
     merge(quads1, quads2);
-    var quads = quads1;
+    Global.lastQuads = quads1;
+};
+
+Canvas.draw = function () {
+    resize();
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    var quads = Global.lastQuads;
+    if (!quads) {
+        return;
+    }
 
     var matrix = mat2d.multiply(mat2d.create(), createProjectionMatrix(), quads.matrix);
     var matrix3 = mat3.fromMat2d(mat3.create(), matrix);
     gl.uniformMatrix3fv(matrixLocation, false, matrix3);
 
+    gl.uniform4f(colorLocation, 74 / 255, 53 / 255, 121 / 255, 1);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, quads.coords, gl.STATIC_DRAW);
-    gl.uniform4f(colorLocation, Math.random(), Math.random(), Math.random(), 1);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, positionIndicesBuffer);
     gl.drawElements(gl.TRIANGLES, quads.coords.length * coordsLengthToElementsRatio, gl.UNSIGNED_SHORT, 0);
@@ -215,12 +237,19 @@ var expandQuads = function (quads, length) {
 
 var inverseMatrix = mat2d.create();
 
-var addRectangle = function (quads) {
+Canvas.pixel = function (quads) {
+    if (!quads) {
+        quads = createQuads();
+    }
+    return pixel(quads);
+};
+
+var pixel = function (quads) {
     expandQuads(quads, quads.coords.length + numQuadCoordinates);
     var targetCoords = quads.coords.subarray(-numQuadCoordinates);
     mat2d.invert(inverseMatrix, quads.matrix)
-    var x = quads.origin[0];
-    var y = quads.origin[1];
+    var x = quads.pin[0];
+    var y = quads.pin[1];
     var quadInitialPoints = new Float32Array([
         x, y,
         x, y + 1,
@@ -228,49 +257,80 @@ var addRectangle = function (quads) {
         x + 1, y,
     ]);
     vec2TransformMat2d_all(targetCoords, quadInitialPoints, inverseMatrix);
+    return quads;
+};
+
+Canvas.scale = function (quads, x, y) {
+    return scale(quads, [+x, +y]);
 };
 
 var scale = function (quads, v) {
     var scaled = mat2d.create();
-    mat2d.translate(scaled, scaled, quads.origin);
+    mat2d.translate(scaled, scaled, quads.pin);
 
     mat2d.scale(scaled, scaled, v);
 
-    var postTranslation = vec2.negate(vec2.create(), quads.origin);
+    var postTranslation = vec2.negate(vec2.create(), quads.pin);
     mat2d.translate(scaled, scaled, postTranslation);
 
     mat2d.multiply(quads.matrix, scaled, quads.matrix);
+    return quads;
+};
+
+Canvas.rotate = function (quads, degrees) {
+    return rotate(quads, +degrees / 360 * 2 * Math.PI);
 };
 
 var rotate = function (quads, rad) {
     var rotated = mat2d.create();
-    mat2d.translate(rotated, rotated, quads.origin);
+    mat2d.translate(rotated, rotated, quads.pin);
 
     mat2d.rotate(rotated, rotated, rad);
 
-    var postTranslation = vec2.negate(vec2.create(), quads.origin);
+    var postTranslation = vec2.negate(vec2.create(), quads.pin);
     mat2d.translate(rotated, rotated, postTranslation);
 
     mat2d.multiply(quads.matrix, rotated, quads.matrix);
+    return quads;
 };
 
-var translate = function (quads, v) {
+Canvas.move = function (quads, x, y) {
+    return move(quads, [+x, +y]);
+};
+
+var move = function (quads, v) {
     mat2dPreTranslate(quads.matrix, quads.matrix, v);
-    quads.origin[0] += v[0];
-    quads.origin[1] += v[1];
+    quads.pin[0] += v[0];
+    quads.pin[1] += v[1];
+    return quads;
 };
 
-var setOrigin = function (quads, v) {
-    quads.origin[0] = v[0];
-    quads.origin[1] = v[1];
+Canvas.pin = function (quads, x, y) {
+    if (!y) {
+        y = x;
+        x = quads;
+        quads = createQuads();
+    }
+    return pin(quads, [+x, +y]);
 };
 
-var merge = function (quads1, quads2, v) {
+var pin = function (quads, v) {
+    quads.pin[0] = v[0];
+    quads.pin[1] = v[1];
+    return quads;
+};
+
+Canvas.combine = function (quads1, quads2) {
+    return combine(quads1, quads2);
+};
+
+var combine = function (quads1, quads2) {
     mat2d.invert(inverseMatrix, quads1.matrix);
     var matrix = mat2d.multiply(inverseMatrix, inverseMatrix, quads2.matrix);
     expandQuads(quads1, quads1.coords.length + quads2.coords.length);
     var targetCoords = quads1.coords.subarray(-quads2.coords.length);
     vec2TransformMat2d_all(targetCoords, quads2.coords, matrix);
+    return quads;
 };
 
 
@@ -299,4 +359,4 @@ var mat2dPreTranslate = function (out, a, v) {
 
 setup();
 
-draw();
+})();

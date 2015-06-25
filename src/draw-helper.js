@@ -35,15 +35,15 @@ DrawHelper.clipNumber = function (number, length) {
     return number.toFixed(fractionDigits);
 };
 
-DrawHelper.parseStepView = function (stepView) {
+DrawHelper.lexStepView = function (stepView) {
     if (MultiStep.isMultiStep(stepView.step)) {
-        // TODO: make multi-steps parseable
+        // TODO: make multi-steps lex-able
         return [{
             type: 'text',
             text: stepView.step.text,
         }];
     } else {
-        return StepExecution.parse(stepView.step);
+        return StepExecution.lex(stepView.step);
     }
 };
 

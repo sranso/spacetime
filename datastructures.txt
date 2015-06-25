@@ -20,6 +20,7 @@ step: {
   //////// REMOVE
   underStepView: <stepView>,
   result: <result>,
+  error: <error>,
 }
 
 TODO:

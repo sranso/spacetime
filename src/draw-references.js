@@ -227,9 +227,19 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         referenceEls.exit().remove();
 
+
         referenceEls.each(function (reference) {
+            var result = reference.source.result;
+            if (result === null) {
+                var text = '-';
+            } else if (Canvas.isQuads(result)) {
+                var text = 'pic';
+            } else {
+                var text = DrawHelper.clipNumber(reference.source.result, 6);
+            }
+
             d3.select(this)
-                .text(DrawHelper.clipNumber(reference.source.result, 6)) ;
+                .text(text) ;
         });
 
         referenceEls.each(function (reference, i) {

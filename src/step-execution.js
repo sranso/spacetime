@@ -9,66 +9,195 @@ StepExecution.execute = function () {
     console.log(end - start);
 };
 
-StepExecution.parse = function (step) {
+StepExecution.lex = function (step) {
     var text = step.text;
-    var parsed = [];
-    var segment = {
-        type: 'text',
-        text: '',
-    };
-    parsed.push(segment);
+    var tokens = [];
     var referenceI = 0;
+    var token = null;
     for (var i = 0; i < text.length; i++) {
-        if (text[i] === Reference.sentinelCharacter) {
-            var segment = {
+        var c = text[i];
+        if (c === ' ') {
+            if (!token || token.type !== 'whitespace') {
+                token = {
+                    type: 'whitespace',
+                    text: '',
+                }
+                tokens.push(token);
+            }
+            token.text += c;
+
+        } else if (c === Reference.sentinelCharacter) {
+            token = {
                 type: 'reference',
                 referenceI: referenceI,
+                text: c,
             }
             referenceI += 1;
-            parsed.push(segment);
+            tokens.push(token);
 
-            var segment = {
-                type: 'text',
-                text: '',
-            };
-            parsed.push(segment);
         } else {
-            segment.text += text[i];
+            if (!token || token.type !== 'text') {
+                token = {
+                    type: 'text',
+                    text: '',
+                };
+                tokens.push(token);
+            }
+            token.text += c;
         }
     }
 
-    return parsed;
+    return tokens;
+};
+
+var actions = {
+    combine: {args: [2, 2], execute: Canvas.combine},
+    move: {args: [3, 3], execute: Canvas.move},
+    pin: {args: [2, 3], execute: Canvas.pin},
+    pixel: {args: [0, 1], execute: Canvas.pixel},
+    rotate: {args: [2, 2], execute: Canvas.rotate},
+    scale: {args: [3, 3], execute: Canvas.scale},
+};
+
+StepExecution.parse = function (step) {
+    var tokens = StepExecution.lex(step);
+    tokens = parseTokenType(step, tokens);
+    tokens = consumeActionArguments(tokens);
+    return tokens;
+};
+
+var parseTokenType = function (step, lexedTokens) {
+    var tokens = [];
+    for (var i = 0; i < lexedTokens.length; i++) {
+        var token = lexedTokens[i];
+
+        if (token.type === 'text') {
+            var action = actions[token.text];
+            if (action) {
+                tokens.push({
+                    type: 'action',
+                    action: action,
+                });
+            } else {
+                tokens.push({
+                    type: 'value',
+                    value: token.text,
+                });
+            }
+
+        } else if (token.type === 'reference') {
+            tokens.push({
+                type: 'reference',
+                reference: step.references[token.referenceI],
+            });
+        }
+    }
+    return tokens;
+};
+
+var consumeActionArguments = function (typedTokens) {
+    var tokens = [];
+    var i = 0;
+    while (i < typedTokens.length) {
+        var token = typedTokens[i];
+        var tokensRemaining = typedTokens.length - 1 - i;
+
+        if (token.type === 'action') {
+            var take = Math.min(tokensRemaining, token.action.args[1]);
+            token.args = typedTokens.slice(i + 1, i + 1 + take);
+            tokens.push(token);
+            i += take || 1;
+        } else {
+            tokens.push(token);
+            i += 1;
+        }
+    }
+    return tokens;
+};
+
+var evaluateToken = function (token) {
+    if (token.type === 'action') {
+        var action = token.action;
+        if (token.args.length < action.args[0]) {
+            token.result = null;
+            token.error = 'too few args';
+            return token;
+        }
+        var args = _.map(token.args, evaluateToken);
+        var error = _.find(args, 'error');
+        if (error) {
+            token.result = null;
+            token.error = error;
+            return token;
+        }
+        token.result = action.execute.apply(null, _.pluck(args, 'result'));
+        token.error = null;
+    } else if (token.type === 'reference') {
+        token.result = token.reference.source.result;
+        token.error = token.reference.source.error;
+    } else {
+        token.result = token.value;
+        token.error = null;
+    }
+    return token;
+};
+
+var prepareToEval = function (token) {
+    if (token.type === 'reference') {
+        return '(' + token.result + ')';
+    } else {
+        return token.result;
+    }
 };
 
 var executeStep = function (step) {
     if (Step.isEnabled(step)) {
-        var parsed = StepExecution.parse(step);
-        var toEval = _.map(parsed, function (segment) {
-            if (segment.type === 'reference') {
-                var result = step.references[segment.referenceI].source.result;
-                return '(' + result + ')';
-            }
-            return segment.text;
+        var tokens = StepExecution.parse(step);
+
+        if (!tokens.length) {
+            step.result = null;
+            step.error = null;
+            return;
+        }
+
+        tokens = _.map(tokens, evaluateToken);
+
+        var error = _.find(tokens, 'error');
+        if (error) {
+            step.result = null;
+            step.error = error;
+            return;
+        }
+
+        var quadsResult = _.find(tokens, function (token) {
+            return Canvas.isQuads(token.result);
         });
+        if (quadsResult) {
+            quadsResult = quadsResult.result;
+            Global.lastQuads = quadsResult;
+            step.result = quadsResult;
+            step.error = null;
+            return;
+        }
+
+        var toEval = _.map(tokens, prepareToEval);
         toEval = toEval.join('');
 
         try {
-            var mouseX = Global.mouseX;
-            var mouseY = Global.mouseY;
             step.result = eval(toEval);
+            step.error = null;
         } catch (exception) {
-            console.log(exception);
-            step.result = NaN;
+            step.result = null;
+            step.error = exception.message;
         }
     } else {
-        step.result = step.previous ? step.previous.result : NaN;
-    }
-
-    if (_.isFunction(step.result)) {
-        step.result.toString = function () { return this.name };
-    }
-    if (step.result == null) {
-        step.result = NaN;
+        if (step.previous) {
+            step.result = step.previous.result;
+            step.error = step.previous.error;
+        } else {
+            step.result = null;
+            step.error = null;
+        }
     }
 };
 

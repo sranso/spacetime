@@ -16,6 +16,7 @@ Global.selection = null;
 Global.idSequence = 0;
 Global.mouseX = null;
 Global.mouseY = null;
+Global.lastQuads = null;
 
 // var selectionHistory = [{selection: Global.selection}];
 // var selectionHistoryI = 0;

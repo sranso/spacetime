@@ -29,25 +29,48 @@
       <div id="environment"></div>
     </div>
   </div>
-<script type="text/javascript" src="./vendor/underscore.js"></script>
-<script type="text/javascript" src="./vendor/d3.js"></script>
-<script type="text/javascript" src="./src/global.js"></script>
-<script type="text/javascript" src="./src/input.js"></script>
-<script type="text/javascript" src="./src/step.js"></script>
-<script type="text/javascript" src="./src/step-view.js"></script>
-<script type="text/javascript" src="./src/step-execution.js"></script>
-<script type="text/javascript" src="./src/multi-step.js"></script>
-<script type="text/javascript" src="./src/reference.js"></script>
-<script type="text/javascript" src="./src/group.js"></script>
-<script type="text/javascript" src="./src/stretch.js"></script>
-<script type="text/javascript" src="./src/stretch-view.js"></script>
-<script type="text/javascript" src="./src/active.js"></script>
-<script type="text/javascript" src="./src/selection.js"></script>
-<script type="text/javascript" src="./src/manipulation.js"></script>
-<script type="text/javascript" src="./src/dom-range.js"></script>
-<script type="text/javascript" src="./src/draw.js"></script>
-<script type="text/javascript" src="./src/draw-references.js"></script>
-<script type="text/javascript" src="./src/draw-helper.js"></script>
-<script type="text/javascript" src="./src/main.js"></script>
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+
+uniform mat3 u_matrix;
+
+void main() {
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+uniform vec4 u_color;
+
+void main() {
+  gl_FragColor = u_color;
+}
+</script>
+
+<script src="./vendor/underscore.js"></script>
+<script src="./vendor/d3.js"></script>
+<script src="./vendor/gl-matrix.js"></script>
+
+<script src="./src/global.js"></script>
+<script src="./src/input.js"></script>
+<script src="./src/canvas.js"></script><!-- must be before step-execution -->
+<script src="./src/step.js"></script>
+<script src="./src/step-view.js"></script>
+<script src="./src/step-execution.js"></script>
+<script src="./src/multi-step.js"></script>
+<script src="./src/reference.js"></script>
+<script src="./src/group.js"></script>
+<script src="./src/stretch.js"></script>
+<script src="./src/stretch-view.js"></script>
+<script src="./src/active.js"></script>
+<script src="./src/selection.js"></script>
+<script src="./src/manipulation.js"></script>
+<script src="./src/dom-range.js"></script>
+<script src="./src/draw.js"></script>
+<script src="./src/draw-references.js"></script>
+<script src="./src/draw-helper.js"></script>
+<script src="./src/main.js"></script>
 </body>
 </html>

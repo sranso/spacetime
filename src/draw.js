@@ -137,21 +137,27 @@ var drawStepsSetup = function () {
 };
 
 var stepHtml = function (stepView) {
-    var parsed = DrawHelper.parseStepView(stepView);
+    var parsed = DrawHelper.lexStepView(stepView);
     var references = stepView.step.references;
-    var htmls = _.map(parsed, function (segment) {
-        if (segment.type === 'reference') {
-            var source = references[segment.referenceI].source;
-            var result = DrawHelper.clipNumber(source.result, 6);
+    var htmls = _.map(parsed, function (token) {
+        if (token.type === 'reference') {
+            var source = references[token.referenceI].source;
+            if (source.result === null) {
+                var result = '-';
+            } else if (Canvas.isQuads(source.result)) {
+                var result = 'pic';
+            } else {
+                var result = DrawHelper.clipNumber(source.result, 6);
+            }
             var width = 9 + 9 * result.length;
             if (result.indexOf('.') !== -1) {
                 width -= 4;
             }
             return '<span class="reference-text reference-' +
-                    segment.referenceI + '" style="width: ' + width + 'px;">' +
-                    Reference.sentinelCharacter + '</span>';
+                    token.referenceI + '" style="width: ' + width + 'px;">' +
+                    token.text + '</span>';
         }
-        return segment.text;
+        return token.text;
     });
     return htmls.join('');
 };
@@ -364,10 +370,14 @@ var drawSteps = function (steps) {
     stepEls.select('.result-content')
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
-            if (_.isNaN(step.result)) {
+            if (step.result === null) {
                 return '';
             }
-            return DrawHelper.clipNumber(step.result, 12);
+            if (Canvas.isQuads(step.result)) {
+                return 'pic';
+            } else {
+                return DrawHelper.clipNumber(step.result, 12);
+            }
         }) ;
 };
 
