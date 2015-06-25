@@ -352,7 +352,7 @@ var combine = function (quads1, quads2) {
     expandQuads(quads1, quads1.coords.length + quads2.coords.length);
     var targetCoords = quads1.coords.subarray(-quads2.coords.length);
     vec2TransformMat2d_all(targetCoords, quads2.coords, matrix);
-    return quads;
+    return quads1;
 };
 
 
