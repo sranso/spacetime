@@ -53,7 +53,7 @@ Main.mouseDown = function () {
     Selection.maybeStart(mouse);
 };
 
-Global.steps = [Step.create()];
+Global.steps = [Step.create(), Step.create(), Step.create(), Step.create(), Step.create()];
 
 Step.linkSteps(Global.steps);
 Global.stepsHead.next = Global.steps[0];

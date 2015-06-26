@@ -20,20 +20,16 @@ var matrixLocation;
 var positionBuffer;
 
 var numQuadCoordinates = 4 * 2;
-var quadBytes = numQuadCoordinates * 4;
-var startingCapacity = 8 * quadBytes;
 
 var coordsLengthToVerticesRatio = 1 / 2;
 var verticesToElementsRatio = 6 / 4;
 var coordsLengthToElementsRatio = coordsLengthToVerticesRatio * verticesToElementsRatio;  // 3 / 4
 
 var createQuads = function () {
-    var buffer = new ArrayBuffer(startingCapacity);
     return {
         matrix: mat2d.create(),
         pin: new Float32Array(2),
-        buffer: buffer,
-        coords: new Float32Array(buffer, 0, 0),
+        coords: new Float32Array(0),
     };
 };
 
@@ -138,50 +134,6 @@ var createShader = function (id) {
     return shader;
 }
 
-var setupQuads = function () {
-    // quads1
-
-    var quads1 = createQuads();
-
-    addRectangle(quads1);
-
-    translate(quads1, [1, 1]);
-    scale(quads1, [10, 10]);
-
-    translate(quads1, [20, 30]);
-    translate(quads1, [20, 30]);
-
-    setOrigin(quads1, [35, 55]);
-    addRectangle(quads1);
-    setOrigin(quads1, [45, 65]);
-
-    scale(quads1, [10, 10]);
-
-    translate(quads1, [300, 200]);
-
-    rotate(quads1, Math.PI / 4);
-
-    // quads2
-
-    var quads2 = createQuads();
-
-    setOrigin(quads2, [150, 100]);
-    addRectangle(quads2);
-    scale(quads2, [15, 2]);
-    rotate(quads2, Math.PI / 3);
-    setOrigin(quads2, [120, 100]);
-    addRectangle(quads2);
-    scale(quads2, [5, 1]);
-    setOrigin(quads2, [220, 90]);
-    addRectangle(quads2);
-    scale(quads2, [2, 3]);
-
-    // quads
-
-    merge(quads1, quads2);
-    Global.lastQuads = quads1;
-};
-
 Canvas.draw = function () {
     resize();
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -215,24 +167,15 @@ var createProjectionMatrix = function () {
     ];
 };
 
-var expandQuads = function (quads, length) {
-    var requiredCapacity = length * 4;
-    var capacity = quads.buffer.byteLength;
-
-    if (capacity < requiredCapacity) {
-        while (capacity < requiredCapacity) {
-            capacity *= 2;
-        }
-        quads.buffer = new ArrayBuffer(capacity);
-        var oldCoords = quads.coords;
-        var coords = new Float32Array(buffer, 0, length);
-        for (var i = 0; i < oldCoords.length; i++) {
-            coords[i] = oldCoords[i];
-        }
-        quads.coords = coords;
-    } else {
-        quads.coords = new Float32Array(quads.buffer, 0, length);
+var cloneQuads = function (originalQuads, length) {
+    var quads = _.clone(originalQuads);
+    var originalCoords = originalQuads.coords;
+    var coords = new Float32Array(length);
+    for (var i = 0; i < originalCoords.length; i++) {
+        coords[i] = originalCoords[i];
     }
+    quads.coords = coords;
+    return quads;
 };
 
 var inverseMatrix = mat2d.create();
@@ -244,8 +187,8 @@ Canvas.pixel = function (quads) {
     return pixel(quads);
 };
 
-var pixel = function (quads) {
-    expandQuads(quads, quads.coords.length + numQuadCoordinates);
+var pixel = function (originalQuads) {
+    var quads = cloneQuads(originalQuads, originalQuads.coords.length + numQuadCoordinates);
     var targetCoords = quads.coords.subarray(-numQuadCoordinates);
     mat2d.invert(inverseMatrix, quads.matrix)
     var x = quads.pin[0];
@@ -264,7 +207,8 @@ Canvas.scale = function (quads, x, y) {
     return scale(quads, [+x, +y]);
 };
 
-var scale = function (quads, v) {
+var scale = function (originalQuads, v) {
+    var quads = _.clone(originalQuads);
     var scaled = mat2d.create();
     mat2d.translate(scaled, scaled, quads.pin);
 
@@ -273,7 +217,7 @@ var scale = function (quads, v) {
     var postTranslation = vec2.negate(vec2.create(), quads.pin);
     mat2d.translate(scaled, scaled, postTranslation);
 
-    mat2d.multiply(quads.matrix, scaled, quads.matrix);
+    mat2d.multiply(quads.matrix = mat2d.create(), scaled, originalQuads.matrix);
     return quads;
 };
 
@@ -281,7 +225,8 @@ Canvas.rotate = function (quads, degrees) {
     return rotate(quads, +degrees / 360 * 2 * Math.PI);
 };
 
-var rotate = function (quads, rad) {
+var rotate = function (originalQuads, rad) {
+    var quads = _.clone(originalQuads);
     var rotated = mat2d.create();
     mat2d.translate(rotated, rotated, quads.pin);
 
@@ -290,7 +235,7 @@ var rotate = function (quads, rad) {
     var postTranslation = vec2.negate(vec2.create(), quads.pin);
     mat2d.translate(rotated, rotated, postTranslation);
 
-    mat2d.multiply(quads.matrix, rotated, quads.matrix);
+    mat2d.multiply(quads.matrix = mat2d.create(), rotated, originalQuads.matrix);
     return quads;
 };
 
@@ -298,7 +243,8 @@ Canvas.shear = function (quads, amount) {
     return shear(quads, +amount);
 };
 
-var shear = function (quads, amount) {
+var shear = function (originalQuads, amount) {
+    var quads = _.clone(originalQuads);
     var sheared = mat2d.create();
     mat2d.translate(sheared, sheared, quads.pin);
 
@@ -312,7 +258,7 @@ var shear = function (quads, amount) {
     var postTranslation = vec2.negate(vec2.create(), quads.pin);
     mat2d.translate(sheared, sheared, postTranslation);
 
-    mat2d.multiply(quads.matrix, sheared, quads.matrix);
+    mat2d.multiply(quads.matrix = mat2d.create(), sheared, originalQuads.matrix);
     return quads;
 };
 
@@ -320,8 +266,10 @@ Canvas.move = function (quads, x, y) {
     return move(quads, [+x, +y]);
 };
 
-var move = function (quads, v) {
-    mat2dPreTranslate(quads.matrix, quads.matrix, v);
+var move = function (originalQuads, v) {
+    var quads = _.clone(originalQuads);
+    mat2dPreTranslate(quads.matrix = mat2d.create(), originalQuads.matrix, v);
+    quads.pin = new Float32Array(quads.pin);
     quads.pin[0] += v[0];
     quads.pin[1] += v[1];
     return quads;
@@ -336,9 +284,9 @@ Canvas.pin = function (quads, x, y) {
     return pin(quads, [+x, +y]);
 };
 
-var pin = function (quads, v) {
-    quads.pin[0] = v[0];
-    quads.pin[1] = v[1];
+var pin = function (originalQuads, v) {
+    var quads = _.clone(originalQuads);
+    quads.pin = new Float32Array(v);
     return quads;
 };
 
@@ -349,10 +297,10 @@ Canvas.combine = function (quads1, quads2) {
 var combine = function (quads1, quads2) {
     mat2d.invert(inverseMatrix, quads1.matrix);
     var matrix = mat2d.multiply(inverseMatrix, inverseMatrix, quads2.matrix);
-    expandQuads(quads1, quads1.coords.length + quads2.coords.length);
-    var targetCoords = quads1.coords.subarray(-quads2.coords.length);
+    var combinedQuads = cloneQuads(quads1, quads1.coords.length + quads2.coords.length);
+    var targetCoords = combinedQuads.coords.subarray(-quads2.coords.length);
     vec2TransformMat2d_all(targetCoords, quads2.coords, matrix);
-    return quads1;
+    return combinedQuads;
 };
 
 

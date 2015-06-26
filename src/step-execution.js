@@ -4,6 +4,7 @@ var StepExecution = {};
 
 StepExecution.execute = function () {
     var start = +Date.now();
+    Global.lastQuads = null;
     _.each(Global.steps, executeStep);
     var end = +Date.now();
     console.log(end - start);
