@@ -1,5 +1,5 @@
 'use strict';
-var Canvas = {};
+var Webgl = {};
 (function () {
 
 var devicePixelRatio = window.devicePixelRatio || 1;
@@ -131,7 +131,7 @@ var createShader = function (gl, id) {
     return shader;
 };
 
-Canvas.draw = function () {
+Webgl.draw = function () {
     var gl = webgl.gl;
     resize(webgl);
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -155,7 +155,7 @@ Canvas.draw = function () {
     gl.drawElements(gl.TRIANGLES, quads.coords.length * coordsLengthToElementsRatio, gl.UNSIGNED_SHORT, 0);
 };
 
-Canvas.drawResult = function (canvasParent, quads) {
+Webgl.drawResult = function (canvasParent, quads) {
 };
 
 var createProjectionMatrix = function (canvas) {

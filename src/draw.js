@@ -393,7 +393,7 @@ var drawSteps = function (steps) {
         .each(function (d) {
             var result = d.steps[d.steps.length - 1].result;
             if (result && Quads.isQuads(result)) {
-                Canvas.drawResult(this, result);
+                Webgl.drawResult(this, result);
             }
         });
 };

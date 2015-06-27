@@ -14,7 +14,7 @@ Main.update = function () {
     Active.computeActive(Global.inputStepView);
     Selection.computeInfo();
     Draw.draw();
-    Canvas.draw();
+    Webgl.draw();
 };
 
 Main.maybeUpdate = function (cb) {
