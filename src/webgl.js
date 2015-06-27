@@ -11,6 +11,7 @@ var coordsLengthToElementsRatio = coordsLengthToVerticesRatio * verticesToElemen
 var resultPixelHeightRatio = 12 - 1;
 
 var webglPool;
+var mainCanvasParent;
 
 var createWebgl = function () {
     return {
@@ -37,6 +38,7 @@ var setupAll = function () {
     glMatrix.setMatrixArrayType = Float32Array;
 
     webglPool = [];
+    mainCanvasParent = d3.select('#canvas').node();
 };
 
 var getWebgl = function (canvasParent) {
@@ -164,9 +166,21 @@ var createShader = function (gl, id) {
     return shader;
 };
 
-Webgl.draw = function (canvasParent, quads) {
+Webgl.drawMainCanvas = function () {
+    var canvasParent = mainCanvasParent;
     var webgl = getWebgl(canvasParent);
     clear(webgl);
+
+    var quads;
+    if (Global.hoverResultStepView) {
+        var resultStep = Global.hoverResultStepView.steps[Global.hoverResultStepView.steps.length - 1];
+        if (Quads.isQuads(resultStep.result)) {
+            quads = resultStep.result;
+        }
+    } else {
+        quads = Global.lastQuads;
+    }
+
     if (quads) {
         var matrix = mat2d.multiply(mat2d.create(), webgl.projectionMatrix, quads.matrix);
         draw(webgl, quads, matrix);
