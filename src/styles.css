@@ -86,9 +86,14 @@ h1 {
 
 #canvas {
   border: solid 1px #ddd;
-  width: 640px;
-  height: 480px;
+  width: 640px;  /* update below and in global.js too */
+  height: 400px;  /* update below and in global.js too */
   margin: 25px 20px 20px 20px;
+}
+/* update below in .result-canvas if the aspect changes */
+#canvas canvas {
+  width: 640px;  /* update above and in global.js too */
+  height: 400px;  /* update above and in global.js too */
 }
 
 .clear {
@@ -185,7 +190,7 @@ h1 {
       line-height: 24px;
     }
     .step.canvas-result .expression {
-      min-height: 30px;
+      min-height: 32px;  /* also update .result-canvas canvas below */
     }
 
       .expression .reference-text {
@@ -219,7 +224,7 @@ h1 {
     width: 135px;
     background-color: white;
   }
-    .result-text {
+    .result-content-text {
       display: none;
       position: absolute;
       right: 0;
@@ -231,20 +236,27 @@ h1 {
       margin: 0;
       padding: 3px 10px 4px 6px;
     }
-    .text-result .result-text {
+    .text-result .result-content-text {
       display: block;
     }
 
-    .result-canvas {
+    .result-content-canvas {
       display: none;
       position: absolute;
       right: 15px;
-      left: 15px;
-      top: 1px;
-      bottom: 1px;
+      left: 10px;
+      top: 0px;
+      bottom: 0px;
+      text-align: center;
     }
-    .canvas-result .result-text {
+    .canvas-result .result-content-canvas {
       display: block;
+    }
+    .result-content-canvas canvas {
+      width: 72px;
+      height: 45px; /* also update .expression above */
+      border: dotted 1px #ddd;
+      border-width: 0 1px 0 1px;
     }
 
     .result-border {
@@ -291,7 +303,7 @@ h1 {
     .step .reference.reference-color-1,
     .result.reference-color-1 .result-corner,
     .result.reference-color-1 .result-border {
-      border-color: #f0c;
+      border-color: #00d1e0;
     }
     .step .reference.reference-color-2,
     .result.reference-color-2 .result-corner,
@@ -311,18 +323,18 @@ h1 {
     .step .reference.reference-color-5-or-more,
     .result.reference-color-5-or-more .result-corner,
     .result.reference-color-5-or-more .result-border {
-      border-color: #0ad;
+      border-color: #ffe81a;
     }
 
     .step .reference.referenced-by-color,
     .result.referenced-by-color .result-corner,
     .result.referenced-by-color .result-border {
-      border-color: #000;
+      border-color: #f0c;
     }
 
     .step .enable-outer-connector.reference-color-1 {
-      border-color: #f0c;
-      background-color: #f0c;
+      border-color: #00d1e0;
+      background-color: #00d1e0;
     }
     .step .enable-outer-connector.reference-color-2 {
       border-color: #22f;
@@ -337,13 +349,13 @@ h1 {
       background-color: #80f;
     }
     .step .enable-outer-connector.reference-color-5-or-more {
-      border-color: #0ad;
-      background-color: #0ad;
+      border-color: #ffe81a;
+      background-color: #ffe81a;
     }
     .step .enable-outer-connector.referenced-by-color,
     .step .enable-connector.referenced-by-color {
-      border-color: #000;
-      background: #000;
+      border-color: #f0c;
+      background: #f0c;
     }
 
 .step.active .step-box,

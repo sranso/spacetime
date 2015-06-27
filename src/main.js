@@ -2,6 +2,8 @@
 var Main = {};
 (function () {
 
+var mainCanvasParent;
+
 Main.newId = function () {
     Global.idSequence += 1;
     return Global.idSequence;
@@ -14,7 +16,8 @@ Main.update = function () {
     Active.computeActive(Global.inputStepView);
     Selection.computeInfo();
     Draw.draw();
-    Webgl.draw();
+    Webgl.draw(mainCanvasParent, Global.lastQuads);
+    Webgl.recycle();
 };
 
 Main.maybeUpdate = function (cb) {
@@ -74,6 +77,8 @@ Global.environment = [
     StepView.create(Global.mouseX),
     StepView.create(Global.mouseY),
 ];
+
+mainCanvasParent = d3.select('#canvas').node();
 
 Input.dvorak();
 Draw.setup();

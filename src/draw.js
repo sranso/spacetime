@@ -124,8 +124,9 @@ var drawOverallSetup = function() {
     d3.select('#canvas')
         .on('mousemove', function () {
             var mouse = d3.mouse(this);
-            Global.mouseX.result = Math.max(0, Math.min(mouse[0], 639));
-            Global.mouseY.result = Math.max(0, Math.min(479 - mouse[1], 479));
+            Global.mouseX.result = Math.max(0, Math.min(mouse[0], Global.canvasFullWidth - 1));
+            var height = Global.canvasFullHeight - 1;
+            Global.mouseY.result = Math.max(0, Math.min(height - mouse[1], height));
             Main.update();
         }) ;
 };
@@ -261,10 +262,10 @@ var drawSteps = function (steps) {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-text', true) ;
+        .classed('result-content-text', true) ;
 
     resultEnterEls.append('div')
-        .classed('result-canvas', true) ;
+        .classed('result-content-canvas', true) ;
 
     resultEnterEls.append('div')
         .classed('result-border', true) ;
@@ -376,7 +377,7 @@ var drawSteps = function (steps) {
             return 'result ' + DrawReferences.colorForResult(d);
         }) ;
 
-    stepEls.select('.result-text')
+    stepEls.select('.result-content-text')
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
             if (step.result === null) {
@@ -389,7 +390,7 @@ var drawSteps = function (steps) {
             }
         }) ;
 
-    stepEls.select('.result-canvas')
+    stepEls.select('.result-content-canvas')
         .each(function (d) {
             var result = d.steps[d.steps.length - 1].result;
             if (result && Quads.isQuads(result)) {
@@ -452,7 +453,7 @@ var drawEnvironment = function () {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-text', true) ;
+        .classed('result-content-text', true) ;
 
     resultEnterEls.append('div')
         .classed('result-border', true) ;
@@ -503,7 +504,7 @@ var drawEnvironment = function () {
     environmentEls.select('.name')
         .text(function (d) { return d.step.text }) ;
 
-    environmentEls.select('.result-text')
+    environmentEls.select('.result-content-text')
         .text(function (d) { return d.step.result }) ;
 };
 

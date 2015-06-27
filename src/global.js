@@ -17,6 +17,8 @@ Global.idSequence = 0;
 Global.mouseX = null;
 Global.mouseY = null;
 Global.lastQuads = null;
+Global.canvasFullWidth = 640;
+Global.canvasFullHeight = 400;
 
 // var selectionHistory = [{selection: Global.selection}];
 // var selectionHistoryI = 0;

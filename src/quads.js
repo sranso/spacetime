@@ -153,6 +153,28 @@ var combine = function (quads1, quads2) {
 };
 
 
+// TODO: better implementation that doesn't require going through every point
+Quads.boundaryCoords = function (quads) {
+    var coords = new Float32Array(quads.coords.length);
+    vec2TransformMat2d_all(coords, quads.coords, quads.matrix);
+    if (!coords.length) {
+        return [0, 0, 1, 1];
+    }
+    var left = coords[0];
+    var right = coords[0];
+    var top = coords[1];
+    var bottom = coords[1];
+    for (var i = 0; i < coords.length; i += 2) {
+        var x = coords[i];
+        var y = coords[i + 1];
+        if (x < left) { left = x; }
+        if (x > right) { right = x; }
+        if (y < bottom) { bottom = y; }
+        if (y > top) { top = y; }
+    }
+    return [left, bottom, right, top];
+};
+
 // similar to vec2.transformMat2d
 var vec2TransformMat2d_all = function (out, a, m) {
     for (var i = 0; i < a.length; i += 2) {

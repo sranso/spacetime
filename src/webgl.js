@@ -8,13 +8,16 @@ var coordsLengthToVerticesRatio = 1 / 2;
 var verticesToElementsRatio = 6 / 4;
 var coordsLengthToElementsRatio = coordsLengthToVerticesRatio * verticesToElementsRatio;  // 3 / 4
 
-var webgl;
+var resultPixelHeightRatio = 12 - 1;
+
+var webglPool;
 
 var createWebgl = function () {
     return {
         gl: null,
         program: null,
         canvas: null,
+        canvasParent: null,
         positionIndices: null,
         projectionMatrix: null,
 
@@ -24,14 +27,43 @@ var createWebgl = function () {
 
         positionBuffer: null,
         positionIndicesBuffer: null,
+
+        free: false,
+        used: false,
     };
 };
 
 var setupAll = function () {
     glMatrix.setMatrixArrayType = Float32Array;
 
-    webgl = createWebgl();
-    webgl.canvas = document.getElementById('canvas');
+    webglPool = [];
+};
+
+var getWebgl = function (canvasParent) {
+    var webgl = webglPool[canvasParent.__webglIndex__];
+    if (webgl && webgl.canvasParent === canvasParent) {
+        webgl.used = true;
+        return webgl;
+    }
+
+    webgl = _.find(webglPool, 'free');
+    if (!webgl) {
+        webgl = createWebgl();
+        setup(webgl);
+        webglPool.push(webgl);
+    }
+    while (canvasParent.firstChild) {
+        canvasParent.removeChild(canvasParent.firstChild);
+    }
+    canvasParent.appendChild(webgl.canvas);
+    canvasParent.__webglIndex__ = _.indexOf(webglPool, webgl);
+    webgl.canvasParent = canvasParent;
+    webgl.used = true;
+    return webgl;
+};
+
+var setup = function (webgl) {
+    webgl.canvas = document.createElement('canvas');
     try {
         webgl.gl = webgl.canvas.getContext('webgl') || webgl.canvas.getContext('experimental-webgl');
     } catch(e) {}
@@ -43,8 +75,6 @@ var setupAll = function () {
 
     webgl.program = setupShaderProgram(gl, 'vertex-shader', 'fragment-shader');
     gl.useProgram(webgl.program);
-
-    resize(webgl);
 
     webgl.positionIndices = new Uint16Array(600000);
     var j = 0;
@@ -75,13 +105,16 @@ var setupAll = function () {
 
 var resize = function (webgl) {
     var canvas = webgl.canvas;
-    var width = canvas.clientWidth * devicePixelRatio;
-    var height = canvas.clientHeight * devicePixelRatio;
-    if (canvas.width != width || canvas.height != height) {
-        canvas.width = width;
-        canvas.height = height;
-        webgl.gl.viewport(0, 0, width, height);
-        webgl.projectionMatrix = createProjectionMatrix(canvas);
+    var canvasWidth = canvas.clientWidth * devicePixelRatio;
+    var canvasHeight = canvas.clientHeight * devicePixelRatio;
+    if (canvas.width != canvasWidth || canvas.height != canvasHeight) {
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        webgl.gl.viewport(0, 0, canvasWidth, canvasHeight);
+        webgl.projectionMatrix = null;
+    }
+    if (!webgl.projectionMatrix) {
+        webgl.projectionMatrix = createBasicProjectionMatrix(canvas);
     }
 };
 
@@ -131,18 +164,35 @@ var createShader = function (gl, id) {
     return shader;
 };
 
-Webgl.draw = function () {
-    var gl = webgl.gl;
-    resize(webgl);
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    var quads = Global.lastQuads;
-    if (!quads) {
-        return;
+Webgl.draw = function (canvasParent, quads) {
+    var webgl = getWebgl(canvasParent);
+    clear(webgl);
+    if (quads) {
+        var matrix = mat2d.multiply(mat2d.create(), webgl.projectionMatrix, quads.matrix);
+        draw(webgl, quads, matrix);
     }
+};
 
-    var matrix = mat2d.multiply(mat2d.create(), webgl.projectionMatrix, quads.matrix);
+Webgl.drawResult = function (canvasParent, quads) {
+    var webgl = getWebgl(canvasParent);
+    clear(webgl);
+    if (quads) {
+        var boundary = Quads.boundaryCoords(quads);
+        var projectionMatrix = createZoomedProjectionMatrix(boundary);
+        var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
+        draw(webgl, quads, matrix);
+    }
+};
+
+var clear = function (webgl) {
+    resize(webgl);
+    webgl.gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    webgl.gl.clear(webgl.gl.COLOR_BUFFER_BIT);
+};
+
+var draw = function (webgl, quads, matrix) {
+    var gl = webgl.gl;
+
     var matrix3 = mat3.fromMat2d(mat3.create(), matrix);
     gl.uniformMatrix3fv(webgl.matrixLocation, false, matrix3);
 
@@ -155,17 +205,103 @@ Webgl.draw = function () {
     gl.drawElements(gl.TRIANGLES, quads.coords.length * coordsLengthToElementsRatio, gl.UNSIGNED_SHORT, 0);
 };
 
-Webgl.drawResult = function (canvasParent, quads) {
+Webgl.recycle = function () {
+    _.each(webglPool, function (webgl) {
+        webgl.free = !webgl.used;
+        webgl.used = false;
+    });
 };
 
-var createProjectionMatrix = function (canvas) {
+var createBasicProjectionMatrix = function (canvas) {
     var width = canvas.width / devicePixelRatio;
     var height = canvas.height / devicePixelRatio;
-    return [
-        2 / width,  0,
-        0,          2 / height,
-        -1,         -1
-    ];
+    var scaleX = 2 / width;
+    var scaleY = 2 / height;
+    return new Float32Array([
+        scaleX, 0,
+        0,      scaleY,
+        -1,     -1,
+    ]);
+};
+
+var createZoomedProjectionMatrix = function (boundary) {
+    var fullWidth = Global.canvasFullWidth;
+    var fullHeight = Global.canvasFullHeight;
+    var b = boundary;
+    if (b[0] < 0) {
+        b[0] = 0;
+    }
+    if (b[1] < 0) {
+        b[1] = 0;
+    }
+    if (b[2] > fullWidth) {
+        b[2] = fullWidth;
+    }
+    if (b[3] > fullHeight) {
+        b[3] = fullHeight;
+    }
+    var bWidth = b[2] - b[0];
+    var bHeight = b[3] - b[1];
+    if (bWidth < 1) {
+        b[2] = b[0] + 1;
+        bWidth = 1;
+    }
+    if (bHeight < 1) {
+        b[3] = b[1] + 1;
+        bHeight = 1;
+    }
+
+    var widthProportion = bWidth / fullWidth;
+    var heightProportion = bHeight / fullHeight;
+    var proportion = Math.max(widthProportion, heightProportion);
+    var x0 = Math.log(1 / fullHeight);
+    var x1 = Math.log(fullHeight / fullHeight); // 0
+    var y0 = resultPixelHeightRatio;
+    var y1 = 0;
+    var x = Math.log(proportion);
+    var y = linearInterpolate(x0, y0, x1, y1, x);
+    var gapMultiplier = y;
+    if (widthProportion > heightProportion) {
+        var widthGap = bWidth * gapMultiplier;
+        var width = bWidth + widthGap;
+        var height = width / fullWidth * fullHeight;
+        var heightGap = height - bHeight;
+    } else {
+        var heightGap = bHeight * gapMultiplier;
+        var height = bHeight + heightGap;
+        var width = height / fullHeight * fullWidth;
+        var widthGap = width - bWidth;
+    }
+
+    var leftPreGap = b[0];
+    var widthPreGap = fullWidth - bWidth;
+
+    var bottomPreGap = b[1];
+    var heightPreGap = fullHeight - bHeight;
+
+    var leftGap = leftPreGap / widthPreGap * widthGap;
+    var bottomGap = bottomPreGap / heightPreGap * heightGap;
+
+    var left = b[0] - leftGap;
+    var bottom = b[1] - bottomGap;
+
+    var midX = left + width / 2;
+    var midY = bottom + height / 2;
+    var scaleX = 2 / width;
+    var scaleY = 2 / height;
+    return new Float32Array([
+        scaleX,         0,
+        0,              scaleY,
+        -midX * scaleX, -midY * scaleY,
+    ]);
+};
+
+var linearInterpolate = function (x0, y0, x1, y1, x) {
+    var xRange = x1 - x0;
+    var yRange = y1 - y0;
+    var numRanges = (x - x0) / xRange;
+    var y = numRanges * yRange + y0;
+    return y;
 };
 
 setupAll();
