@@ -144,7 +144,7 @@ var stepHtml = function (stepView) {
             var source = references[token.referenceI].source;
             if (source.result === null) {
                 var result = '-';
-            } else if (Canvas.isQuads(source.result)) {
+            } else if (Quads.isQuads(source.result)) {
                 var result = 'pic';
             } else {
                 var result = DrawHelper.clipNumber(source.result, 6);
@@ -261,7 +261,10 @@ var drawSteps = function (steps) {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-content', true) ;
+        .classed('result-text', true) ;
+
+    resultEnterEls.append('div')
+        .classed('result-canvas', true) ;
 
     resultEnterEls.append('div')
         .classed('result-border', true) ;
@@ -318,6 +321,12 @@ var drawSteps = function (steps) {
             if (d === Global.connectStepView) {
                 classes.push('connecting');
             }
+            var step = d.steps[d.steps.length - 1];
+            if (step.result && Quads.isQuads(step.result)) {
+                classes.push('canvas-result');
+            } else {
+                classes.push('text-result');
+            }
             return classes.join(' ');
         })
         .style('height', function (d) { return (d.h - 1) + 'px' })
@@ -367,18 +376,26 @@ var drawSteps = function (steps) {
             return 'result ' + DrawReferences.colorForResult(d);
         }) ;
 
-    stepEls.select('.result-content')
+    stepEls.select('.result-text')
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
             if (step.result === null) {
                 return '';
             }
-            if (Canvas.isQuads(step.result)) {
+            if (Quads.isQuads(step.result)) {
                 return 'pic';
             } else {
                 return DrawHelper.clipNumber(step.result, 12);
             }
         }) ;
+
+    stepEls.select('.result-canvas')
+        .each(function (d) {
+            var result = d.steps[d.steps.length - 1].result;
+            if (result && Quads.isQuads(result)) {
+                Canvas.drawResult(this, result);
+            }
+        });
 };
 
 
@@ -435,7 +452,7 @@ var drawEnvironment = function () {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-content', true) ;
+        .classed('result-text', true) ;
 
     resultEnterEls.append('div')
         .classed('result-border', true) ;
@@ -468,7 +485,14 @@ var drawEnvironment = function () {
 
     environmentEls
         .attr('class', function (d) {
-            return 'environment';
+            var classes = ['environment'];
+            var step = d.steps[d.steps.length - 1];
+            if (step.result && Quads.isQuads(step.result)) {
+                classes.push('canvas-result');
+            } else {
+                classes.push('text-result');
+            }
+            return classes.join(' ');
         }) ;
 
     environmentEls.select('.result')
@@ -479,7 +503,7 @@ var drawEnvironment = function () {
     environmentEls.select('.name')
         .text(function (d) { return d.step.text }) ;
 
-    environmentEls.select('.result-content')
+    environmentEls.select('.result-text')
         .text(function (d) { return d.step.result }) ;
 };
 

@@ -184,6 +184,9 @@ h1 {
       white-space: pre-wrap;
       line-height: 24px;
     }
+    .step.canvas-result .expression {
+      min-height: 30px;
+    }
 
       .expression .reference-text {
         display: inline-block;
@@ -216,7 +219,8 @@ h1 {
     width: 135px;
     background-color: white;
   }
-    .result-content {
+    .result-text {
+      display: none;
       position: absolute;
       right: 0;
       left: 0;
@@ -226,6 +230,21 @@ h1 {
       text-align: right;
       margin: 0;
       padding: 3px 10px 4px 6px;
+    }
+    .text-result .result-text {
+      display: block;
+    }
+
+    .result-canvas {
+      display: none;
+      position: absolute;
+      right: 15px;
+      left: 15px;
+      top: 1px;
+      bottom: 1px;
+    }
+    .canvas-result .result-text {
+      display: block;
     }
 
     .result-border {
@@ -361,7 +380,7 @@ h1 {
 }
 
 .step.disabled .expression-container,
-.step.disabled .result-content {
+.step.disabled .result-text {
   color: #ccc;
 }
 

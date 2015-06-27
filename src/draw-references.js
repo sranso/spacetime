@@ -232,7 +232,7 @@ DrawReferences.draw = function (expressionContainerEls) {
             var result = reference.source.result;
             if (result === null) {
                 var text = '-';
-            } else if (Canvas.isQuads(result)) {
+            } else if (Quads.isQuads(result)) {
                 var text = 'pic';
             } else {
                 var text = DrawHelper.clipNumber(reference.source.result, 6);

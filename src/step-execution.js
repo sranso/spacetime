@@ -52,13 +52,13 @@ StepExecution.lex = function (step) {
 };
 
 var actions = {
-    combine: {args: [2, 2], execute: Canvas.combine},
-    shear: {args: [2, 2], execute: Canvas.shear},
-    move: {args: [3, 3], execute: Canvas.move},
-    pin: {args: [2, 3], execute: Canvas.pin},
-    pixel: {args: [0, 1], execute: Canvas.pixel},
-    rotate: {args: [2, 2], execute: Canvas.rotate},
-    scale: {args: [3, 3], execute: Canvas.scale},
+    combine: {args: [2, 2], execute: Quads.combine},
+    shear: {args: [2, 2], execute: Quads.shear},
+    move: {args: [3, 3], execute: Quads.move},
+    pin: {args: [2, 3], execute: Quads.pin},
+    pixel: {args: [0, 1], execute: Quads.pixel},
+    rotate: {args: [2, 2], execute: Quads.rotate},
+    scale: {args: [3, 3], execute: Quads.scale},
 };
 
 StepExecution.parse = function (step) {
@@ -172,7 +172,7 @@ var executeStep = function (step) {
         }
 
         var quadsResult = _.find(tokens, function (token) {
-            return Canvas.isQuads(token.result);
+            return Quads.isQuads(token.result);
         });
         if (quadsResult) {
             quadsResult = quadsResult.result;
