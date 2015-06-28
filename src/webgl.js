@@ -9,6 +9,7 @@ var verticesToElementsRatio = 6 / 4;
 var coordsLengthToElementsRatio = coordsLengthToVerticesRatio * verticesToElementsRatio;  // 3 / 4
 
 var resultPixelHeightRatio = 12 - 1;
+var referencePixelHeightRatio = 8 - 1;
 
 var webglPool;
 var mainCanvasParent;
@@ -192,7 +193,18 @@ Webgl.drawResult = function (canvasParent, quads) {
     clear(webgl);
     if (quads) {
         var boundary = Quads.boundaryCoords(quads);
-        var projectionMatrix = createZoomedProjectionMatrix(boundary);
+        var projectionMatrix = createZoomedProjectionMatrix(boundary, resultPixelHeightRatio);
+        var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
+        draw(webgl, quads, matrix);
+    }
+};
+
+Webgl.drawReference = function (canvasParent, quads) {
+    var webgl = getWebgl(canvasParent);
+    clear(webgl);
+    if (quads) {
+        var boundary = Quads.boundaryCoords(quads);
+        var projectionMatrix = createZoomedProjectionMatrix(boundary, referencePixelHeightRatio);
         var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
         draw(webgl, quads, matrix);
     }
@@ -238,7 +250,7 @@ var createBasicProjectionMatrix = function (canvas) {
     ]);
 };
 
-var createZoomedProjectionMatrix = function (boundary) {
+var createZoomedProjectionMatrix = function (boundary, pixelHeightRatio) {
     var fullWidth = Global.canvasFullWidth;
     var fullHeight = Global.canvasFullHeight;
     var b = boundary;
@@ -270,7 +282,7 @@ var createZoomedProjectionMatrix = function (boundary) {
     var proportion = Math.max(widthProportion, heightProportion);
     var x0 = Math.log(1 / fullHeight);
     var x1 = Math.log(fullHeight / fullHeight); // 0
-    var y0 = resultPixelHeightRatio;
+    var y0 = pixelHeightRatio;
     var y1 = 0;
     var x = Math.log(proportion);
     var y = linearInterpolate(x0, y0, x1, y1, x);
@@ -293,8 +305,16 @@ var createZoomedProjectionMatrix = function (boundary) {
     var bottomPreGap = b[1];
     var heightPreGap = fullHeight - bHeight;
 
-    var leftGap = leftPreGap / widthPreGap * widthGap;
-    var bottomGap = bottomPreGap / heightPreGap * heightGap;
+    if (widthPreGap > 0) {
+        var leftGap = leftPreGap / widthPreGap * widthGap;
+    } else {
+        var leftGap = 0;
+    }
+    if (heightPreGap > 0) {
+        var bottomGap = bottomPreGap / heightPreGap * heightGap;
+    } else {
+        var bottomGap = 0;
+    }
 
     var left = b[0] - leftGap;
     var bottom = b[1] - bottomGap;

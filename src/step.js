@@ -146,10 +146,10 @@ Step.updateText = function (expressionEl) {
         });
     } else {
         var referenceClasses = [];
-        d3.select(expressionEl).selectAll('.reference-text').each(function () {
+        d3.select(expressionEl).selectAll('.reference-placeholder').each(function () {
             referenceClasses = referenceClasses.concat(_.toArray(this.classList));
         });
-        referenceClasses = _.without(referenceClasses, 'reference-text');
+        referenceClasses = _.without(referenceClasses, 'reference-placeholder');
         var referenceIs = _.map(referenceClasses, function (ref) {
             return +ref.slice('reference-'.length);
         });

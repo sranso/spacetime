@@ -126,6 +126,12 @@ var referenceClass = function (reference, referenceI) {
     } else if (color) {
         classes.push(color);
     }
+    var result = reference.source.result;
+    if (Quads.isQuads(result)) {
+        classes.push('canvas-reference');
+    } else {
+        classes.push('text-reference');
+    }
     if (reference.absolute) {
         classes.push('reference-absolute');
     }
@@ -174,7 +180,7 @@ DrawReferences.updateInserting = function () {
 
     var cursorIndex = 0;
     _.each(references, function (reference, i) {
-        var textEl = container.select('.reference-text.reference-' + i).node();
+        var textEl = container.select('.reference-placeholder.reference-' + i).node();
         var range = document.createRange();
         range.selectNodeContents(textEl);
         if (textEl.previousSibling && textEl.previousSibling.nodeType === 3) {
@@ -219,42 +225,54 @@ DrawReferences.draw = function (expressionContainerEls) {
         var referenceEls = container.selectAll('.reference')
             .data(containingStep.references) ;
 
-        referenceEls.enter().append('div')
+        var referenceEnterEls = referenceEls.enter().append('div')
             .attr('class', 'reference')
             .on('click', function (d, i) {
                 selectReference(container, i);
             }) ;
 
+        referenceEnterEls.append('div')
+            .attr('class', 'reference-content-text') ;
+
+        referenceEnterEls.append('div')
+            .attr('class', 'reference-content-canvas') ;
+
         referenceEls.exit().remove();
 
 
-        referenceEls.each(function (reference) {
-            var result = reference.source.result;
-            if (result === null) {
-                var text = '-';
-            } else if (Quads.isQuads(result)) {
-                var text = 'pic';
-            } else {
-                var text = DrawHelper.clipNumber(reference.source.result, 6);
-            }
-
-            d3.select(this)
-                .text(text) ;
-        });
-
         referenceEls.each(function (reference, i) {
-            var textEl = container.select('.reference-text.reference-' + i).node();
+            var textEl = container.select('.reference-placeholder.reference-' + i).node();
             d3.select(this)
                 .attr('class', referenceClass(reference, i))
                 .style('top', textEl.offsetTop + 'px')
                 .style('left', textEl.offsetLeft + 'px')
                 .style('width', (textEl.offsetWidth - 2) + 'px') ;
         });
+
+        referenceEls.select('.reference-content-text')
+            .text(function (reference) {
+                var result = reference.source.result;
+                if (result === null) {
+                    return '-';
+                } else if (Quads.isQuads(result)) {
+                    return 'pic';
+                } else {
+                    return DrawHelper.clipNumber(reference.source.result, 6);
+                }
+            }) ;
+
+        referenceEls.select('.reference-content-canvas')
+            .each(function (reference) {
+                var result = reference.source.result;
+                if (result && Quads.isQuads(result)) {
+                    Webgl.drawReference(this, result);
+                }
+            }) ;
     });
 };
 
 var selectReference = function (container, i) {
-    var textEl = container.select('.reference-text.reference-' + i).node();
+    var textEl = container.select('.reference-placeholder.reference-' + i).node();
 
     var range = document.createRange();
     range.setEnd(textEl, 1);

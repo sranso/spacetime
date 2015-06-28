@@ -193,26 +193,45 @@ h1 {
       min-height: 32px;  /* also update .result-canvas canvas below */
     }
 
-      .expression .reference-text {
+      .expression .reference-placeholder {
         display: inline-block;
         margin-right: 1px;
         font-size: 1px;
         height: 1px;
       }
 
-    .step .reference {
-      position: absolute;
-      text-align: center;
-      padding-top: 1px;
-      padding-bottom: 1px;
-      margin-top: -5px;
-      margin-left: -1px;
-      border: solid 2px #ddd;
-      border-radius: 6px;
+  .step .reference {
+    position: absolute;
+    text-align: center;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin-top: -5px;
+    margin-left: -1px;
+    border: solid 2px #ddd;
+    border-radius: 6px;
+    height: 17px;
+  }
+  .step.active .reference {
+    border-color: #ccc;
+  }
+    .reference-content-text {
+      display: none;
+    }
+    .text-reference .reference-content-text {
+      display: block;
     }
 
-    .step.active .reference {
-      border-color: #ccc;
+    .reference-content-canvas {
+      display: none;
+      margin: 1px 3px 1px 3px;
+    }
+    .canvas-reference .reference-content-canvas {
+      display: block;
+    }
+    .reference-content-canvas canvas {
+      width: 16px;
+      height: 10px; /* also update .expression above */
+      border: dotted 1px #ddd;
     }
 
   .step .result {

@@ -155,6 +155,9 @@ var combine = function (quads1, quads2) {
 
 // TODO: better implementation that doesn't require going through every point
 Quads.boundaryCoords = function (quads) {
+    if (quads.coords.length > 8) {
+        var XXX = 4 + 1;
+    }
     var coords = new Float32Array(quads.coords.length);
     vec2TransformMat2d_all(coords, quads.coords, quads.matrix);
     if (!coords.length) {

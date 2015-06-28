@@ -154,7 +154,7 @@ var stepHtml = function (stepView) {
             if (result.indexOf('.') !== -1) {
                 width -= 4;
             }
-            return '<span class="reference-text reference-' +
+            return '<span class="reference-placeholder reference-' +
                     token.referenceI + '" style="width: ' + width + 'px;">' +
                     token.text + '</span>';
         }
@@ -184,10 +184,10 @@ var drawSteps = function (steps) {
         }) ;
 
     var stepBoxEnterEls = stepEnterEls.append('div')
-        .classed('step-box', true) ;
+        .attr('class', 'step-box') ;
 
     var enableDisableEnterEls = stepBoxEnterEls.append('div')
-        .classed('enable-disable', true)
+        .attr('class', 'enable-disable')
         .on('mousedown', function (d) {
             Step.clickEnableRegion(d);
             d3.event.stopPropagation();
@@ -197,20 +197,20 @@ var drawSteps = function (steps) {
         }) ;
 
     var enableConnectorContainer = enableDisableEnterEls.append('div')
-        .classed('enable-connector-container', true) ;
+        .attr('class', 'enable-connector-container') ;
     enableConnectorContainer.append('div')
-        .classed('enable-connector', true) ;
+        .attr('class', 'enable-connector') ;
 
     var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
-        .classed('selection-edge', true) ;
+        .attr('class', 'selection-edge') ;
 
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
-        .classed('expression-container', true) ;
+        .attr('class', 'expression-container') ;
 
     var down = false;
 
     expressionContainerEnterEls.append('div')
-        .classed('expression', true)
+        .attr('class', 'expression')
         .attr('contenteditable', true)
         .on('focus', function (d) {
             Main.maybeUpdate(function () { Global.inputStepView = d });
@@ -240,7 +240,7 @@ var drawSteps = function (steps) {
         }) ;
 
     var resultEnterEls = stepBoxEnterEls.append('div')
-        .classed('result', true)
+        .attr('class', 'result')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
                 Global.hoverResultStepView = d;
@@ -262,19 +262,19 @@ var drawSteps = function (steps) {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-content-text', true) ;
+        .attr('class', 'result-content-text') ;
 
     resultEnterEls.append('div')
-        .classed('result-content-canvas', true) ;
+        .attr('class', 'result-content-canvas') ;
 
     resultEnterEls.append('div')
-        .classed('result-border', true) ;
+        .attr('class', 'result-border') ;
 
     var resultCornerContainerEnterEls = resultEnterEls.append('div')
-        .classed('result-corner-container', true) ;
+        .attr('class', 'result-corner-container') ;
 
     resultCornerContainerEnterEls.append('div')
-        .classed('result-corner', true)
+        .attr('class', 'result-corner')
         .on('mousedown', function (d) {
             if (!Global.inputStepView) {
                 d3.event.stopPropagation();
@@ -411,7 +411,7 @@ var drawEnvironment = function () {
         .data(Global.environment) ;
 
     var environmentEnterEls = environmentEls.enter().append('div')
-        .classed('environment', true)
+        .attr('class', 'environment')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
                 Global.hoverResultStepView = d;
@@ -428,10 +428,10 @@ var drawEnvironment = function () {
         }) ;
 
     var nameEnterEls = environmentEnterEls.append('div')
-        .classed('name', true) ;
+        .attr('class', 'name') ;
 
     var resultEnterEls = environmentEnterEls.append('div')
-        .classed('result', true)
+        .attr('class', 'result')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
                 Global.hoverResultStepView = d;
@@ -453,16 +453,16 @@ var drawEnvironment = function () {
         }) ;
 
     resultEnterEls.append('div')
-        .classed('result-content-text', true) ;
+        .attr('class', 'result-content-text') ;
 
     resultEnterEls.append('div')
-        .classed('result-border', true) ;
+        .attr('class', 'result-border') ;
 
     var resultCornerContainerEnterEls = resultEnterEls.append('div')
-        .classed('result-corner-container', true) ;
+        .attr('class', 'result-corner-container') ;
 
     resultCornerContainerEnterEls.append('div')
-        .classed('result-corner', true)
+        .attr('class', 'result-corner')
         .on('mousedown', function (d) {
             if (!Global.inputStepView) {
                 d3.event.stopPropagation();
@@ -513,11 +513,11 @@ var drawEnvironment = function () {
 
 var drawSelectionHistorySetup = function () {
     selectionHistoryEl = trackSvg.append('g')
-        .classed('selection-history', true)
+        .attr('class', 'selection-history')
         .attr('transform', 'translate(600,200)') ;
 
     selectionHistoryCursor = selectionHistoryEl.append('rect')
-        .classed('selection-cursor', true)
+        .attr('class', 'selection-cursor')
         .attr('x', 1)
         .attr('y', 1)
         .attr('width', historyWidth - 2)
@@ -533,10 +533,10 @@ var drawSelectionHistory = function () {
         .data(__selectionHistoryAll) ;
 
     var historyEnterEls = historyEls.enter().append('g')
-        .classed('history', true) ;
+        .attr('class', 'history') ;
 
     historyEnterEls.append('rect')
-        .classed('background', true)
+        .attr('class', 'background')
         .attr('x', 3)
         .attr('y', 3)
         .attr('width', function (d) { return d.w - 6 })
@@ -547,7 +547,7 @@ var drawSelectionHistory = function () {
         .attr('y', historyWidth / 2 + 3) ;
 
     historyEnterEls.append('rect')
-        .classed('mouse', true)
+        .attr('class', 'mouse')
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', _.property('w'))
@@ -620,14 +620,14 @@ var drawStretches = function (stretches) {
     var stretchEnterEls = stretchEls.enter().append('g');
 
     stretchEnterEls.append('rect')
-        .classed('background', true)
+        .attr('class', 'background')
         .attr('x', 0.5)
         .attr('y', 2.5)
         .attr('rx', 2)
         .attr('ry', 2) ;
 
     stretchEnterEls.append('rect')
-        .classed('mouse', true)
+        .attr('class', 'mouse')
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
