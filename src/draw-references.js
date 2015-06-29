@@ -7,15 +7,21 @@ DrawReferences.colorForResult = function (resultStepView) {
     if (!targetStepView) {
         return '';
     }
+
+    var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
+    var targetStep = targetStepView.steps[targetStepView.steps.length - 1];
     if (targetStepView === Global.hoverResultStepView) {
         if (resultStepView === Global.hoverResultStepView) {
+            return 'referenced-by-color';
+        } else if (resultStep === targetStep.updatedBy) {
+            return 'reference-color-1';
+        } else if (targetStep === resultStep.updatedBy) {
             return 'referenced-by-color';
         } else {
             return '';
         }
     }
 
-    var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
     return referenceColorInputAware(targetStepView, resultStep);
 };
 

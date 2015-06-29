@@ -6,6 +6,7 @@ StepExecution.execute = function () {
     var start = +Date.now();
     Global.lastQuads = null;
     _.each(Global.steps, executeStep);
+    _.each(Global.environment, updateEnvironment);
     var end = +Date.now();
     console.log(end - start);
 };
@@ -200,6 +201,13 @@ var executeStep = function (step) {
             step.result = null;
             step.error = null;
         }
+    }
+};
+
+var updateEnvironment = function (stepView) {
+    var step = stepView.step;
+    if (step.editable) {
+        step.result = step.updatedBy ? step.updatedBy.result : null;
     }
 };
 

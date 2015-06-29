@@ -128,6 +128,19 @@ var drawOverallSetup = function() {
             var height = Global.canvasFullHeight - 1;
             Global.mouseY.result = Math.max(0, Math.min(height - mouse[1], height));
             Main.update();
+        })
+        .on('mousedown', function () {
+            Global.mouseDown.result = true;
+            Main.update();
+        }) ;
+
+    d3.select('#add-environment')
+        .on('mousedown', function () {
+            var step = Step.createForEnvironment();
+            var stepView = StepView.create(step);
+            Global.environment.push(stepView);
+            Main.update();
+            d3.select(stepView.__el__).select('.name').node().focus();
         }) ;
 };
 
@@ -207,8 +220,6 @@ var drawSteps = function (steps) {
     var expressionContainerEnterEls = stepBoxEnterEls.append('div')
         .attr('class', 'expression-container') ;
 
-    var down = false;
-
     expressionContainerEnterEls.append('div')
         .attr('class', 'expression')
         .attr('contenteditable', true)
@@ -230,12 +241,9 @@ var drawSteps = function (steps) {
             d3.event.stopPropagation();
         })
         .on('keydown', function (d) {
-            down = true;
             Input.textInputEvent(d, Input.keyForEvent());
         })
         .on('keyup', function () {
-            down = false;
-            Main.update();
             d3.event.stopPropagation();
         }) ;
 
@@ -432,7 +440,20 @@ var drawEnvironment = function () {
         }) ;
 
     var nameEnterEls = environmentEnterEls.append('div')
-        .attr('class', 'name') ;
+        .attr('class', 'name')
+        .attr('contenteditable', function (d) { return d.step.editable })
+        .on('input', function (d) {
+            d.step.text = this.textContent;
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function (d) {
+            Input.textInputEvent(d, Input.keyForEvent());
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
 
     var resultEnterEls = environmentEnterEls.append('div')
         .attr('class', 'result')
@@ -451,13 +472,20 @@ var drawEnvironment = function () {
             }, 0);
         })
         .on('mousedown', function (d) {
-            Step.insertOrUpdateReference(d);
+            if (Global.connectStepView) {
+                Step.setEnvironmentUpdatedBy(d);
+            } else {
+                Step.insertOrUpdateReference(d);
+            }
             d3.event.stopPropagation();
             d3.event.preventDefault();
         }) ;
 
     resultEnterEls.append('div')
         .attr('class', 'result-content-text') ;
+
+    resultEnterEls.append('div')
+        .attr('class', 'result-content-canvas') ;
 
     resultEnterEls.append('div')
         .attr('class', 'result-border') ;
@@ -486,6 +514,11 @@ var drawEnvironment = function () {
 
     environmentEls.exit().remove();
 
+    var environment = d3.select('#environment').node();
+    var addEnvironment = d3.select('#add-environment').node();
+    environment.removeChild(addEnvironment);
+    environment.appendChild(addEnvironment);
+
     environmentEls.each(function (d) { d.__el__ = this });
 
     environmentEls
@@ -509,7 +542,28 @@ var drawEnvironment = function () {
         .text(function (d) { return d.step.text }) ;
 
     environmentEls.select('.result-content-text')
-        .text(function (d) { return d.step.result }) ;
+        .text(function (d) {
+            if (d.step.result === null) {
+                return '';
+            }
+            if (Quads.isQuads(d.step.result)) {
+                return 'pic';
+            } else {
+                return DrawHelper.clipNumber(d.step.result, 12);
+            }
+        }) ;
+
+    environmentEls.select('.result-content-canvas')
+        .each(function (d) {
+            var result = d.step.result;
+            if (result && Quads.isQuads(result)) {
+                Webgl.drawResult(this, result);
+            } else {
+                while (this.firstChild) {
+                    this.removeChild(this.firstChild);
+                }
+            }
+        });
 };
 
 

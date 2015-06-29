@@ -34,6 +34,7 @@ Main.maybeUpdate = function (cb) {
 };
 
 Main.mouseUp = function () {
+    Global.mouseDown.result = false;
     Selection.stop();
     Main.update();
 };
@@ -49,6 +50,8 @@ Main.mouseDown = function () {
         Global.inputStepView = null;
         Global.connectStepView = null;
     });
+    Main.update();
+
     var mouse = d3.mouse(Draw.trackContainer.node());
     Selection.maybeStart(mouse);
 };
@@ -62,18 +65,28 @@ Global.active = Group.create();
 Global.active.hidden = true;
 Global.selection = new Selection();
 
-Global.mouseX = Step.create();
-Global.mouseX.text = 'Mouse X';
+Global.mouseX = Step.createForEnvironment();
+Global.mouseX.text = 'mouse x';
 Global.mouseX.result = 0;
-Global.mouseX.__index = -1;
-Global.mouseY = Step.create();
-Global.mouseY.text = 'Mouse Y';
+Global.mouseX.editable = false;
+
+Global.mouseY = Step.createForEnvironment();
+Global.mouseY.text = 'mouse y';
 Global.mouseY.result = 0;
-Global.mouseY.__index = -1;
-Global.environment = [
-    StepView.create(Global.mouseX),
-    StepView.create(Global.mouseY),
+Global.mouseY.editable = false;
+
+Global.mouseDown = Step.createForEnvironment();
+Global.mouseDown.text = 'mouse down';
+Global.mouseDown.result = false;
+Global.mouseDown.editable = false;
+
+var environment = [
+    Global.mouseX,
+    Global.mouseY,
+    Global.mouseDown,
+    Step.createForEnvironment(),
 ];
+Global.environment = _.map(environment, StepView.create);
 
 Input.dvorak();
 Draw.setup();

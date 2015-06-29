@@ -17,8 +17,17 @@ Step.create = function () {
         enables: [],
         forceDisabled: 0,
         forceEnabled: [],
+        // editable: true/false,  // only environment steps
     };
     step.stepView = StepView.create(step);
+    return step;
+};
+
+Step.createForEnvironment = function () {
+    var step = Step.create();
+    step.__index = -1;
+    step.editable = true;
+    step.updatedBy = null;
     return step;
 };
 
@@ -91,6 +100,9 @@ Step.insertOrUpdateReference = function (resultStepView) {
     if (Global.inputReferenceIs.length) {
         var inputReferences = Global.inputStepView.step.references;
         var absolute = inputReferences[Global.inputReferenceIs[0]].absolute;
+        if (resultStep.__index === -1) {
+            absolute = true;
+        }
         _.each(Global.active.stretches, function (stretch) {
             var sink = stretch.steps[0];
             if (absolute) {
@@ -100,6 +112,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
             }
             _.each(Global.inputReferenceIs, function (referenceI) {
                 var reference = sink.references[referenceI];
+                reference.absolute = absolute;
                 Reference.setSource(reference, source);
             });
         });
@@ -219,6 +232,21 @@ Step.clickEnableRegion = function (stepView) {
                 step.forceEnabled = forceEnabledBy;
             });
         });
+    }
+
+    Main.update();
+};
+
+Step.setEnvironmentUpdatedBy = function (stepView) {
+    var step = stepView.step;
+    if (!step.editable) {
+        return;
+    }
+    var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
+    if (step.updatedBy === resultStep) {
+        step.updatedBy = null;
+    } else {
+        step.updatedBy = resultStep;
     }
 
     Main.update();
