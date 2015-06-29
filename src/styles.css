@@ -223,14 +223,14 @@ h1 {
 
     .reference-content-canvas {
       display: none;
-      margin: 1px 3px 1px 3px;
+      text-align: center;
     }
     .canvas-reference .reference-content-canvas {
       display: block;
     }
     .reference-content-canvas canvas {
-      width: 16px;
-      height: 10px; /* also update .expression above */
+      width: 24px;
+      height: 15px; /* also update .expression above */
       border: dotted 1px #ddd;
     }
 

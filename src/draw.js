@@ -395,6 +395,10 @@ var drawSteps = function (steps) {
             var result = d.steps[d.steps.length - 1].result;
             if (result && Quads.isQuads(result)) {
                 Webgl.drawResult(this, result);
+            } else {
+                while (this.firstChild) {
+                    this.removeChild(this.firstChild);
+                }
             }
         });
 };

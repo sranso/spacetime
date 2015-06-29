@@ -15,7 +15,6 @@ Main.update = function () {
     Selection.computeInfo();
     Draw.draw();
     Webgl.drawMainCanvas();
-    Webgl.recycle();
 };
 
 Main.maybeUpdate = function (cb) {

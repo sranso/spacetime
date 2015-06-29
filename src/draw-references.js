@@ -266,6 +266,10 @@ DrawReferences.draw = function (expressionContainerEls) {
                 var result = reference.source.result;
                 if (result && Quads.isQuads(result)) {
                     Webgl.drawReference(this, result);
+                } else {
+                    while (this.firstChild) {
+                        this.removeChild(this.firstChild);
+                    }
                 }
             }) ;
     });
