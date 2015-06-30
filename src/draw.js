@@ -5,11 +5,8 @@ var Draw = {};
 Draw.trackContainer = null;
 Draw.trackHtml = null;
 
-// var historyWidth = 20;
 var trackSvg;
 var selectionInfoEl;
-var selectionHistoryEl;
-var selectionHistoryCursor;
 var __stretches = [];
 var environmentContainer;
 
@@ -17,37 +14,16 @@ Draw.setup = function () {
     drawOverallSetup();
     drawStepsSetup();
     drawEnvironmentSetup();
-    //drawSelectionHistorySetup();
     drawSelectionInfoSetup();
     drawStretchesSetup();
 };
 
 Draw.draw = function () {
-    //computeSelectionHistoryPositions();
-
     drawSteps(Global.stepViews);
     drawEnvironment();
     computeStretchPositions(Group.groupsToDraw(Global.groups));
-    //drawSelectionHistory();
     drawSelectionInfo();
     drawStretches(__stretches);
-};
-
-var computeSelectionHistoryPositions = function () {
-    var prevPos = {x: 360, y: 200, w: 0, h: 0};
-    __selectionHistoryAll = selectionHistory;
-    for (var i = selectionHistory.length - 1; i >= 0; i--) {
-        var selectionView = selectionHistory[i];
-        var pos = {
-            x: prevPos.x - historyWidth,
-            y: prevPos.y,
-            w: historyWidth,
-            h: historyWidth,
-        };
-        selectionView.position = pos;
-        _.extend(selectionView, pos);
-        prevPos = pos;
-    }
 };
 
 var computeStretchPositions = function (groups, stepViews) {
@@ -569,76 +545,8 @@ var drawEnvironment = function () {
 
 ///////////////// Selections
 
-var drawSelectionHistorySetup = function () {
-    selectionHistoryEl = trackSvg.append('g')
-        .attr('class', 'selection-history')
-        .attr('transform', 'translate(600,200)') ;
-
-    selectionHistoryCursor = selectionHistoryEl.append('rect')
-        .attr('class', 'selection-cursor')
-        .attr('x', 1)
-        .attr('y', 1)
-        .attr('width', historyWidth - 2)
-        .attr('height', historyWidth - 2) ;
-};
-
 var drawSelectionInfoSetup = function () {
     selectionInfoEl = d3.select('#selection');
-};
-
-var drawSelectionHistory = function () {
-    var historyEls = selectionHistoryEl.selectAll('g.history')
-        .data(__selectionHistoryAll) ;
-
-    var historyEnterEls = historyEls.enter().append('g')
-        .attr('class', 'history') ;
-
-    historyEnterEls.append('rect')
-        .attr('class', 'background')
-        .attr('x', 3)
-        .attr('y', 3)
-        .attr('width', function (d) { return d.w - 6 })
-        .attr('height', function (d) { return d.h - 6 }) ;
-
-    historyEnterEls.append('text')
-        .attr('x', 10)
-        .attr('y', historyWidth / 2 + 3) ;
-
-    historyEnterEls.append('rect')
-        .attr('class', 'mouse')
-        .attr('x', 0)
-        .attr('y', 0)
-        .attr('width', _.property('w'))
-        .attr('height', _.property('h'))
-        .on('click', function (d, i) {
-            selectionHistoryI = i;
-            Global.selection = selectionHistory[selectionHistoryI].selection;
-            Main.update();
-        }) ;
-
-    historyEls.exit().remove();
-
-    historyEls
-        .attr('transform', function (d, i) {
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }) ;
-
-    historyEls.select('rect.background')
-        .style('fill', function (d, i) {
-            var c = d.selection.color;
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
-        }) ;
-
-    historyEls.select('text')
-        .text(function (d) {
-            return d.selection.text.slice(0, 2);
-        }) ;
-
-    selectionHistoryCursor
-        .attr('transform', function () {
-            var d = selectionHistory[selectionHistoryI];
-            return 'translate(' + d.x + ',' + d.y + ')';
-        }) ;
 };
 
 var drawSelectionInfo = function () {
@@ -692,8 +600,6 @@ var drawStretches = function (stretches) {
             var kind = Selection.buttonSelectionKind();
             Global.selection[kind].focus = d.stretch;
             Global.selection[kind].group = d.stretch.group;
-            // selectionHistoryI = saveHistoryI + 1;
-            // selectionHistory[selectionHistoryI] = {selection: Global.selection};
             Global.connectStepView = null;
             Main.update();
             d3.event.stopPropagation();

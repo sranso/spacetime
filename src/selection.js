@@ -17,33 +17,6 @@ var selectingData = {
     end: null,
 };
 
-// var browseSelectionHistory = function (forward) {
-//     var pop = function () {
-//         if (selectionHistoryI > saveHistoryI) {
-//             selectionHistory.pop();
-//             selectionHistoryI -= 1;
-//             return true;
-//         }
-//         return false;
-//     }
-//
-//     if (forward) {
-//         pop();
-//         selectionHistoryI += 1;
-//         if (selectionHistoryI === selectionHistory.length) {
-//             var stretch = Stretch.createGroupStretch();
-//             var nextSelection = Group.create();
-//             nextSelection.stretches = [stretch];
-//             stretch.group = nextSelection;
-//             selectionHistory.push({selection: nextSelection});
-//             Global.groups.push(nextSelection);
-//         }
-//     } else if (selectionHistoryI > 0 && !pop()) {
-//         selectionHistoryI -= 1;
-//     }
-//     Global.selection = selectionHistory[selectionHistoryI].selection;
-// };
-
 Selection.toggleCollapsed = function () {
     if (Global.active.byMatch) {
         return;  // TODO: make this work with non-group stretches
@@ -106,10 +79,6 @@ var startSelecting = function (step, kind) {
     selectingData.kind = kind;
     Global.selection[kind].focus = stretch;
     Global.selection[kind].group = group;
-    // if (selectionHistoryI !== selectionHistory.length - 1) {
-    //     selectionHistory.push({selection: selection});
-    //     selectionHistoryI = selectionHistory.length - 1;
-    // }
     changeSelecting(step);
 };
 
@@ -140,12 +109,6 @@ var changeSelecting = function (end) {
     }
     var steps = StepView.realSteps(Global.stepViews.slice(startI, endI + 1));
     Stretch.setSteps(Global.selection[selectingData.kind].focus, steps);
-
-    // if (Global.selection.stretches[0].steps.length) {
-    //     saveHistoryI = selectionHistoryI;
-    // } else {
-    //     saveHistoryI = selectionHistoryI - 1;
-    // }
 
     Main.update();
 };

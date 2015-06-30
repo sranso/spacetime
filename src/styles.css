@@ -464,20 +464,6 @@ h1 {
 }
 
 
-
-.history {
-}
-  .history text {
-    text-anchor: middle;
-    font-size: 10px;
-  }
-
-  .history .mouse {
-    fill: #fff;
-    opacity: 0;
-  }
-
-
 .stretch {
   pointer-events: visiblePainted;
 }
