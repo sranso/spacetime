@@ -8,7 +8,6 @@ StretchView.create = function (stretch) {
         selectedArea: false,
         steps: [],
         stretch: stretch,
-        position: null,
     };
 };
 

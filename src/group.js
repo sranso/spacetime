@@ -9,7 +9,21 @@ Group.create = function () {
         stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(78, 83)],
         text: '',
+        remember: false,
+        stretchViews: [],
     };
+};
+
+Group.computeStretchViews = function (group) {
+    var stretchViews = _.map(group.stretches, function (stretch) {
+        var stretchView = StretchView.create(stretch);
+        StretchView.computeSteps(stretchView);
+        return stretchView;
+    });
+    var stretchViews = _.filter(stretchViews, function (stretchView) {
+        return stretchView.steps.length;
+    });
+    return stretchViews;
 };
 
 Group.groupsToDraw = function (groups) {
@@ -17,13 +31,10 @@ Group.groupsToDraw = function (groups) {
         if (group.hidden) {
             return false;
         }
-        group.stretchViews = _.map(group.stretches, function (stretch) {
-            StretchView.computeSteps(stretch.stretchView);
-            return stretch.stretchView;
-        });
-        group.stretchViews = _.filter(group.stretchViews, function (stretch) {
-            return stretch.steps.length;
-        });
+        if (!group.remember) {
+            return false;
+        }
+        group.stretchViews = Group.computeStretchViews(group);
         return group.stretchViews.length > 0;
     });
     return orderGroups(groups);
@@ -36,6 +47,22 @@ var orderGroups = function (groups) {
         }
         return 0;
     });
+};
+
+Group.toggleRemember = function () {
+    var group = Global.selection.foreground.group;
+    if (!group) {
+        return;
+    }
+
+    group.remember = !group.remember;
+};
+
+Group.remove = function (group) {
+    _.each(group.stretches, function (stretch) {
+        Stretch.setSteps(stretch, []);
+    });
+    Global.groups = _.without(Global.groups, group);
 };
 
 })();

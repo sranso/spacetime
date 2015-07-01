@@ -50,12 +50,8 @@ Input.keypressEvent = function (keyCode, key) {
         d3.event.stopPropagation();
     } else if (key === 'a') {
         Manipulation.selectActiveStretches();
-    } else if (key === 'f') {
-        Manipulation.forgetForegroundGroup();
-    } else if (key === 'A') {
-        var group = Global.selection.foreground.group;
-        Manipulation.selectActiveStretches();
-        Manipulation.forgetGroup(group);
+    } else if (key === 'r') {
+        Group.toggleRemember();
     } else if (key === 'x') {
         Manipulation.computeGroupIntersection();
     } else {

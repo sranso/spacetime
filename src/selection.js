@@ -55,6 +55,7 @@ Selection.buttonSelectionKind = function () {
 Selection.maybeStart = function (mouse) {
     var step = selectStepUnderMouse(mouse);
     var kind = Selection.buttonSelectionKind();
+    console.log('here2');
     if (step) {
         startSelecting(step, kind);
     } else {
@@ -84,7 +85,16 @@ var startSelecting = function (step, kind) {
 
 var clearSelection = function (kind) {
     Global.selection[kind].focus = null;
+    var group = Global.selection[kind].group;
     Global.selection[kind].group = null;
+    if (
+        group &&
+        !group.remember &&
+        Global.selection.foreground.group !== group &&
+        Global.selection.background.group !== group
+    ) {
+        Group.remove(group);
+    }
     Main.update();
 };
 

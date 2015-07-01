@@ -12,7 +12,6 @@ Stretch.createBasicStretch = function () {
 Stretch.createGroupStretch = function () {
     var stretch = Stretch.createBasicStretch();
     stretch.group = null;
-    stretch.stretchView = StretchView.create(stretch);
     return stretch;
 };
 

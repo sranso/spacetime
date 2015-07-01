@@ -34,6 +34,7 @@ Reference.toggleAbsolute = function () {
         });
         d3.event.preventDefault();
     }
+    Main.update();
 };
 
 })();

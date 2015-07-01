@@ -7,7 +7,7 @@ Draw.trackHtml = null;
 
 var trackSvg;
 var selectionInfoEl;
-var __stretches = [];
+var __stretchViews = [];
 var environmentContainer;
 
 Draw.setup = function () {
@@ -23,11 +23,21 @@ Draw.draw = function () {
     drawEnvironment();
     computeStretchPositions(Group.groupsToDraw(Global.groups));
     drawSelectionInfo();
-    drawStretches(__stretches);
+    drawStretches(__stretchViews);
+};
+
+var verticallyPositionStretchView = function (stretchView) {
+    var first = stretchView.steps[0];
+    var last = stretchView.steps[stretchView.steps.length - 1];
+    var firstTop = first.step.__el__.offsetTop;
+    var lastTop = last.step.__el__.offsetTop;
+    var lastHeight = last.step.__el__.offsetHeight;
+    stretchView.y = firstTop;
+    stretchView.h = lastTop + lastHeight - firstTop;
 };
 
 var computeStretchPositions = function (groups, stepViews) {
-    __stretches = [];
+    __stretchViews = [];
 
     var x = Draw.trackHtml.node().offsetLeft;
     var selectionX = {
@@ -37,36 +47,29 @@ var computeStretchPositions = function (groups, stepViews) {
     x -= 19 + 9;
 
     _.each(groups, function (group) {
-        _.each(group.stretchViews, function (stretch) {
-            var first = stretch.steps[0];
-            var last = stretch.steps[stretch.steps.length - 1];
-            var firstTop = first.step.__el__.offsetTop;
-            var lastTop = last.step.__el__.offsetTop;
-            var lastHeight = last.step.__el__.offsetHeight;
-            var pos = {
-                x: x,
-                y: firstTop,
-                w: 9,
-                h: lastTop + lastHeight - firstTop,
-            };
-            stretch.position = pos;
-            stretch.kind = 'unselected';
-            _.extend(stretch, pos);
+        _.each(group.stretchViews, function (stretchView) {
+            verticallyPositionStretchView(stretchView);
+            stretchView.x = x;
+            stretchView.w = 9;
+            stretchView.kind = 'unselected';
 
-            __stretches.push(stretch);
+            __stretchViews.push(stretchView);
         });
         x -= 9;
     });
     _.each(['foreground', 'background'], function (kind) {
-        if (Global.selection[kind].group) {
-            _.each(Global.selection[kind].group.stretchViews, function (originalStretch) {
-                originalStretch.kind = 'selected';
-                var stretch = _.clone(originalStretch);
-                stretch.kind = kind;
-                stretch.selectedArea = true;
-                stretch.x = selectionX[kind];
-                stretch.w = 11;
-                __stretches.push(stretch);
+        var group = Global.selection[kind].group;
+        if (group) {
+            _.each(group.stretchViews, function (stretchView) {
+                stretchView.kind = 'selected';
+            });
+            _.each(Group.computeStretchViews(group), function (stretchView) {
+                stretchView.kind = kind;
+                stretchView.selectedArea = true;
+                verticallyPositionStretchView(stretchView);
+                stretchView.x = selectionX[kind];
+                stretchView.w = 11;
+                __stretchViews.push(stretchView);
             });
         }
     });
@@ -152,9 +155,9 @@ var stepHtml = function (stepView) {
     return htmls.join('');
 };
 
-var drawSteps = function (steps) {
+var drawSteps = function (stepViews) {
     var stepEls = Draw.trackHtml.selectAll('div.step')
-        .data(steps, function (d) { return d.step.id }) ;
+        .data(stepViews, function (d) { return d.step.id }) ;
 
     var stepEnterEls = stepEls.enter().append('div')
         .on('mouseenter', function (d) {
@@ -566,7 +569,11 @@ var drawSelectionInfo = function () {
     selectionEls.select('.selection-color')
         .style('background-color', function (d) {
             if (d.group) {
-                var c = d.group.color;
+                if (d.group.remember) {
+                    var c = d.group.color;
+                } else {
+                    var c = [0, 0, 70];
+                }
                 return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
             }
             return 'white';
@@ -579,9 +586,9 @@ var drawSelectionInfo = function () {
 var drawStretchesSetup = function () {
 };
 
-var drawStretches = function (stretches) {
+var drawStretches = function (stretchViews) {
     var stretchEls = trackSvg.selectAll('g.stretch')
-        .data(stretches) ;
+        .data(stretchViews) ;
 
     var stretchEnterEls = stretchEls.enter().append('g');
 
@@ -601,6 +608,7 @@ var drawStretches = function (stretches) {
             Global.selection[kind].focus = d.stretch;
             Global.selection[kind].group = d.stretch.group;
             Global.connectStepView = null;
+            console.log('here');
             Main.update();
             d3.event.stopPropagation();
         }) ;
@@ -631,7 +639,11 @@ var drawStretches = function (stretches) {
             if (d.kind === 'selected') {
                 return 'white';
             }
-            var c = d.stretch.group.color;
+            if (d.stretch.group.remember) {
+                var c = d.stretch.group.color;
+            } else {
+                var c = [0, 0, 70];
+            }
             var light = c[2];
             if (d.kind === 'foreground' &&
                 d.stretch === Global.selection.foreground.focus) {

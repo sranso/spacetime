@@ -180,23 +180,6 @@ Manipulation.selectActiveStretches = function () {
     Global.active.hidden = true;
 };
 
-Manipulation.forgetForegroundGroup = function () {
-    Manipulation.forgetGroup(Global.selection.foreground.group);
-    Global.selection.foreground.focus = null;
-    Global.selection.foreground.group = null;
-};
-
-Manipulation.forgetGroup = function (group) {
-    if (! group) {
-        return;
-    }
-
-    _.each(group.stretches, function (stretch) {
-        Stretch.setSteps(stretch, []);
-    });
-    Global.groups = _.without(Global.groups, group);
-};
-
 Manipulation.computeGroupIntersection = function () {
     if (!Global.selection.foreground.group || !Global.selection.background.group) {
         return;
