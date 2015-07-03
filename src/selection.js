@@ -15,6 +15,7 @@ var selectingData = {
     kind: null, // 'foreground' || 'background'
     start: null,
     end: null,
+    stretches: null,
 };
 
 Selection.toggleCollapsed = function () {
@@ -53,21 +54,19 @@ Selection.maybeStart = function () {
 };
 
 var startSelecting = function (step, kind) {
-    var stretch = Stretch.createGroupStretch();
     var group;
     if (d3.event.ctrlKey) {
         group = Global.selection[kind].group;
     }
-    if (! group) {
+    if (!group) {
         group = Group.create();
         Global.groups.push(group);
     }
-    stretch.group = group;
-    group.stretches.push(stretch);
 
     selectingData.start = step;
     selectingData.kind = kind;
-    Global.selection[kind].focus = stretch;
+    selectingData.stretches = [];
+
     Global.selection[kind].group = group;
     changeSelecting(step);
 };
@@ -113,8 +112,27 @@ var changeSelecting = function (end) {
         startI = endI;
         endI = temp;
     }
-    var steps = StepView.realSteps(Global.stepViews.slice(startI, endI + 1));
-    Stretch.setSteps(Global.selection[selectingData.kind].focus, steps);
+
+    var group = Global.selection[selectingData.kind].group;
+
+    _.each(selectingData.stretches, function (stretch) {
+        Stretch.setSteps(stretch, []);
+    });
+    group.stretches = _.difference(group.stretches, selectingData.stretches);
+
+    var stepViews = Global.stepViews.slice(startI, endI + 1);
+    var active = Active.computeActive([], Active.backgroundStretches(), stepViews);
+    selectingData.stretches = _.map(active, function (a) {
+        var activeStretch = a[0];
+        var stretch = Stretch.createGroupStretch();
+        Stretch.setSteps(stretch, activeStretch.steps);
+        stretch.group = group;
+        group.stretches.push(stretch);
+        if (activeStretch === active.focus) {
+            Global.selection[selectingData.kind].focus = stretch;
+        }
+        return stretch;
+    });
 
     Main.update();
 };
@@ -123,6 +141,7 @@ Selection.stop = function () {
     selectingData.start = null;
     selectingData.end = null;
     selectingData.kind = null;
+    selectingData.stretches = null;
 };
 
 Selection.computeInfo = function () {

@@ -14,19 +14,27 @@ Active.computeMainActive = function () {
     Global.active.focus = active.focus;
 };
 
-Active.computeActiveWithSelection = function (focusOrTarget, backStretchOfFocus, originsInBackground) {
+Active.foregroundStretches = function () {
     var foreGroup = Global.selection.foreground.group;
-    var backGroup = Global.selection.background.group;
     if (foreGroup) {
-        var foreground = foreGroup.stretches;
+        return foreGroup.stretches;
     } else {
-        var foreground = [];
+        return [];
     }
+};
+
+Active.backgroundStretches = function () {
+    var backGroup = Global.selection.background.group;
     if (backGroup) {
-        var background = backGroup.stretches;
+        return backGroup.stretches;
     } else {
-        var background = [];
+        return [];
     }
+};
+
+Active.computeActiveWithSelection = function (focusOrTarget, backStretchOfFocus, originsInBackground) {
+    var foreground = Active.foregroundStretches();
+    var background = Active.backgroundStretches();
     return Active.computeActive(foreground, background, focusOrTarget, backStretchOfFocus, originsInBackground);
 };
 
@@ -253,6 +261,7 @@ var activeStretchWithTarget = function (targetInfo, backStretch, origin) {
                 }
             }
         }
+        matchChains.push(bestChain);
     }
     if (bestChain.length) {
         var stretch = Stretch.createBasicStretch();
