@@ -76,8 +76,6 @@ h1 {
   float: left;
   z-index: 1;
   position: relative;
-  border: solid 1px #ddd;
-  border-width: 1px 0 0 0;
 }
 
 #right-side {
@@ -103,6 +101,9 @@ h1 {
 
 .step {
   margin: 0;
+  position: relative;
+  left: -20px;
+  padding-left: 20px;
 }
 .step-box {
   border: solid 1px #ddd;
@@ -111,16 +112,26 @@ h1 {
   width: 425px;
   position: relative;
 }
+.step:first-child .step-box {
+  border-top-width: 1px;
+}
   .step .matches-indicator {
     position: absolute;
-    left: -20px;
+    left: -16px;
     top: 50%;
     margin-top: -3px;
-    border: solid 1px #ddd;
+    border: solid 1px #bbb;
     border-radius: 5px;
     width: 5px;
     height: 5px;
     display: none;
+    background-color: white;
+  }
+  .step.matches .matches-indicator {
+    display: block;
+  }
+  .step.target .matches-indicator {
+    background-color: #ccc;
   }
 
   .step .enable-disable {
@@ -154,18 +165,24 @@ h1 {
         position: absolute;
         right: -8px;
         border-radius: 2px;
-        border-color: transparent;
-        background-color: transparent;
+        background-color: #ddd;
         width: 10px;
         height: 3px;
       }
+
+  .step .selection-area {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    width: 47px; /* update below */
+  }
 
   .step .selection-edge {
     position: absolute;
     top: 5px;
     bottom: 5px;
     width: 1px;
-    left: 47px; /* update in selection.js, draw.js and below */
+    left: 47px; /* update below and above*/
     background-color: transparent;
   }
 
@@ -350,37 +367,41 @@ h1 {
     }
 
     .step .reference.referenced-by-color,
+    .step.active .result.referenced-by-color .result-corner,
+    .step.active .result.referenced-by-color .result-border,
     .result.referenced-by-color .result-corner,
     .result.referenced-by-color .result-border {
       border-color: #f0c;
     }
 
+    .step.active .result.target-color .result-corner,
+    .step.active .result.target-color .result-border,
+    .result.target-color .result-corner,
+    .result.target-color .result-border {
+      border-color: #333;
+    }
+
     .step .enable-disable-outer.reference-color-1 {
-      border-color: #00d1e0;
       background-color: #00d1e0;
     }
     .step .enable-disable-outer.reference-color-2 {
-      border-color: #22f;
       background-color: #22f;
     }
     .step .enable-disable-outer.reference-color-3 {
-      border-color: #282;
       background-color: #282;
     }
     .step .enable-disable-outer.reference-color-4 {
-      border-color: #80f;
       background-color: #80f;
     }
     .step .enable-disable-outer.reference-color-5-or-more {
-      border-color: #ffe81a;
       background-color: #ffe81a;
     }
-    .step .enable-disable-outer.referenced-by-color,
+
     .step .enable-disable.referenced-by-color {
       border-color: #f0c;
       z-index: 6;
     }
-    .step .enable-disable.reference-color {
+    .step .enable-disable.target-color {
       border-color: #333;
       z-index: 6;
     }
@@ -403,7 +424,10 @@ h1 {
 .result.reference-color-3 .result-corner,
 .result.reference-color-4 .result-corner,
 .result.reference-color-5-or-more .result-corner,
-.result.referenced-by-color .result-corner {
+.result.referenced-by-color .result-corner,
+.step.active .result.referenced-by-color .result-corner,
+.result.target-color .result-corner,
+.step.active .result.target-color .result-corner {
   border-left-color: transparent;
   border-right-color: transparent;
 }

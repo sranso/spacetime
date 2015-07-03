@@ -7,6 +7,10 @@ Main.newId = function () {
     return Global.idSequence;
 };
 
+Main.targetStepView = function () {
+    return Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+};
+
 Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
@@ -40,8 +44,7 @@ Main.mouseUp = function () {
 };
 
 Main.mouseMove = function () {
-    var mouse = d3.mouse(Draw.trackContainer.node());
-    Selection.maybeChange(mouse);
+    Selection.maybeChange();
 };
 
 Main.mouseDown = function () {
@@ -50,13 +53,13 @@ Main.mouseDown = function () {
         Global.inputStepView = null;
         Global.connectStepView = null;
     });
-    Main.update();
-
-    var mouse = d3.mouse(Draw.trackContainer.node());
-    Selection.maybeStart(mouse);
+    Selection.clearForClick();
 };
 
 Global.steps = [Step.create(), Step.create(), Step.create(), Step.create(), Step.create()];
+_.each(Global.steps, function (step) {
+    step.matchesId = Main.newId();
+});
 
 Step.linkSteps(Global.steps);
 Global.stepsHead.next = Global.steps[0];

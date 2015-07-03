@@ -25,6 +25,7 @@ var copyStretch = function (original) {
             cloneMap[originalStretch.id] = stretch;
         } else {
             var stretch = MultiStep.create();
+            stretch.matchesId = originalStretch.matchesId;
             stretch.text = originalStretch.text;
             stretch.collapsed = originalStretch.collapsed;
             cloneMap[originalStretch.id] = stretch;
@@ -34,6 +35,7 @@ var copyStretch = function (original) {
     var copy = cloneMap[original.id];
     _.each(original.steps, function (originalStep) {
         var step = Step.create();
+        step.matchesId = originalStep.matchesId;
         step.text = originalStep.text;
         step.stretches = _.filter(originalStep.stretches, function (originalStretch) {
             return _.contains(notCovering, originalStretch);
@@ -108,16 +110,20 @@ var copyStretch = function (original) {
 };
 
 Manipulation.insertNewStep = function () {
-    _.each(Global.active.stretches, _insertNewStep);
+    var matchesId = Main.newId();
+    _.each(Global.active.stretches, function (stretch) {
+        _insertNewStep(stretch, matchesId);
+    });
 
     Main.update();
     d3.select(Global.inputStepView.__el__).select('.expression').node().focus();
 };
 
-var _insertNewStep = function (stretch) {
+var _insertNewStep = function (stretch, matchesId) {
     var previous = stretch.steps[stretch.steps.length - 1];
     var next = previous.next;
     var newStep = Step.create();
+    newStep.matchesId = matchesId;
 
     Step.linkSteps([previous, newStep, next]);
 

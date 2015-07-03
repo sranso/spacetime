@@ -5,6 +5,7 @@ var Step = {};
 Step.create = function () {
     var step = {
         id: Main.newId(),
+        matchesId: null,
         text: '',
         stretches: [],
         references: [],

@@ -3,7 +3,7 @@ var DrawReferences = {};
 (function () {
 
 DrawReferences.colorForResult = function (resultStepView) {
-    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
     }
@@ -22,11 +22,14 @@ DrawReferences.colorForResult = function (resultStepView) {
         }
     }
 
+    if (resultStepView === targetStepView) {
+        return 'target-color';
+    }
     return referenceColorInputAware(targetStepView, resultStep);
 };
 
 var colorForReference = function (reference) {
-    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+    var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
     }
@@ -45,8 +48,8 @@ var colorForReference = function (reference) {
     return referenceColorInputAware(targetStepView, reference.source);
 };
 
-DrawReferences.colorForEnabledBy = function (enabledByStepView, enabledBySteps) {
-    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+DrawReferences.colorForEnabledBy = function (stepView, enabledBySteps) {
+    var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
     }
@@ -59,17 +62,17 @@ DrawReferences.colorForEnabledBy = function (enabledByStepView, enabledBySteps) 
         }
     }
 
-    if (enabledByStepView !== targetStepView) {
+    if (stepView !== targetStepView) {
         return '';
     }
     if (Global.inputReferenceIs.length) {
         return '';
     }
-    return 'reference-color';
+    return 'target-color';
 };
 
-DrawReferences.colorForEnableOuterConnector = function (enabledByStepView, enabledByStep) {
-    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
+DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep) {
+    var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
     }
@@ -77,7 +80,7 @@ DrawReferences.colorForEnableOuterConnector = function (enabledByStepView, enabl
         return '';
     }
 
-    if (enabledByStepView !== targetStepView) {
+    if (stepView !== targetStepView) {
         return '';
     }
     if (Global.inputReferenceIs.length) {

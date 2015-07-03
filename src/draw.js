@@ -194,6 +194,16 @@ var drawSteps = function (stepViews) {
     enableDisableEnterEls.append('div')
         .attr('class', 'enable-disable-outer-container') ;
 
+    stepBoxEnterEls.append('div')
+        .attr('class', 'selection-area')
+        .on('mousedown', function (d) {
+            Global.inputStepView = null;
+            Global.connectStepView = null;
+            window.getSelection().removeAllRanges();
+            Selection.maybeStart();
+            d3.event.stopPropagation();
+        });
+
     var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
         .attr('class', 'selection-edge') ;
 
@@ -285,6 +295,8 @@ var drawSteps = function (stepViews) {
     stepEls.each(function (d) { d.__el__ = this });
     stepEls.order();
 
+    var targetStepView = Main.targetStepView();
+
     stepEls
         .attr('class', function (d) {
             var classes = ['step'];
@@ -309,6 +321,15 @@ var drawSteps = function (stepViews) {
             }
             if (d === Global.connectStepView) {
                 classes.push('connecting');
+            }
+            if (d === targetStepView) {
+                classes.push('target');
+            }
+            if (
+                targetStepView &&
+                targetStepView.step.matchesId === d.step.matchesId
+            ) {
+                classes.push('matches');
             }
             var step = d.steps[d.steps.length - 1];
             if (step.result && Quads.isQuads(step.result)) {
@@ -354,7 +375,7 @@ var drawSteps = function (stepViews) {
             return classes.join(' ');
         }) ;
 
-    DrawHelper.updateEnableDisableOuter();
+    DrawHelper.drawEnableDisableOuter(stepEls);
 
     stepEls.select('.result')
         .attr('class', function (d) {
@@ -573,7 +594,7 @@ var drawSelectionInfo = function () {
                 if (d.group.remember) {
                     var c = d.group.color;
                 } else {
-                    var c = [0, 0, 70];
+                    var c = [0, 0, 78];
                 }
                 return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
             }
@@ -642,7 +663,7 @@ var drawStretches = function (stretchViews) {
             if (d.stretch.group.remember) {
                 var c = d.stretch.group.color;
             } else {
-                var c = [0, 0, 70];
+                var c = [0, 0, 78];
             }
             var light = c[2];
             if (d.kind === 'foreground' &&

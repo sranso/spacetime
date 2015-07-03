@@ -47,28 +47,34 @@ DrawHelper.lexStepView = function (stepView) {
     }
 };
 
-DrawHelper.updateEnableDisableOuter = function () {
-    Draw.trackHtml.selectAll('.enable-disable-outer').remove();
+DrawHelper.drawEnableDisableOuter = function (stepEls) {
+    var containerEls = stepEls.select('.enable-disable-outer-container');
+    var enableDisableOuterEls = containerEls.selectAll('.enable-disable-outer')
+        .data(function (d) {
+            var allEnabledBy = MultiStep.enabledBy(d);
+            allEnabledBy = _.sortBy(allEnabledBy, '__index');
+            return _.map(allEnabledBy, function (enabledBy) {
+                return {
+                    enabledBy: enabledBy,
+                    stepView: d,
+                    allEnabledByLength: allEnabledBy.length,
+                };
+            });
+        }) ;
 
-    var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
-    if (targetStepView === Global.hoverResultStepView) {
-        return;
-    }
+    var enableDisableOuterEnterEls = enableDisableOuterEls.enter().append('div');
 
-    var stepEl = targetStepView.__el__;
-    var allEnabledBy = MultiStep.enabledBy(targetStepView);
-    allEnabledBy = _.sortBy(allEnabledBy, '__index');
-    var container = d3.select(stepEl).select('.enable-disable-outer-container');
-    var enableOuterConnectorEls = container.selectAll('.enable-disable-outer')
-        .data(allEnabledBy).enter().append('div');
+    enableDisableOuterEls.exit().remove();
 
-    enableOuterConnectorEls
+    var targetStepView = Main.targetStepView();
+
+    enableDisableOuterEls
         .attr('class', function (d) {
-            var color = DrawReferences.colorForEnableOuterConnector(targetStepView, d);
+            var color = DrawReferences.colorForEnableOuterConnector(d.stepView, d.enabledBy);
             return 'enable-disable-outer ' + color;
         })
         .style('top', function (d, i) {
-            var px = i * 6 - 3 * allEnabledBy.length + 2;
+            var px = i * 6 - 3 * d.allEnabledByLength + 2;
             return px + 'px';
         }) ;
 };

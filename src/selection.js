@@ -30,10 +30,12 @@ Selection.toggleCollapsed = function () {
     var multiStep = MultiStep.findFromSteps(intersectSteps);
     var collapsed = multiStep && multiStep.collapsed;
 
+    var matchesId = Main.newId();
     _.each(Global.active.stretches, function (stretch) {
         var multiStep = MultiStep.findFromSteps(stretch.steps);
         if (!multiStep) {
             multiStep = MultiStep.create();
+            multiStep.matchesId = matchesId;
             Stretch.setSteps(multiStep, stretch.steps);
         }
         multiStep.collapsed = !collapsed;
@@ -41,24 +43,15 @@ Selection.toggleCollapsed = function () {
     Main.update();
 };
 
-var selectStepUnderMouse = function (mouse) {
-    var step = Global.hoverStepView;
-    var selectionWidth = 47; // change in styles.css
-    var selectionEndX = Draw.trackHtml.node().offsetLeft + selectionWidth;
-    return (mouse[0] <= selectionEndX) && step;
-};
-
 Selection.buttonSelectionKind = function () {
     return d3.event.button === 2 ? 'background' : 'foreground';
 };
 
-Selection.maybeStart = function (mouse) {
-    var step = selectStepUnderMouse(mouse);
+Selection.maybeStart = function () {
+    var step = Global.hoverStepView;
     var kind = Selection.buttonSelectionKind();
     if (step) {
         startSelecting(step, kind);
-    } else {
-        Selection.clear(kind);
     }
 };
 
@@ -82,6 +75,11 @@ var startSelecting = function (step, kind) {
     changeSelecting(step);
 };
 
+Selection.clearForClick = function () {
+    var kind = Selection.buttonSelectionKind();
+    Selection.clear(kind);
+};
+
 Selection.clear = function (kind) {
     Global.selection[kind].focus = null;
     var group = Global.selection[kind].group;
@@ -94,14 +92,16 @@ Selection.clear = function (kind) {
     ) {
         Group.remove(group);
     }
-    Main.update();
+    if (group) {
+        Main.update();
+    }
 };
 
-Selection.maybeChange = function (mouse) {
+Selection.maybeChange = function () {
     if (!selectingData.start) {
         return;
     }
-    var step = selectStepUnderMouse(mouse);
+    var step = Global.hoverStepView;
     if (step) {
         changeSelecting(step);
     }

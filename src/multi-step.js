@@ -5,6 +5,7 @@ var MultiStep = {};
 MultiStep.create = function () {
     var multiStep = {
         id: Main.newId(),
+        matchesId: null,
         text: '',
         steps: [],
         collapsed: false,
