@@ -25,7 +25,7 @@ Reference.toggleAbsolute = function () {
         var references = Global.inputStepView.step.references;
         var absolute = references[Global.inputReferenceIs[0]].absolute;
         var sources = _.pluck(references, 'source');
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             var references = stretch.steps[0].references;
             _.each(Global.inputReferenceIs, function (referenceI) {
                 references[referenceI].absolute = !absolute;

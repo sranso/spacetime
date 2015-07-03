@@ -2,301 +2,265 @@
 var Active = {};
 (function () {
 
-Active.computeActive = function (specialStepView) {
-    var focus;
-    if (specialStepView) {
-        // TODO?: fix this to not need to create a stretch?
-        focus = Stretch.createBasicStretch();
-        focus.steps = specialStepView.steps;
-    } else if (Global.selection.foreground.focus) {
-        focus = Global.selection.foreground.focus;
+Active.computeMainActive = function () {
+    if (Global.inputStepView) {
+        var focusOrTarget = [Global.inputStepView];
     } else {
-        setActiveStretches([], false, specialStepView);
-        return;
+        var focusOrTarget = Global.selection.foreground.focus;
     }
 
-    if (! Global.selection.background.group) {
-        setActiveStretches([focus], false, specialStepView);
-        return;
-    }
+    var active = Active.computeActiveWithSelection(focusOrTarget);
+    Global.active = _.pluck(active, '0');
+    Global.active.focus = active.focus;
+};
 
-    var foreground;
-    if (specialStepView) {
-        Stretch.setSteps(focus, specialStepView.steps);
-        foreground = [focus];
+Active.computeActiveWithSelection = function (focusOrTarget, backStretchOfFocus, originsInBackground) {
+    var foreGroup = Global.selection.foreground.group;
+    var backGroup = Global.selection.background.group;
+    if (foreGroup) {
+        var foreground = foreGroup.stretches;
     } else {
-        foreground = Global.selection.foreground.group.stretches;
+        var foreground = [];
+    }
+    if (backGroup) {
+        var background = backGroup.stretches;
+    } else {
+        var background = [];
+    }
+    return Active.computeActive(foreground, background, focusOrTarget, backStretchOfFocus, originsInBackground);
+};
+
+Active.computeActive = function (foreground, background, focusOrTarget, backStretchOfFocus, originsInBackground) {
+    if (!focusOrTarget) {
+        var active = [];
+        active.focus = null;
+        return active;
+    }
+    if (foreground.length) {
+        var focusOrTargetStretch = focusOrTarget;
+    } else {
+        var targetSteps = _.flatten(_.pluck(focusOrTarget, 'steps'));
+        var focusOrTargetStretch = Stretch.createBasicStretch();
+        focusOrTargetStretch.steps = targetSteps;
+    }
+    if (!background.length) {
+        var active = [
+            [focusOrTargetStretch, null]
+        ];
+        active.focus = focusOrTargetStretch;
+        return active;
     }
 
-    var background = Global.selection.background.group.stretches;
-
-    var overlaps = _.reduce(background, function (overlaps, backStretch) {
-        var overBack = Stretch.allOverlapping(backStretch);
-        var foreStretches = _.intersection(foreground, overBack);
-        var laps = _.map(foreStretches, function (foreStretch) {
-            return {
-                foreground: foreStretch,
-                background: backStretch,
-                steps: _.intersection(foreStretch.steps, backStretch.steps),
-            };
-        });
-        laps = _.sortBy(laps, function (lap) {
-            return _.indexOf(lap.background.steps, lap.steps[0]);
-        });
-        _.each(laps, function (lap, i) {
-            lap.nthInBackground = i;
-        });
-
-        return overlaps.concat(laps);
-    }, []);
-
-    var focusOverlaps = _.filter(overlaps, function (overlap) {
-        return overlap.foreground === focus;
+    background = _.sortBy(background, function (backStretch) {
+        return backStretch.steps[0].__index;
     });
 
-    var focusBackgrounds = _.uniq(_.pluck(focusOverlaps, 'background'));
-    var backOverlaps = _.filter(overlaps, function (overlap) {
-        return _.contains(focusBackgrounds, overlap.background);
-    });
-
-
-    if (! focusOverlaps.length) {
-        setActiveStretches([focus], false, specialStepView);
-
-    } else if (foreground.length > backOverlaps.length) {
-        var focusNths = _.uniq(_.pluck(focusOverlaps, 'nthInBackground'));
-
-        var activeOverlaps = _.filter(overlaps, function (overlap) {
-            return _.contains(focusNths, overlap.nthInBackground);
-        });
-
-        var activeStretches = _.map(activeOverlaps, function (overlap) {
-            var stretch = Stretch.createGroupStretch();
-            stretch.group = Global.active;
-            Stretch.setSteps(stretch, overlap.steps);
-            return stretch;
-        });
-
-        setActiveStretches(activeStretches, false, specialStepView);
-
-    } else {
-
-        computeActiveByMatch(focusOverlaps, background, specialStepView);
+    if (!backStretchOfFocus) {
+        backStretchOfFocus = findBackStretchOfFocus(background, focusOrTargetStretch);
+    }
+    if (!backStretchOfFocus) {
+        var active = [
+            [focusOrTargetStretch, null]
+        ];
+        active.focus = focusOrTargetStretch;
+        return active;
     }
 
-    if (specialStepView) {
-        Stretch.setSteps(focus, []);
+    if (foreground.length) {
+        return activeWithFocus(foreground, background, focusOrTarget, backStretchOfFocus);
+    } else {
+        return activeWithTarget(background, focusOrTarget, backStretchOfFocus, originsInBackground);
     }
 };
 
-var setActiveStretches = function (stretches, byMatch, specialStepView) {
-    Global.active.byMatch = byMatch;
-    _.each(Global.active.stretches, function (stretch) {
-        Stretch.setSteps(stretch, []);
+var activeWithFocus = function (foreground, background, focus, backStretchOfFocus) {
+    foreground = _.sortBy(foreground, function (stretch) {
+        return stretch.steps[0].__index;
     });
-    Global.active.stretches = _.map(stretches, function (original) {
-        if (original.group === Global.active) {
-            return original;
+    var foregroundGroup = foreground[0].group;
+    var allStretches = _.sortBy(foreground.concat(background), function (stretch) {
+        return stretch.steps[0].__index;
+    });
+
+    var foreStretch = null;
+    var backStretch = null;
+    var overlapping = null;
+    var allOverlapping = [];
+    _.each(allStretches, function (stretch) {
+        if (stretch.group === foregroundGroup) {
+            foreStretch = stretch;
+        } else {
+            backStretch = stretch;
+            overlapping = [];
+            allOverlapping.push(overlapping);
+            overlapping.backStretch = backStretch;
         }
-        var stretch = Stretch.createGroupStretch();
-        stretch.group = Global.active;
-        Stretch.setSteps(stretch, original.steps);
-        return stretch;
-    });
-    if (specialStepView) {
-        var focus = specialStepView;
-    } else {
-        var focus = Global.selection.foreground.focus;
-    }
-    Global.active.focus = _.min(Global.active.stretches, function (stretch) {
-        var steps = _.intersection(stretch.steps, focus.steps);
-        if (! steps.length) {
-            return focus.steps.length;
-        }
-        return _.indexOf(focus.steps, steps[0]);
-    });
-};
-
-var computeActiveByMatch = function (focusOverlaps, background, specialStepView) {
-    var activeStretches = [];
-
-    _.each(focusOverlaps, function (overlap) {
-        var bg = overlap.background;
-        var overBack = Stretch.overlappingPartitions(bg)("__[<<>>]__");
-        var compareSteps = [];
-        _.each(overlap.steps, function (match) {
-            var matches;
-            matches = findStepMatches(bg, match);
-            var individualMatch = {
-                match: match,
-                matches: matches,
-                matchesIndex: _.indexOf(matches, match),
-            };
-            individualMatch.compare = individualMatch;
-            scoreIndividualMatch(bg, overBack, individualMatch);
-            compareSteps.push(individualMatch);
-        });
-
-        _.each(background, function (backStretch) {
-            var active = activeByMatch(
-                compareSteps,
-                backStretch
-            );
-            if (active) {
-                activeStretches.push(active);
-            }
-        });
-    });
-
-    setActiveStretches(activeStretches, true, specialStepView);
-};
-
-var activeByMatch = function (compareSteps, stretch) {
-    var overBack = Stretch.overlappingPartitions(stretch)("__[<<>>]__");
-
-    var matchChains = [
-        {
-            chain: [null, null],
-            lengthToLookAt: 0,
-            steps: 0,
-            matchNumber: 0,
-            match: null,
-            matches: [],
-            compare: null,
-            matchesIndex: -1,
-            startStepIndex: -1,
-            endStepIndex: -1,
-            individualScore: {
-                total: 0.0,
-            },
-            chainScore: {
-                total: 0.0,
-                individualSum: 0.0,
-            },
-        }
-    ];
-    matchChains[0].chain[0] = matchChains[0];
-
-    var matchNumber = 0;
-    var lengthToLookAt = 0;
-    matchNumber += 1;
-    _.each(compareSteps, function (compare, stepI) {
-        lengthToLookAt = matchNumber;
-        var matches = findStepMatches(stretch, compare.match);
-        _.each(matches, function (match, matchI) {
-            var individualMatch = {
-                lengthToLookAt: lengthToLookAt,
-                steps: stepI + 1,
-                matchNumber: matchNumber,
-                match: match,
-                matches: matches,
-                compare: compare,
-                matchesIndex: matchI,
-            };
-            scoreIndividualMatch(stretch, overBack, individualMatch);
-            matchChains.push(individualMatch);
-            matchNumber += 1;
-        });
-    });
-
-    for (var i = 1; i < matchChains.length; i++) {
-        var match = matchChains[i];
-        var bestChain = null;
-        var bestChainScore = {total: -0.01};
-        for (var j = 0; j < match.lengthToLookAt; j++) {
-            var previousMatch = matchChains[j];
-            var chain = previousMatch.chain;
-            chain[chain.length - 1] = match;
-            var chainScore = scoreMatchChain(stretch, overBack, compareSteps, chain);
-            if (chainScore.total > bestChainScore.total) {
-                bestChain = chain;
-                bestChainScore = chainScore;
+        if (foreStretch && backStretch) {
+            if (_.intersection(foreStretch.steps, backStretch.steps).length) {
+                overlapping.push(foreStretch);
             }
         }
-        match.chain = _.clone(bestChain);
-        match.chain.push(null);  // One extra slot for testing next steps.
-        match.chainScore = bestChainScore;
-    }
-
-    var bestChain = _.max(matchChains, function (match) {
-        return match.chainScore.total;
     });
 
-    if (bestChain.chainScore.total < 0.2) { // TODO: figure out the threshold
-        return null;
-    }
+    var overlappingForFocus = _.find(allOverlapping, function (overlapping) {
+        return overlapping.backStretch === backStretchOfFocus;
+    });
+    var nthInBackStretchOfFocus = _.indexOf(overlappingForFocus, focus);
 
-    var active = Stretch.createGroupStretch();
-    active.group = Global.active;
-    var firstMatch = bestChain.chain[1];
-    var lastMatch = bestChain.chain[bestChain.chain.length - 2];
-    active.steps.push(firstMatch.match);
-    active.steps.push(lastMatch.match);
-    Stretch.fixupSteps(active);
+    var active = [];
+    _.each(allOverlapping, function (overlapping) {
+        var foreStretch = overlapping[nthInBackStretchOfFocus];
+        if (foreStretch) {
+            active.push([foreStretch, overlapping.backStretch]);
+        }
+    });
+    active.focus = focus;
     return active;
 };
 
-var findStepMatches = function (stretch, compareStep) {
-    return _.filter(stretch.steps, function (step) {
-        return step.text === compareStep.text;
+var findBackStretchOfFocus = function (background, focus) {
+    var maxOverlapSteps = 0;
+    var maxOverlapBackStretch = null;
+    _.each(background, function (backStretch) {
+        var overlap = _.intersection(backStretch.steps, focus.steps);
+        if (overlap.length > maxOverlapSteps) {
+            maxOverlapSteps = overlap.length;
+            maxOverlapBackStretch = backStretch;
+        }
     });
+    return maxOverlapBackStretch;
 };
 
-var scoreIndividualMatch = function (backStretch, overBack, match) {
-    if (match.match.group) {
-        match.startStepIndex = _.indexOf(backStretch.steps, match.match.steps[0]);
-        match.endStepIndex = _.indexOf(backStretch.steps, match.match.steps[match.match.steps.length - 1]);
+var activeWithTarget = function (background, target, backStretchOfTarget, originsInBackground) {
+    if (!originsInBackground) {
+        originsInBackground = _.map(background, function (stretch) {
+            return stretch.steps[0].__index;
+        });
+    }
+
+    var originForBackStretchOfTarget = originsInBackground[_.indexOf(background, backStretchOfTarget)];
+
+    var targetSteps = _.pluck(target, 'step');
+    var stepInfo = markNthStepsInBackStretch(backStretchOfTarget, originForBackStretchOfTarget);
+    var targetInfo = _.filter(stepInfo, function (s) {
+        return _.contains(targetSteps, s.step);
+    });
+
+    var active = [];
+    _.each(background, function (backStretch, i) {
+        var origin = originsInBackground[i];
+        var activeStretch = activeStretchWithTarget(targetInfo, backStretch, origin);
+        if (activeStretch) {
+            active.push([activeStretch, backStretch]);
+        }
+    });
+    var focus = _.find(active, function (a) { return a[1] === backStretchOfTarget });
+    active.focus = focus && focus[0];
+    return active;
+};
+
+var markNthStepsInBackStretch = function (backStretch, origin) {
+    var steps = backStretch.steps;
+    var stepInfo = _.map(steps, function (step) {
+        return {
+            step: step,
+            matchesId: step.matchesId,
+            start: step.__index,
+            end: step.__index,
+            nth: null,
+        };
+    });
+
+    var stepMultiSteps = _.map(steps, function (step) {
+        return _.filter(step.stretches, MultiStep.isMultiStep);
+    });
+    var multiSteps = _.union.apply(_, stepMultiSteps);
+    var multiStepInfo = _.map(multiSteps, function (step) {
+        return {
+            step: step,
+            matchesId: step.matchesId,
+            start: step.steps[0].__index,
+            end: step.steps[step.steps.length - 1].__index,
+            nth: null,
+        };
+    });
+
+    stepInfo = _.sortBy(stepInfo.concat(multiStepInfo), 'end');
+
+    var matchesIdToNth = {};
+    var matchesIdToNthAtOrigin = null;
+    _.each(stepInfo, function (s) {
+        if (!matchesIdToNthAtOrigin && s.end >= origin) {
+            matchesIdToNthAtOrigin = _.clone(matchesIdToNth);
+        }
+        if (!matchesIdToNth[s.matchesId]) {
+            s.nth = matchesIdToNth[s.matchesId] = 1;
+        } else {
+            s.nth = (matchesIdToNth[s.matchesId] += 1);
+        }
+    });
+    _.each(stepInfo, function (s) {
+        var nthAtOrigin = matchesIdToNthAtOrigin[s.matchesId] || 0;
+        if (s.nth > nthAtOrigin) {
+            s.nth = s.nth - nthAtOrigin;
+        } else {
+            s.nth = nthAtOrigin - s.nth - 1;
+        }
+    });
+
+    return stepInfo;
+};
+
+var activeStretchWithTarget = function (targetInfo, backStretch, origin) {
+    var stepInfo = markNthStepsInBackStretch(backStretch, origin);
+    var stepInfoByMatchesId = _.groupBy(stepInfo, 'matchesId');
+    var matches = _.map(targetInfo, function (target) {
+        var matchesId = stepInfoByMatchesId[target.matchesId] || [];
+        var match = _.find(matchesId, function (s) {
+            return s.nth === target.nth;
+        });
+        if (match) {
+            match.target = target;
+        }
+        return match;
+    });
+    matches = _.filter(matches);
+    matches = _.sortBy(matches, function (s) {
+        return s.target.end;
+    });
+
+    var matchChains = [[]];
+    var bestChain = [];
+    for (var m = matches.length - 1; m >= 0; m--) {
+        var match = matches[m];
+        bestChain = [];
+        for (var c = 0; c < matchChains.length; c++) {
+            var oldChain = matchChains[c];
+            if (oldChain.length) {
+                var oldStart = oldChain[0].start
+            } else {
+                var oldStart = 1e10;
+            }
+            if (match.end < oldStart) {
+                var chain = [match].concat(oldChain);
+                chain.spread = chain[chain.length - 1].end - chain[0].start;
+                if (
+                    chain.length > bestChain.length ||
+                    (chain.length === bestChain.length &&
+                     chain.spread < bestChain.spread)
+                ) {
+                    bestChain = chain;
+                }
+            }
+        }
+    }
+    if (bestChain.length) {
+        var stretch = Stretch.createBasicStretch();
+        stretch.steps = _.pluck(bestChain, 'step');
+        return stretch;
     } else {
-        match.startStepIndex = _.indexOf(backStretch.steps, match.match);
-        match.endStepIndex = match.startStepIndex;
+        return null;
     }
-    var compare = match.compare;
-    var score = {};
-
-    // score stepIndex
-    var diff = Math.abs(compare.startStepIndex - match.startStepIndex);
-    score.stepIndex = 1.0 - (diff / backStretch.steps.length);
-
-    // score matchesIndex
-    diff = Math.abs(compare.matchesIndex - match.matchesIndex);
-    score.matchesIndex = 1.0 - (diff / match.matches.length);
-
-    // TODO: check previous and next step / stretch.
-
-    // total score
-    score.total = (
-        score.stepIndex * 1.0 +
-        score.matchesIndex * 2.0
-    ) / (1.0 + 2.0);
-
-
-    match.individualScore = score;
-};
-
-var scoreMatchChain = function (backStretch, overBack, compareSteps, chain) {
-    var match = chain[chain.length - 1];
-    var previous = chain[chain.length - 2];
-
-    // disallow out-of-order matches.
-    // TODO: detect re-ordering and allow it with lower score.
-    if (match.startStepIndex <= previous.endStepIndex) {
-        return {total: -1.0};
-    }
-
-    var score = {};
-
-    // individual score sum
-    score.individualSum = previous.chainScore.individualSum + match.individualScore.total;
-
-    // individual average
-    score.individualAverage = score.individualSum / compareSteps.length;
-
-    // total score
-    score.total = (
-        score.individualAverage * 1.0
-    ) / (1.0);
-
-    return score;
 };
 
 })();

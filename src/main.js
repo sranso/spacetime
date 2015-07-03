@@ -15,7 +15,7 @@ Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
     StepView.computeViews();
-    Active.computeActive(Global.inputStepView);
+    Active.computeMainActive();
     Selection.computeInfo();
     Draw.draw();
     Webgl.drawMainCanvas();
@@ -64,8 +64,6 @@ _.each(Global.steps, function (step) {
 Step.linkSteps(Global.steps);
 Global.stepsHead.next = Global.steps[0];
 Global.stepsTail.previous = Global.steps[0];
-Global.active = Group.create();
-Global.active.hidden = true;
 Global.selection = new Selection();
 
 Global.mouseX = Step.createForEnvironment();

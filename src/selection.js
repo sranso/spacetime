@@ -18,20 +18,17 @@ var selectingData = {
 };
 
 Selection.toggleCollapsed = function () {
-    if (Global.active.byMatch) {
-        return;  // TODO: make this work with non-group stretches
-    }
     if (!Global.selection.foreground.group) {
         return;
     }
-    var activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
+    var activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
     var focusSteps = Global.selection.foreground.focus.steps;
     var intersectSteps = _.intersection(activeSteps, focusSteps);
     var multiStep = MultiStep.findFromSteps(intersectSteps);
     var collapsed = multiStep && multiStep.collapsed;
 
     var matchesId = Main.newId();
-    _.each(Global.active.stretches, function (stretch) {
+    _.each(Global.active, function (stretch) {
         var multiStep = MultiStep.findFromSteps(stretch.steps);
         if (!multiStep) {
             multiStep = MultiStep.create();
@@ -129,7 +126,7 @@ Selection.stop = function () {
 };
 
 Selection.computeInfo = function () {
-    Selection.__activeSteps = _.flatten(_.pluck(Global.active.stretches, 'steps'));
+    Selection.__activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
 };
 
 })();

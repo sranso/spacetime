@@ -3,7 +3,7 @@ var Manipulation = {};
 (function () {
 
 Manipulation.copyActiveStretches = function () {
-    _.each(Global.active.stretches, copyStretch);
+    _.each(Global.active, copyStretch);
 
     Main.update();
 };
@@ -111,7 +111,7 @@ var copyStretch = function (original) {
 
 Manipulation.insertNewStep = function () {
     var matchesId = Main.newId();
-    _.each(Global.active.stretches, function (stretch) {
+    _.each(Global.active, function (stretch) {
         _insertNewStep(stretch, matchesId);
     });
 
@@ -140,7 +140,7 @@ var _insertNewStep = function (stretch, matchesId) {
 };
 
 Manipulation.deleteActiveStretches = function () {
-    _.each(Global.active.stretches, deleteStretch);
+    _.each(Global.active, deleteStretch);
     Main.update();
 };
 
@@ -177,13 +177,20 @@ var deleteStretch = function (stretch) {
 };
 
 Manipulation.selectActiveStretches = function () {
-    Global.active.hidden = false;
-    Global.groups.push(Global.active);
-    Global.selection.foreground.focus = Global.active.focus;
-    Global.selection.foreground.group = Global.active;
+    var group = Group.create();
+    var focus = null;
+    group.stretches = _.map(Global.active, function (originalStretch) {
+        var stretch = Stretch.createGroupStretch();
+        stretch.group = group;
+        if (originalStretch === Global.active.focus) {
+            focus = stretch;
+        }
+        return stretch;
+    });
+    Global.groups.push(group);
 
-    Global.active = Group.create();
-    Global.active.hidden = true;
+    Global.selection.foreground.focus = focus;
+    Global.selection.foreground.group = group;
 };
 
 Manipulation.computeGroupIntersection = function () {

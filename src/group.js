@@ -5,7 +5,6 @@ var Group = {};
 Group.create = function () {
     return {
         id: Main.newId(),
-        hidden: false,
         stretches: [],
         color: [_.random(360), _.random(70, 95), _.random(78, 83)],
         text: '',
@@ -28,9 +27,6 @@ Group.computeStretchViews = function (group) {
 
 Group.groupsToDraw = function (groups) {
     groups = _.filter(groups, function (group) {
-        if (group.hidden) {
-            return false;
-        }
         if (!group.remember) {
             return false;
         }

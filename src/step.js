@@ -104,7 +104,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
         if (resultStep.__index === -1) {
             absolute = true;
         }
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             var sink = stretch.steps[0];
             if (absolute) {
                 var source = resultStep;
@@ -130,7 +130,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
         }
         var text = before + innerText + after;
         expressionEl.textContent = text;
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             var step = stretch.steps[0];
             step.text = text;
             var reference = Reference.create();
@@ -152,7 +152,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
 
 Step.updateText = function (expressionEl) {
     if (MultiStep.isMultiStep(Global.inputStepView.step)) {
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             var multiStep = MultiStep.findFromSteps(stretch.steps);
             if (multiStep) {
                 multiStep.text = expressionEl.textContent; // TODO: multi-step references
@@ -167,7 +167,7 @@ Step.updateText = function (expressionEl) {
         var referenceIs = _.map(referenceClasses, function (ref) {
             return +ref.slice('reference-'.length);
         });
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             _updateText(stretch.steps[0], expressionEl, referenceIs);
         });
     }
@@ -191,7 +191,7 @@ Step.clickEnableRegion = function (stepView) {
         var add = !_.contains(enabledBy, resultStep);
 
         // TODO: make this work with a different "resultStep" per stretch
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             var referenceAway = stretch.steps[0].__index - resultStep.__index;
             if (referenceAway <= 0) {
                 return;
@@ -216,7 +216,7 @@ Step.clickEnableRegion = function (stepView) {
             var forceEnabled = d3.event.ctrlKey;
             var forceDisabled = !d3.event.ctrlKey;
         }
-        _.each(Global.active.stretches, function (stretch) {
+        _.each(Global.active, function (stretch) {
             if (forceDisabled) {
                 var disableDiff = +1;
             } else {
