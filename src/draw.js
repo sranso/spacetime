@@ -178,6 +178,9 @@ var drawSteps = function (stepViews) {
     var stepBoxEnterEls = stepEnterEls.append('div')
         .attr('class', 'step-box') ;
 
+    stepBoxEnterEls.append('div')
+        .attr('class', 'matches-indicator') ;
+
     var enableDisableEnterEls = stepBoxEnterEls.append('div')
         .attr('class', 'enable-disable')
         .on('mousedown', function (d) {
@@ -188,10 +191,8 @@ var drawSteps = function (stepViews) {
             d3.event.stopPropagation();
         }) ;
 
-    var enableConnectorContainer = enableDisableEnterEls.append('div')
-        .attr('class', 'enable-connector-container') ;
-    enableConnectorContainer.append('div')
-        .attr('class', 'enable-connector') ;
+    enableDisableEnterEls.append('div')
+        .attr('class', 'enable-disable-outer-container') ;
 
     var selectionEdgeEnterEls = stepBoxEnterEls.append('div')
         .attr('class', 'selection-edge') ;
@@ -341,19 +342,19 @@ var drawSteps = function (stepViews) {
 
     /////////////////// must be after updateInserting
 
-    stepEls.select('.enable-connector')
+    stepEls.select('.enable-disable')
         .attr('class', function (d) {
             var enabledBy = MultiStep.enabledBy(d);
-            var classes = ['enable-connector'];
+            var classes = ['enable-disable'];
             if (enabledBy.length) {
-                var color = DrawReferences.colorForEnableConnector(d, enabledBy);
+                var color = DrawReferences.colorForEnabledBy(d, enabledBy);
                 classes.push(color);
-                classes.push('enable-connector-connected');
+                classes.push('enabled-by-connected');
             }
             return classes.join(' ');
         }) ;
 
-    DrawHelper.updateEnableOuterConnectors();
+    DrawHelper.updateEnableDisableOuter();
 
     stepEls.select('.result')
         .attr('class', function (d) {
@@ -608,7 +609,6 @@ var drawStretches = function (stretchViews) {
             Global.selection[kind].focus = d.stretch;
             Global.selection[kind].group = d.stretch.group;
             Global.connectStepView = null;
-            console.log('here');
             Main.update();
             d3.event.stopPropagation();
         }) ;

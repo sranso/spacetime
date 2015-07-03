@@ -111,6 +111,18 @@ h1 {
   width: 425px;
   position: relative;
 }
+  .step .matches-indicator {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    margin-top: -3px;
+    border: solid 1px #ddd;
+    border-radius: 5px;
+    width: 5px;
+    height: 5px;
+    display: none;
+  }
+
   .step .enable-disable {
     position: absolute;
     top: -1px;
@@ -120,42 +132,33 @@ h1 {
     border: solid 1px #ddd;
     border-top-left-radius: 5px 15px;
     border-bottom-left-radius: 5px 15px;
-    border-right-style: dotted;
+    border-right: dotted 1px #ddd;
     background-color: #fff;
     z-index: 3;
     cursor: pointer;
   }
-    .step .enable-connector-container {
+  .step .enable-disable.enabled-by-connected {
+    border-color: #ddd;
+    border-width: 2px;
+    left: -5px;  /* 1 more left */
+    border-right-style: solid;
+    z-index: 4;
+  }
+
+    .step .enable-disable-outer-container {
       position: absolute;
       top: 50%;
-      left: 1px;
-      margin-top: -3px;
+      right: 0;
     }
-    .step .enable-connector {
-      border-radius: 5px;
-      border: solid 1px #ddd;
-      border-width: 1px;
-      border-color: transparent;
-      background-color: transparent;
-      width: 5px;
-      height: 5px;
-    }
-
-    .step .enable-outer-connector {
-      position: absolute;
-      left: -13px;
-      border-radius: 5px;
-      border: solid 1px #ddd;
-      border-width: 1px;
-      border-color: transparent;
-      background-color: transparent;
-      width: 5px;
-      height: 5px;
-    }
-
-    .step .enable-connector.enable-connector-connected {
-      border-color: #ddd;
-    }
+      .step .enable-disable-outer {
+        position: absolute;
+        right: -8px;
+        border-radius: 2px;
+        border-color: transparent;
+        background-color: transparent;
+        width: 10px;
+        height: 3px;
+      }
 
   .step .selection-edge {
     position: absolute;
@@ -352,30 +355,34 @@ h1 {
       border-color: #f0c;
     }
 
-    .step .enable-outer-connector.reference-color-1 {
+    .step .enable-disable-outer.reference-color-1 {
       border-color: #00d1e0;
       background-color: #00d1e0;
     }
-    .step .enable-outer-connector.reference-color-2 {
+    .step .enable-disable-outer.reference-color-2 {
       border-color: #22f;
       background-color: #22f;
     }
-    .step .enable-outer-connector.reference-color-3 {
+    .step .enable-disable-outer.reference-color-3 {
       border-color: #282;
       background-color: #282;
     }
-    .step .enable-outer-connector.reference-color-4 {
+    .step .enable-disable-outer.reference-color-4 {
       border-color: #80f;
       background-color: #80f;
     }
-    .step .enable-outer-connector.reference-color-5-or-more {
+    .step .enable-disable-outer.reference-color-5-or-more {
       border-color: #ffe81a;
       background-color: #ffe81a;
     }
-    .step .enable-outer-connector.referenced-by-color,
-    .step .enable-connector.referenced-by-color {
+    .step .enable-disable-outer.referenced-by-color,
+    .step .enable-disable.referenced-by-color {
       border-color: #f0c;
-      background: #f0c;
+      z-index: 6;
+    }
+    .step .enable-disable.reference-color {
+      border-color: #333;
+      z-index: 6;
     }
 
 .step.active .step-box,

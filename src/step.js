@@ -234,6 +234,7 @@ Step.clickEnableRegion = function (stepView) {
         });
     }
 
+    Selection.clear('foreground');
     Main.update();
 };
 

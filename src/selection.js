@@ -55,11 +55,10 @@ Selection.buttonSelectionKind = function () {
 Selection.maybeStart = function (mouse) {
     var step = selectStepUnderMouse(mouse);
     var kind = Selection.buttonSelectionKind();
-    console.log('here2');
     if (step) {
         startSelecting(step, kind);
     } else {
-        clearSelection(kind);
+        Selection.clear(kind);
     }
 };
 
@@ -83,7 +82,7 @@ var startSelecting = function (step, kind) {
     changeSelecting(step);
 };
 
-var clearSelection = function (kind) {
+Selection.clear = function (kind) {
     Global.selection[kind].focus = null;
     var group = Global.selection[kind].group;
     Global.selection[kind].group = null;

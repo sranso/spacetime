@@ -47,8 +47,8 @@ DrawHelper.lexStepView = function (stepView) {
     }
 };
 
-DrawHelper.updateEnableOuterConnectors = function () {
-    Draw.trackHtml.selectAll('.enable-outer-connector').remove();
+DrawHelper.updateEnableDisableOuter = function () {
+    Draw.trackHtml.selectAll('.enable-disable-outer').remove();
 
     var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
     if (targetStepView === Global.hoverResultStepView) {
@@ -58,17 +58,17 @@ DrawHelper.updateEnableOuterConnectors = function () {
     var stepEl = targetStepView.__el__;
     var allEnabledBy = MultiStep.enabledBy(targetStepView);
     allEnabledBy = _.sortBy(allEnabledBy, '__index');
-    var container = d3.select(stepEl).select('.enable-connector-container');
-    var enableOuterConnectorEls = container.selectAll('.enable-outer-connector')
+    var container = d3.select(stepEl).select('.enable-disable-outer-container');
+    var enableOuterConnectorEls = container.selectAll('.enable-disable-outer')
         .data(allEnabledBy).enter().append('div');
 
     enableOuterConnectorEls
         .attr('class', function (d) {
             var color = DrawReferences.colorForEnableOuterConnector(targetStepView, d);
-            return 'enable-outer-connector ' + color;
+            return 'enable-disable-outer ' + color;
         })
         .style('top', function (d, i) {
-            var px = i * 10 - 5 * allEnabledBy.length + 5;
+            var px = i * 6 - 3 * allEnabledBy.length + 2;
             return px + 'px';
         }) ;
 };

@@ -45,7 +45,7 @@ var colorForReference = function (reference) {
     return referenceColorInputAware(targetStepView, reference.source);
 };
 
-DrawReferences.colorForEnableConnector = function (enableConnectorStepView, enabledBySteps) {
+DrawReferences.colorForEnabledBy = function (enabledByStepView, enabledBySteps) {
     var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
     if (!targetStepView) {
         return '';
@@ -59,16 +59,16 @@ DrawReferences.colorForEnableConnector = function (enableConnectorStepView, enab
         }
     }
 
-    if (enableConnectorStepView !== targetStepView) {
+    if (enabledByStepView !== targetStepView) {
         return '';
     }
     if (Global.inputReferenceIs.length) {
         return '';
     }
-    return 'referenced-by-color';
+    return 'reference-color';
 };
 
-DrawReferences.colorForEnableOuterConnector = function (enableConnectorStepView, enabledByStep) {
+DrawReferences.colorForEnableOuterConnector = function (enabledByStepView, enabledByStep) {
     var targetStepView = Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
     if (!targetStepView) {
         return '';
@@ -77,7 +77,7 @@ DrawReferences.colorForEnableOuterConnector = function (enableConnectorStepView,
         return '';
     }
 
-    if (enableConnectorStepView !== targetStepView) {
+    if (enabledByStepView !== targetStepView) {
         return '';
     }
     if (Global.inputReferenceIs.length) {
