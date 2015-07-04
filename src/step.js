@@ -183,7 +183,8 @@ var _updateText = function (step, expressionEl, referenceIs) {
 }
 
 Step.clickEnableRegion = function (stepView) {
-    Active.computeActive(stepView);
+    var active = Active.computeActive([], Selection.backgroundStretches(), [stepView]);
+    active = _.pluck(active, '0');
     if (Global.connectStepView) {
         var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
         Global.connectStepView = null;
@@ -191,7 +192,7 @@ Step.clickEnableRegion = function (stepView) {
         var add = !_.contains(enabledBy, resultStep);
 
         // TODO: make this work with a different "resultStep" per stretch
-        _.each(Global.active, function (stretch) {
+        _.each(active, function (stretch) {
             var referenceAway = stretch.steps[0].__index - resultStep.__index;
             if (referenceAway <= 0) {
                 return;
@@ -216,7 +217,7 @@ Step.clickEnableRegion = function (stepView) {
             var forceEnabled = d3.event.ctrlKey;
             var forceDisabled = !d3.event.ctrlKey;
         }
-        _.each(Global.active, function (stretch) {
+        _.each(active, function (stretch) {
             if (forceDisabled) {
                 var disableDiff = +1;
             } else {
