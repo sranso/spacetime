@@ -83,23 +83,25 @@ Active.computeActive = function (foreground, background, focusOrTarget, backStre
 };
 
 var activeWithFocus = function (foreground, background, focus, backStretchOfFocus) {
-    foreground = _.sortBy(foreground, function (stretch) {
-        return stretch.steps[0].__index;
+    var allStretches = _.map(foreground, function (stretch) {
+        return {stretch: stretch, foreground: true};
     });
-    var foregroundGroup = foreground[0].group;
-    var allStretches = _.sortBy(foreground.concat(background), function (stretch) {
-        return stretch.steps[0].__index;
+    allStretches = allStretches.concat(_.map(background, function (stretch) {
+        return {stretch: stretch, foreground: false};
+    }));
+    var allStretches = _.sortBy(allStretches, function (s) {
+        return s.stretch.steps[0].__index;
     });
 
     var foreStretch = null;
     var backStretch = null;
     var overlapping = null;
     var allOverlapping = [];
-    _.each(allStretches, function (stretch) {
-        if (stretch.group === foregroundGroup) {
-            foreStretch = stretch;
+    _.each(allStretches, function (s) {
+        if (s.foreground) {
+            foreStretch = s.stretch;
         } else {
-            backStretch = stretch;
+            backStretch = s.stretch;
             overlapping = [];
             allOverlapping.push(overlapping);
             overlapping.backStretch = backStretch;
