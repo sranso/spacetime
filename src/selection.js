@@ -18,6 +18,24 @@ var selectingData = {
     stretches: null,
 };
 
+Selection.foregroundStretches = function () {
+    var foreGroup = Global.selection.foreground.group;
+    if (foreGroup) {
+        return foreGroup.stretches;
+    } else {
+        return [];
+    }
+};
+
+Selection.backgroundStretches = function () {
+    var backGroup = Global.selection.background.group;
+    if (backGroup) {
+        return backGroup.stretches;
+    } else {
+        return [];
+    }
+};
+
 Selection.toggleCollapsed = function () {
     if (!Global.selection.foreground.group) {
         return;
@@ -121,18 +139,9 @@ var changeSelecting = function (end) {
     group.stretches = _.difference(group.stretches, selectingData.stretches);
 
     var stepViews = Global.stepViews.slice(startI, endI + 1);
-    var active = Active.computeActive([], Active.backgroundStretches(), stepViews);
-    selectingData.stretches = _.map(active, function (a) {
-        var activeStretch = a[0];
-        var stretch = Stretch.createGroupStretch();
-        Stretch.setSteps(stretch, activeStretch.steps);
-        stretch.group = group;
-        group.stretches.push(stretch);
-        if (activeStretch === active.focus) {
-            Global.selection[selectingData.kind].focus = stretch;
-        }
-        return stretch;
-    });
+    var active = Active.computeActiveForGroup(group, Selection.backgroundStretches(), stepViews);
+    selectingData.stretches = _.pluck(active, '0');
+    Global.selection[selectingData.kind].focus = active.focus;
 
     Main.update();
 };

@@ -214,17 +214,19 @@ var drawSteps = function (stepViews) {
         .attr('class', 'expression')
         .attr('contenteditable', true)
         .on('focus', function (d) {
-            Main.maybeUpdate(function () { Global.inputStepView = d });
+            Main.maybeUpdate(function () { Input.startInput(d) });
         })
         .on('blur', function (d) {
             Main.maybeUpdate(function () { Global.inputStepView = null });
         })
         .on('input', function (d) {
-            Global.inputStepView = d;
+            if (d !== Global.inputStepView) {
+                Input.startInput(d);
+            }
             Step.updateText(this);
         })
         .on('mousedown', function (d) {
-            Main.maybeUpdate(function () { Global.inputStepView = d });
+            Main.maybeUpdate(function () { Input.startInput(d) });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {

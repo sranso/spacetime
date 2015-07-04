@@ -128,7 +128,8 @@ var _insertNewStep = function (stretch, matchesId) {
     Step.linkSteps([previous, newStep, next]);
 
     var p = Stretch.overlappingPartitions(stretch);
-    _.each(p("<=[===>]__"), function (stretch) {
+    var focusOverlapping = _.intersection(p("__[<==>]__"), Selection.foregroundStretches());
+    _.each(p("<=[===>]__").concat(focusOverlapping), function (stretch) {
         stretch.steps.push(newStep);
     });
     _.each(p("<<[<==>]>>"), Stretch.fixupSteps);

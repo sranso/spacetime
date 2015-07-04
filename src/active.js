@@ -3,38 +3,39 @@ var Active = {};
 (function () {
 
 Active.computeMainActive = function () {
+    var focus = Global.selection.foreground.focus;
+    var active = Active.computeActiveWithSelection(focus);
     if (Global.inputStepView) {
-        var focusOrTarget = [Global.inputStepView];
-    } else {
-        var focusOrTarget = Global.selection.foreground.focus;
+        var background = _.pluck(active, '0');  // use active from foreground as background
+        var target = [Global.inputStepView];
+        active = Active.computeActive([], background, target);
     }
 
-    var active = Active.computeActiveWithSelection(focusOrTarget);
     Global.active = _.pluck(active, '0');
     Global.active.focus = active.focus;
 };
 
-Active.foregroundStretches = function () {
-    var foreGroup = Global.selection.foreground.group;
-    if (foreGroup) {
-        return foreGroup.stretches;
-    } else {
-        return [];
-    }
-};
-
-Active.backgroundStretches = function () {
-    var backGroup = Global.selection.background.group;
-    if (backGroup) {
-        return backGroup.stretches;
-    } else {
-        return [];
-    }
+Active.computeActiveForGroup = function (group, background, target) {
+    var active = Active.computeActive([], background, target);
+    var focus;
+    active = _.map(active, function (a) {
+        var activeStretch = a[0];
+        var stretch = Stretch.createGroupStretch();
+        Stretch.setSteps(stretch, activeStretch.steps);
+        stretch.group = group;
+        group.stretches.push(stretch);
+        if (activeStretch === active.focus) {
+            focus = stretch;
+        }
+        return [stretch, a[1]];
+    });
+    active.focus = focus;
+    return active;
 };
 
 Active.computeActiveWithSelection = function (focusOrTarget, backStretchOfFocus, originsInBackground) {
-    var foreground = Active.foregroundStretches();
-    var background = Active.backgroundStretches();
+    var foreground = Selection.foregroundStretches();
+    var background = Selection.backgroundStretches();
     return Active.computeActive(foreground, background, focusOrTarget, backStretchOfFocus, originsInBackground);
 };
 
@@ -64,7 +65,7 @@ Active.computeActive = function (foreground, background, focusOrTarget, backStre
     });
 
     if (!backStretchOfFocus) {
-        backStretchOfFocus = findBackStretchOfFocus(background, focusOrTargetStretch);
+        backStretchOfFocus = Active.findBackStretchOfFocus(background, focusOrTargetStretch);
     }
     if (!backStretchOfFocus) {
         var active = [
@@ -126,7 +127,7 @@ var activeWithFocus = function (foreground, background, focus, backStretchOfFocu
     return active;
 };
 
-var findBackStretchOfFocus = function (background, focus) {
+Active.findBackStretchOfFocus = function (background, focus) {
     var maxOverlapSteps = 0;
     var maxOverlapBackStretch = null;
     _.each(background, function (backStretch) {

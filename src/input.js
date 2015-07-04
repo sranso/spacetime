@@ -2,6 +2,26 @@
 var Input = {};
 (function () {
 
+Input.startInput = function (inputStepView) {
+    var foreground = Selection.foregroundStretches();
+    var foreStretch = Active.findBackStretchOfFocus(foreground, inputStepView);
+    if (foreStretch) {
+        var overlap = _.intersection(foreStretch.steps, inputStepView.steps);
+    } else {
+        var overlap = [];
+    }
+    if (overlap.length < inputStepView.steps.length) {
+        var group = Group.create();
+        Global.groups.push(group);
+        var active = Active.computeActiveForGroup(group, Selection.backgroundStretches(), [inputStepView]);
+        Global.selection.foreground.group = group;
+        Global.selection.foreground.focus = active.focus;
+    } else {
+        Global.selection.foreground.focus = foreStretch;
+    }
+    Global.inputStepView = inputStepView;
+};
+
 Input.keyForEvent = function () {
     return keyMap[d3.event.keyCode];
 };
@@ -25,6 +45,15 @@ Input.textInputEvent = function (step, key) {
         d3.event.preventDefault();
     } else if (key === 'tab') {
         d3.event.preventDefault();
+    } else if (key === 'escape') {
+        if (Global.inputStepView) {
+            d3.select(Global.inputStepView.__el__).select('.expression').node().blur();
+        }
+        window.getSelection().removeAllRanges();
+        Main.maybeUpdate(function () {
+            Global.inputStepView = null;
+            Global.connectStepView = null;
+        });
     } else if (key === 'A') {
         Reference.toggleAbsolute();
     }
