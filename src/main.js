@@ -24,12 +24,15 @@ Main.update = function () {
 Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
     var lastHoverResultStepView = Global.hoverResultStepView;
+    var lastHoverMatchesStepView = Global.hoverMatchesStepView;
     var lastInsertStepView = Global.inputStepView;
+    var lastConnectStepView = Global.connectStepView;
     var lastConnectStepView = Global.connectStepView;
     cb();
     if (
         Global.hoverStepView !== lastHoverStepView ||
         Global.hoverResultStepView !== lastHoverResultStepView ||
+        Global.hoverMatchesStepView !== lastHoverMatchesStepView ||
         Global.inputStepView !== lastInsertStepView ||
         Global.connectStepView !== lastConnectStepView
     ) {

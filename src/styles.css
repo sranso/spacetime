@@ -115,12 +115,20 @@ h1 {
 .step:first-child .step-box {
   border-top-width: 1px;
 }
+  .step .matches-indicator-container {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    margin-top: -9px;
+    background-color: white;
+    width: 13px;
+    height: 13px;
+  }
   .step .matches-indicator {
     position: absolute;
-    left: -16px;
-    top: 50%;
-    margin-top: -3px;
-    border: solid 1px #bbb;
+    left: 2px;
+    top: 2px;
+    border: solid 1px #ddd;
     border-radius: 5px;
     width: 5px;
     height: 5px;
@@ -131,7 +139,11 @@ h1 {
     display: block;
   }
   .step.target .matches-indicator {
-    background-color: #ccc;
+    background-color: #ddd;
+  }
+  .step.matches-hover .matches-indicator {
+    background-color: #333;
+    border-color: #333;
   }
 
   .step .enable-disable {

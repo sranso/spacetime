@@ -44,7 +44,7 @@ var computeStretchPositions = function (groups, stepViews) {
         foreground: x + 13,
         background: x + 31,
     };
-    x -= 19 + 9;
+    x -= 20 + 9;
 
     _.each(groups, function (group) {
         _.each(group.stretchViews, function (stretchView) {
@@ -178,7 +178,24 @@ var drawSteps = function (stepViews) {
     var stepBoxEnterEls = stepEnterEls.append('div')
         .attr('class', 'step-box') ;
 
-    stepBoxEnterEls.append('div')
+    var matchesIndicatorContainerEnterEls = stepBoxEnterEls.append('div')
+        .attr('class', 'matches-indicator-container')
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverMatchesStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverMatchesStepView === d) {
+                        Global.hoverMatchesStepView = null;
+                    }
+                });
+            }, 0);
+        }) ;
+
+    matchesIndicatorContainerEnterEls.append('div')
         .attr('class', 'matches-indicator') ;
 
     var enableDisableEnterEls = stepBoxEnterEls.append('div')
@@ -332,6 +349,9 @@ var drawSteps = function (stepViews) {
                 targetStepView.step.matchesId === d.step.matchesId
             ) {
                 classes.push('matches');
+                if (Global.hoverMatchesStepView) {
+                    classes.push('matches-hover');
+                }
             }
             var step = d.steps[d.steps.length - 1];
             if (step.result && Quads.isQuads(step.result)) {
