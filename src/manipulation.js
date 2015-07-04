@@ -3,6 +3,7 @@ var Manipulation = {};
 (function () {
 
 Manipulation.copyActiveStretches = function () {
+    Global.active[0].group.remember = true;
     _.each(Global.active, copyStretch);
 
     Main.update();
