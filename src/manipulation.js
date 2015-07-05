@@ -12,17 +12,47 @@ Manipulation.copyActiveStretches = function () {
 var copyStretch = function (original) {
     var p = Stretch.overlappingPartitions(original);
     var notCovering = _.union(
-        p("<<[<<>_]__"),
-        p("__[_<>>]>>"),
-        p("__[<==>]__")
+        p("<=[==>_]__"),
+        p("__[_<==]=>"),
+        p("__[<<>>]__")
     );
 
+    var originalStart = original.steps[0].__index;
+    var originalEnd = original.steps[original.steps.length - 1].__index;
+
+    ///// clone series
+    var originalSeries = _.filter(_.pluck(notCovering, 'series'));
+    var notCoveringSeries = _.filter(originalSeries, function (series) {
+        var start = series.stretches[0].steps[0].__index;
+        var end = series.stretches[series.stretches.length - 1];
+        end = end.steps[end.steps.length - 1].__index;
+        return (
+            start > originalStart ||
+            end < originalEnd ||
+            (start === originalStart && end === originalEnd)
+        );
+    });
+    var seriesCloneMap = {};
+    _.each(notCoveringSeries, function (originalSeries) {
+        var series = Series.create();
+        seriesCloneMap[originalSeries.id] = series;
+    });
+
+    ///// clone stretches
     var cloneMap = {};
     _.each(notCovering, function (originalStretch) {
         if (Stretch.isGroupStretch(originalStretch)) {
             var stretch = Stretch.createGroupStretch();
             stretch.group = originalStretch.group;
             stretch.group.stretches.push(stretch);
+
+            var originalSeries = originalStretch.series;
+            if (originalSeries) {
+                var series = seriesCloneMap[originalSeries.id] || originalSeries;
+                series.stretches.push(stretch);
+                stretch.series = series;
+            }
+
             cloneMap[originalStretch.id] = stretch;
         } else {
             var stretch = MultiStep.create();
@@ -32,8 +62,9 @@ var copyStretch = function (original) {
             cloneMap[originalStretch.id] = stretch;
         }
     });
-
     var copy = cloneMap[original.id];
+
+    ///// repeat steps
     _.each(original.steps, function (originalStep) {
         var step = Step.create();
         step.matchesId = originalStep.matchesId;
@@ -64,6 +95,7 @@ var copyStretch = function (original) {
         });
     });
 
+    ///// link steps
     var previous = original.steps[original.steps.length - 1];
     var next = previous.next;
     var lastCopyStep = copy.steps[copy.steps.length - 1];
@@ -71,6 +103,7 @@ var copyStretch = function (original) {
     Step.linkSteps(copy.steps);
     Step.linkSteps([lastCopyStep, next]);
 
+    ///// fixup refereneces
     Step.computeSteps();
     _.each(copy.steps, function (step) {
         var references = _.map(step.references, function (r) {
@@ -91,10 +124,10 @@ var copyStretch = function (original) {
         Step.setReferences(step, references);
     });
 
+    ///// fixup stretch steps
     _.each(p("<=[===>]__"), function (stretch) {
         stretch.steps.push(lastCopyStep);
     });
-
     _.each(p("<<[<==>]>>"), Stretch.fixupSteps);
     _.each(p("__[_<<<]=>"), function (originalAfter) {
         var stretch = cloneMap[originalAfter.id];
@@ -104,6 +137,19 @@ var copyStretch = function (original) {
         Stretch.fixupSteps(originalAfter);
     });
 
+    ///// fixup series
+    _.each(originalSeries, function (series) {
+        series.stretches = _.sortBy(series.stretches, function (stretch) {
+            return stretch.steps[0].__index;
+        });
+    });
+    var series = original.series;
+    if (!original.series) {
+        series = copy.series = original.series = Series.create();
+        series.stretches = [original, copy];
+    }
+
+    ///// fixup focus
     var focus = Global.selection.foreground.focus;
     if (cloneMap[focus.id]) {
         Global.selection.foreground.focus = cloneMap[focus.id];

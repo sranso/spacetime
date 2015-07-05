@@ -66,7 +66,7 @@ h1 {
   float: left;
   position: relative;
   z-index: 2;
-  width: 200px;
+  width: 180px;
   height: 10000px;
   margin-right: -50px;
   pointer-events: none;
@@ -119,7 +119,7 @@ h1 {
     position: absolute;
     left: -20px;
     top: 50%;
-    margin-top: -9px;
+    margin-top: -6px;
     background-color: white;
     width: 13px;
     height: 13px;
@@ -510,6 +510,11 @@ h1 {
 .stretch {
   pointer-events: visiblePainted;
 }
+  .stretch .index-in-series {
+    text-anchor: middle;
+    font-size: 10px;
+  }
+
   .stretch .mouse {
     fill: #fff;
     opacity: 0;
@@ -517,6 +522,9 @@ h1 {
 
   .stretch.selected-area .background {
     stroke: #bbb;
+  }
+  .stretch.selected-area .index-in-series {
+    visibility: hidden;
   }
   .stretch.selection-selected .background {
     stroke: #ddd;

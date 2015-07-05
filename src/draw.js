@@ -44,7 +44,7 @@ var computeStretchPositions = function (groups, stepViews) {
         foreground: x + 13,
         background: x + 31,
     };
-    x -= 20 + 9;
+    x -= 30 + 9;
 
     _.each(groups, function (group) {
         _.each(group.stretchViews, function (stretchView) {
@@ -643,6 +643,10 @@ var drawStretches = function (stretchViews) {
         .attr('rx', 2)
         .attr('ry', 2) ;
 
+    stretchEnterEls.append('text')
+        .attr('class', 'index-in-series')
+        .attr('x', 4) ;
+
     stretchEnterEls.append('rect')
         .attr('class', 'mouse')
         .attr('x', 0)
@@ -693,6 +697,19 @@ var drawStretches = function (stretchViews) {
                 light -= 20;
             }
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
+        }) ;
+
+    stretchEls.select('text.index-in-series')
+        .attr('y', function (d) {
+            return d.h / 2 + 2;
+        })
+        .text(function (d) {
+            var series = d.stretch.series;
+            if (series) {
+                return _.indexOf(series.stretches, d.stretch) + 1;
+            } else {
+                return '';
+            }
         }) ;
 
     stretchEls.select('rect.mouse')

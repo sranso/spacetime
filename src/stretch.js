@@ -12,11 +12,16 @@ Stretch.createBasicStretch = function () {
 Stretch.createGroupStretch = function () {
     var stretch = Stretch.createBasicStretch();
     stretch.group = null;
+    stretch.series = null;
     return stretch;
 };
 
 Stretch.isGroupStretch = function (stretch) {
     return stretch.group;
+};
+
+Stretch.isInSeries = function (stretch) {
+    return stretch.series;
 };
 
 Stretch.setSteps = function (stretch, steps) {
