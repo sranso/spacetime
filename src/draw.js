@@ -7,6 +7,7 @@ Draw.trackHtml = null;
 
 var trackSvg;
 var trackForegroundIndices;
+var foregroundIndexInputEl;
 var selectionInfoEl;
 var __stretchViews = [];
 var environmentContainer;
@@ -97,6 +98,7 @@ var drawOverallSetup = function() {
             window.getSelection().removeAllRanges();
             Main.maybeUpdate(function () {
                 Global.inputStepView = null;
+                Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
             });
             Input.keypressEvent(d3.event.keyCode)
@@ -223,6 +225,7 @@ var drawSteps = function (stepViews) {
         .attr('class', 'selection-area')
         .on('mousedown', function (d) {
             Global.inputStepView = null;
+            Global.inputForegroundIndexStretch = null;
             Global.connectStepView = null;
             window.getSelection().removeAllRanges();
             Selection.maybeStart();
@@ -344,7 +347,7 @@ var drawSteps = function (stepViews) {
                 classes.push('hover');
             }
             if (d === Global.inputStepView) {
-                classes.push('inserting');
+                classes.push('inputting');
             }
             if (d === Global.connectStepView) {
                 classes.push('connecting');
@@ -354,6 +357,7 @@ var drawSteps = function (stepViews) {
             }
             if (
                 targetStepView &&
+                !Global.selection.foreground.group &&
                 targetStepView.step.matchesId === d.step.matchesId
             ) {
                 classes.push('matches');
@@ -387,11 +391,11 @@ var drawSteps = function (stepViews) {
         }
     });
 
-    DrawReferences.updateInserting();
+    DrawReferences.updateInputting();
 
     DrawReferences.draw(stepEls.select('.expression-container'));
 
-    /////////////////// must be after updateInserting
+    /////////////////// must be after updateInputting
 
     stepEls.select('.enable-disable')
         .attr('class', function (d) {
@@ -636,6 +640,27 @@ var drawSelectionInfo = function () {
 ///////////////// Stretches
 
 var drawStretchesSetup = function () {
+    foregroundIndexInputEl = trackForegroundIndices.append('div')
+        .attr('class', 'foreground-index foreground-index-input')
+        .attr('contenteditable', true)
+        .on('blur', function () {
+            Main.maybeUpdate(function () { Global.inputForegroundIndexStretch = null });
+        })
+        .on('mousedown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('input', function () {
+            Series.setSeriesLength(this.textContent);
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
 };
 
 var drawStretches = function (stretchViews) {
@@ -724,35 +749,37 @@ var drawStretches = function (stretchViews) {
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
 
+
     ///// foreground index views
     var foregroundStretchViews = _.filter(stretchViews, function (stretchView) {
         return stretchView.kind === 'foreground';
     });
     var foregroundIndexViews = _.map(foregroundStretchViews, function (stretchView) {
+        var stretch = stretchView.stretch;
+        var series = stretch.series;
+        if (series) {
+            var text = _.indexOf(series.stretches, stretch) + 1;
+        } else {
+            var text = '1';
+        }
         return {
             top: stretchView.y + stretchView.h / 2,
-            stretch: stretchView.stretch,
+            stretch: stretch,
+            text: '' + text,
         };
     });
 
-    var foregroundIndexEls = trackForegroundIndices.selectAll('div.foreground-index')
+    var foregroundIndexEls = trackForegroundIndices.selectAll('div.foreground-index.static')
         .data(foregroundIndexViews, function (d) { return d.stretch.id }) ;
 
     var foregroundIndexEnterEls = foregroundIndexEls.enter().append('div')
-        .attr('contenteditable', true)
+        .on('click', function (d) {
+            var series = d.stretch.series;
+            var lastStretch = series.stretches[series.stretches.length - 1];
+            Main.maybeUpdate(function () { Global.inputForegroundIndexStretch = lastStretch });
+            d3.event.stopPropagation();
+        })
         .on('mousedown', function () {
-            d3.event.stopPropagation();
-        })
-        .on('input', function (d) {
-            Series.setSeriesLength(d, this.textContent);
-        })
-        .on('keypress', function () {
-            d3.event.stopPropagation();
-        })
-        .on('keydown', function () {
-            d3.event.stopPropagation();
-        })
-        .on('keyup', function () {
             d3.event.stopPropagation();
         }) ;
 
@@ -761,36 +788,38 @@ var drawStretches = function (stretchViews) {
     foregroundIndexEls.each(function (d) { d.__el__ = this });
 
     foregroundIndexEls
-        .on('focus', function (d, i) {
-            var series = d.stretch.series;
-            var index = _.indexOf(series.stretches, d.stretch) + 1;
-            var length = series.stretches.length;
-            var belowBy = length - index;
-            if (belowBy) {
-                var belowEl = foregroundIndexViews[i + belowBy].__el__;
-                belowEl.focus();
-                DomRange.setCurrentCursorOffset(belowEl, ('' + length).length);
-            }
-        })
         .attr('class', function (d) {
-            var classes = ['foreground-index'];
+            var classes = ['foreground-index', 'static'];
             var series = d.stretch.series;
             if (series) {
                 classes.push('series');
             }
             return classes.join(' ');
         })
-        .text(function (d) {
-            var series = d.stretch.series;
-            if (series) {
-                return _.indexOf(series.stretches, d.stretch) + 1;
-            } else {
-                return '';
-            }
-        })
+        .text(function (d) { return d.text })
         .style('top', function (d) {
             return d.top + 'px';
         }) ;
+
+
+    if (Global.inputForegroundIndexStretch) {
+        var inputView = _.find(foregroundIndexViews, function (indexView) {
+            return indexView.stretch === Global.inputForegroundIndexStretch;
+        });
+        var wasInputting = foregroundIndexInputEl.classed('inputting');
+        foregroundIndexInputEl
+            .classed('inputting', true)
+            .style('top', function () {
+                return inputView.top + 'px';
+            }) ;
+        foregroundIndexInputEl.node().focus();
+        if (!wasInputting) {
+            foregroundIndexInputEl.text(inputView.text);
+            DomRange.setCurrentCursorOffset(foregroundIndexInputEl.node(), inputView.text.length);
+        }
+    } else {
+        foregroundIndexInputEl.classed('inputting', false);
+    }
 };
 
 })();

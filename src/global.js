@@ -9,6 +9,7 @@ Global.hoverStepView = null;
 Global.hoverResultStepView = null;
 Global.hoverMatchesStepView = null;
 Global.inputStepView = null;
+Global.inputForegroundIndexStretch = null;
 Global.connectStepView = null;
 Global.inputReferenceIs = [];
 Global.groups = [];

@@ -147,7 +147,7 @@ var referenceClass = function (reference, referenceI) {
     return classes.join(' ');
 };
 
-DrawReferences.updateInserting = function () {
+DrawReferences.updateInputting = function () {
     Global.inputReferenceIs = [];
     if (!Global.inputStepView) {
         return;

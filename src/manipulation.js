@@ -4,12 +4,12 @@ var Manipulation = {};
 
 Manipulation.copyActiveStretches = function () {
     Global.active[0].group.remember = true;
-    _.each(Global.active, copyStretch);
+    _.each(Global.active, Manipulation.copyStretch);
 
     Main.update();
 };
 
-var copyStretch = function (original) {
+Manipulation.copyStretch = function (original) {
     var p = Stretch.overlappingPartitions(original);
     var notCovering = _.union(
         p("<=[==>_]__"),
@@ -154,6 +154,8 @@ var copyStretch = function (original) {
     if (cloneMap[focus.id]) {
         Global.selection.foreground.focus = cloneMap[focus.id];
     }
+
+    return copy;
 };
 
 Manipulation.insertNewStep = function () {
@@ -188,52 +190,55 @@ var _insertNewStep = function (stretch, matchesId) {
 };
 
 Manipulation.deleteActiveStretches = function () {
-    _.each(Global.active, deleteStretch);
-
-    ///// fixup selection focus/group
-    var group = Global.active[0].group;
-    if (group) {
-        if (group.stretches.length) {
-            var focus = Global.active.focus;
-            var focusStart = focus.steps[0].__index;
-            var closestAbove;
-            var closestAboveStart = -1;
-            var closestBelow;
-            var closestBelowStart = 1e10;
-            _.each(group.stretches, function (stretch) {
-                var start = stretch.steps[0].__index;
-                if (start < focusStart) {
-                    if (start > closestAboveStart) {
-                        closestAbove = stretch;
-                        closestAboveStart = start;
-                    }
-                } else {
-                    if (start < closestBelowStart) {
-                        closestBelow = stretch;
-                        closestBelowStart = start;
-                    }
-                }
-            });
-            var closest = closestAbove || closestBelow;
-            Global.selection.foreground.focus = closest;
-            if (Global.selection.background.group === group) {
-                Global.selection.background.focus = closest;
-            }
-        } else {
-            Group.remove(group);
-            Global.selection.foreground.group = null;
-            Global.selection.foreground.focus = null;
-            if (Global.selection.background.group === group) {
-                Global.selection.background.group = null;
-                Global.selection.background.focus = null;
-            }
-        }
+    _.each(Global.active, Manipulation.deleteStretch);
+    if (Global.active[0].group) {
+        Manipulation.fixupSelectionAfterDelete();
     }
-
     Main.update();
 };
 
-var deleteStretch = function (stretch) {
+Manipulation.fixupSelectionAfterDelete = function () {
+    var group = Global.selection.foreground.group;
+    var focus = Global.selection.foreground.focus;
+    if (!group.stretches.length) {
+        Group.remove(group);
+
+        Global.selection.foreground.group = null;
+        Global.selection.foreground.focus = null;
+        if (Global.selection.background.group === group) {
+            Global.selection.background.group = null;
+            Global.selection.background.focus = null;
+        }
+    } else if (!_.contains(group.stretches, focus)) {
+        var focusStart = focus.steps[0].__index;
+        var closestAbove;
+        var closestAboveStart = -1;
+        var closestBelow;
+        var closestBelowStart = 1e10;
+        _.each(group.stretches, function (stretch) {
+            var start = stretch.steps[0].__index;
+            if (start < focusStart) {
+                if (start > closestAboveStart) {
+                    closestAbove = stretch;
+                    closestAboveStart = start;
+                }
+            } else {
+                if (start < closestBelowStart) {
+                    closestBelow = stretch;
+                    closestBelowStart = start;
+                }
+            }
+        });
+        var closest = closestAbove || closestBelow;
+
+        Global.selection.foreground.focus = closest;
+        if (Global.selection.background.group === group) {
+            Global.selection.background.focus = closest;
+        }
+    }
+};
+
+Manipulation.deleteStretch = function (stretch) {
     var start = stretch.steps[0];
     var end = stretch.steps[stretch.steps.length - 1];
     var previous = start.previous;

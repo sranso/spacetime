@@ -121,7 +121,7 @@ h1 {
 }
   .step .matches-indicator-container {
     position: absolute;
-    left: -17px;
+    left: -20px;
     top: 50%;
     margin-top: -6px;
     background-color: white;
@@ -542,9 +542,16 @@ h1 {
   display: none;
   left: -6px;
   margin-top: -10px;
-  width: 22px;
+  min-width: 22px;
   text-align: center;
 }
 .foreground-index.series {
   display: block;
+}
+.foreground-index.inputting {
+  display: block;
+}
+.foreground-index-input {
+  background-color: white;
+  z-index: 3;
 }

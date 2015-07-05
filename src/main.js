@@ -25,15 +25,16 @@ Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
     var lastHoverResultStepView = Global.hoverResultStepView;
     var lastHoverMatchesStepView = Global.hoverMatchesStepView;
-    var lastInsertStepView = Global.inputStepView;
-    var lastConnectStepView = Global.connectStepView;
+    var lastInputStepView = Global.inputStepView;
+    var lastInputForegroundIndexStretch = Global.inputForegroundIndexStretch;
     var lastConnectStepView = Global.connectStepView;
     cb();
     if (
         Global.hoverStepView !== lastHoverStepView ||
         Global.hoverResultStepView !== lastHoverResultStepView ||
         Global.hoverMatchesStepView !== lastHoverMatchesStepView ||
-        Global.inputStepView !== lastInsertStepView ||
+        Global.inputStepView !== lastInputStepView ||
+        Global.inputForegroundIndexStretch !== lastInputForegroundIndexStretch ||
         Global.connectStepView !== lastConnectStepView
     ) {
         Main.update();
@@ -54,6 +55,7 @@ Main.mouseDown = function () {
     window.getSelection().removeAllRanges();
     Main.maybeUpdate(function () {
         Global.inputStepView = null;
+        Global.inputForegroundIndexStretch = null;
         Global.connectStepView = null;
     });
     Selection.clearForClick();

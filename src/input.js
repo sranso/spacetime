@@ -52,6 +52,7 @@ Input.textInputEvent = function (step, key) {
         window.getSelection().removeAllRanges();
         Main.maybeUpdate(function () {
             Global.inputStepView = null;
+            Global.inputForegroundIndexStretch = null;
             Global.connectStepView = null;
         });
     } else if (key === 'A') {
