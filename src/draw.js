@@ -6,6 +6,7 @@ Draw.trackContainer = null;
 Draw.trackHtml = null;
 
 var trackSvg;
+var trackForegroundIndices;
 var selectionInfoEl;
 var __stretchViews = [];
 var environmentContainer;
@@ -39,7 +40,13 @@ var verticallyPositionStretchView = function (stretchView) {
 var computeStretchPositions = function (groups, stepViews) {
     __stretchViews = [];
 
-    var x = Draw.trackHtml.node().offsetLeft;
+    var offset = (
+        Draw.trackHtml.node().offsetLeft +
+        d3.select('.step-box').node().offsetLeft +
+        d3.select('.selection-area').node().offsetLeft
+    );
+
+    var x = offset;
     var selectionX = {
         foreground: x + 13,
         background: x + 31,
@@ -79,8 +86,9 @@ var computeStretchPositions = function (groups, stepViews) {
 var drawOverallSetup = function() {
     Draw.trackContainer = d3.select('#track');
 
-    Draw.trackHtml = d3.select('div#track-html');
     trackSvg = d3.select('svg#track-svg');
+    trackForegroundIndices = d3.select('div#track-foreground-indices');
+    Draw.trackHtml = d3.select('div#track-html');
 
     d3.select(document)
         .on('keydown', function () { Input.inputEvent(Input.keyForEvent(), 'down') })
@@ -471,8 +479,8 @@ var drawEnvironment = function () {
         .on('keypress', function () {
             d3.event.stopPropagation();
         })
-        .on('keydown', function (d) {
-            Input.textInputEvent(d, Input.keyForEvent());
+        .on('keydown', function () {
+            d3.event.stopPropagation();
         })
         .on('keyup', function () {
             d3.event.stopPropagation();
@@ -644,8 +652,7 @@ var drawStretches = function (stretchViews) {
         .attr('ry', 2) ;
 
     stretchEnterEls.append('text')
-        .attr('class', 'index-in-series')
-        .attr('x', 4) ;
+        .attr('class', 'index-in-series') ;
 
     stretchEnterEls.append('rect')
         .attr('class', 'mouse')
@@ -700,9 +707,10 @@ var drawStretches = function (stretchViews) {
         }) ;
 
     stretchEls.select('text.index-in-series')
-        .attr('y', function (d) {
-            return d.h / 2 + 2;
+        .attr('x', function (d) {
+            return d.kind === 'background' ? 5 : 4;
         })
+        .attr('y', function (d) { return d.h / 2 + 2 })
         .text(function (d) {
             var series = d.stretch.series;
             if (series) {
@@ -715,6 +723,74 @@ var drawStretches = function (stretchViews) {
     stretchEls.select('rect.mouse')
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
+
+    ///// foreground index views
+    var foregroundStretchViews = _.filter(stretchViews, function (stretchView) {
+        return stretchView.kind === 'foreground';
+    });
+    var foregroundIndexViews = _.map(foregroundStretchViews, function (stretchView) {
+        return {
+            top: stretchView.y + stretchView.h / 2,
+            stretch: stretchView.stretch,
+        };
+    });
+
+    var foregroundIndexEls = trackForegroundIndices.selectAll('div.foreground-index')
+        .data(foregroundIndexViews, function (d) { return d.stretch.id }) ;
+
+    var foregroundIndexEnterEls = foregroundIndexEls.enter().append('div')
+        .attr('contenteditable', true)
+        .on('mousedown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('input', function (d) {
+            Series.setSeriesLength(d, this.textContent);
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
+
+    foregroundIndexEls.exit().remove();
+
+    foregroundIndexEls.each(function (d) { d.__el__ = this });
+
+    foregroundIndexEls
+        .on('focus', function (d, i) {
+            var series = d.stretch.series;
+            var index = _.indexOf(series.stretches, d.stretch) + 1;
+            var length = series.stretches.length;
+            var belowBy = length - index;
+            if (belowBy) {
+                var belowEl = foregroundIndexViews[i + belowBy].__el__;
+                belowEl.focus();
+                DomRange.setCurrentCursorOffset(belowEl, ('' + length).length);
+            }
+        })
+        .attr('class', function (d) {
+            var classes = ['foreground-index'];
+            var series = d.stretch.series;
+            if (series) {
+                classes.push('series');
+            }
+            return classes.join(' ');
+        })
+        .text(function (d) {
+            var series = d.stretch.series;
+            if (series) {
+                return _.indexOf(series.stretches, d.stretch) + 1;
+            } else {
+                return '';
+            }
+        })
+        .style('top', function (d) {
+            return d.top + 'px';
+        }) ;
 };
 
 })();

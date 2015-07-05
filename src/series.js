@@ -11,4 +11,9 @@ Series.create = function () {
     };
 };
 
+Series.setSeriesLength = function (stretchView, length) {
+    var stretch = stretchView.stretch;
+    var series = stretch.series;
+};
+
 })();

@@ -66,10 +66,16 @@ h1 {
   float: left;
   position: relative;
   z-index: 2;
-  width: 180px;
+  width: 200px;
   height: 10000px;
-  margin-right: -50px;
+  margin-right: -70px;
   pointer-events: none;
+}
+
+#track-foreground-indices {
+  float: left;
+  position: relative;
+  z-index: 2;
 }
 
 #track-html {
@@ -101,8 +107,6 @@ h1 {
 
 .step {
   margin: 0;
-  position: relative;
-  left: -20px;
   padding-left: 20px;
 }
 .step-box {
@@ -117,12 +121,12 @@ h1 {
 }
   .step .matches-indicator-container {
     position: absolute;
-    left: -20px;
+    left: -17px;
     top: 50%;
     margin-top: -6px;
     background-color: white;
-    width: 13px;
-    height: 13px;
+    width: 12px;
+    height: 12px;
   }
   .step .matches-indicator {
     position: absolute;
@@ -523,7 +527,7 @@ h1 {
   .stretch.selected-area .background {
     stroke: #bbb;
   }
-  .stretch.selected-area .index-in-series {
+  .stretch.selection-foreground .index-in-series {
     visibility: hidden;
   }
   .stretch.selection-selected .background {
@@ -532,3 +536,15 @@ h1 {
   .stretch.selected-area.selection-focus .background {
     stroke: #555;
   }
+
+.foreground-index {
+  position: absolute;
+  display: none;
+  left: -6px;
+  margin-top: -10px;
+  width: 22px;
+  text-align: center;
+}
+.foreground-index.series {
+  display: block;
+}

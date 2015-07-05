@@ -189,6 +189,47 @@ var _insertNewStep = function (stretch, matchesId) {
 
 Manipulation.deleteActiveStretches = function () {
     _.each(Global.active, deleteStretch);
+
+    ///// fixup selection focus/group
+    var group = Global.active[0].group;
+    if (group) {
+        if (group.stretches.length) {
+            var focus = Global.active.focus;
+            var focusStart = focus.steps[0].__index;
+            var closestAbove;
+            var closestAboveStart = -1;
+            var closestBelow;
+            var closestBelowStart = 1e10;
+            _.each(group.stretches, function (stretch) {
+                var start = stretch.steps[0].__index;
+                if (start < focusStart) {
+                    if (start > closestAboveStart) {
+                        closestAbove = stretch;
+                        closestAboveStart = start;
+                    }
+                } else {
+                    if (start < closestBelowStart) {
+                        closestBelow = stretch;
+                        closestBelowStart = start;
+                    }
+                }
+            });
+            var closest = closestAbove || closestBelow;
+            Global.selection.foreground.focus = closest;
+            if (Global.selection.background.group === group) {
+                Global.selection.background.focus = closest;
+            }
+        } else {
+            Group.remove(group);
+            Global.selection.foreground.group = null;
+            Global.selection.foreground.focus = null;
+            if (Global.selection.background.group === group) {
+                Global.selection.background.group = null;
+                Global.selection.background.focus = null;
+            }
+        }
+    }
+
     Main.update();
 };
 
@@ -209,6 +250,25 @@ var deleteStretch = function (stretch) {
     });
 
     var p = Stretch.overlappingPartitions(stretch);
+
+    ///// remove stretches and series
+    var removeStretches = p("__[<<>>]__");
+    _.each(removeStretches, function (stretch) {
+        if (Stretch.isGroupStretch(stretch)) {
+            stretch.group.stretches = _.without(stretch.group.stretches, stretch);
+        }
+        if (stretch.series) {
+            stretch.series.stretches = _.without(stretch.series.stretches, stretch);
+        }
+    });
+    var fixupSeries = _.filter(_.pluck(removeStretches, 'series'));
+    _.each(fixupSeries, function (series) {
+        if (series.stretches.length === 1) {
+            series.stretches[0].series = null;
+        }
+    });
+
+    ///// fixup stretches
     _.each(p("<=[>>>>]__"), function (stretch) {
         stretch.steps.push(previous);
         Stretch.fixupSteps(stretch);
@@ -217,10 +277,8 @@ var deleteStretch = function (stretch) {
         stretch.steps.unshift(next);
         Stretch.fixupSteps(stretch);
     });
-    _.each(p("__[<<>>]__"), function (stretch) {
-        if (Stretch.isGroupStretch(stretch)) {
-            stretch.group.stretches = _.without(stretch.group.stretches, stretch);
-        }
+    _.each(p("<=[====]=>"), function (stretch) {
+        Stretch.fixupSteps(stretch);
     });
 };
 
