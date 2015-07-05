@@ -527,14 +527,17 @@ h1 {
   .stretch.selected-area .background {
     stroke: #bbb;
   }
-  .stretch.selection-foreground .index-in-series {
-    visibility: hidden;
-  }
   .stretch.selection-selected .background {
     stroke: #ddd;
   }
   .stretch.selected-area.selection-focus .background {
     stroke: #555;
+  }
+  .stretch.selection-foreground .index-in-series {
+    visibility: hidden;
+  }
+  .stretch.selection-selected .index-in-series {
+    visibility: hidden;
   }
 
 .foreground-index {

@@ -268,7 +268,9 @@ var activeStretchWithTarget = function (targetInfo, backStretch, origin) {
     }
     if (bestChain.length) {
         var stretch = Stretch.createBasicStretch();
-        stretch.steps = _.pluck(bestChain, 'step');
+        var start = bestChain[0].start;
+        var end = bestChain[bestChain.length - 1].end;
+        stretch.steps = Global.steps.slice(start, end + 1);
         return stretch;
     } else {
         return null;

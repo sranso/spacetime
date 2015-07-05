@@ -37,7 +37,8 @@ Selection.backgroundStretches = function () {
 };
 
 Selection.toggleCollapsed = function () {
-    if (!Global.selection.foreground.group) {
+    var group = Global.selection.foreground.group;
+    if (!group) {
         return;
     }
     var activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
@@ -53,6 +54,7 @@ Selection.toggleCollapsed = function () {
             multiStep = MultiStep.create();
             multiStep.matchesId = matchesId;
             Stretch.setSteps(multiStep, stretch.steps);
+            group.remember = true;
         }
         multiStep.collapsed = !collapsed;
     });
