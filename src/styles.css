@@ -514,6 +514,12 @@ h1 {
 .stretch {
   pointer-events: visiblePainted;
 }
+  .stretch .index-in-series-border {
+    stroke-width: 2px;
+    stroke: none;
+    fill: none;
+  }
+
   .stretch .index-in-series {
     text-anchor: middle;
     font-size: 10px;
@@ -543,9 +549,9 @@ h1 {
 .foreground-index {
   position: absolute;
   display: none;
-  left: -6px;
+  left: -10px;
   margin-top: -10px;
-  min-width: 22px;
+  min-width: 28px;
   text-align: center;
 }
 .foreground-index.series {
@@ -554,7 +560,30 @@ h1 {
 .foreground-index.inputting {
   display: block;
 }
-.foreground-index-input {
-  background-color: white;
-  z-index: 3;
-}
+
+  .foreground-index-content {
+    display: inline-block;
+    border: solid 2px transparent;
+    border-radius: 6px;
+    padding: 1px 3px;
+  }
+  .foreground-index-input {
+    background-color: white;
+    z-index: 3;
+  }
+
+
+  .foreground-index.inputting .foreground-index-content {
+    border-color: #ddd;
+  }
+  .foreground-index.referenced-by-color .foreground-index-content,
+  .foreground-index.inputting.referenced-by-color .foreground-index-content {
+    border-color: #f0c;
+  }
+  .stretch.referenced-by-color .index-in-series-border {
+    stroke: #f0c;
+  }
+  .stretch.selection-selected.referenced-by-color .index-in-series-border,
+  .stretch.selection-foreground.referenced-by-color .index-in-series-border {
+    stroke: none
+  }

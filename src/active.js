@@ -13,6 +13,7 @@ Active.computeMainActive = function () {
 
     Global.active = _.pluck(active, '0');
     Global.active.focus = active.focus;
+    Global.__activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
 };
 
 Active.computeActiveForGroup = function (group, background, target) {

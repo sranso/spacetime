@@ -5,7 +5,9 @@ var StepExecution = {};
 StepExecution.execute = function () {
     var start = +Date.now();
     Global.lastQuads = null;
-    _.each(Global.steps, executeStep);
+    Series.clearStartSeries();
+    Series.tagStartSeries();
+    executeSteps();
     _.each(Global.environment, updateEnvironment);
     var end = +Date.now();
     console.log(end - start);
@@ -150,6 +152,20 @@ var prepareToEval = function (token) {
         return '(' + token.result + ')';
     } else {
         return token.result;
+    }
+};
+
+var executeSteps = function () {
+    var lastStep = Global.stepsHead;
+
+    while (true) {
+        var step = lastStep.next;
+        if (!step) {
+            return;
+        }
+        Series.adjustDynamicSeriesFor(step);
+        executeStep(step);
+        lastStep = step;
     }
 };
 

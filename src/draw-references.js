@@ -4,13 +4,11 @@ var DrawReferences = {};
 
 DrawReferences.colorForResult = function (resultStepView) {
     var targetStepView = Main.targetStepView();
-    if (!targetStepView) {
-        return '';
-    }
+    var targetIndexStretch = Main.targetIndexStretch();
 
     var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
-    var targetStep = targetStepView.steps[targetStepView.steps.length - 1];
-    if (targetStepView === Global.hoverResultStepView) {
+    if (targetStepView && targetStepView === Global.hoverResultStepView) {
+        var targetStep = targetStepView.steps[targetStepView.steps.length - 1];
         if (resultStepView === Global.hoverResultStepView) {
             return 'referenced-by-color';
         } else if (resultStep === targetStep.updatedBy) {
@@ -20,6 +18,15 @@ DrawReferences.colorForResult = function (resultStepView) {
         } else {
             return '';
         }
+    } else if (targetIndexStretch) {
+        var series = targetIndexStretch.series;
+        if (series && series.targetLengthBy === resultStep) {
+            return 'referenced-by-color';
+        } else {
+            return '';
+        }
+    } else if (!targetStepView) {
+        return '';
     }
 
     if (resultStepView === targetStepView) {
@@ -40,6 +47,8 @@ var colorForReference = function (reference) {
         } else {
             return '';
         }
+    } else if (Main.targetIndexStretch()) {
+        return '';
     }
 
     if (reference.sink !== targetStepView.step) {
@@ -60,6 +69,8 @@ DrawReferences.colorForEnabledBy = function (stepView, enabledBySteps) {
         } else {
             return '';
         }
+    } else if (Main.targetIndexStretch()) {
+        return '';
     }
 
     if (stepView !== targetStepView) {
@@ -69,6 +80,36 @@ DrawReferences.colorForEnabledBy = function (stepView, enabledBySteps) {
         return '';
     }
     return 'target-color';
+};
+
+DrawReferences.colorForIndex = function (indexView) {
+    var series = indexView.stretch.series;
+    if (!series) {
+        return '';
+    }
+    if (!series.targetLengthBy) {
+        return '';
+    }
+
+    var targetIndexStretch = Main.targetIndexStretch();
+    if (targetIndexStretch) {
+        if (targetIndexStretch.series === series) {
+            return 'referenced-by-color';
+        } else {
+            return '';
+        }
+    }
+    var targetStepView = Main.targetStepView();
+    if (targetStepView && targetStepView === Global.hoverResultStepView) {
+        var resultStep = targetStepView.steps[targetStepView.steps.length - 1];
+        if (series.targetLengthBy === resultStep) {
+            return 'referenced-by-color';
+        } else {
+            return '';
+        }
+    }
+
+    return '';
 };
 
 DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep) {
@@ -84,6 +125,9 @@ DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep)
         return '';
     }
     if (Global.inputReferenceIs.length) {
+        return '';
+    }
+    if (Main.targetIndexStretch()) {
         return '';
     }
     return referenceColor(targetStepView, enabledByStep);

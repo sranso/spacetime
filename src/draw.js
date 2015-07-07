@@ -18,6 +18,7 @@ Draw.setup = function () {
     drawEnvironmentSetup();
     drawSelectionInfoSetup();
     drawStretchesSetup();
+    drawForegroundIndicesSetup();
 };
 
 Draw.draw = function () {
@@ -26,6 +27,7 @@ Draw.draw = function () {
     computeStretchPositions(Group.groupsToDraw(Global.groups));
     drawSelectionInfo();
     drawStretches(__stretchViews);
+    drawForegroundIndices(__stretchViews);
 };
 
 var verticallyPositionStretchView = function (stretchView) {
@@ -254,7 +256,11 @@ var drawSteps = function (stepViews) {
             Step.updateText(this);
         })
         .on('mousedown', function (d) {
-            Main.maybeUpdate(function () { Input.startInput(d) });
+            Main.maybeUpdate(function () {
+                Input.startInput(d);
+                Global.inputForegroundIndexStretch = null;
+                Global.connectStepView = null;
+            });
             d3.event.stopPropagation();
         })
         .on('keypress', function () {
@@ -284,7 +290,11 @@ var drawSteps = function (stepViews) {
             }, 0);
         })
         .on('mousedown', function (d) {
-            Step.insertOrUpdateReference(d);
+            if (Global.inputForegroundIndexStretch) {
+                Series.setActiveSeriesTargetLengthBy(d);
+            } else {
+                Step.insertOrUpdateReference(d);
+            }
             d3.event.stopPropagation();
             d3.event.preventDefault();
         }) ;
@@ -340,7 +350,7 @@ var drawSteps = function (stepViews) {
             } else if (MultiStep.forceDisabled(d)) {
                 classes.push('force-disabled');
             }
-            if (_.intersection(d.steps, Selection.__activeSteps).length) {
+            if (_.intersection(d.steps, Global.__activeSteps).length) {
                 classes.push('active');
             }
             if (d === Global.hoverStepView) {
@@ -357,8 +367,10 @@ var drawSteps = function (stepViews) {
             }
             if (
                 targetStepView &&
-                !Global.selection.foreground.group &&
-                targetStepView.step.matchesId === d.step.matchesId
+                targetStepView.step.matchesId === d.step.matchesId &&
+                (!Global.selection.foreground.group ||
+                 !Global.selection.foreground.group.remember
+                )
             ) {
                 classes.push('matches');
                 if (Global.hoverMatchesStepView) {
@@ -509,6 +521,8 @@ var drawEnvironment = function () {
         .on('mousedown', function (d) {
             if (Global.connectStepView) {
                 Step.setEnvironmentUpdatedBy(d);
+            } else if (Global.inputForegroundIndexStretch) {
+                Series.setActiveSeriesTargetLengthBy(d);
             } else {
                 Step.insertOrUpdateReference(d);
             }
@@ -640,27 +654,6 @@ var drawSelectionInfo = function () {
 ///////////////// Stretches
 
 var drawStretchesSetup = function () {
-    foregroundIndexInputEl = trackForegroundIndices.append('div')
-        .attr('class', 'foreground-index foreground-index-input')
-        .attr('contenteditable', true)
-        .on('blur', function () {
-            Main.maybeUpdate(function () { Global.inputForegroundIndexStretch = null });
-        })
-        .on('mousedown', function () {
-            d3.event.stopPropagation();
-        })
-        .on('input', function () {
-            Series.setSeriesLength(this.textContent);
-        })
-        .on('keypress', function () {
-            d3.event.stopPropagation();
-        })
-        .on('keydown', function () {
-            d3.event.stopPropagation();
-        })
-        .on('keyup', function () {
-            d3.event.stopPropagation();
-        }) ;
 };
 
 var drawStretches = function (stretchViews) {
@@ -676,6 +669,11 @@ var drawStretches = function (stretchViews) {
         .attr('rx', 2)
         .attr('ry', 2) ;
 
+    stretchEnterEls.append('rect')
+        .attr('class', 'index-in-series-border')
+        .attr('rx', 4)
+        .attr('ry', 4) ;
+
     stretchEnterEls.append('text')
         .attr('class', 'index-in-series') ;
 
@@ -690,6 +688,20 @@ var drawStretches = function (stretchViews) {
             Global.connectStepView = null;
             Main.update();
             d3.event.stopPropagation();
+        })
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverIndexStretch = d.stretch;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverIndexStretch === d.stretch) {
+                        Global.hoverIndexStretch = null;
+                    }
+                });
+            }, 0);
         }) ;
 
     stretchEls.exit().remove();
@@ -705,6 +717,7 @@ var drawStretches = function (stretchViews) {
             if (d.selectedArea) {
                 classes.push('selected-area');
             }
+            classes.push(DrawReferences.colorForIndex(d));
             return classes.join(' ');
         })
         .attr('transform', function (d, i) {
@@ -731,6 +744,26 @@ var drawStretches = function (stretchViews) {
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
         }) ;
 
+    var widthOffset = function (d) {
+        var series = d.stretch.series;
+        if (!series) {
+            return 0;
+        }
+        var text = _.indexOf(series.stretches, d.stretch) + 1;
+        return ('' + text).length * 4;
+    };
+
+    stretchEls.select('rect.index-in-series-border')
+        .attr('y', function (d) { return d.h / 2 - 9 })
+        .attr('x', function (d) {
+            return -1 - widthOffset(d) / 2;
+        })
+        .attr('width', function (d) {
+            var w = d.kind === 'background' ? 11 : 9;
+            return w + widthOffset(d);
+        })
+        .attr('height', 15) ;
+
     stretchEls.select('text.index-in-series')
         .attr('x', function (d) {
             return d.kind === 'background' ? 5 : 4;
@@ -748,9 +781,39 @@ var drawStretches = function (stretchViews) {
     stretchEls.select('rect.mouse')
         .attr('width', _.property('w'))
         .attr('height', _.property('h')) ;
+};
 
+///////////////// Foreground Indices
 
-    ///// foreground index views
+var drawForegroundIndicesSetup = function () {
+    foregroundIndexInputEl = trackForegroundIndices.append('div')
+        .attr('class', 'foreground-index foreground-index-input') ;
+
+    foregroundIndexInputEl.append('div')
+        .attr('class', 'foreground-index-content')
+        .attr('contenteditable', true)
+        .on('blur', function () {
+            Main.maybeUpdate(function () { Global.inputForegroundIndexStretch = null });
+        })
+        .on('mousedown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('input', function () {
+            d3.event.stopPropagation();
+            Series.setActiveSeriesLength(this.textContent);
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
+};
+
+var drawForegroundIndices = function (stretchViews) {
     var foregroundStretchViews = _.filter(stretchViews, function (stretchView) {
         return stretchView.kind === 'foreground';
     });
@@ -776,12 +839,30 @@ var drawStretches = function (stretchViews) {
         .on('click', function (d) {
             var series = d.stretch.series;
             var lastStretch = series.stretches[series.stretches.length - 1];
+            Global.selection.foreground.focus = lastStretch;
             Main.maybeUpdate(function () { Global.inputForegroundIndexStretch = lastStretch });
             d3.event.stopPropagation();
+        })
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverIndexStretch = d.stretch;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverIndexStretch === d.stretch) {
+                        Global.hoverIndexStretch = null;
+                    }
+                });
+            }, 0);
         })
         .on('mousedown', function () {
             d3.event.stopPropagation();
         }) ;
+
+    foregroundIndexEnterEls.append('div')
+        .attr('class', 'foreground-index-content') ;
 
     foregroundIndexEls.exit().remove();
 
@@ -794,32 +875,46 @@ var drawStretches = function (stretchViews) {
             if (series) {
                 classes.push('series');
             }
+            classes.push(DrawReferences.colorForIndex(d));
             return classes.join(' ');
         })
-        .text(function (d) { return d.text })
         .style('top', function (d) {
             return d.top + 'px';
         }) ;
 
+    foregroundIndexEls.select('.foreground-index-content')
+        .text(function (d) { return d.text }) ;
 
+
+    var targetIndexStretch = Main.targetIndexStretch();
+    var targetIndexView = _.find(foregroundIndexViews, function (indexView) {
+        return indexView.stretch === targetIndexStretch;
+    });
     if (Global.inputForegroundIndexStretch) {
-        var inputView = _.find(foregroundIndexViews, function (indexView) {
-            return indexView.stretch === Global.inputForegroundIndexStretch;
-        });
         var wasInputting = foregroundIndexInputEl.classed('inputting');
         foregroundIndexInputEl
             .classed('inputting', true)
             .style('top', function () {
-                return inputView.top + 'px';
+                return targetIndexView.top + 'px';
             }) ;
-        foregroundIndexInputEl.node().focus();
         if (!wasInputting) {
-            foregroundIndexInputEl.text(inputView.text);
-            DomRange.setCurrentCursorOffset(foregroundIndexInputEl.node(), inputView.text.length);
+            var contentEl = foregroundIndexInputEl.select('.foreground-index-content')
+                .text(targetIndexView.text) ;
+            contentEl.node().focus();
+            DomRange.setCurrentCursorOffset(contentEl.node(), targetIndexView.text.length);
         }
-    } else {
-        foregroundIndexInputEl.classed('inputting', false);
     }
+    foregroundIndexInputEl
+        .attr('class', function () {
+            var classes = ['foreground-index', 'foreground-index-input'];
+            if (Global.inputForegroundIndexStretch) {
+                classes.push('inputting');
+            }
+            if (targetIndexView) {
+                classes.push(DrawReferences.colorForIndex(targetIndexView));
+            }
+            return classes.join(' ');
+        }) ;
 };
 
 })();

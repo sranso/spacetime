@@ -11,12 +11,15 @@ Main.targetStepView = function () {
     return Global.inputStepView || Global.hoverResultStepView || Global.hoverStepView;
 };
 
+Main.targetIndexStretch = function () {
+    return Global.inputForegroundIndexStretch || Global.hoverIndexStretch;
+};
+
 Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
     StepView.computeViews();
     Active.computeMainActive();
-    Selection.computeInfo();
     Draw.draw();
     Webgl.drawMainCanvas();
 };
@@ -25,6 +28,7 @@ Main.maybeUpdate = function (cb) {
     var lastHoverStepView = Global.hoverStepView;
     var lastHoverResultStepView = Global.hoverResultStepView;
     var lastHoverMatchesStepView = Global.hoverMatchesStepView;
+    var lastHoverIndexStretch = Global.hoverIndexStretch;
     var lastInputStepView = Global.inputStepView;
     var lastInputForegroundIndexStretch = Global.inputForegroundIndexStretch;
     var lastConnectStepView = Global.connectStepView;
@@ -33,6 +37,7 @@ Main.maybeUpdate = function (cb) {
         Global.hoverStepView !== lastHoverStepView ||
         Global.hoverResultStepView !== lastHoverResultStepView ||
         Global.hoverMatchesStepView !== lastHoverMatchesStepView ||
+        Global.hoverIndexStretch !== lastHoverIndexStretch ||
         Global.inputStepView !== lastInputStepView ||
         Global.inputForegroundIndexStretch !== lastInputForegroundIndexStretch ||
         Global.connectStepView !== lastConnectStepView

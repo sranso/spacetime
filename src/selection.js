@@ -155,8 +155,4 @@ Selection.stop = function () {
     selectingData.stretches = null;
 };
 
-Selection.computeInfo = function () {
-    Selection.__activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
-};
-
 })();

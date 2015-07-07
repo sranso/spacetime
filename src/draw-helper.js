@@ -66,8 +66,6 @@ DrawHelper.drawEnableDisableOuter = function (stepEls) {
 
     enableDisableOuterEls.exit().remove();
 
-    var targetStepView = Main.targetStepView();
-
     enableDisableOuterEls
         .attr('class', function (d) {
             var color = DrawReferences.colorForEnableOuterConnector(d.stepView, d.enabledBy);
