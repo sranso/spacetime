@@ -10,12 +10,14 @@ var trackForegroundIndices;
 var foregroundIndexInputEl;
 var selectionInfoEl;
 var __stretchViews = [];
+var controlContainer;
 var environmentContainer;
 
 Draw.setup = function () {
     drawOverallSetup();
     drawStepsSetup();
     drawEnvironmentSetup();
+    drawControlSetup();
     drawSelectionInfoSetup();
     drawStretchesSetup();
     drawForegroundIndicesSetup();
@@ -23,6 +25,7 @@ Draw.setup = function () {
 
 Draw.draw = function () {
     drawSteps(Global.stepViews);
+    drawControl();
     drawEnvironment();
     computeStretchPositions(Group.groupsToDraw(Global.groups));
     drawSelectionInfo();
@@ -456,6 +459,170 @@ var drawSteps = function (stepViews) {
                 }
             }
         });
+};
+
+
+///////////////// Control
+
+var drawControlSetup = function () {
+    controlContainer = d3.select('#control');
+};
+
+var playersData = [{
+    time: 33,
+    endTime: 180,
+    playing: true,
+    repeating: true,
+}];
+
+var drawControl = function () {
+
+    var playerEls = controlContainer.selectAll('.player')
+        .data(playersData) ;
+
+    var playerEnterEls = playerEls.enter().append('div')
+        .attr('class', 'player') ;
+
+
+    var goToBeginningEnterEls = playerEnterEls.append('div')
+        .attr('class', 'go-to-beginning player-result')
+        .on('click', function (d) {
+            d.time = 0;
+            Main.update();
+        }) ;
+
+    goToBeginningEnterEls.append('div')
+        .attr('class', 'go-to-beginning-button') ;
+
+    goToBeginningEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    goToBeginningEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    var playPauseEnterEls = playerEnterEls.append('div')
+        .attr('class', 'play-pause player-result')
+        .on('click', function (d) {
+            d.playing = !d.playing;
+            Main.update();
+        }) ;
+
+    playPauseEnterEls.append('div')
+        .attr('class', 'play-pause-button') ;
+
+    playPauseEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    playPauseEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    var repeatEnterEls = playerEnterEls.append('div')
+        .attr('class', 'repeat player-result')
+        .on('click', function (d) {
+            d.repeating = !d.repeating;
+            Main.update();
+        }) ;
+
+    repeatEnterEls.append('div')
+        .attr('class', 'repeat-button') ;
+
+    repeatEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    repeatEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    var currentTimeContainerEnterEls = playerEnterEls.append('div')
+        .attr('class', 'time-info-container current-time-container') ;
+
+    var currentTimeEnterEls = currentTimeContainerEnterEls.append('div')
+        .attr('class', 'time-info current-time player-result') ;
+
+    currentTimeEnterEls.append('div')
+        .attr('class', 'current-time-content time-info-content') ;
+
+    currentTimeEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    currentTimeEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    var playerSliderEnterEls = playerEnterEls.append('div')
+        .attr('class', 'slider') ;
+
+    playerSliderEnterEls.append('div')
+        .attr('class', 'slider-bar') ;
+
+    playerSliderEnterEls.append('div')
+        .attr('class', 'slider-bar-completed') ;
+
+
+    var sliderHandleEnterEls = playerSliderEnterEls.append('div')
+        .attr('class', 'slider-handle player-result') ;
+
+    sliderHandleEnterEls.append('div')
+        .attr('class', 'slider-handle-knob') ;
+
+    sliderHandleEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    sliderHandleEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    var endTimeContainerEnterEls = playerEnterEls.append('div')
+        .attr('class', 'time-info-container end-time-container') ;
+
+    var endTimeEnterEls = endTimeContainerEnterEls.append('div')
+        .attr('class', 'time-info end-time player-result') ;
+
+    endTimeEnterEls.append('div')
+        .attr('class', 'end-time-content time-info-content') ;
+
+    endTimeEnterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    endTimeEnterEls.append('div')
+        .attr('class', 'result-corner-container')
+        .append('div')
+            .attr('class', 'result-corner') ;
+
+
+    playerEls.exit().remove();
+
+    playerEls
+        .attr('class', function (d) {
+            var classes = ['player'];
+            if (d.playing) {
+                classes.push('playing');
+            } else {
+                classes.push('paused');
+            }
+            if (d.repeating) {
+                classes.push('repeating');
+            }
+            return classes.join(' ');
+        }) ;
+
+    playerEls.select('.current-time-content')
+        .text(function (d) { return d.time }) ;
+
+    playerEls.select('.end-time-content')
+        .text(function (d) { return d.endTime }) ;
 };
 
 
