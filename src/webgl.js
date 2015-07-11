@@ -152,7 +152,11 @@ Webgl.drawMainCanvas = function () {
     clear(webgl);
 
     var quads;
-    if (Global.hoverResultStepView && !Global.inputStepView) {
+    if (
+        Global.hoverResultStepView &&
+        !Global.inputStepView &&
+        !Global.hoverResultStepView.player
+    ) {
         var resultStep = Global.hoverResultStepView.steps[Global.hoverResultStepView.steps.length - 1];
         if (Quads.isQuads(resultStep.result)) {
             quads = resultStep.result;

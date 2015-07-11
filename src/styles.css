@@ -358,27 +358,37 @@ h1 {
 
     .step .reference.reference-color-1,
     .result.reference-color-1 .result-corner,
-    .result.reference-color-1 .result-border {
+    .result.reference-color-1 .result-border,
+    .player-result.reference-color-1 .result-corner,
+    .player-result.reference-color-1 .result-border {
       border-color: #00d1e0;
     }
     .step .reference.reference-color-2,
     .result.reference-color-2 .result-corner,
-    .result.reference-color-2 .result-border {
+    .result.reference-color-2 .result-border,
+    .player-result.reference-color-2 .result-corner,
+    .player-result.reference-color-2 .result-border {
       border-color: #22f;
     }
     .step .reference.reference-color-3,
     .result.reference-color-3 .result-corner,
-    .result.reference-color-3 .result-border {
+    .result.reference-color-3 .result-border,
+    .player-result.reference-color-3 .result-corner,
+    .player-result.reference-color-3 .result-border {
       border-color: #282;
     }
     .step .reference.reference-color-4,
     .result.reference-color-4 .result-corner,
-    .result.reference-color-4 .result-border {
+    .result.reference-color-4 .result-border,
+    .player-result.reference-color-4 .result-corner,
+    .player-result.reference-color-4 .result-border {
       border-color: #80f;
     }
     .step .reference.reference-color-5-or-more,
     .result.reference-color-5-or-more .result-corner,
-    .result.reference-color-5-or-more .result-border {
+    .result.reference-color-5-or-more .result-border,
+    .player-result.reference-color-5-or-more .result-corner,
+    .player-result.reference-color-5-or-more .result-border {
       border-color: #ffe81a;
     }
 
@@ -386,7 +396,9 @@ h1 {
     .step.active .result.referenced-by-color .result-corner,
     .step.active .result.referenced-by-color .result-border,
     .result.referenced-by-color .result-corner,
-    .result.referenced-by-color .result-border {
+    .result.referenced-by-color .result-border,
+    .player-result.referenced-by-color .result-corner,
+    .player-result.referenced-by-color .result-border {
       border-color: #f0c;
     }
 
@@ -431,21 +443,6 @@ h1 {
 .step.active .result-corner,
 .step.active .result-border {
   border-color: #ccc;
-}
-
-/* reset result-corner border color */
-.step.active .result-corner,
-.result.reference-color-1 .result-corner,
-.result.reference-color-2 .result-corner,
-.result.reference-color-3 .result-corner,
-.result.reference-color-4 .result-corner,
-.result.reference-color-5-or-more .result-corner,
-.result.referenced-by-color .result-corner,
-.step.active .result.referenced-by-color .result-corner,
-.result.target-color .result-corner,
-.step.active .result.target-color .result-corner {
-  border-left-color: transparent;
-  border-right-color: transparent;
 }
 
 .step.disabled .enable-disable {
@@ -593,7 +590,7 @@ h1 {
   .player .slider {
     float: left;
     height: 40px;
-    width: 140px;
+    width: 140px;        /* update in draw.js */
     position: relative;
     margin-left: 10px;
     margin-right: 10px;
@@ -619,6 +616,7 @@ h1 {
     .player .slider-handle {
       position: absolute;
       width: 20px;
+      margin-left: -10px;
     }
       .player .slider-handle-knob {
         position: absolute;
@@ -674,14 +672,6 @@ h1 {
   .player .repeat .result-border {
     left: 1px;
   }
-
-  .player .player-result:hover .result-border {
-    border-color: #bbb;
-  }
-  .player .player-result:hover .result-corner {
-    border-bottom-color: #bbb;
-  }
-
 
 #environment {
   margin: 20px 0 0 20px;
@@ -806,3 +796,26 @@ h1 {
   .stretch.selection-foreground.referenced-by-color .index-in-series-border {
     stroke: none
   }
+
+
+/* reset result-corner border color */
+.step.active .result-corner,
+.result.reference-color-1 .result-corner,
+.result.reference-color-2 .result-corner,
+.result.reference-color-3 .result-corner,
+.result.reference-color-4 .result-corner,
+.result.reference-color-5-or-more .result-corner,
+.result.referenced-by-color .result-corner,
+.player-result.reference-color-1 .result-corner,
+.player-result.reference-color-2 .result-corner,
+.player-result.reference-color-3 .result-corner,
+.player-result.reference-color-4 .result-corner,
+.player-result.reference-color-5-or-more .result-corner,
+.player-result.referenced-by-color .result-corner,
+.step.active .result.referenced-by-color .result-corner,
+.result.target-color .result-corner,
+.step.active .result.target-color .result-corner {
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+

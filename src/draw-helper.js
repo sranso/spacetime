@@ -47,6 +47,29 @@ DrawHelper.lexStepView = function (stepView) {
     }
 };
 
+DrawHelper.drawResultBorder = function (enterEls) {
+    enterEls.append('div')
+        .attr('class', 'result-border') ;
+
+    var cornerContainerEls = enterEls.append('div')
+        .attr('class', 'result-corner-container')
+
+    cornerContainerEls.append('div')
+        .attr('class', 'result-corner')
+        .on('mousedown', function (d) {
+            if (!Global.inputStepView) {
+                d3.event.stopPropagation();
+            }
+        })
+        .on('click', function (d) {
+            if (!Global.inputStepView) {
+                Global.connectStepView = d;
+                Main.update();
+                d3.event.stopPropagation();
+            }
+        }) ;
+};
+
 DrawHelper.drawEnableDisableOuter = function (stepEls) {
     var containerEls = stepEls.select('.enable-disable-outer-container');
     var enableDisableOuterEls = containerEls.selectAll('.enable-disable-outer')

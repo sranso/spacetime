@@ -76,6 +76,8 @@ Global.stepsHead.next = Global.steps[0];
 Global.stepsTail.previous = Global.steps[0];
 Global.selection = new Selection();
 
+Global.player = Player.create();
+
 Global.mouseX = Step.createForEnvironment();
 Global.mouseX.text = 'mouse x';
 Global.mouseX.result = 0;
@@ -102,5 +104,6 @@ Global.environment = _.map(environment, StepView.create);
 Input.dvorak();
 Draw.setup();
 Main.update();
+Player.step();
 
 })();

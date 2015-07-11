@@ -10,6 +10,7 @@ Global.hoverStepView = null;
 Global.hoverResultStepView = null;
 Global.hoverMatchesStepView = null;
 Global.hoverIndexStretch = null;
+Global.player = null;
 Global.inputStepView = null;
 Global.inputForegroundIndexStretch = null;
 Global.connectStepView = null;

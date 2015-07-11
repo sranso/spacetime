@@ -9,6 +9,7 @@ StepExecution.execute = function () {
     Series.tagStartSeries();
     executeSteps();
     _.each(Global.environment, updateEnvironment);
+    Player.updateAfterExecute();
     var end = +Date.now();
     console.log(end - start);
 };
