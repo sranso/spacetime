@@ -19,6 +19,7 @@ Main.update = function () {
     Step.computeSteps();
     StepExecution.execute();
     StepView.computeViews();
+    MultiStepView.computeViews();
     Active.computeMainActive();
     Draw.draw();
     Webgl.drawMainCanvas();

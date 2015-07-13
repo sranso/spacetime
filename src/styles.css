@@ -2,6 +2,7 @@ body {
   padding: 0;
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  background-color: #566e7b; /* change below and in draw.js */
 }
 
 a {
@@ -37,18 +38,6 @@ h1 {
         height: 20px;
       }
 
-    .selection-name {
-      float: left;
-      font-size: 17px;
-      width: 199px;
-      padding: 3px 2px 2px 2px;
-      margin-left: 10px;
-      border-width: 0 0 1px 0;
-      border-color: #ccc;
-      border-style: dotted;
-      background-color: transparent;
-    }
-
 
 #track {
   float: left;
@@ -67,7 +56,6 @@ h1 {
   position: relative;
   z-index: 2;
   width: 200px;
-  height: 10000px;
   margin-right: -70px;
   pointer-events: none;
 }
@@ -90,10 +78,10 @@ h1 {
 }
 
 #canvas {
-  border: solid 7px #ddd;
+  background-color: white;
   width: 640px;  /* update below and in global.js too */
   height: 400px;  /* update below and in global.js too */
-  margin: 25px 10px 20px 10px;
+  margin: 25px 10px 25px 17px;
 }
 /* update below in .result-canvas if the aspect changes */
 #canvas canvas {
@@ -108,23 +96,57 @@ h1 {
 .step {
   margin: 0;
   padding-left: 20px;
-}
-.step-box {
-  border: solid 1px #ddd;
-  border-width: 0 1px 1px 0;
-  background-color: #fff;
-  width: 425px;
   position: relative;
 }
-.step:first-child .step-box {
-  border-top-width: 1px;
+.selection-area-background {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: 27px;
+  width: 40px;
+  background-color: #c6d1d7;
+}
+
+
+.multi-steps-container {
+  border-radius: 5px;
+  position: relative;
+}
+  .multi-steps-container .selection-area-background {
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+  .multi-steps-container .multi-step {
+    position: relative;
+    min-height: 18px;
+  }
+    .multi-step .group-stretch {
+      height: 7px;
+      position: absolute;
+      top: 8px;
+      border-radius: 2px;
+      left: -7px;
+      width: 67px;
+    }
+
+  /* expression related stuff below, with .step */
+
+
+.step-box {
+  background-color: white;
+  width: 425px;
+  position: relative;
 }
   .step .matches-indicator-container {
     position: absolute;
     left: -20px;
     top: 50%;
     margin-top: -6px;
-    background-color: white;
+    background-color: #566e7b;
     width: 12px;
     height: 12px;
   }
@@ -132,43 +154,39 @@ h1 {
     position: absolute;
     left: 2px;
     top: 2px;
-    border: solid 1px #ddd;
+    border: solid 1px #999;
     border-radius: 5px;
     width: 5px;
     height: 5px;
     display: none;
-    background-color: white;
   }
   .step.matches .matches-indicator {
     display: block;
   }
   .step.target .matches-indicator {
-    background-color: #ddd;
+    background-color: #999;
   }
   .step.matches-hover .matches-indicator {
-    background-color: #333;
-    border-color: #333;
+    background-color: white;
+    border-color: white;
   }
 
   .step .enable-disable {
     position: absolute;
-    top: -1px;
-    bottom: -1px;
+    top: 0;
+    bottom: 0;
     left: -4px;
     width: 9px;
-    border: solid 1px #ddd;
     border-top-left-radius: 5px 15px;
     border-bottom-left-radius: 5px 15px;
-    border-right: dotted 1px #ddd;
-    background-color: #fff;
+    border-right: dotted 1px #ccc;
+    background-color: white;
     z-index: 3;
     cursor: pointer;
   }
   .step .enable-disable.enabled-by-connected {
-    border-color: #ddd;
-    border-width: 2px;
+    border: solid 2px #ccc;
     left: -5px;  /* 1 more left */
-    border-right-style: solid;
     z-index: 4;
   }
 
@@ -181,7 +199,7 @@ h1 {
         position: absolute;
         right: -8px;
         border-radius: 2px;
-        background-color: #ddd;
+        background-color: #ccc;
         width: 10px;
         height: 3px;
       }
@@ -203,7 +221,7 @@ h1 {
   }
 
   .step.hover .selection-edge {
-    background-color: #ddd;
+    background-color: #ccc;
   }
 
   .step .expression-container {
@@ -214,7 +232,11 @@ h1 {
     position: relative;
     z-index: 4;
   }
-    .step .expression {
+  .multi-step .expression-container {
+    margin-left: 60px;
+    width: 350px;
+  }
+    .expression {
       font-size: 14px;
       float: left;
       padding: 7px;
@@ -223,11 +245,21 @@ h1 {
       border-width: 0;
       background-color: transparent;
 
-      white-space: pre-wrap;
       line-height: 24px;
+    }
+    .step .expression {
+      white-space: pre-wrap;
     }
     .step.canvas-result .expression {
       min-height: 32px;  /* also update .result-canvas canvas below */
+    }
+    .multi-step .expression {
+      color: white;
+      font-size: 17px;
+      padding: 1px 8px 1px 8px;
+    }
+    .multi-step.active .expression {
+      color: #d6ebe4;
     }
 
       .expression .reference-placeholder {
@@ -237,19 +269,19 @@ h1 {
         height: 1px;
       }
 
-  .step .reference {
+  .reference {
     position: absolute;
     text-align: center;
     padding-top: 1px;
     padding-bottom: 1px;
     margin-top: -5px;
     margin-left: -1px;
-    border: solid 2px #ddd;
+    border: solid 2px #ccc;
     border-radius: 6px;
     height: 17px;
   }
   .step.active .reference {
-    border-color: #ccc;
+    border-color: #bbb;
   }
     .reference-content-text {
       display: none;
@@ -268,7 +300,7 @@ h1 {
     .reference-content-canvas canvas {
       width: 24px;
       height: 15px; /* also update .expression above */
-      border: dotted 1px #ddd;
+      border: dotted 1px #ccc;
     }
 
   .step .result {
@@ -277,7 +309,7 @@ h1 {
     bottom: 0;
     top: 0;
     z-index: 2;
-    width: 135px;
+    width: 135px; /* update below */
     background-color: white;
   }
     .result-content-text {
@@ -311,7 +343,7 @@ h1 {
     .result-content-canvas canvas {
       width: 72px;
       height: 45px; /* also update .expression above */
-      border: dotted 1px #ddd;
+      border: dotted 1px #ccc;
       border-width: 0 1px 0 1px;
     }
 
@@ -323,7 +355,7 @@ h1 {
       border-style: solid;
       border-width: 0 0 2px 2px;
       height: 4px;
-      border-color: #ddd;
+      border-color: #566e7b;
     }
 
     .result-corner-container {
@@ -343,13 +375,13 @@ h1 {
       height: 0;
       border-left: 15px solid transparent;
       border-right: 15px solid transparent;
-      border-bottom: 12px solid #ddd;
+      border-bottom: 12px solid #566e7b;
       border-top-width: 0px;
       cursor: pointer;
     }
 
     .step .reference.reference-inserting {
-      background-color: #ddd;
+      background-color: #ccc;
     }
 
     .step .reference.reference-absolute {
@@ -437,16 +469,11 @@ h1 {
 .step.active .step-box,
 .step.active .result,
 .step.active .enable-disable {
-  background-color: #eef;
-}
-
-.step.active .result-corner,
-.step.active .result-border {
-  border-color: #ccc;
+  background-color: #d6ebe4;  /* change above too */
 }
 
 .step.disabled .enable-disable {
-  background-color: #ddd;
+  background-color: #ccc;
 }
 .step.force-enabled .enable-disable {
   background-color: #b4f4b6;
@@ -455,8 +482,7 @@ h1 {
   background-color: #f5dcbc;
 }
 
-.step.disabled .expression-container,
-.step.disabled .result-text {
+.step.disabled .expression-container {
   color: #ccc;
 }
 
@@ -468,7 +494,7 @@ h1 {
 .player {
   width: 310px;
   height: 40px;
-  background-color: #eee;
+  background-color: #e4e4e4;
   padding: 3px 5px;
   border-radius: 16px;
 }
@@ -600,7 +626,7 @@ h1 {
       top: 15px;
       left: 0;
       right: 0;
-      background-color: #ddd;
+      background-color: #ccc;
       height: 10px;
       cursor: pointer;
     }
@@ -624,7 +650,7 @@ h1 {
         width: 20px;
         height: 20px;
         border-radius: 5px;
-        background-color: #999;
+        background-color: #aaa;
         cursor: pointer;
       }
       .player .slider-handle-knob:hover {
@@ -679,7 +705,6 @@ h1 {
 
 .environment {
   float: left;
-  border: solid 1px #ddd;
   margin-right: 20px;
   margin-bottom: 20px;
   min-width: 100px;
@@ -689,8 +714,9 @@ h1 {
     position: relative;
     padding: 4px 7px;
     height: 17px;
-    border-bottom: dotted 1px #ddd;
     z-index: 3;
+    text-align: center;
+    color: white;
   }
 
   .environment .result {
@@ -703,13 +729,13 @@ h1 {
   }
 
   .environment .result-border {
-    left: -1px;
+    left: -2px;
   }
 
 #add-environment {
   float: left;
   text-align: center;
-  border: solid 1px #bbb;
+  border: solid 1px #aaa;
   width: 20px;
   height: 20px;
   border-radius: 10px;
@@ -726,7 +752,6 @@ h1 {
   .stretch .index-in-series-border {
     stroke-width: 2px;
     stroke: none;
-    fill: none;
   }
 
   .stretch .index-in-series {
@@ -740,28 +765,36 @@ h1 {
   }
 
   .stretch.selected-area .background {
-    stroke: #bbb;
-  }
-  .stretch.selection-selected .background {
-    stroke: #ddd;
-  }
-  .stretch.selected-area.selection-focus .background {
     stroke: #555;
   }
-  .stretch.selection-foreground .index-in-series {
+  .stretch.selection-selected .background {
+    stroke: #ccc;
+    stroke-width: 1px;
+  }
+  .stretch.selection-foreground .index-in-series,
+  .stretch.selection-foreground .index-in-series-border,
+  .stretch.selection-selected .index-in-series,
+  .stretch.selection-selected .index-in-series-border {
     visibility: hidden;
   }
-  .stretch.selection-selected .index-in-series {
-    visibility: hidden;
+  .stretch.selection-background.series .index-in-series-border {
+    stroke: #555;
+    stroke-width: 1px;
+  }
+  .stretch.selection-background.series.referenced-by-color .index-in-series-border {
+    stroke: #f0c;
+    stroke-width: 2px;
   }
 
 .foreground-index {
   position: absolute;
   display: none;
-  left: -10px;
-  margin-top: -10px;
-  min-width: 28px;
+  left: -16px;
+  margin-top: -12px;
+  min-width: 37px;
   text-align: center;
+  color: white;
+  pointer-events: none;
 }
 .foreground-index.series {
   display: block;
@@ -775,15 +808,18 @@ h1 {
     border: solid 2px transparent;
     border-radius: 6px;
     padding: 1px 3px;
+    pointer-events: auto;
   }
   .foreground-index-input {
-    background-color: white;
     z-index: 3;
+  }
+  .foreground-index.under-input {
+    display: none;
   }
 
 
   .foreground-index.inputting .foreground-index-content {
-    border-color: #ddd;
+    border-color: #ccc;
   }
   .foreground-index.referenced-by-color .foreground-index-content,
   .foreground-index.inputting.referenced-by-color .foreground-index-content {

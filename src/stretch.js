@@ -24,6 +24,11 @@ Stretch.isInSeries = function (stretch) {
     return stretch.series;
 };
 
+// debug only
+Stretch.allGroupStretches = function () {
+    return _.flatten(_.pluck(Global.groups, 'stretches'));
+};
+
 Stretch.setSteps = function (stretch, steps) {
     _.each(stretch.steps, function (oldStep) {
         oldStep.stretches = _.without(oldStep.stretches, stretch);

@@ -37,15 +37,38 @@ Selection.backgroundStretches = function () {
 };
 
 Selection.toggleCollapsed = function () {
+    makeMultiStep(true);
+};
+
+Selection.toggleMultiStep = function () {
     var group = Global.selection.foreground.group;
     if (!group) {
         return;
     }
-    var activeSteps = _.flatten(_.pluck(Global.active, 'steps'));
-    var focusSteps = Global.selection.foreground.focus.steps;
-    var intersectSteps = _.intersection(activeSteps, focusSteps);
-    var multiStep = MultiStep.findFromSteps(intersectSteps);
+    var multiStep = MultiStep.findFromSteps(Global.active.focus.steps);
+    if (multiStep) {
+        _.each(Global.active, function (stretch) {
+            var multiStep = MultiStep.findFromSteps(stretch.steps);
+            if (multiStep) {
+                Stretch.setSteps(multiStep, []);
+            }
+        });
+        Main.update();
+    } else {
+        makeMultiStep(false);
+    }
+};
+
+var makeMultiStep = function (toggleCollapsed) {
+    var group = Global.selection.foreground.group;
+    if (!group) {
+        return;
+    }
+    var multiStep = MultiStep.findFromSteps(Global.active.focus.steps);
     var collapsed = multiStep && multiStep.collapsed;
+    if (toggleCollapsed) {
+        collapsed = !collapsed;
+    }
 
     var matchesId = Main.newId();
     _.each(Global.active, function (stretch) {
@@ -53,10 +76,11 @@ Selection.toggleCollapsed = function () {
         if (!multiStep) {
             multiStep = MultiStep.create();
             multiStep.matchesId = matchesId;
+            multiStep.groupStretch = stretch;
             Stretch.setSteps(multiStep, stretch.steps);
             group.remember = true;
         }
-        multiStep.collapsed = !collapsed;
+        multiStep.collapsed = collapsed;
     });
     Main.update();
 };

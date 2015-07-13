@@ -36,7 +36,7 @@ Manipulation.copyStretch = function (original) {
     var seriesCloneMap = {};
     _.each(notCoveringSeries, function (originalSeries) {
         var series = Series.create();
-        Global.__series.push(series);
+        Global.newSeries.push(series);
         seriesCloneMap[originalSeries.id] = series;
     });
 
@@ -61,9 +61,20 @@ Manipulation.copyStretch = function (original) {
             stretch.matchesId = originalStretch.matchesId;
             stretch.text = originalStretch.text;
             stretch.collapsed = originalStretch.collapsed;
+
+            // fixup below
+            stretch.groupStretch = originalStretch.groupStretch;
             cloneMap[originalStretch.id] = stretch;
         }
     });
+    // fixup groupStretch
+    _.each(cloneMap, function (stretch) {
+        if (MultiStep.isMultiStep(stretch)) {
+            var groupStretch = stretch.groupStretch;
+            stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
+        }
+    });
+
     var copy = cloneMap[original.id];
 
     ///// repeat steps
@@ -148,7 +159,7 @@ Manipulation.copyStretch = function (original) {
     var series = original.series;
     if (!original.series) {
         series = copy.series = original.series = Series.create();
-        Global.__series.push(series);
+        Global.newSeries.push(series);
         series.stretches = [original, copy];
     }
 
@@ -275,7 +286,8 @@ Manipulation.deleteStretch = function (stretch) {
     var fixupSeries = _.uniq(_.filter(_.pluck(removeStretches, 'series')));
     _.each(fixupSeries, function (series) {
         if (series.stretches.length === 0) {
-            Global.__series = _.without(Global.__series, series);
+            Global.series = _.without(Global.series, series);
+            Global.newSeries = _.without(Global.newSeries, series);
         } else if (series.stretches.length === 1 && !series.targetLengthBy) {
             series.stretches[0].series = null;
         }

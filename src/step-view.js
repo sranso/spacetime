@@ -9,6 +9,10 @@ StepView.create = function (step) {
         __el__: null,
         next: null,
         previous: null,
+        startMultiSteps: [],
+        endMultiSteps: [],
+        startSeries: false,
+        endSeries: false,
     };
 
     // TODO: remove this.
@@ -56,6 +60,30 @@ StepView.computeViews = function () {
     }
 
     Step.linkSteps(Global.stepViews);
+    computeSeries(Global.stepViews);
+};
+
+var computeSeries = function (stepViews) {
+    _.each(stepViews, function (stepView) {
+        var startStep = stepView.steps[0];
+        var endStep = stepView.steps[stepView.steps.length - 1];
+        stepView.startSeries = _.some(startStep.stretches, function (stretch) {
+            return (
+                Stretch.isGroupStretch(stretch) &&
+                stretch.steps[0] === startStep &&
+                stretch.series &&
+                _.contains(stretch.steps, endStep)
+            );
+        });
+        stepView.endSeries = _.some(endStep.stretches, function (stretch) {
+            return (
+                Stretch.isGroupStretch(stretch) &&
+                stretch.steps[stretch.steps.length - 1] === endStep &&
+                stretch.series &&
+                _.contains(stretch.steps, startStep)
+            );
+        });
+    });
 };
 
 })();

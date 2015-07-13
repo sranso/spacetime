@@ -13,6 +13,9 @@ var __stretchViews = [];
 var controlContainer;
 var environmentContainer;
 
+var multiStepTopLength = 22;
+var multiStepBottomLength = 4;
+
 Draw.setup = function () {
     drawOverallSetup();
     drawStepsSetup();
@@ -34,11 +37,36 @@ Draw.draw = function () {
 };
 
 var verticallyPositionStretchView = function (stretchView) {
-    var first = stretchView.steps[0];
-    var last = stretchView.steps[stretchView.steps.length - 1];
-    var firstTop = first.step.__el__.offsetTop;
-    var lastTop = last.step.__el__.offsetTop;
-    var lastHeight = last.step.__el__.offsetHeight;
+    var firstStepView = stretchView.steps[0];
+    var lastStepView = stretchView.steps[stretchView.steps.length - 1];
+    var firstTop = firstStepView.step.__el__.offsetTop;
+    var lastTop = lastStepView.step.__el__.offsetTop;
+    var lastHeight = lastStepView.step.__el__.offsetHeight;
+
+    var steps = stretchView.stretch.steps;
+    var startStep = steps[0];
+    var endStep = steps[steps.length - 1];
+
+    var startMultiSteps = firstStepView.step.startMultiSteps;
+    var numLargerMultiSteps = _.findIndex(startMultiSteps, function (multiStepView) {
+        var steps = multiStepView.step.steps;
+        return steps[steps.length - 1].__index <= endStep.__index;
+    });
+    if (numLargerMultiSteps === -1) {
+        numLargerMultiSteps = startMultiSteps.length;
+    }
+    firstTop += numLargerMultiSteps * multiStepTopLength;
+
+    var endMultiSteps = lastStepView.step.endMultiSteps;
+    numLargerMultiSteps = _.findIndex(endMultiSteps, function (multiStepView) {
+        var steps = multiStepView.step.steps;
+        return steps[0].__index >= startStep.__index;
+    });
+    if (numLargerMultiSteps === -1) {
+        numLargerMultiSteps = endMultiSteps.length;
+    }
+    lastHeight -= numLargerMultiSteps * multiStepBottomLength;
+
     stretchView.y = firstTop;
     stretchView.h = lastTop + lastHeight - firstTop;
 };
@@ -96,6 +124,9 @@ var drawOverallSetup = function() {
     trackForegroundIndices = d3.select('div#track-foreground-indices');
     Draw.trackHtml = d3.select('div#track-html');
 
+    Draw.trackHtml.append('div')
+        .attr('class', 'selection-area-background') ;
+
     d3.select(document)
         .on('keydown', function () { Input.inputEvent(Input.keyForEvent(), 'down') })
         .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
@@ -129,7 +160,7 @@ var drawOverallSetup = function() {
         }) ;
 
     d3.select('#add-environment')
-        .on('mousedown', function () {
+        .on('click', function () {
             var step = Step.createForEnvironment();
             var stepView = StepView.create(step);
             Global.environment.push(stepView);
@@ -189,6 +220,8 @@ var drawSteps = function (stepViews) {
                 });
             }, 0);
         }) ;
+
+    drawMultiStepsSetup(stepEnterEls);
 
     var stepBoxEnterEls = stepEnterEls.append('div')
         .attr('class', 'step-box') ;
@@ -371,7 +404,25 @@ var drawSteps = function (stepViews) {
         })
         .style('height', function (d) { return (d.h - 1) + 'px' })
         .style('top', function (d) { return d.y + 'px' })
-        .style('left', function (d) { return d.x + 'px' }) ;
+        .style('left', function (d) { return d.x + 'px' })
+
+    stepEls.select('.step-box')
+        .style('border-top-width', function (d) {
+            if (!d.previous) {
+                return '1px';
+            }
+
+            if (
+                d.startMultiSteps.length ||
+                d.previous.endMultiSteps.length
+            ) {
+                return '1px';
+            } else {
+                return '0';
+            }
+        }) ;
+
+    drawMultiSteps(stepEls);
 
     stepEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
@@ -440,6 +491,106 @@ var drawSteps = function (stepViews) {
                 }
             }
         });
+};
+
+
+/////////////// multiSteps
+
+var drawMultiStepsSetup = function (stepEnterEls) {
+    var multiStepsContainer = stepEnterEls.append('div')
+        .attr('class', 'multi-steps-container') ;
+
+    multiStepsContainer.append('div')
+        .attr('class', 'selection-area-background') ;
+};
+
+var drawMultiSteps = function (stepEls) {
+    var multiStepsContainer = stepEls.select('.multi-steps-container')
+        .style('height', function (d) {
+            if (d.startMultiSteps.length) {
+                return null;
+            } else if (d.previous && d.previous.endMultiSteps.length) {
+                return '5px';
+            } else {
+                return '1px';
+            }
+        }) ;
+
+    var multiStepEls = multiStepsContainer.selectAll('.multi-step')
+        .data(function (d) { return d.startMultiSteps }) ;
+
+    var multiStepEnterEls = multiStepEls.enter().append('div')
+        .attr('class', 'multi-step') ;
+
+    multiStepEnterEls.append('div')
+        .attr('class', 'group-stretch')
+        .on('mousedown', function (d) {
+            var stretch = d.step.groupStretch;
+            var kind = Selection.buttonSelectionKind();
+            Global.selection[kind].focus = stretch;
+            Global.selection[kind].group = stretch.group;
+            Global.connectStepView = null;
+            Main.update();
+            d3.event.stopPropagation();
+        }) ;
+
+    var expressionContainerEnterEls = multiStepEnterEls.append('div')
+        .attr('class', 'expression-container') ;
+
+    expressionContainerEnterEls.append('div')
+        .attr('class', 'expression')
+        .attr('contenteditable', true)
+        .on('focus', function (d) {
+            Main.maybeUpdate(function () { Input.startInput(d) });
+        })
+        .on('blur', function (d) {
+            Main.maybeUpdate(function () { Global.inputStepView = null });
+        })
+        .on('input', function (d) {
+            Input.startInput(d);
+            Step.updateText(this);
+        })
+        .on('mousedown', function (d) {
+            Main.maybeUpdate(function () {
+                Input.startInput(d);
+                Global.inputForegroundIndexStretch = null;
+                Global.connectStepView = null;
+            });
+            d3.event.stopPropagation();
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keydown', function () {
+            d3.event.stopPropagation();
+        })
+        .on('keyup', function () {
+            d3.event.stopPropagation();
+        }) ;
+
+
+    multiStepEls.exit().remove();
+
+    multiStepEls.each(function (d) { d.__el__ = this });
+
+
+    multiStepEls
+        .attr('class', function (d) {
+            var classes = ['multi-step'];
+            if (!_.difference(d.steps, Global.__activeSteps).length) {
+                classes.push('active');
+            }
+            return classes.join(' ');
+        }) ;
+
+    multiStepEls.select('.group-stretch')
+        .style('background-color', function (d) {
+            var c = d.step.groupStretch.group.color;
+            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
+        }) ;
+
+    multiStepEls.select('.multi-step-expression')
+        .text(function (d) { return d.step.text }) ;
 };
 
 
@@ -799,6 +950,9 @@ var drawStretchesSetup = function () {
 };
 
 var drawStretches = function (stretchViews) {
+    trackSvg
+        .style('height', Draw.trackHtml.node().offsetHeight) ;
+
     var stretchEls = trackSvg.selectAll('g.stretch')
         .data(stretchViews) ;
 
@@ -856,6 +1010,9 @@ var drawStretches = function (stretchViews) {
                     classes.push('selection-focus');
                 }
             }
+            if (d.stretch.series) {
+                classes.push('series');
+            }
             if (d.selectedArea) {
                 classes.push('selected-area');
             }
@@ -866,25 +1023,27 @@ var drawStretches = function (stretchViews) {
             return 'translate(' + d.x + ',' + d.y + ')';
         }) ;
 
+    var fill = function (d, i) {
+        if (d.kind === 'selected') {
+            return '#566e7b';
+        }
+        if (d.stretch.group.remember) {
+            var c = d.stretch.group.color;
+        } else {
+            var c = [0, 0, 78];
+        }
+        var light = c[2];
+        if (d.kind === 'foreground' &&
+            d.stretch === Global.selection.foreground.focus) {
+            light -= 20;
+        }
+        return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
+    };
+
     stretchEls.select('rect.background')
         .attr('width', function (d) { return d.w - 2 })
         .attr('height', function (d) { return d.h - 4 })
-        .style('fill', function (d, i) {
-            if (d.kind === 'selected') {
-                return 'white';
-            }
-            if (d.stretch.group.remember) {
-                var c = d.stretch.group.color;
-            } else {
-                var c = [0, 0, 78];
-            }
-            var light = c[2];
-            if (d.kind === 'foreground' &&
-                d.stretch === Global.selection.foreground.focus) {
-                light -= 20;
-            }
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
-        }) ;
+        .style('fill', fill) ;
 
     var widthOffset = function (d) {
         var series = d.stretch.series;
@@ -892,16 +1051,21 @@ var drawStretches = function (stretchViews) {
             return 0;
         }
         var text = _.indexOf(series.stretches, d.stretch) + 1;
-        return ('' + text).length * 4;
+        var offset = ('' + text).length * 6;
+        if (DrawReferences.colorForIndex(d)) {
+            offset += 2;
+        }
+        return offset;
     };
 
     stretchEls.select('rect.index-in-series-border')
-        .attr('y', function (d) { return d.h / 2 - 9 })
+        .attr('fill', fill)
+        .attr('y', function (d) { return d.h / 2 - 7 })
         .attr('x', function (d) {
-            return -1 - widthOffset(d) / 2;
+            return 2 -widthOffset(d) / 2;
         })
         .attr('width', function (d) {
-            var w = d.kind === 'background' ? 11 : 9;
+            var w = d.kind === 'background' ? 6 : 4;
             return w + widthOffset(d);
         })
         .attr('height', 15) ;
@@ -910,7 +1074,7 @@ var drawStretches = function (stretchViews) {
         .attr('x', function (d) {
             return d.kind === 'background' ? 5 : 4;
         })
-        .attr('y', function (d) { return d.h / 2 + 2 })
+        .attr('y', function (d) { return d.h / 2 + 4 })
         .text(function (d) {
             var series = d.stretch.series;
             if (series) {
@@ -1010,12 +1174,23 @@ var drawForegroundIndices = function (stretchViews) {
 
     foregroundIndexEls.each(function (d) { d.__el__ = this });
 
+    var targetIndexStretch = Main.targetIndexStretch();
+    var targetIndexView = _.find(foregroundIndexViews, function (indexView) {
+        return indexView.stretch === targetIndexStretch;
+    });
+
     foregroundIndexEls
         .attr('class', function (d) {
             var classes = ['foreground-index', 'static'];
             var series = d.stretch.series;
             if (series) {
                 classes.push('series');
+            }
+            if (
+                d === targetIndexView &&
+                Global.inputForegroundIndexStretch
+            ) {
+                classes.push('under-input');
             }
             classes.push(DrawReferences.colorForIndex(d));
             return classes.join(' ');
@@ -1027,11 +1202,6 @@ var drawForegroundIndices = function (stretchViews) {
     foregroundIndexEls.select('.foreground-index-content')
         .text(function (d) { return d.text }) ;
 
-
-    var targetIndexStretch = Main.targetIndexStretch();
-    var targetIndexView = _.find(foregroundIndexViews, function (indexView) {
-        return indexView.stretch === targetIndexStretch;
-    });
     if (Global.inputForegroundIndexStretch) {
         var wasInputting = foregroundIndexInputEl.classed('inputting');
         foregroundIndexInputEl

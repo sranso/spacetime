@@ -82,6 +82,8 @@ Input.keypressEvent = function (keyCode, key) {
         Manipulation.selectActiveStretches();
     } else if (key === 'r') {
         Group.toggleRemember();
+    } else if (key === 's') {
+        Selection.toggleMultiStep();
     } else if (key === 'x') {
         Manipulation.computeGroupIntersection();
     } else {

@@ -9,6 +9,8 @@ MultiStep.create = function () {
         text: '',
         steps: [],
         collapsed: false,
+        groupStretch: null,
+        references: [],
     };
     multiStep.stepView = StepView.create(multiStep);
     return multiStep;
@@ -20,6 +22,12 @@ MultiStep.isMultiStep = function (step) {
 
 MultiStep.isExpression = function (multiStep) {
     return multiStep.text === null;
+};
+
+// debug only
+MultiStep.allMultiSteps = function () {
+    var stepStretches = _.flatten(_.pluck(Global.steps, 'stretches'));
+    return _.uniq(_.filter(stepStretches, MultiStep.isMultiStep));
 };
 
 MultiStep.findFromSteps = function (steps) {
@@ -50,6 +58,32 @@ MultiStep.forceEnabled = function (multiStep) {
 
 MultiStep.enabledBy = function (multiStep) {
     return _.intersection.apply(_, _.pluck(multiStep.steps, 'enabledBy'));
+};
+
+MultiStep.insertOrUpdateReference = function (reference) {
+    if (!Global.inputStepView) {
+        return false;
+    }
+
+    var inputStep = Global.inputStepView.step;
+    if (!MultiStep.isMultiStep(inputStep)) {
+        return false;
+    }
+
+    if (!_.contains(inputStep.steps, reference.sink)) {
+        return false;
+    }
+
+    d3.event.stopPropagation();
+
+    _.each(Global.active, function (stretch) {
+        var multiStep = MultiStep.findFromSteps(stretch.steps);
+        if (multiStep) {
+            multiStep.text += reference.source.result;
+        }
+    });
+    Main.update();
+    return true;
 };
 
 })();

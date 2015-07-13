@@ -93,7 +93,7 @@ Series.setActiveSeriesTargetLengthBy = function (resultStepView) {
     var series = stretch.series;
     if (!series) {
         series = Series.create();
-        Global.__series.push(series);
+        Global.newSeries.push(series);
         series.stretches = [stretch];
         stretch.series = series;
     }
@@ -117,8 +117,8 @@ Series.clearStartSeries = function () {
     });
 };
 
-Series.tagStartSeries = function () {
-    var dynamicSeries = _.filter(Global.__series, 'targetLengthBy');
+Series.tagStartSeries = function (series) {
+    var dynamicSeries = _.filter(series, 'targetLengthBy');
     _.each(dynamicSeries, function (series) {
         var step = series.stretches[0].steps[0];
 
@@ -138,11 +138,11 @@ Series.tagStartSeries = function () {
 };
 
 Series.adjustDynamicSeriesFor = function (step) {
-    var oldSeries = Global.__series;
-    Global.__series = [];
+    Global.newSeries = [];
     _.each(step.__startSeries, adjustDynamicSeries);
-    Series.tagStartSeries();  // tag start series for new series/steps
-    Global.__series = oldSeries.concat(Global.__series);
+    Series.tagStartSeries(Global.newSeries);
+    Global.series = Global.series.concat(Global.newSeries);
+    Global.newSeries = Global.series;
 };
 
 var adjustDynamicSeries = function (series) {

@@ -280,8 +280,14 @@ DrawReferences.draw = function (expressionContainerEls) {
 
         var referenceEnterEls = referenceEls.enter().append('div')
             .attr('class', 'reference')
+            .on('mousedown', function (d, i) {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+            })
             .on('click', function (d, i) {
-                selectReference(container, i);
+                if (!MultiStep.insertOrUpdateReference(d)) {
+                    selectReference(container, i);
+                }
             }) ;
 
         referenceEnterEls.append('div')
