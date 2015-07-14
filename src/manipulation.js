@@ -182,6 +182,7 @@ Manipulation.insertNewStep = function () {
     });
 
     Main.update();
+    window.getSelection().removeAllRanges();
     d3.select(Global.inputStepView.__el__).select('.expression').node().focus();
 };
 

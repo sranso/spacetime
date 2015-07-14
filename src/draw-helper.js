@@ -35,18 +35,6 @@ DrawHelper.clipNumber = function (number, length) {
     return number.toFixed(fractionDigits);
 };
 
-DrawHelper.lexStepView = function (stepView) {
-    if (MultiStep.isMultiStep(stepView.step)) {
-        // TODO: make multi-steps lex-able
-        return [{
-            type: 'text',
-            text: stepView.step.text,
-        }];
-    } else {
-        return StepExecution.lex(stepView.step);
-    }
-};
-
 DrawHelper.drawResultBorder = function (enterEls) {
     enterEls.append('div')
         .attr('class', 'result-border') ;

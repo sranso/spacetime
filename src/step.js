@@ -86,34 +86,42 @@ Step.insertOrUpdateReference = function (resultStepView) {
         return;
     }
 
-    // TODO: get this working for multi-step
-    if (MultiStep.isMultiStep(Global.inputStepView.step)) {
-        return;
-    }
     var resultStep = resultStepView.steps[resultStepView.steps.length - 1];
     var stepView = Global.inputStepView;
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
-    var referenceAway = stepView.step.__index - resultStep.__index;
+    var referenceAway = stepView.steps[0].__index - resultStep.__index;
     if (referenceAway <= 0) {
         return;
     }
 
+    var isMultiStep = MultiStep.isMultiStep(stepView.step);
+    if (isMultiStep && !Global.inputReferenceIs.length) {
+        return;
+    }
     if (Global.inputReferenceIs.length) {
         var inputReferences = Global.inputStepView.step.references;
         var absolute = inputReferences[Global.inputReferenceIs[0]].absolute;
         if (resultStep.__index === -1) {
             absolute = true;
         }
+
         _.each(Global.active, function (stretch) {
-            var sink = stretch.steps[0];
+            if (isMultiStep) {
+                var step = MultiStep.findFromSteps(stretch.steps);
+                if (!step) {
+                    return;
+                }
+            }
             if (absolute) {
                 var source = resultStep;
+            } else if (isMultiStep) {
+                var source = Global.steps[step.steps[0].__index - referenceAway];
             } else {
-                var source = Global.steps[sink.__index - referenceAway];
+                var source = Global.steps[step.__index - referenceAway];
             }
             _.each(Global.inputReferenceIs, function (referenceI) {
-                var reference = sink.references[referenceI];
+                var reference = step.references[referenceI];
                 reference.absolute = absolute;
                 Reference.setSource(reference, source);
             });
@@ -152,36 +160,37 @@ Step.insertOrUpdateReference = function (resultStepView) {
 };
 
 Step.updateText = function (expressionEl) {
+    var referenceClasses = [];
+    d3.select(expressionEl).selectAll('.reference-placeholder').each(function () {
+        referenceClasses = referenceClasses.concat(_.toArray(this.classList));
+    });
+    referenceClasses = _.without(referenceClasses, 'reference-placeholder');
+    var referenceIs = _.map(referenceClasses, function (ref) {
+        return +ref.slice('reference-'.length);
+    });
     if (MultiStep.isMultiStep(Global.inputStepView.step)) {
         _.each(Global.active, function (stretch) {
-            var multiStep = MultiStep.findFromSteps(stretch.steps);
-            if (multiStep) {
-                multiStep.text = expressionEl.textContent; // TODO: multi-step references
+            var step = MultiStep.findFromSteps(stretch.steps);
+            if (!step) {
+                return;
             }
+            step.text = expressionEl.textContent;
+            step.references = _.map(referenceIs, function (referenceI) {
+                return step.references[referenceI];
+            });
         });
     } else {
-        var referenceClasses = [];
-        d3.select(expressionEl).selectAll('.reference-placeholder').each(function () {
-            referenceClasses = referenceClasses.concat(_.toArray(this.classList));
-        });
-        referenceClasses = _.without(referenceClasses, 'reference-placeholder');
-        var referenceIs = _.map(referenceClasses, function (ref) {
-            return +ref.slice('reference-'.length);
-        });
         _.each(Global.active, function (stretch) {
-            _updateText(stretch.steps[0], expressionEl, referenceIs);
+            var step = stretch.steps[0];
+            step.text = expressionEl.textContent;
+            var references = _.map(referenceIs, function (referenceI) {
+                return step.references[referenceI];
+            });
+            Step.setReferences(step, references);
         });
     }
     Main.update();
 };
-
-var _updateText = function (step, expressionEl, referenceIs) {
-    step.text = expressionEl.textContent;
-    var references = _.map(referenceIs, function (referenceI) {
-        return step.references[referenceI];
-    });
-    Step.setReferences(step, references);
-}
 
 Step.clickEnableRegion = function (stepView) {
     var active = Active.computeActive([], Selection.backgroundStretches(), [stepView]);

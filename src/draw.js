@@ -55,7 +55,7 @@ var verticallyPositionStretchView = function (stretchView) {
     if (numLargerMultiSteps === -1) {
         numLargerMultiSteps = startMultiSteps.length;
     }
-    firstTop += numLargerMultiSteps * multiStepTopLength;
+    //firstTop += numLargerMultiSteps * multiStepTopLength;
 
     var endMultiSteps = lastStepView.step.endMultiSteps;
     numLargerMultiSteps = _.findIndex(endMultiSteps, function (multiStepView) {
@@ -65,7 +65,7 @@ var verticallyPositionStretchView = function (stretchView) {
     if (numLargerMultiSteps === -1) {
         numLargerMultiSteps = endMultiSteps.length;
     }
-    lastHeight -= numLargerMultiSteps * multiStepBottomLength;
+    //lastHeight -= numLargerMultiSteps * multiStepBottomLength;
 
     stretchView.y = firstTop;
     stretchView.h = lastTop + lastHeight - firstTop;
@@ -176,7 +176,7 @@ var drawStepsSetup = function () {
 };
 
 var stepHtml = function (stepView) {
-    var parsed = DrawHelper.lexStepView(stepView);
+    var parsed = StepExecution.lex(stepView.step);
     var references = stepView.step.references;
     var htmls = _.map(parsed, function (token) {
         if (token.type === 'reference') {
@@ -293,6 +293,7 @@ var drawSteps = function (stepViews) {
         })
         .on('mousedown', function (d) {
             Main.maybeUpdate(function () {
+                window.getSelection().removeAllRanges();
                 Input.startInput(d);
                 Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
@@ -349,7 +350,9 @@ var drawSteps = function (stepViews) {
 
     stepEls.exit().remove();
 
-    stepEls.each(function (d) { d.__el__ = this });
+    stepEls.each(function (d) {
+        d.__el__ = d3.select(this).select('.step-box').node();
+    });
     stepEls.order();
 
     var targetStepView = Main.targetStepView();
@@ -406,7 +409,7 @@ var drawSteps = function (stepViews) {
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' })
 
-    stepEls.select('.step-box')
+    var stepBoxEls = stepEls.select('.step-box')
         .style('border-top-width', function (d) {
             if (!d.previous) {
                 return '1px';
@@ -424,7 +427,7 @@ var drawSteps = function (stepViews) {
 
     drawMultiSteps(stepEls);
 
-    stepEls.select('.expression-container').each(function (d) {
+    stepBoxEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
@@ -440,11 +443,12 @@ var drawSteps = function (stepViews) {
 
     DrawReferences.updateInputting();
 
-    DrawReferences.draw(stepEls.select('.expression-container'));
+    stepBoxEls.select('.expression-container').each(DrawReferences.draw);
+    drawMultiStepReferences(stepEls);
 
     /////////////////// must be after updateInputting
 
-    stepEls.select('.enable-disable')
+    stepBoxEls.select('.enable-disable')
         .attr('class', function (d) {
             var enabledBy = MultiStep.enabledBy(d);
             var classes = ['enable-disable'];
@@ -456,9 +460,9 @@ var drawSteps = function (stepViews) {
             return classes.join(' ');
         }) ;
 
-    DrawHelper.drawEnableDisableOuter(stepEls);
+    DrawHelper.drawEnableDisableOuter(stepBoxEls);
 
-    stepEls.select('.result')
+    stepBoxEls.select('.result')
         .attr('class', function (d) {
             var step = d.steps[d.steps.length - 1];
             if (!step) {
@@ -467,7 +471,7 @@ var drawSteps = function (stepViews) {
             return 'result ' + DrawReferences.colorForResult(d);
         }) ;
 
-    stepEls.select('.result-content-text')
+    stepBoxEls.select('.result-content-text')
         .text(function (d) {
             var step = d.steps[d.steps.length - 1];
             if (step.result === null) {
@@ -480,7 +484,7 @@ var drawSteps = function (stepViews) {
             }
         }) ;
 
-    stepEls.select('.result-content-canvas')
+    stepBoxEls.select('.result-content-canvas')
         .each(function (d) {
             var result = d.steps[d.steps.length - 1].result;
             if (result && Quads.isQuads(result)) {
@@ -552,6 +556,7 @@ var drawMultiSteps = function (stepEls) {
         })
         .on('mousedown', function (d) {
             Main.maybeUpdate(function () {
+                window.getSelection().removeAllRanges();
                 Input.startInput(d);
                 Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
@@ -561,8 +566,8 @@ var drawMultiSteps = function (stepEls) {
         .on('keypress', function () {
             d3.event.stopPropagation();
         })
-        .on('keydown', function () {
-            d3.event.stopPropagation();
+        .on('keydown', function (d) {
+            Input.textInputEvent(d, Input.keyForEvent());
         })
         .on('keyup', function () {
             d3.event.stopPropagation();
@@ -589,8 +594,25 @@ var drawMultiSteps = function (stepEls) {
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
         }) ;
 
-    multiStepEls.select('.multi-step-expression')
-        .text(function (d) { return d.step.text }) ;
+    multiStepEls.select('.expression-container').each(function (d) {
+        var container = d3.select(this);
+        var expressionEl = container.select('.expression').node();
+
+        var html = stepHtml(d);
+        var cursorOffset = DomRange.currentCursorOffset(expressionEl);
+        if (expressionEl.innerHTML !== html) {
+            expressionEl.innerHTML = html;
+            if (cursorOffset !== -1) {
+                DomRange.setCurrentCursorOffset(expressionEl, cursorOffset);
+            }
+        }
+    });
+};
+
+var drawMultiStepReferences = function (stepEls) {
+    var multiStepsContainer = stepEls.select('.multi-steps-container')
+    var multiStepEls = multiStepsContainer.selectAll('.multi-step');
+    multiStepEls.select('.expression-container').each(DrawReferences.draw);
 };
 
 

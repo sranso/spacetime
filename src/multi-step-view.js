@@ -44,4 +44,8 @@ MultiStepView.computeViews = function () {
     });
 };
 
+MultiStepView.isMultiStepView = function (stepView) {
+    return !stepView.startMultiSteps;
+};
+
 })();

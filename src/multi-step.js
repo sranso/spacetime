@@ -65,6 +65,10 @@ MultiStep.insertOrUpdateReference = function (reference) {
         return false;
     }
 
+    if (!MultiStepView.isMultiStepView(Global.inputStepView)) {
+        return false;
+    };
+
     var inputStep = Global.inputStepView.step;
     if (!MultiStep.isMultiStep(inputStep)) {
         return false;
@@ -76,12 +80,44 @@ MultiStep.insertOrUpdateReference = function (reference) {
 
     d3.event.stopPropagation();
 
-    _.each(Global.active, function (stretch) {
-        var multiStep = MultiStep.findFromSteps(stretch.steps);
-        if (multiStep) {
-            multiStep.text += reference.source.result;
+    var expressionEl = d3.select(Global.inputStepView.__el__).select('.expression').node();
+
+    if (Global.inputReferenceIs.length) {
+        //_.each(Global.active, function (stretch) {
+            var sink = stretch.steps[0];
+            if (absolute) {
+                var source = resultStep;
+            } else {
+                var source = Global.steps[sink.__index - referenceAway];
+            }
+            _.each(Global.inputReferenceIs, function (referenceI) {
+                var reference = sink.references[referenceI];
+                reference.absolute = absolute;
+                Reference.setSource(reference, source);
+            });
+        //});
+    } else {
+        var insertBeforeI = Global.inputReferenceIs.cursorIndex;
+        var cursorOffset = DomRange.currentCursorOffset(expressionEl);
+        var fullRange = document.createRange();
+        fullRange.selectNodeContents(expressionEl);
+        var before = fullRange.toString().slice(0, cursorOffset);
+        var after = fullRange.toString().slice(cursorOffset);
+        var innerText = Reference.sentinelCharacter;
+        if (before && before[before.length - 1] !== ' ') {
+            innerText = ' ' + innerText;
         }
-    });
+        var text = before + innerText + after;
+        expressionEl.textContent = text;
+        //_.each(Global.active, function (stretch) {
+            //var step = stretch.steps[0];
+            var step = inputStep;
+            step.text = text;
+            step.references.splice(insertBeforeI, 0, reference);
+        //});
+        DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
+    }
+
     Main.update();
     return true;
 };
