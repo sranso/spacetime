@@ -6,6 +6,7 @@ Global.stepsTail = {tail: true, next: null, previous: null};
 Global.steps = [];
 Global.series = [];
 Global.newSeries = Global.series;
+Global.__stretchViews = [];
 Global.stepViews = [];
 Global.hoverStepView = null;
 Global.hoverResultStepView = null;

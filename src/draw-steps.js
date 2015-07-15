@@ -2,44 +2,18 @@
 var DrawSteps = {};
 (function () {
 
-///////////////// Steps
-
 DrawSteps.setup = function () {
 };
 
-var stepHtml = function (stepView) {
-    var parsed = StepExecution.lex(stepView.step);
-    var references = stepView.step.references;
-    var htmls = _.map(parsed, function (token) {
-        if (token.type === 'reference') {
-            var source = references[token.referenceI].source;
-            if (source.result === null) {
-                var result = '-';
-            } else if (Quads.isQuads(source.result)) {
-                var result = 'pic';
-            } else {
-                var result = DrawHelper.clipNumber(source.result, 6);
-            }
-            var width = 9 + 9 * result.length;
-            if (result.indexOf('.') !== -1) {
-                width -= 4;
-            }
-            return '<span class="reference-placeholder reference-' +
-                    token.referenceI + '" style="width: ' + width + 'px;">' +
-                    token.text + '</span>';
-        }
-        return token.text;
-    });
-    return htmls.join('');
-};
-
-DrawSteps.draw = function (stepViews) {
+DrawSteps.draw = function () {
     var stepEls = Draw.trackHtml.selectAll('div.step')
-        .data(stepViews, function (d) { return d.step.id }) ;
+        .data(Global.stepViews, function (d) { return d.step.id }) ;
+
+    ///// enter
 
     var stepEnterEls = stepEls.enter().append('div');
 
-    drawSuperStepsSetup(stepEnterEls);
+    DrawSuperSteps.setup(stepEnterEls);
 
     var stepContainerEnterEls = stepEnterEls.append('div')
         .attr('class', 'step-container')
@@ -183,7 +157,11 @@ DrawSteps.draw = function (stepViews) {
     stepBoxEnterEls.append('div')
         .style('clear', 'both') ;
 
+    ///// exit
+
     stepEls.exit().remove();
+
+    ///// update
 
     stepEls.each(function (d) {
         d.__el__ = d3.select(this).select('.step-container').node();
@@ -246,13 +224,13 @@ DrawSteps.draw = function (stepViews) {
 
     var stepBoxEls = stepEls.select('.step-box');
 
-    drawSuperSteps(stepEls);
+    DrawSuperSteps.draw(stepEls);
 
     stepBoxEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
-        var html = stepHtml(d);
+        var html = DrawSteps.stepHtml(d);
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
         if (expressionEl.innerHTML !== html) {
             expressionEl.innerHTML = html;
@@ -265,7 +243,7 @@ DrawSteps.draw = function (stepViews) {
     DrawReferences.updateInputting();
 
     stepBoxEls.select('.expression-container').each(DrawReferences.draw);
-    drawSuperStepReferences(stepEls);
+    DrawSuperSteps.drawReferences(stepEls);
 
     /////////////////// must be after updateInputting
 
@@ -318,7 +296,33 @@ DrawSteps.draw = function (stepViews) {
         });
 };
 
-/////
+DrawSteps.stepHtml = function (stepView) {
+    var parsed = StepExecution.lex(stepView.step);
+    var references = stepView.step.references;
+    var htmls = _.map(parsed, function (token) {
+        if (token.type === 'reference') {
+            var source = references[token.referenceI].source;
+            if (source.result === null) {
+                var result = '-';
+            } else if (Quads.isQuads(source.result)) {
+                var result = 'pic';
+            } else {
+                var result = DrawHelper.clipNumber(source.result, 6);
+            }
+            var width = 9 + 9 * result.length;
+            if (result.indexOf('.') !== -1) {
+                width -= 4;
+            }
+            return '<span class="reference-placeholder reference-' +
+                    token.referenceI + '" style="width: ' + width + 'px;">' +
+                    token.text + '</span>';
+        }
+        return token.text;
+    });
+    return htmls.join('');
+};
+
+///// enable disable outer
 var drawEnableDisableOuter = function (stepEls) {
     var containerEls = stepEls.select('.enable-disable-outer-container');
     var enableDisableOuterEls = containerEls.selectAll('.enable-disable-outer')
@@ -348,138 +352,5 @@ var drawEnableDisableOuter = function (stepEls) {
             return px + 'px';
         }) ;
 };
-
-
-/////////////// superSteps
-
-var drawSuperStepsSetup = function (stepEnterEls) {
-    var superStepsContainer = stepEnterEls.append('div')
-        .attr('class', 'super-steps-container') ;
-
-    superStepsContainer.append('div')
-        .attr('class', 'selection-area-background') ;
-};
-
-var drawSuperSteps = function (stepEls) {
-    var superStepsContainer = stepEls.select('.super-steps-container')
-        .style('height', function (d) {
-            if (d.startSuperSteps.length) {
-                return null;
-            } else if (d.previous && d.previous.endSuperSteps.length) {
-                return '5px';
-            } else {
-                return '1px';
-            }
-        }) ;
-
-    var superStepEls = superStepsContainer.selectAll('.super-step')
-        .data(function (d) { return d.startSuperSteps }) ;
-
-    var superStepEnterEls = superStepEls.enter().append('div')
-        .attr('class', 'super-step')
-        .on('mouseenter', function (d) {
-            Main.maybeUpdate(function () {
-                Global.hoverStepView = d;
-            });
-        })
-        .on('mouseleave', function (d) {
-            window.setTimeout(function () {
-                Main.maybeUpdate(function () {
-                    if (Global.hoverStepView === d) {
-                        Global.hoverStepView = null;
-                    }
-                });
-            }, 0);
-        }) ;
-
-    superStepEnterEls.append('div')
-        .attr('class', 'group-stretch')
-        .on('mousedown', function (d) {
-            var stretch = d.step.groupStretch;
-            var kind = Selection.buttonSelectionKind();
-            Global.selection[kind].focus = stretch;
-            Global.selection[kind].group = stretch.group;
-            Global.connectStepView = null;
-            Main.update();
-            d3.event.stopPropagation();
-        }) ;
-
-    var expressionContainerEnterEls = superStepEnterEls.append('div')
-        .attr('class', 'expression-container') ;
-
-    expressionContainerEnterEls.append('div')
-        .attr('class', 'expression')
-        .attr('contenteditable', true)
-        .on('focus', function (d) {
-            Main.maybeUpdate(function () { Input.startInput(d) });
-        })
-        .on('blur', function (d) {
-            Main.maybeUpdate(function () { Global.inputStepView = null });
-        })
-        .on('input', function (d) {
-            Input.startInput(d);
-            Step.updateText(this);
-        })
-        .on('mousedown', function (d) {
-            Main.maybeUpdate(function () {
-                window.getSelection().removeAllRanges();
-                Input.startInput(d);
-                Global.inputForegroundIndexStretch = null;
-                Global.connectStepView = null;
-            });
-            d3.event.stopPropagation();
-        })
-        .on('keypress', function () {
-            d3.event.stopPropagation();
-        })
-        .on('keydown', function (d) {
-            Input.textInputEvent(d, Input.keyForEvent());
-        })
-        .on('keyup', function () {
-            d3.event.stopPropagation();
-        }) ;
-
-
-    superStepEls.exit().remove();
-
-    superStepEls.each(function (d) { d.__el__ = this });
-
-
-    superStepEls
-        .attr('class', function (d) {
-            var classes = ['super-step'];
-            if (!_.difference(d.steps, Global.__activeSteps).length) {
-                classes.push('active');
-            }
-            return classes.join(' ');
-        }) ;
-
-    superStepEls.select('.group-stretch')
-        .style('background-color', function (d) {
-            var c = d.step.groupStretch.group.color;
-            return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
-        }) ;
-
-    superStepEls.select('.expression-container').each(function (d) {
-        var container = d3.select(this);
-        var expressionEl = container.select('.expression').node();
-
-        var html = stepHtml(d);
-        var cursorOffset = DomRange.currentCursorOffset(expressionEl);
-        if (expressionEl.innerHTML !== html) {
-            expressionEl.innerHTML = html;
-            if (cursorOffset !== -1) {
-                DomRange.setCurrentCursorOffset(expressionEl, cursorOffset);
-            }
-        }
-    });
-};
-
-var drawSuperStepReferences = function (stepEls) {
-    var superStepsContainer = stepEls.select('.super-steps-container')
-    var superStepEls = superStepsContainer.selectAll('.super-step');
-    superStepEls.select('.expression-container').each(DrawReferences.draw);
-};
-
 
 })();
