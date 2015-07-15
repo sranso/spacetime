@@ -62,7 +62,7 @@ DrawHelper.drawEnableDisableOuter = function (stepEls) {
     var containerEls = stepEls.select('.enable-disable-outer-container');
     var enableDisableOuterEls = containerEls.selectAll('.enable-disable-outer')
         .data(function (d) {
-            var allEnabledBy = MultiStep.enabledBy(d);
+            var allEnabledBy = SuperStep.enabledBy(d);
             allEnabledBy = _.sortBy(allEnabledBy, '__index');
             return _.map(allEnabledBy, function (enabledBy) {
                 return {

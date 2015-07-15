@@ -183,11 +183,11 @@ var markNthStepsInBackStretch = function (backStretch, origin) {
         };
     });
 
-    var stepMultiSteps = _.map(steps, function (step) {
-        return _.filter(step.stretches, MultiStep.isMultiStep);
+    var stepSuperSteps = _.map(steps, function (step) {
+        return _.filter(step.stretches, SuperStep.isSuperStep);
     });
-    var multiSteps = _.union.apply(_, stepMultiSteps);
-    var multiStepInfo = _.map(multiSteps, function (step) {
+    var superSteps = _.union.apply(_, stepSuperSteps);
+    var superStepInfo = _.map(superSteps, function (step) {
         return {
             step: step,
             matchesId: step.matchesId,
@@ -197,7 +197,7 @@ var markNthStepsInBackStretch = function (backStretch, origin) {
         };
     });
 
-    stepInfo = _.sortBy(stepInfo.concat(multiStepInfo), 'end');
+    stepInfo = _.sortBy(stepInfo.concat(superStepInfo), 'end');
 
     var matchesIdToNth = {};
     var matchesIdToNthAtOrigin = null;

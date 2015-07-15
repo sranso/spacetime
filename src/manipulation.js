@@ -57,7 +57,7 @@ Manipulation.copyStretch = function (original) {
 
             cloneMap[originalStretch.id] = stretch;
         } else {
-            var stretch = MultiStep.create();
+            var stretch = SuperStep.create();
             stretch.matchesId = originalStretch.matchesId;
             stretch.text = originalStretch.text;
             stretch.collapsed = originalStretch.collapsed;
@@ -142,9 +142,9 @@ Manipulation.copyStretch = function (original) {
         Step.setReferences(step, references);
     });
 
-    ///// fixup multiSteps
+    ///// fixup superSteps
     _.each(cloneMap, function (stretch) {
-        if (MultiStep.isMultiStep(stretch)) {
+        if (SuperStep.isSuperStep(stretch)) {
             var groupStretch = stretch.groupStretch;
             stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
             var stretchIndex = stretch.steps[0].__index;

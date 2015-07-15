@@ -83,7 +83,7 @@ Input.keypressEvent = function (keyCode, key) {
     } else if (key === 'r') {
         Group.toggleRemember();
     } else if (key === 's') {
-        Selection.toggleMultiStep();
+        Selection.toggleSuperStep();
     } else if (key === 'x') {
         Manipulation.computeGroupIntersection();
     } else {

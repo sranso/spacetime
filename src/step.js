@@ -95,8 +95,8 @@ Step.insertOrUpdateReference = function (resultStepView) {
         return;
     }
 
-    var isMultiStep = MultiStep.isMultiStep(stepView.step);
-    if (isMultiStep && !Global.inputReferenceIs.length) {
+    var isSuperStep = SuperStep.isSuperStep(stepView.step);
+    if (isSuperStep && !Global.inputReferenceIs.length) {
         return;
     }
     if (Global.inputReferenceIs.length) {
@@ -107,8 +107,8 @@ Step.insertOrUpdateReference = function (resultStepView) {
         }
 
         _.each(Global.active, function (stretch) {
-            if (isMultiStep) {
-                var step = MultiStep.findFromSteps(stretch.steps);
+            if (isSuperStep) {
+                var step = SuperStep.findFromSteps(stretch.steps);
                 if (!step) {
                     return;
                 }
@@ -117,7 +117,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
             }
             if (absolute) {
                 var source = resultStep;
-            } else if (isMultiStep) {
+            } else if (isSuperStep) {
                 var source = Global.steps[step.steps[0].__index - referenceAway];
             } else {
                 var source = Global.steps[step.__index - referenceAway];
@@ -170,9 +170,9 @@ Step.updateText = function (expressionEl) {
     var referenceIs = _.map(referenceClasses, function (ref) {
         return +ref.slice('reference-'.length);
     });
-    if (MultiStep.isMultiStep(Global.inputStepView.step)) {
+    if (SuperStep.isSuperStep(Global.inputStepView.step)) {
         _.each(Global.active, function (stretch) {
-            var step = MultiStep.findFromSteps(stretch.steps);
+            var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }
@@ -200,7 +200,7 @@ Step.clickEnableRegion = function (stepView) {
     if (Global.connectStepView) {
         var resultStep = Global.connectStepView.steps[Global.connectStepView.steps.length - 1];
         Global.connectStepView = null;
-        var enabledBy = MultiStep.enabledBy(stepView);
+        var enabledBy = SuperStep.enabledBy(stepView);
         var add = !_.contains(enabledBy, resultStep);
 
         // TODO: make this work with a different "resultStep" per stretch
@@ -220,8 +220,8 @@ Step.clickEnableRegion = function (stepView) {
         });
 
     } else {
-        var clearDisabled = MultiStep.forceDisabled(stepView);
-        var clearEnabled = MultiStep.forceEnabled(stepView);
+        var clearDisabled = SuperStep.forceDisabled(stepView);
+        var clearEnabled = SuperStep.forceEnabled(stepView);
         if (clearDisabled || clearEnabled) {
             var forceEnabled = false;
             var forceDisabled = false;
@@ -233,10 +233,10 @@ Step.clickEnableRegion = function (stepView) {
             if (forceDisabled) {
                 var disableDiff = +1;
             } else {
-                var disableDiff = -MultiStep.forceDisabled(stretch);
+                var disableDiff = -SuperStep.forceDisabled(stretch);
             }
             if (forceEnabled) {
-                var forceEnabledBy = MultiStep.enabledBy(stretch);
+                var forceEnabledBy = SuperStep.enabledBy(stretch);
                 forceEnabledBy.push(true);
             } else {
                 var forceEnabledBy = [];

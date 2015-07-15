@@ -13,8 +13,8 @@ var __stretchViews = [];
 var controlContainer;
 var environmentContainer;
 
-var multiStepTopLength = 22;
-var multiStepBottomLength = 4;
+var superStepTopLength = 22;
+var superStepBottomLength = 4;
 
 Draw.setup = function () {
     drawOverallSetup();
@@ -47,25 +47,25 @@ var verticallyPositionStretchView = function (stretchView) {
     var startStep = steps[0];
     var endStep = steps[steps.length - 1];
 
-    var startMultiSteps = firstStepView.step.startMultiSteps;
-    var numLargerMultiSteps = _.findIndex(startMultiSteps, function (multiStepView) {
-        var steps = multiStepView.step.steps;
+    var startSuperSteps = firstStepView.step.startSuperSteps;
+    var numLargerSuperSteps = _.findIndex(startSuperSteps, function (superStepView) {
+        var steps = superStepView.step.steps;
         return steps[steps.length - 1].__index <= endStep.__index;
     });
-    if (numLargerMultiSteps === -1) {
-        numLargerMultiSteps = startMultiSteps.length;
+    if (numLargerSuperSteps === -1) {
+        numLargerSuperSteps = startSuperSteps.length;
     }
-    //firstTop += numLargerMultiSteps * multiStepTopLength;
+    //firstTop += numLargerSuperSteps * superStepTopLength;
 
-    var endMultiSteps = lastStepView.step.endMultiSteps;
-    numLargerMultiSteps = _.findIndex(endMultiSteps, function (multiStepView) {
-        var steps = multiStepView.step.steps;
+    var endSuperSteps = lastStepView.step.endSuperSteps;
+    numLargerSuperSteps = _.findIndex(endSuperSteps, function (superStepView) {
+        var steps = superStepView.step.steps;
         return steps[0].__index >= startStep.__index;
     });
-    if (numLargerMultiSteps === -1) {
-        numLargerMultiSteps = endMultiSteps.length;
+    if (numLargerSuperSteps === -1) {
+        numLargerSuperSteps = endSuperSteps.length;
     }
-    //lastHeight -= numLargerMultiSteps * multiStepBottomLength;
+    //lastHeight -= numLargerSuperSteps * superStepBottomLength;
 
     stretchView.y = firstTop;
     stretchView.h = lastTop + lastHeight - firstTop;
@@ -207,7 +207,7 @@ var drawSteps = function (stepViews) {
 
     var stepEnterEls = stepEls.enter().append('div');
 
-    drawMultiStepsSetup(stepEnterEls);
+    drawSuperStepsSetup(stepEnterEls);
 
     var stepContainerEnterEls = stepEnterEls.append('div')
         .attr('class', 'step-container')
@@ -363,14 +363,14 @@ var drawSteps = function (stepViews) {
     stepEls
         .attr('class', function (d) {
             var classes = ['step'];
-            if (MultiStep.isEnabled(d)) {
+            if (SuperStep.isEnabled(d)) {
                 classes.push('enabled');
             } else {
                 classes.push('disabled');
             }
-            if (MultiStep.forceEnabled(d)) {
+            if (SuperStep.forceEnabled(d)) {
                 classes.push('force-enabled');
-            } else if (MultiStep.forceDisabled(d)) {
+            } else if (SuperStep.forceDisabled(d)) {
                 classes.push('force-disabled');
             }
             if (_.intersection(d.steps, Global.__activeSteps).length) {
@@ -414,7 +414,7 @@ var drawSteps = function (stepViews) {
 
     var stepBoxEls = stepEls.select('.step-box');
 
-    drawMultiSteps(stepEls);
+    drawSuperSteps(stepEls);
 
     stepBoxEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
@@ -433,13 +433,13 @@ var drawSteps = function (stepViews) {
     DrawReferences.updateInputting();
 
     stepBoxEls.select('.expression-container').each(DrawReferences.draw);
-    drawMultiStepReferences(stepEls);
+    drawSuperStepReferences(stepEls);
 
     /////////////////// must be after updateInputting
 
     stepBoxEls.select('.enable-disable')
         .attr('class', function (d) {
-            var enabledBy = MultiStep.enabledBy(d);
+            var enabledBy = SuperStep.enabledBy(d);
             var classes = ['enable-disable'];
             if (enabledBy.length) {
                 var color = DrawReferences.colorForEnabledBy(d, enabledBy);
@@ -487,33 +487,33 @@ var drawSteps = function (stepViews) {
 };
 
 
-/////////////// multiSteps
+/////////////// superSteps
 
-var drawMultiStepsSetup = function (stepEnterEls) {
-    var multiStepsContainer = stepEnterEls.append('div')
-        .attr('class', 'multi-steps-container') ;
+var drawSuperStepsSetup = function (stepEnterEls) {
+    var superStepsContainer = stepEnterEls.append('div')
+        .attr('class', 'super-steps-container') ;
 
-    multiStepsContainer.append('div')
+    superStepsContainer.append('div')
         .attr('class', 'selection-area-background') ;
 };
 
-var drawMultiSteps = function (stepEls) {
-    var multiStepsContainer = stepEls.select('.multi-steps-container')
+var drawSuperSteps = function (stepEls) {
+    var superStepsContainer = stepEls.select('.super-steps-container')
         .style('height', function (d) {
-            if (d.startMultiSteps.length) {
+            if (d.startSuperSteps.length) {
                 return null;
-            } else if (d.previous && d.previous.endMultiSteps.length) {
+            } else if (d.previous && d.previous.endSuperSteps.length) {
                 return '5px';
             } else {
                 return '1px';
             }
         }) ;
 
-    var multiStepEls = multiStepsContainer.selectAll('.multi-step')
-        .data(function (d) { return d.startMultiSteps }) ;
+    var superStepEls = superStepsContainer.selectAll('.super-step')
+        .data(function (d) { return d.startSuperSteps }) ;
 
-    var multiStepEnterEls = multiStepEls.enter().append('div')
-        .attr('class', 'multi-step')
+    var superStepEnterEls = superStepEls.enter().append('div')
+        .attr('class', 'super-step')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
                 Global.hoverStepView = d;
@@ -529,7 +529,7 @@ var drawMultiSteps = function (stepEls) {
             }, 0);
         }) ;
 
-    multiStepEnterEls.append('div')
+    superStepEnterEls.append('div')
         .attr('class', 'group-stretch')
         .on('mousedown', function (d) {
             var stretch = d.step.groupStretch;
@@ -541,7 +541,7 @@ var drawMultiSteps = function (stepEls) {
             d3.event.stopPropagation();
         }) ;
 
-    var expressionContainerEnterEls = multiStepEnterEls.append('div')
+    var expressionContainerEnterEls = superStepEnterEls.append('div')
         .attr('class', 'expression-container') ;
 
     expressionContainerEnterEls.append('div')
@@ -577,27 +577,27 @@ var drawMultiSteps = function (stepEls) {
         }) ;
 
 
-    multiStepEls.exit().remove();
+    superStepEls.exit().remove();
 
-    multiStepEls.each(function (d) { d.__el__ = this });
+    superStepEls.each(function (d) { d.__el__ = this });
 
 
-    multiStepEls
+    superStepEls
         .attr('class', function (d) {
-            var classes = ['multi-step'];
+            var classes = ['super-step'];
             if (!_.difference(d.steps, Global.__activeSteps).length) {
                 classes.push('active');
             }
             return classes.join(' ');
         }) ;
 
-    multiStepEls.select('.group-stretch')
+    superStepEls.select('.group-stretch')
         .style('background-color', function (d) {
             var c = d.step.groupStretch.group.color;
             return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
         }) ;
 
-    multiStepEls.select('.expression-container').each(function (d) {
+    superStepEls.select('.expression-container').each(function (d) {
         var container = d3.select(this);
         var expressionEl = container.select('.expression').node();
 
@@ -612,10 +612,10 @@ var drawMultiSteps = function (stepEls) {
     });
 };
 
-var drawMultiStepReferences = function (stepEls) {
-    var multiStepsContainer = stepEls.select('.multi-steps-container')
-    var multiStepEls = multiStepsContainer.selectAll('.multi-step');
-    multiStepEls.select('.expression-container').each(DrawReferences.draw);
+var drawSuperStepReferences = function (stepEls) {
+    var superStepsContainer = stepEls.select('.super-steps-container')
+    var superStepEls = superStepsContainer.selectAll('.super-step');
+    superStepEls.select('.expression-container').each(DrawReferences.draw);
 };
 
 

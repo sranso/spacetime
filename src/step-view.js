@@ -9,8 +9,8 @@ StepView.create = function (step) {
         __el__: null,
         next: null,
         previous: null,
-        startMultiSteps: [],
-        endMultiSteps: [],
+        startSuperSteps: [],
+        endSuperSteps: [],
         startSeries: false,
         endSeries: false,
     };
@@ -18,7 +18,7 @@ StepView.create = function (step) {
     // TODO: remove this.
     Object.defineProperty(stepView, 'steps', {
         get: function () {
-            return MultiStep.isMultiStep(stepView.step) ? stepView.step.steps : [stepView.step];
+            return SuperStep.isSuperStep(stepView.step) ? stepView.step.steps : [stepView.step];
         },
     });
     return stepView;
@@ -37,10 +37,10 @@ StepView.computeViews = function () {
     var real = Global.steps[0];
     while (real) {
         var maxStep = {steps: []};
-        _.each(real.stretches, function (multiStep) {
-            if (MultiStep.isMultiStep(multiStep) && multiStep.collapsed) {
-                if (multiStep.steps.length > maxStep.steps.length) {
-                    maxStep = multiStep;
+        _.each(real.stretches, function (superStep) {
+            if (SuperStep.isSuperStep(superStep) && superStep.collapsed) {
+                if (superStep.steps.length > maxStep.steps.length) {
+                    maxStep = superStep;
                 }
             }
         });

@@ -37,50 +37,50 @@ Selection.backgroundStretches = function () {
 };
 
 Selection.toggleCollapsed = function () {
-    makeMultiStep(true);
+    makeSuperStep(true);
 };
 
-Selection.toggleMultiStep = function () {
+Selection.toggleSuperStep = function () {
     var group = Global.selection.foreground.group;
     if (!group) {
         return;
     }
-    var multiStep = MultiStep.findFromSteps(Global.active.focus.steps);
-    if (multiStep) {
+    var superStep = SuperStep.findFromSteps(Global.active.focus.steps);
+    if (superStep) {
         _.each(Global.active, function (stretch) {
-            var multiStep = MultiStep.findFromSteps(stretch.steps);
-            if (multiStep) {
-                Stretch.setSteps(multiStep, []);
+            var superStep = SuperStep.findFromSteps(stretch.steps);
+            if (superStep) {
+                Stretch.setSteps(superStep, []);
             }
         });
         Main.update();
     } else {
-        makeMultiStep(false);
+        makeSuperStep(false);
     }
 };
 
-var makeMultiStep = function (toggleCollapsed) {
+var makeSuperStep = function (toggleCollapsed) {
     var group = Global.selection.foreground.group;
     if (!group) {
         return;
     }
-    var multiStep = MultiStep.findFromSteps(Global.active.focus.steps);
-    var collapsed = multiStep && multiStep.collapsed;
+    var superStep = SuperStep.findFromSteps(Global.active.focus.steps);
+    var collapsed = superStep && superStep.collapsed;
     if (toggleCollapsed) {
         collapsed = !collapsed;
     }
 
     var matchesId = Main.newId();
     _.each(Global.active, function (stretch) {
-        var multiStep = MultiStep.findFromSteps(stretch.steps);
-        if (!multiStep) {
-            multiStep = MultiStep.create();
-            multiStep.matchesId = matchesId;
-            multiStep.groupStretch = stretch;
-            Stretch.setSteps(multiStep, stretch.steps);
+        var superStep = SuperStep.findFromSteps(stretch.steps);
+        if (!superStep) {
+            superStep = SuperStep.create();
+            superStep.matchesId = matchesId;
+            superStep.groupStretch = stretch;
+            Stretch.setSteps(superStep, stretch.steps);
             group.remember = true;
         }
-        multiStep.collapsed = collapsed;
+        superStep.collapsed = collapsed;
     });
     Main.update();
 };

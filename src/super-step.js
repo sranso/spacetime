@@ -1,9 +1,9 @@
 'use strict';
-var MultiStep = {};
+var SuperStep = {};
 (function () {
 
-MultiStep.create = function () {
-    var multiStep = {
+SuperStep.create = function () {
+    var superStep = {
         id: Main.newId(),
         matchesId: null,
         text: '',
@@ -12,65 +12,65 @@ MultiStep.create = function () {
         groupStretch: null,
         references: [],
     };
-    multiStep.stepView = StepView.create(multiStep);
-    return multiStep;
+    superStep.stepView = StepView.create(superStep);
+    return superStep;
 };
 
-MultiStep.isMultiStep = function (step) {
+SuperStep.isSuperStep = function (step) {
     return step.steps && step.hasOwnProperty('text');
 };
 
-MultiStep.isExpression = function (multiStep) {
-    return multiStep.text === null;
+SuperStep.isExpression = function (superStep) {
+    return superStep.text === null;
 };
 
 // debug only
-MultiStep.allMultiSteps = function () {
+SuperStep.allSuperSteps = function () {
     var stepStretches = _.flatten(_.pluck(Global.steps, 'stretches'));
-    return _.uniq(_.filter(stepStretches, MultiStep.isMultiStep));
+    return _.uniq(_.filter(stepStretches, SuperStep.isSuperStep));
 };
 
-MultiStep.findFromSteps = function (steps) {
+SuperStep.findFromSteps = function (steps) {
     var candidates = steps[0].stretches;
     return _.find(candidates, function (stretch) {
-        if (!MultiStep.isMultiStep(stretch)) {
+        if (!SuperStep.isSuperStep(stretch)) {
             return false;
         }
         return stretch.steps[0] === steps[0] && stretch.steps[stretch.steps.length - 1] === steps[steps.length - 1];
     });
 };
 
-MultiStep.isEnabled = function (multiStep) {
-    return _.some(multiStep.steps, function (step) {
+SuperStep.isEnabled = function (superStep) {
+    return _.some(superStep.steps, function (step) {
         return Step.isEnabled(step);
     });
 };
 
-MultiStep.forceDisabled = function (multiStep) {
-    return _.min(_.pluck(multiStep.steps, 'forceDisabled'));
+SuperStep.forceDisabled = function (superStep) {
+    return _.min(_.pluck(superStep.steps, 'forceDisabled'));
 };
 
-MultiStep.forceEnabled = function (multiStep) {
-    return _.some(multiStep.steps, function (step) {
+SuperStep.forceEnabled = function (superStep) {
+    return _.some(superStep.steps, function (step) {
         return step.forceEnabled.length && Step.isEnabled(step);
     });
 };
 
-MultiStep.enabledBy = function (multiStep) {
-    return _.intersection.apply(_, _.pluck(multiStep.steps, 'enabledBy'));
+SuperStep.enabledBy = function (superStep) {
+    return _.intersection.apply(_, _.pluck(superStep.steps, 'enabledBy'));
 };
 
-MultiStep.insertOrUpdateReference = function (containingStep, reference) {
+SuperStep.insertOrUpdateReference = function (containingStep, reference) {
     if (!Global.inputStepView) {
         return false;
     }
 
-    if (!MultiStepView.isMultiStepView(Global.inputStepView)) {
+    if (!SuperStepView.isSuperStepView(Global.inputStepView)) {
         return false;
     };
 
     var inputStep = Global.inputStepView.step;
-    if (!MultiStep.isMultiStep(inputStep)) {
+    if (!SuperStep.isSuperStep(inputStep)) {
         return false;
     }
 
@@ -91,7 +91,7 @@ MultiStep.insertOrUpdateReference = function (containingStep, reference) {
 
     if (Global.inputReferenceIs.length) {
         _.each(Global.active, function (stretch) {
-            var step = MultiStep.findFromSteps(stretch.steps);
+            var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }
@@ -118,7 +118,7 @@ MultiStep.insertOrUpdateReference = function (containingStep, reference) {
         var text = before + innerText + after;
         expressionEl.textContent = text;
         _.each(Global.active, function (stretch) {
-            var step = MultiStep.findFromSteps(stretch.steps);
+            var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }

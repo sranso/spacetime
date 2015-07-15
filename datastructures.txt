@@ -7,7 +7,7 @@ step: {
   next: <nextStep>
   references: [<reference>, <reference>, ...],
   referencedBy: [<reference>, <reference>, ...],
-  stretches: [<multiStep>, <stretch>, ...],
+  stretches: [<superStep>, <stretch>, ...],
   enabledBy: [false, <step>, <step>, ...],
   enables: [<step>, <step>, ...],
   forceDisabled: 2, // disabled twice
@@ -42,7 +42,7 @@ stretch: {
 
 TODO:
 
-multiStep: {
+superStep: {
   text: 'step description',    // expression if text is null
   steps: [<step>, <step>, ...],
   collapsed: true/false,

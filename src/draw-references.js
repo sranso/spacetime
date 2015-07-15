@@ -135,7 +135,7 @@ DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep)
 
 var referenceColor = function (targetStepView, referenceStep) {
     var expressionReferences = targetStepView.step.references;
-    var enabledBy = MultiStep.enabledBy(targetStepView);
+    var enabledBy = SuperStep.enabledBy(targetStepView);
 
     var referenceSteps = _.union(enabledBy, _.pluck(expressionReferences, 'source'));
     if (!_.contains(referenceSteps, referenceStep)) {
@@ -276,7 +276,7 @@ DrawReferences.draw = function (d) {
             d3.event.preventDefault();
         })
         .on('click', function (d, i) {
-            if (!MultiStep.insertOrUpdateReference(containingStep, d)) {
+            if (!SuperStep.insertOrUpdateReference(containingStep, d)) {
                 selectReference(container, i);
             }
         }) ;
