@@ -60,7 +60,7 @@ MultiStep.enabledBy = function (multiStep) {
     return _.intersection.apply(_, _.pluck(multiStep.steps, 'enabledBy'));
 };
 
-MultiStep.insertOrUpdateReference = function (reference) {
+MultiStep.insertOrUpdateReference = function (containingStep, reference) {
     if (!Global.inputStepView) {
         return false;
     }
@@ -74,6 +74,10 @@ MultiStep.insertOrUpdateReference = function (reference) {
         return false;
     }
 
+    if (inputStep === containingStep) {
+        return false;
+    }
+
     if (!_.contains(inputStep.steps, reference.sink)) {
         return false;
     }
@@ -82,20 +86,24 @@ MultiStep.insertOrUpdateReference = function (reference) {
 
     var expressionEl = d3.select(Global.inputStepView.__el__).select('.expression').node();
 
+    var referenceAway = reference.sink.__index - inputStep.steps[0].__index;
+    var referenceI = _.indexOf(reference.sink.references, reference);
+
     if (Global.inputReferenceIs.length) {
-        //_.each(Global.active, function (stretch) {
-            var sink = stretch.steps[0];
-            if (absolute) {
-                var source = resultStep;
-            } else {
-                var source = Global.steps[sink.__index - referenceAway];
+        _.each(Global.active, function (stretch) {
+            var step = MultiStep.findFromSteps(stretch.steps);
+            if (!step) {
+                return;
+            }
+            var sink = Global.steps[step.steps[0].__index + referenceAway];
+            var reference = sink.references[referenceI];
+            if (!reference) {
+                return;
             }
             _.each(Global.inputReferenceIs, function (referenceI) {
-                var reference = sink.references[referenceI];
-                reference.absolute = absolute;
-                Reference.setSource(reference, source);
+                step.references[referenceI] = reference;
             });
-        //});
+        });
     } else {
         var insertBeforeI = Global.inputReferenceIs.cursorIndex;
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
@@ -109,12 +117,18 @@ MultiStep.insertOrUpdateReference = function (reference) {
         }
         var text = before + innerText + after;
         expressionEl.textContent = text;
-        //_.each(Global.active, function (stretch) {
-            //var step = stretch.steps[0];
-            var step = inputStep;
-            step.text = text;
-            step.references.splice(insertBeforeI, 0, reference);
-        //});
+        _.each(Global.active, function (stretch) {
+            var step = MultiStep.findFromSteps(stretch.steps);
+            if (!step) {
+                return;
+            }
+            var sink = Global.steps[step.steps[0].__index + referenceAway];
+            var reference = sink.references[referenceI];
+            if (reference) {
+                step.text = text;
+                step.references.splice(insertBeforeI, 0, reference);
+            }
+        });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     }
 

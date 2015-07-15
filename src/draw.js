@@ -205,7 +205,12 @@ var drawSteps = function (stepViews) {
     var stepEls = Draw.trackHtml.selectAll('div.step')
         .data(stepViews, function (d) { return d.step.id }) ;
 
-    var stepEnterEls = stepEls.enter().append('div')
+    var stepEnterEls = stepEls.enter().append('div');
+
+    drawMultiStepsSetup(stepEnterEls);
+
+    var stepContainerEnterEls = stepEnterEls.append('div')
+        .attr('class', 'step-container')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
                 Global.hoverStepView = d;
@@ -221,12 +226,7 @@ var drawSteps = function (stepViews) {
             }, 0);
         }) ;
 
-    drawMultiStepsSetup(stepEnterEls);
-
-    var stepBoxEnterEls = stepEnterEls.append('div')
-        .attr('class', 'step-box') ;
-
-    var matchesIndicatorContainerEnterEls = stepBoxEnterEls.append('div')
+    var matchesIndicatorContainerEnterEls = stepContainerEnterEls.append('div')
         .attr('class', 'matches-indicator-container')
         .on('mouseenter', function (d) {
             Main.maybeUpdate(function () {
@@ -242,6 +242,9 @@ var drawSteps = function (stepViews) {
                 });
             }, 0);
         }) ;
+
+    var stepBoxEnterEls = stepContainerEnterEls.append('div')
+        .attr('class', 'step-box') ;
 
     matchesIndicatorContainerEnterEls.append('div')
         .attr('class', 'matches-indicator') ;
@@ -351,7 +354,7 @@ var drawSteps = function (stepViews) {
     stepEls.exit().remove();
 
     stepEls.each(function (d) {
-        d.__el__ = d3.select(this).select('.step-box').node();
+        d.__el__ = d3.select(this).select('.step-container').node();
     });
     stepEls.order();
 
@@ -409,21 +412,7 @@ var drawSteps = function (stepViews) {
         .style('top', function (d) { return d.y + 'px' })
         .style('left', function (d) { return d.x + 'px' })
 
-    var stepBoxEls = stepEls.select('.step-box')
-        .style('border-top-width', function (d) {
-            if (!d.previous) {
-                return '1px';
-            }
-
-            if (
-                d.startMultiSteps.length ||
-                d.previous.endMultiSteps.length
-            ) {
-                return '1px';
-            } else {
-                return '0';
-            }
-        }) ;
+    var stepBoxEls = stepEls.select('.step-box');
 
     drawMultiSteps(stepEls);
 
@@ -524,7 +513,21 @@ var drawMultiSteps = function (stepEls) {
         .data(function (d) { return d.startMultiSteps }) ;
 
     var multiStepEnterEls = multiStepEls.enter().append('div')
-        .attr('class', 'multi-step') ;
+        .attr('class', 'multi-step')
+        .on('mouseenter', function (d) {
+            Main.maybeUpdate(function () {
+                Global.hoverStepView = d;
+            });
+        })
+        .on('mouseleave', function (d) {
+            window.setTimeout(function () {
+                Main.maybeUpdate(function () {
+                    if (Global.hoverStepView === d) {
+                        Global.hoverStepView = null;
+                    }
+                });
+            }, 0);
+        }) ;
 
     multiStepEnterEls.append('div')
         .attr('class', 'group-stretch')

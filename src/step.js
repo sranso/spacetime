@@ -112,6 +112,8 @@ Step.insertOrUpdateReference = function (resultStepView) {
                 if (!step) {
                     return;
                 }
+            } else {
+                var step = stretch.steps[0];
             }
             if (absolute) {
                 var source = resultStep;

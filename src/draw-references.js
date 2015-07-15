@@ -35,7 +35,7 @@ DrawReferences.colorForResult = function (resultStepView) {
     return referenceColorInputAware(targetStepView, resultStep);
 };
 
-var colorForReference = function (reference) {
+var colorForReference = function (containingStep, reference) {
     var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
@@ -51,7 +51,7 @@ var colorForReference = function (reference) {
         return '';
     }
 
-    if (reference.sink !== targetStepView.step) {
+    if (containingStep !== targetStepView.step) {
         return '';
     }
     return referenceColorInputAware(targetStepView, reference.source);
@@ -134,11 +134,7 @@ DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep)
 };
 
 var referenceColor = function (targetStepView, referenceStep) {
-    if (MultiStep.isMultiStep(targetStepView.step)) {
-        var expressionReferences = [];
-    } else {
-        var expressionReferences = targetStepView.step.references;
-    }
+    var expressionReferences = targetStepView.step.references;
     var enabledBy = MultiStep.enabledBy(targetStepView);
 
     var referenceSteps = _.union(enabledBy, _.pluck(expressionReferences, 'source'));
@@ -168,8 +164,8 @@ var referenceColorInputAware = function (targetStepView, referenceStep) {
     return referenceColor(targetStepView, referenceStep);
 };
 
-var referenceClass = function (reference, referenceI) {
-    var color = colorForReference(reference);
+var referenceClass = function (containingStep, reference, referenceI) {
+    var color = colorForReference(containingStep, reference);
     var classes = ['reference'];
     if (Global.inputReferenceIs.length) {
         if (color && _.contains(Global.inputReferenceIs, referenceI)) {
@@ -280,7 +276,7 @@ DrawReferences.draw = function (d) {
             d3.event.preventDefault();
         })
         .on('click', function (d, i) {
-            if (!MultiStep.insertOrUpdateReference(d)) {
+            if (!MultiStep.insertOrUpdateReference(containingStep, d)) {
                 selectReference(container, i);
             }
         }) ;
@@ -297,7 +293,7 @@ DrawReferences.draw = function (d) {
     referenceEls.each(function (reference, i) {
         var textEl = container.select('.reference-placeholder.reference-' + i).node();
         d3.select(this)
-            .attr('class', referenceClass(reference, i))
+            .attr('class', referenceClass(containingStep, reference, i))
             .style('top', textEl.offsetTop + 'px')
             .style('left', textEl.offsetLeft + 'px')
             .style('width', (textEl.offsetWidth - 2) + 'px') ;

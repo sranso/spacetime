@@ -62,19 +62,22 @@ Manipulation.copyStretch = function (original) {
             stretch.text = originalStretch.text;
             stretch.collapsed = originalStretch.collapsed;
 
-            // fixup below
+            // fixed below
             stretch.groupStretch = originalStretch.groupStretch;
+
+            // fixed below
+            var stretchIndex = originalStretch.steps[0].__index;
+            stretch.references = _.map(originalStretch.references, function (originalReference) {
+                var sink = originalReference.sink;
+                return {
+                    referenceI: _.indexOf(sink.references, originalReference),
+                    referenceAway: sink.__index - stretchIndex,
+                };
+            });
+
             cloneMap[originalStretch.id] = stretch;
         }
     });
-    // fixup groupStretch
-    _.each(cloneMap, function (stretch) {
-        if (MultiStep.isMultiStep(stretch)) {
-            var groupStretch = stretch.groupStretch;
-            stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
-        }
-    });
-
     var copy = cloneMap[original.id];
 
     ///// repeat steps
@@ -116,8 +119,10 @@ Manipulation.copyStretch = function (original) {
     Step.linkSteps(copy.steps);
     Step.linkSteps([lastCopyStep, next]);
 
-    ///// fixup refereneces
+    /////
     Step.computeSteps();
+
+    ///// fixup refereneces
     _.each(copy.steps, function (step) {
         var references = _.map(step.references, function (r) {
             var reference = Reference.create();
@@ -135,6 +140,20 @@ Manipulation.copyStretch = function (original) {
         });
         step.references = [];
         Step.setReferences(step, references);
+    });
+
+    ///// fixup multiSteps
+    _.each(cloneMap, function (stretch) {
+        if (MultiStep.isMultiStep(stretch)) {
+            var groupStretch = stretch.groupStretch;
+            stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
+            var stretchIndex = stretch.steps[0].__index;
+            stretch.references = _.map(stretch.references, function (r) {
+                var step = Global.steps[stretchIndex + r.referenceAway];
+                return step.references[r.referenceI];
+            });
+            // TODO: handle null reference
+        }
     });
 
     ///// fixup stretch steps
@@ -168,9 +187,6 @@ Manipulation.copyStretch = function (original) {
     if (cloneMap[focus.id]) {
         Global.selection.foreground.focus = cloneMap[focus.id];
     }
-
-    /////
-    Step.computeSteps();
 
     return copy;
 };

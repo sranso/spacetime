@@ -103,7 +103,6 @@ h1 {
 
 .step {
   margin: 0;
-  padding-left: 20px;
 }
 
 
@@ -112,7 +111,7 @@ h1 {
   position: relative;
 }
   .multi-steps-container .selection-area-background {
-    left: 7px;
+    left: 27px;
     top: 0;
     bottom: 0;
     z-index: 1;
@@ -126,18 +125,18 @@ h1 {
     .multi-step .group-stretch {
       height: 7px;
       position: absolute;
-      top: 8px;
+      top: 50%;
+      margin-top: -3px;
       border-radius: 2px;
-      left: -7px;
+      left: 14px;
       width: 67px;
     }
 
   /* expression related stuff below, with .step */
 
 
-.step-box {
-  background-color: white;
-  width: 425px;
+.step-container {
+  padding-left: 20px;
   position: relative;
 }
   .step .matches-indicator-container {
@@ -170,6 +169,12 @@ h1 {
     border-color: white;
   }
 
+
+.step-box {
+  background-color: white;
+  width: 425px;
+  position: relative;
+}
   .step .enable-disable {
     position: absolute;
     top: 0;
@@ -234,7 +239,7 @@ h1 {
     margin-left: 53px; /* update above */
   }
   .multi-step .expression-container {
-    margin-left: 60px;
+    margin: 4px 0 2px 80px;
     width: 350px;
   }
     .expression {
@@ -378,8 +383,11 @@ h1 {
       cursor: pointer;
     }
 
-    .step .reference.reference-inserting {
+    .step-box .reference.reference-inserting {
       background-color: #ccc;
+    }
+    .multi-step .reference.reference-inserting {
+      background-color: #648ba0;
     }
 
     .step .reference.reference-absolute {
