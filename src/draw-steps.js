@@ -3,6 +3,8 @@ var DrawSteps = {};
 (function () {
 
 DrawSteps.setup = function () {
+    Draw.trackHtml.append('div')
+        .attr('class', 'selection-area-background') ;
 };
 
 DrawSteps.draw = function () {

@@ -6,6 +6,15 @@ var environmentContainer;
 
 DrawEnvironment.setup = function () {
     environmentContainer = d3.select('#environment');
+
+    d3.select('#add-environment')
+        .on('click', function () {
+            var step = Step.createForEnvironment();
+            var stepView = StepView.create(step);
+            Global.environment.push(stepView);
+            Main.update();
+            d3.select(stepView.__el__).select('.name').node().focus();
+        }) ;
 };
 
 DrawEnvironment.draw = function () {

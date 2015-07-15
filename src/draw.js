@@ -33,9 +33,6 @@ var drawOverallSetup = function() {
     Draw.trackHtml = d3.select('div#track-html');
     Draw.trackForegroundIndices = d3.select('div#track-foreground-indices');
 
-    Draw.trackHtml.append('div')
-        .attr('class', 'selection-area-background') ;
-
     d3.select(document)
         .on('keydown', function () { Input.inputEvent(Input.keyForEvent(), 'down') })
         .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
@@ -66,15 +63,6 @@ var drawOverallSetup = function() {
         .on('mousedown', function () {
             Global.mouseDown.result = true;
             Main.update();
-        }) ;
-
-    d3.select('#add-environment')
-        .on('click', function () {
-            var step = Step.createForEnvironment();
-            var stepView = StepView.create(step);
-            Global.environment.push(stepView);
-            Main.update();
-            d3.select(stepView.__el__).select('.name').node().focus();
         }) ;
 };
 

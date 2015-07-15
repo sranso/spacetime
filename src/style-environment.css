@@ -27,6 +27,8 @@
     left: -2px;
   }
 
+  /* more .result stuff with style-step.css */
+
 #add-environment {
   float: left;
   text-align: center;
@@ -39,4 +41,3 @@
   color: #888;
   cursor: pointer;
 }
-
