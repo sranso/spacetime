@@ -14,7 +14,7 @@ Draw.setup = function () {
     DrawSteps.setup();
     DrawStretches.setup();
     DrawEnvironment.setup();
-    DrawControl.setup();
+    DrawPlayer.setup();
     drawSelectionInfoSetup();
 };
 
@@ -22,7 +22,7 @@ Draw.draw = function () {
     DrawSteps.draw();
     DrawStretches.draw();
     DrawEnvironment.draw();
-    DrawControl.draw();
+    DrawPlayer.draw();
     drawSelectionInfo();
 };
 

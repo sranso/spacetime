@@ -1,14 +1,14 @@
 'use strict';
-var DrawControl = {};
+var DrawPlayer = {};
 (function () {
 
 var controlContainer;
 
-DrawControl.setup = function () {
+DrawPlayer.setup = function () {
     controlContainer = d3.select('#control');
 };
 
-DrawControl.draw = function () {
+DrawPlayer.draw = function () {
     var playerEls = controlContainer.selectAll('.player')
         .data([Global.player], function (d) { return d.id }) ;
 
