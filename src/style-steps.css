@@ -1,0 +1,315 @@
+.step {
+  margin: 0;
+}
+
+.super-steps-container {
+  border-radius: 5px;
+  position: relative;
+}
+  .super-steps-container .selection-area-background {
+    left: 27px;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    opacity: 0.8;
+    pointer-events: none;
+  }
+  .super-steps-container .super-step {
+    position: relative;
+    min-height: 18px;
+  }
+    .super-step .group-stretch {
+      height: 7px;
+      position: absolute;
+      top: 50%;
+      margin-top: -3px;
+      border-radius: 2px;
+      left: 14px;
+      width: 67px;
+    }
+
+  /* expression related stuff below, with .step */
+
+
+.step-container {
+  padding-left: 20px;
+  position: relative;
+}
+  .step .matches-indicator-container {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    margin-top: -6px;
+    background-color: #566e7b;
+    width: 12px;
+    height: 12px;
+  }
+  .step .matches-indicator {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    border: solid 1px #999;
+    border-radius: 5px;
+    width: 5px;
+    height: 5px;
+    display: none;
+  }
+  .step.matches .matches-indicator {
+    display: block;
+  }
+  .step.target .matches-indicator {
+    background-color: #999;
+  }
+  .step.matches-hover .matches-indicator {
+    background-color: white;
+    border-color: white;
+  }
+
+
+.step-box {
+  background-color: white;
+  width: 425px;
+  position: relative;
+}
+  .step .enable-disable {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    width: 9px;
+    border-top-left-radius: 5px 15px;
+    border-bottom-left-radius: 5px 15px;
+    border-right: dotted 1px #ccc;
+    background-color: white;
+    z-index: 3;
+    cursor: pointer;
+  }
+  .step .enable-disable.enabled-by-connected {
+    border: solid 2px #ccc;
+    left: -5px;  /* 1 more left */
+    z-index: 4;
+  }
+
+    .step .enable-disable-outer-container {
+      position: absolute;
+      top: 50%;
+      right: 0;
+    }
+      .step .enable-disable-outer {
+        position: absolute;
+        right: -8px;
+        border-radius: 2px;
+        background-color: #ccc;
+        width: 10px;
+        height: 3px;
+      }
+
+  .step .selection-area {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    width: 47px; /* update below */
+  }
+
+  .step .selection-edge {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    width: 1px;
+    left: 47px; /* update below and above*/
+    background-color: transparent;
+  }
+
+  .step.hover .selection-edge {
+    background-color: #ccc;
+  }
+
+  .expression-container {
+    position: relative;
+    z-index: 4;
+  }
+  .step-box .expression-container {
+    float: left;
+    width: 190px;
+    margin-right: 15px;
+    margin-left: 53px; /* update above */
+  }
+  .super-step .expression-container {
+    margin: 4px 0 2px 80px;
+    width: 350px;
+  }
+    .expression {
+      font-size: 14px;
+      padding: 7px;
+      width: 100%;
+      min-height: 20px;
+      border-width: 0;
+      background-color: transparent;
+
+      line-height: 24px;
+      white-space: pre-wrap;
+    }
+    .canvas-result .step-box .expression {
+      min-height: 32px;  /* also update .result-canvas canvas below */
+    }
+    .super-step .expression {
+      color: white;
+      font-size: 17px;
+      padding: 1px 8px 1px 8px;
+    }
+
+      .expression .reference-placeholder {
+        display: inline-block;
+        margin-right: 1px;
+        font-size: 1px;
+        height: 1px;
+      }
+
+  .reference {
+    position: absolute;
+    text-align: center;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    margin-top: -5px;
+    margin-left: -1px;
+    border: solid 2px #ccc;
+    border-radius: 6px;
+    height: 17px;
+  }
+  .active .step-box .reference {
+    border-color: #bbb;
+  }
+    .reference-content-text {
+      display: none;
+    }
+    .text-reference .reference-content-text {
+      display: block;
+    }
+    .super-step .reference-content-text {
+      color: white;
+    }
+
+    .reference-content-canvas {
+      display: none;
+      text-align: center;
+    }
+    .canvas-reference .reference-content-canvas {
+      display: block;
+    }
+    .reference-content-canvas canvas {
+      width: 24px;
+      height: 15px; /* also update .expression above */
+      border: dotted 1px #ccc;
+    }
+
+  .step .result {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 2;
+    width: 135px; /* update below */
+    background-color: white;
+  }
+    .result-content-text {
+      display: none;
+      position: absolute;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      color: #338;
+      font-size: 16px;
+      text-align: right;
+      margin: 0;
+      padding: 3px 10px 4px 6px;
+    }
+    .text-result .result-content-text {
+      display: block;
+    }
+
+    .result-content-canvas {
+      display: none;
+      position: absolute;
+      right: 15px;
+      left: 10px;
+      top: 0px;
+      bottom: 0px;
+      text-align: center;
+    }
+    .canvas-result .result-content-canvas {
+      display: block;
+    }
+    .result-content-canvas canvas {
+      width: 72px;
+      height: 45px; /* also update .expression above */
+      border: dotted 1px #ccc;
+      border-width: 0 1px 0 1px;
+    }
+
+    .result-border {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      border-style: solid;
+      border-width: 0 0 2px 2px;
+      height: 4px;
+      border-color: #566e7b;
+    }
+
+    .result-corner-container {
+      position: absolute;
+      right: -1px;
+      bottom: -1px;
+      overflow: hidden;
+      width: 15px;
+      height: 15px;
+    }
+
+    .result-corner {
+      position: absolute;
+      right: -15px;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 12px solid #566e7b;
+      border-top-width: 0px;
+      cursor: pointer;
+    }
+
+    .step-box .reference.reference-inserting {
+      background-color: #ccc;
+    }
+    .super-step .reference.reference-inserting {
+      background-color: #648ba0;
+    }
+
+    .step .reference.reference-absolute {
+      border-radius: 0;
+    }
+
+.step.active .step-box,
+.step.active .result,
+.step.active .enable-disable {
+  background-color: #d6ebe4;  /* change below too */
+}
+.super-step.active .expression,
+.super-step.active .reference-content-text {
+  color: #d6ebe4;
+}
+
+.step.disabled .enable-disable {
+  background-color: #ccc;
+}
+.step.force-enabled .enable-disable {
+  background-color: #b4f4b6;
+}
+.step.force-disabled .enable-disable {
+  background-color: #f5dcbc;
+}
+
+.step.disabled .expression-container {
+  color: #ccc;
+}

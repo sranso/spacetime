@@ -1,0 +1,207 @@
+.player {
+  width: 310px;
+  height: 40px;
+  background-color: #e4e4e4;
+  padding: 3px 5px;
+  border-radius: 16px;
+}
+  .player .player-result {
+    position: relative;
+    float: left;
+    height: 44px;
+  }
+  .player .go-to-beginning {
+    width: 25px;
+    left: 5px;
+  }
+    .player .go-to-beginning-button {
+      position: relative;
+      top: 11px;
+      width: 21px;
+      height: 20px;
+      background-color: #ccc;
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+      cursor: pointer;
+    }
+    .player .go-to-beginning-button:hover {
+      background-color: #bbb;
+    }
+      .player .go-to-beginning-button::after {
+        content: '\21E4';
+        position: absolute;
+        font-size: 20px;
+        left: 3px;
+        top: -2px;
+      }
+
+  .player .play-pause {
+    width: 28px;
+    z-index: 1;
+  }
+    .player .play-pause-button {
+      position: relative;
+      top: 3px;
+      left: -4px;
+      height: 35px;
+      width: 35px;
+      background-color: #ccc;
+      border-radius: 24px;
+      cursor: pointer;
+    }
+    .player .play-pause-button:hover {
+      background-color: #bbb;
+    }
+      .player .play-pause-button::after {
+        position: absolute;
+      }
+      .player.playing .play-pause-button::after {
+        content: '\2590\2590';
+        top: 9px;
+        left: 7px;
+        font-size: 12px;
+        color: #080;
+      }
+      .player.paused .play-pause-button::after {
+        content: '\25BA';
+        top: 7px;
+        left: 11px;
+        font-size: 20px;
+      }
+
+  .player .repeat {
+    left: -1px;
+    width: 21px;
+  }
+    .player .repeat-button {
+      float: left;
+      position: relative;
+      top: 11px;
+      left: -1px;
+      width: 21px;
+      height: 20px;
+      background-color: #ccc;
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      cursor: pointer;
+    }
+    .player .repeat-button:hover {
+      background-color: #bbb;
+    }
+      .player .repeat-button::after {
+        content: '\221e';
+        position: absolute;
+        font-size: 18px;
+        left: 3px;
+        top: -2px;
+        color: #888;
+      }
+      .player.repeating .repeat-button::after {
+        color: #00f;
+      }
+
+  .player .time-info-container {
+    float: left;
+    width: 35px;
+  }
+    .player .time-info {
+      font-size: 12px;
+    }
+      .player .time-info-content {
+        margin-top: 12px;
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+
+    .player .current-time {
+      float: right;
+    }
+    .player .end-time {
+      float: left;
+    }
+
+  .player .slider {
+    float: left;
+    height: 40px;
+    width: 140px;        /* update in draw.js */
+    position: relative;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+    .player .slider-bar {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      right: 0;
+      background-color: #ccc;
+      height: 10px;
+      cursor: pointer;
+    }
+
+    .player .slider-bar-completed {
+      position: absolute;
+      top: 15px;
+      left: 0;
+      background-color: #aaa;
+      height: 10px;
+    }
+
+    .player .slider-handle {
+      position: absolute;
+      width: 20px;
+      margin-left: -10px;
+    }
+      .player .slider-handle-knob {
+        position: absolute;
+        top: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        background-color: #aaa;
+        cursor: pointer;
+      }
+      .player .slider-handle-knob:hover {
+        background-color: #777;
+      }
+
+  .player .result-border {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-style: solid;
+    border-width: 0 0 2px 2px;
+    height: 4px;
+    border-color: transparent;
+  }
+
+  .player .result-corner-container {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    width: 10px;
+    height: 10px;
+  }
+
+  .player .result-corner {
+    position: absolute;
+    right: -10px;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-top-width: 0px;
+    cursor: pointer;
+  }
+
+  .player .go-to-beginning .result-border,
+  .player .go-to-beginning .result-corner-container {
+    right: 5px;
+  }
+
+  .player .repeat .result-border {
+    left: 1px;
+  }

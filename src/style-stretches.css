@@ -1,0 +1,87 @@
+.stretch {
+  pointer-events: visiblePainted;
+}
+  .stretch .index-in-series-border {
+    stroke-width: 2px;
+    stroke: none;
+  }
+
+  .stretch .index-in-series {
+    text-anchor: middle;
+    font-size: 10px;
+  }
+
+  .stretch .mouse {
+    fill: #fff;
+    opacity: 0;
+  }
+
+  .stretch.selected-area .background {
+    stroke: #555;
+  }
+  .stretch.selection-selected .background {
+    stroke: #ccc;
+    stroke-width: 1px;
+  }
+  .stretch.selection-foreground .index-in-series,
+  .stretch.selection-foreground .index-in-series-border,
+  .stretch.selection-selected .index-in-series,
+  .stretch.selection-selected .index-in-series-border {
+    visibility: hidden;
+  }
+  .stretch.selection-background.series .index-in-series-border {
+    stroke: #555;
+    stroke-width: 1px;
+  }
+  .stretch.selection-background.series.referenced-by-color .index-in-series-border {
+    stroke: #f0c;
+    stroke-width: 2px;
+  }
+
+.foreground-index {
+  position: absolute;
+  display: none;
+  left: -16px;
+  margin-top: -12px;
+  min-width: 37px;
+  text-align: center;
+  color: white;
+  pointer-events: none;
+}
+.foreground-index.series {
+  display: block;
+}
+.foreground-index.inputting {
+  display: block;
+}
+
+  .foreground-index-content {
+    display: inline-block;
+    border: solid 2px transparent;
+    border-radius: 6px;
+    padding: 1px 3px;
+    pointer-events: auto;
+  }
+  .foreground-index-input {
+    z-index: 3;
+  }
+  .foreground-index.under-input {
+    display: none;
+  }
+
+
+  .foreground-index.inputting .foreground-index-content {
+    border-color: #ccc;
+  }
+  .foreground-index.referenced-by-color .foreground-index-content,
+  .foreground-index.inputting.referenced-by-color .foreground-index-content {
+    border-color: #f0c;
+  }
+  .stretch.referenced-by-color .index-in-series-border {
+    stroke: #f0c;
+  }
+  .stretch.selection-selected.referenced-by-color .index-in-series-border,
+  .stretch.selection-foreground.referenced-by-color .index-in-series-border {
+    stroke: none
+  }
+
