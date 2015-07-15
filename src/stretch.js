@@ -58,7 +58,7 @@ var classifyStretch = function (targetStretch, stretch) {
     var lastStep = targetStretch.steps[targetStretch.steps.length - 1];
 
     var start;
-    if (! _.contains(firstStep.stretches, stretch)) {
+    if (!_.contains(firstStep.stretches, stretch)) {
         start = 'middle';
     } else if (stretch.steps[0] === firstStep) {
         start = 'start';
@@ -67,7 +67,7 @@ var classifyStretch = function (targetStretch, stretch) {
     }
 
     var end;
-    if (! _.contains(lastStep.stretches, stretch)) {
+    if (!_.contains(lastStep.stretches, stretch)) {
         end = 'middle';
     } else if (stretch.steps[stretch.steps.length - 1] === lastStep) {
         end = 'end';
@@ -106,7 +106,7 @@ var compileMatcher = function (matcher) {
     if (/[^<\[\]>=_]/.test(matcher)) {
         throw new Error('Matcher must only contain "_=[]<>"');
     }
-    if (! /^_*<+=*>+_*$/.test(matcher.replace(/[\[\]]/g, ''))) {
+    if (!/^_*<+=*>+_*$/.test(matcher.replace(/[\[\]]/g, ''))) {
         throw new Error('Matcher arrow portion must match /^_*<+=*>+_*$/');
     }
 

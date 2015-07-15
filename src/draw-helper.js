@@ -8,7 +8,7 @@ DrawHelper.clipNumber = function (number, length) {
         return numString;
     }
     var before = numString.slice(0, length);
-    if (! _.isNumber(number)) {
+    if (!_.isNumber(number)) {
         return before;
     }
     if (before.indexOf('.') === -1 || numString.slice(0, 4) === '0.000') {
