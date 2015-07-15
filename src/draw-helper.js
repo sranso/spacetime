@@ -58,34 +58,4 @@ DrawHelper.drawResultBorder = function (enterEls) {
         }) ;
 };
 
-DrawHelper.drawEnableDisableOuter = function (stepEls) {
-    var containerEls = stepEls.select('.enable-disable-outer-container');
-    var enableDisableOuterEls = containerEls.selectAll('.enable-disable-outer')
-        .data(function (d) {
-            var allEnabledBy = SuperStep.enabledBy(d);
-            allEnabledBy = _.sortBy(allEnabledBy, '__index');
-            return _.map(allEnabledBy, function (enabledBy) {
-                return {
-                    enabledBy: enabledBy,
-                    stepView: d,
-                    allEnabledByLength: allEnabledBy.length,
-                };
-            });
-        }) ;
-
-    var enableDisableOuterEnterEls = enableDisableOuterEls.enter().append('div');
-
-    enableDisableOuterEls.exit().remove();
-
-    enableDisableOuterEls
-        .attr('class', function (d) {
-            var color = DrawReferences.colorForEnableOuterConnector(d.stepView, d.enabledBy);
-            return 'enable-disable-outer ' + color;
-        })
-        .style('top', function (d, i) {
-            var px = i * 6 - 3 * d.allEnabledByLength + 2;
-            return px + 'px';
-        }) ;
-};
-
 })();
