@@ -37,6 +37,8 @@ Input.inputEvent = function (key, eventType) {
     }
 };
 
+var startNumberChars = ['-', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
 Input.textInputEvent = function (step, key) {
     if (key === '\\') {
         go();  // define go to test something out
@@ -57,6 +59,8 @@ Input.textInputEvent = function (step, key) {
         });
     } else if (key === 'A') {
         Reference.toggleAbsolute();
+    } else if (_.contains(startNumberChars, key)) {
+        Step.maybeSwitchToLiteral(key);
     }
     d3.event.stopPropagation();
 };

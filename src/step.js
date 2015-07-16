@@ -182,6 +182,46 @@ Step.insertOrUpdateReference = function (resultStepView) {
 
 };
 
+Step.maybeSwitchToLiteral = function (key) {
+    var inputReferenceI = Global.inputReferenceIs[0];
+    var range = DomRange.currentRange();
+    if (
+        !range ||
+        range.toString().length ||
+        !Global.inputStepView ||
+        inputReferenceI == null
+    ) {
+        return;
+    }
+
+    var inputStep = Global.inputStepView.step;
+    var reference = inputStep.references[inputReferenceI];
+
+    if (Reference.isLiteral(reference)) {
+        return;
+    }
+
+    var isSuperStep = SuperStep.isSuperStep(inputStep);
+    _.each(Global.active, function (stretch) {
+        if (isSuperStep) {
+            var step = SuperStep.findFromSteps(stretch.steps);
+            if (!step) {
+                return;
+            }
+        } else {
+            var step = stretch.steps[0];
+        }
+        _.each(Global.inputReferenceIs, function (referenceI) {
+            var reference = step.references[referenceI];
+            reference.source = reference;
+            reference.result = key
+        });
+    });
+
+    d3.event.preventDefault();
+    Main.update();
+};
+
 var lexFromExpression = function (expressionEl) {
     var parsed = [];
     _.each(expressionEl.childNodes, function (childNode) {
