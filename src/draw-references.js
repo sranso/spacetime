@@ -289,15 +289,11 @@ DrawReferences.draw = function (d) {
             }
         }) ;
 
-    referenceEnterEls.each(function (d) {
-        if (!Reference.isLiteral(d)) {
-            d3.select(this).append('div')
-                .attr('class', 'reference-content-text') ;
+    referenceEnterEls.append('div')
+        .attr('class', 'reference-content-text') ;
 
-            d3.select(this).append('div')
-                .attr('class', 'reference-content-canvas') ;
-        }
-    });
+    referenceEnterEls.append('div')
+        .attr('class', 'reference-content-canvas') ;
 
     referenceEls.exit().remove();
 

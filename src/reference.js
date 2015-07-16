@@ -19,7 +19,9 @@ Reference.isLiteral = function (reference) {
 Reference.sentinelCharacter = '☃';
 
 Reference.setSource = function (reference, source) {
-    if (reference.source) {
+    if (Reference.isLiteral(reference)) {
+        reference.result = null;
+    } else if (reference.source) {
         reference.source.referencedBy = _.without(reference.source.referencedBy, reference);
     }
     source.referencedBy.push(reference);

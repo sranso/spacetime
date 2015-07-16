@@ -111,12 +111,18 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
         fullRange.selectNodeContents(expressionEl);
         var before = fullRange.toString().slice(0, cursorOffset);
         var after = fullRange.toString().slice(cursorOffset);
-        var innerText = Reference.sentinelCharacter;
+        if (Reference.isLiteral(reference)) {
+            var innerText = reference.result;
+        } else {
+            var innerText = Reference.sentinelCharacter;
+        }
         if (before && before[before.length - 1] !== ' ') {
             innerText = ' ' + innerText;
         }
-        var text = before + innerText + after;
-        expressionEl.textContent = text;
+        expressionEl.textContent = before + innerText + after;
+        var parsed = StepExecution.lex(expressionEl.textContent);
+        var text = Step.textFromParsed(parsed);
+
         _.each(Global.active, function (stretch) {
             var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {

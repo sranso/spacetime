@@ -147,7 +147,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
         }
         expressionEl.textContent = before + innerText + after;
         var parsed = StepExecution.lex(expressionEl.textContent);
-        var text = textFromParsed(parsed);
+        var text = Step.textFromParsed(parsed);
 
         _.each(Global.active, function (stretch) {
             var step = stretch.steps[0];
@@ -209,7 +209,7 @@ var lexFromExpression = function (expressionEl) {
     return mergedParsed;
 };
 
-var textFromParsed = function (parsed) {
+Step.textFromParsed = function (parsed) {
     return _.map(parsed, function (token) {
         if (token.type === 'reference' || token.type === 'literal') {
             return Reference.sentinelCharacter;
@@ -221,7 +221,7 @@ var textFromParsed = function (parsed) {
 
 Step.updateText = function (expressionEl) {
     var parsed = lexFromExpression(expressionEl);
-    var text = textFromParsed(parsed);
+    var text = Step.textFromParsed(parsed);
     var referenceTokens = _.filter(parsed, function (token) {
         return token.type === 'literal' || token.type === 'reference';
     });
