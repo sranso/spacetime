@@ -14,15 +14,21 @@ StepExecution.execute = function () {
     console.log(end - start);
 };
 
-StepExecution.lex = function (step) {
-    var text = step.text;
+var startNumberChars = ['-', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+var numberChars = ['.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+var tokenChars = ['(', ')', '+', '-', '*', '/', '%'];
+
+StepExecution.lex = function (text) {
     var tokens = [];
     var referenceI = 0;
-    var token = null;
+    var token = {type: 'start-token'};
     for (var i = 0; i < text.length; i++) {
         var c = text[i];
+        var nextC = text[i + 1];
+
         if (c === ' ') {
-            if (!token || token.type !== 'whitespace') {
+            if (token.type !== 'whitespace') {
                 token = {
                     type: 'whitespace',
                     text: '',
@@ -30,8 +36,10 @@ StepExecution.lex = function (step) {
                 tokens.push(token);
             }
             token.text += c;
+            continue;
+        }
 
-        } else if (c === Reference.sentinelCharacter) {
+        if (c === Reference.sentinelCharacter) {
             token = {
                 type: 'reference',
                 referenceI: referenceI,
@@ -39,17 +47,45 @@ StepExecution.lex = function (step) {
             }
             referenceI += 1;
             tokens.push(token);
-
-        } else {
-            if (!token || token.type !== 'text') {
-                token = {
-                    type: 'text',
-                    text: '',
-                };
-                tokens.push(token);
-            }
-            token.text += c;
+            continue;
         }
+
+        if (
+            _.contains(startNumberChars, c) &&
+            token.type !== 'literal' &&
+            (c !== '-' || _.contains(numberChars, nextC))
+        ) {
+            token = {
+                type: 'literal',
+                referenceI: referenceI,
+                text: '',
+            };
+            tokens.push(token);
+            referenceI += 1;
+            token.text += c;
+            continue;
+        } else if (_.contains(numberChars, c) && token.type === 'literal') {
+            token.text += c;
+            continue;
+        }
+
+        if (_.contains(tokenChars, c)) {
+            token = {
+                type: 'token',
+                text: c,
+            };
+            tokens.push(token);
+            continue;
+        }
+
+        if (token.type !== 'text') {
+            token = {
+                type: 'text',
+                text: '',
+            };
+            tokens.push(token);
+        }
+        token.text += c;
     }
 
     return tokens;
@@ -66,7 +102,7 @@ var actions = {
 };
 
 StepExecution.parse = function (step) {
-    var tokens = StepExecution.lex(step);
+    var tokens = StepExecution.lex(step.text);
     tokens = parseTokenType(step, tokens);
     tokens = consumeActionArguments(tokens);
     return tokens;
@@ -77,26 +113,22 @@ var parseTokenType = function (step, lexedTokens) {
     for (var i = 0; i < lexedTokens.length; i++) {
         var token = lexedTokens[i];
 
-        if (token.type === 'text') {
-            var action = actions[token.text];
-            if (action) {
-                tokens.push({
-                    type: 'action',
-                    action: action,
-                });
-            } else {
-                tokens.push({
-                    type: 'value',
-                    value: token.text,
-                });
-            }
-
+        if (token.type === 'text' && actions[token.text]) {
+            tokens.push({
+                type: 'action',
+                action: actions[token.text],
+            });
         } else if (token.type === 'reference') {
             tokens.push({
                 type: 'reference',
                 reference: step.references[token.referenceI],
             });
-        }
+        } else if (token.type === 'token') {
+            tokens.push({
+                type: 'token',
+                value: token.text,
+            });
+        } // else if 'whitespace' or non-action text, throw out
     }
     return tokens;
 };

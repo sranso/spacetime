@@ -299,25 +299,33 @@ DrawSteps.draw = function () {
 };
 
 DrawSteps.stepHtml = function (stepView) {
-    var parsed = StepExecution.lex(stepView.step);
+    var parsed = StepExecution.lex(stepView.step.text);
     var references = stepView.step.references;
     var htmls = _.map(parsed, function (token) {
         if (token.type === 'reference') {
-            var source = references[token.referenceI].source;
-            if (source.result === null) {
-                var result = '-';
-            } else if (Quads.isQuads(source.result)) {
-                var result = 'pic';
-            } else {
-                var result = DrawHelper.clipNumber(source.result, 6);
+            var reference = references[token.referenceI];
+            var result = reference.source.result;
+            if (Reference.isLiteral(reference)) {
+                return '<span class="placeholder literal-placeholder' +
+                        ' reference-'+token.referenceI +
+                        '">' + result + '</span>';
             }
-            var width = 9 + 9 * result.length;
-            if (result.indexOf('.') !== -1) {
+
+            if (result === null) {
+                var resultText = '-';
+            } else if (Quads.isQuads(result)) {
+                var resultText = 'pic';
+            } else {
+                var resultText = DrawHelper.clipNumber(result, 6);
+            }
+            var width = 9 + 9 * resultText.length;
+            if (resultText.indexOf('.') !== -1) {
                 width -= 4;
             }
-            return '<span class="reference-placeholder reference-' +
+            return '<span class="placeholder reference-placeholder reference-' +
                     token.referenceI + '" style="width: ' + width + 'px;">' +
                     token.text + '</span>';
+
         }
         return token.text;
     });

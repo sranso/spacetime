@@ -61,10 +61,14 @@ Step.linkSteps = function (steps) {
 
 Step.setReferences = function (step, references) {
     _.each(step.references, function (oldReference) {
-        oldReference.source.referencedBy = _.without(oldReference.source.referencedBy, oldReference);
+        if (!Reference.isLiteral(oldReference)) {
+            oldReference.source.referencedBy = _.without(oldReference.source.referencedBy, oldReference);
+        }
     });
     _.each(references, function (newReference) {
-        newReference.source.referencedBy.push(newReference);
+        if (!Reference.isLiteral(newReference)) {
+            newReference.source.referencedBy.push(newReference);
+        }
     });
     step.references = references;
 };
@@ -99,6 +103,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
     if (isSuperStep && !Global.inputReferenceIs.length) {
         return;
     }
+
     if (Global.inputReferenceIs.length) {
         var inputReferences = Global.inputStepView.step.references;
         var absolute = inputReferences[Global.inputReferenceIs[0]].absolute;
@@ -128,6 +133,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
                 Reference.setSource(reference, source);
             });
         });
+
     } else {
         var insertBeforeI = Global.inputReferenceIs.cursorIndex;
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
@@ -139,8 +145,10 @@ Step.insertOrUpdateReference = function (resultStepView) {
         if (before && before[before.length - 1] !== ' ') {
             innerText = ' ' + innerText;
         }
-        var text = before + innerText + after;
-        expressionEl.textContent = text;
+        expressionEl.textContent = before + innerText + after;
+        var parsed = StepExecution.lex(expressionEl.textContent);
+        var text = textFromParsed(parsed);
+
         _.each(Global.active, function (stretch) {
             var step = stretch.steps[0];
             step.text = text;
@@ -155,42 +163,100 @@ Step.insertOrUpdateReference = function (resultStepView) {
             step.references.splice(insertBeforeI, 0, reference);
             Step.setReferences(step, step.references);
         });
+
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
     }
 
     Main.update();
 };
 
+var lexFromExpression = function (expressionEl) {
+    var parsed = [];
+    _.each(expressionEl.childNodes, function (childNode) {
+        if (childNode.nodeType === 3) {
+            var originalReferenceI = null;
+        } else {
+            var referenceIs = _.map(childNode.classList, function (klass) {
+                return +klass.slice('reference-'.length);
+            });
+            var originalReferenceI = _.find(referenceIs, function (i) {
+                return !_.isNaN(i);
+            });
+        }
+        var childParsed = StepExecution.lex(childNode.textContent);
+        _.each(childParsed, function (token) {
+            if (token.type === 'reference' || token.type === 'literal') {
+                token.originalReferenceI = originalReferenceI;
+            }
+        });
+        parsed = parsed.concat(childParsed);
+    });
+
+    var mergedParsed = [];
+    var lastToken = {type: 'start-token'};
+    _.each(parsed, function (token) {
+        if (token.type === 'literal' && lastToken.type === 'literal') {
+            lastToken.text += token.text;
+            if (lastToken.originalReferenceI == null) {
+                lastToken.originalReferenceI = token.originalReferenceI;
+            }
+        } else {
+            mergedParsed.push(token);
+            lastToken = token;
+        }
+    });
+
+    return mergedParsed;
+};
+
+var textFromParsed = function (parsed) {
+    return _.map(parsed, function (token) {
+        if (token.type === 'reference' || token.type === 'literal') {
+            return Reference.sentinelCharacter;
+        } else {
+            return token.text;
+        }
+    }).join('');
+};
+
 Step.updateText = function (expressionEl) {
-    var referenceClasses = [];
-    d3.select(expressionEl).selectAll('.reference-placeholder').each(function () {
-        referenceClasses = referenceClasses.concat(_.toArray(this.classList));
+    var parsed = lexFromExpression(expressionEl);
+    var text = textFromParsed(parsed);
+    var referenceTokens = _.filter(parsed, function (token) {
+        return token.type === 'literal' || token.type === 'reference';
     });
-    referenceClasses = _.without(referenceClasses, 'reference-placeholder');
-    var referenceIs = _.map(referenceClasses, function (ref) {
-        return +ref.slice('reference-'.length);
-    });
-    if (SuperStep.isSuperStep(Global.inputStepView.step)) {
-        _.each(Global.active, function (stretch) {
+
+    var isSuperStep = SuperStep.isSuperStep(Global.inputStepView.step);
+    _.each(Global.active, function (stretch) {
+        if (isSuperStep) {
             var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }
-            step.text = expressionEl.textContent;
-            step.references = _.map(referenceIs, function (referenceI) {
-                return step.references[referenceI];
-            });
-        });
-    } else {
-        _.each(Global.active, function (stretch) {
+        } else {
             var step = stretch.steps[0];
-            step.text = expressionEl.textContent;
-            var references = _.map(referenceIs, function (referenceI) {
-                return step.references[referenceI];
-            });
-            Step.setReferences(step, references);
+        }
+        step.text = text;
+        var references = _.map(referenceTokens, function (ref) {
+            if (ref.originalReferenceI == null) {
+                var reference = Reference.create();
+                reference.sink = step;
+            } else {
+                var reference = step.references[ref.originalReferenceI];
+            }
+            if (ref.type === 'literal') {
+                reference.source = reference;
+                reference.result = ref.text;
+            }
+            return reference;
         });
-    }
+        if (isSuperStep) {
+            step.references = references;
+        } else {
+            Step.setReferences(step, references);
+        }
+    });
+
     Main.update();
 };
 

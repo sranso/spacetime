@@ -7,7 +7,13 @@ Reference.create = function () {
         sink: null,
         source: null,
         absolute: false,
+        result: null,     // for literals
+        error: null,
     };
+};
+
+Reference.isLiteral = function (reference) {
+    return reference.source === reference;
 };
 
 Reference.sentinelCharacter = '☃';

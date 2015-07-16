@@ -35,7 +35,7 @@ DrawReferences.colorForResult = function (resultStepView) {
     return referenceColorInputAware(targetStepView, resultStep);
 };
 
-var colorForReference = function (containingStep, reference) {
+var colorForReference = function (reference) {
     var targetStepView = Main.targetStepView();
     if (!targetStepView) {
         return '';
@@ -51,9 +51,6 @@ var colorForReference = function (containingStep, reference) {
         return '';
     }
 
-    if (containingStep !== targetStepView.step) {
-        return '';
-    }
     return referenceColorInputAware(targetStepView, reference.source);
 };
 
@@ -134,7 +131,13 @@ DrawReferences.colorForEnableOuterConnector = function (stepView, enabledByStep)
 };
 
 var referenceColor = function (targetStepView, referenceStep) {
+    if (Reference.isLiteral(referenceStep)) {
+        return 'reference-color-plain';
+    }
     var expressionReferences = targetStepView.step.references;
+    expressionReferences = _.filter(expressionReferences, function (reference) {
+        return !Reference.isLiteral(reference);
+    });
     var enabledBy = SuperStep.enabledBy(targetStepView);
 
     var referenceSteps = _.union(enabledBy, _.pluck(expressionReferences, 'source'));
@@ -164,8 +167,8 @@ var referenceColorInputAware = function (targetStepView, referenceStep) {
     return referenceColor(targetStepView, referenceStep);
 };
 
-var referenceClass = function (containingStep, reference, referenceI) {
-    var color = colorForReference(containingStep, reference);
+var referenceClass = function (reference, referenceI) {
+    var color = colorForReference(reference);
     var classes = ['reference'];
     if (Global.inputReferenceIs.length) {
         if (color && _.contains(Global.inputReferenceIs, referenceI)) {
@@ -175,11 +178,16 @@ var referenceClass = function (containingStep, reference, referenceI) {
     } else if (color) {
         classes.push(color);
     }
-    var result = reference.source.result;
-    if (Quads.isQuads(result)) {
-        classes.push('canvas-reference');
+    if (Reference.isLiteral(reference)) {
+        classes.push('literal');
     } else {
-        classes.push('text-reference');
+        classes.push('real-reference');
+        var result = reference.source.result;
+        if (Quads.isQuads(result)) {
+            classes.push('canvas-reference');
+        } else {
+            classes.push('text-reference');
+        }
     }
     if (reference.absolute) {
         classes.push('reference-absolute');
@@ -229,7 +237,7 @@ DrawReferences.updateInputting = function () {
 
     var cursorIndex = 0;
     _.each(references, function (reference, i) {
-        var textEl = container.select('.reference-placeholder.reference-' + i).node();
+        var textEl = container.select('.placeholder.reference-' + i).node();
         var range = document.createRange();
         range.selectNodeContents(textEl);
         if (textEl.previousSibling && textEl.previousSibling.nodeType === 3) {
@@ -277,26 +285,39 @@ DrawReferences.draw = function (d) {
         })
         .on('click', function (d, i) {
             if (!SuperStep.insertOrUpdateReference(containingStep, d)) {
-                selectReference(container, i);
+                selectReference(d, i, container);
             }
         }) ;
 
-    referenceEnterEls.append('div')
-        .attr('class', 'reference-content-text') ;
+    referenceEnterEls.each(function (d) {
+        if (!Reference.isLiteral(d)) {
+            d3.select(this).append('div')
+                .attr('class', 'reference-content-text') ;
 
-    referenceEnterEls.append('div')
-        .attr('class', 'reference-content-canvas') ;
+            d3.select(this).append('div')
+                .attr('class', 'reference-content-canvas') ;
+        }
+    });
 
     referenceEls.exit().remove();
 
 
     referenceEls.each(function (reference, i) {
-        var textEl = container.select('.reference-placeholder.reference-' + i).node();
+        var textEl = container.select('.placeholder.reference-' + i).node();
         d3.select(this)
-            .attr('class', referenceClass(containingStep, reference, i))
-            .style('top', textEl.offsetTop + 'px')
-            .style('left', textEl.offsetLeft + 'px')
-            .style('width', (textEl.offsetWidth - 2) + 'px') ;
+            .attr('class', referenceClass(reference, i))
+            .style('left', textEl.offsetLeft + 'px') ;
+
+        if (Reference.isLiteral(reference)) {
+            var top = textEl.offsetTop + textEl.offsetHeight;
+            d3.select(this)
+                .style('top', top + 'px')
+                .style('width', textEl.offsetWidth + 'px') ;
+        } else {
+            d3.select(this)
+                .style('top', textEl.offsetTop + 'px')
+                .style('width', (textEl.offsetWidth - 2) + 'px') ;
+        }
     });
 
     referenceEls.select('.reference-content-text')
@@ -324,15 +345,20 @@ DrawReferences.draw = function (d) {
         }) ;
 };
 
-var selectReference = function (container, i) {
-    var textEl = container.select('.reference-placeholder.reference-' + i).node();
+var selectReference = function (reference, i, container) {
+    var textEl = container.select('.placeholder.reference-' + i).node();
 
     var range = document.createRange();
     range.setEnd(textEl, 1);
-    range.collapse(false);
+    if (Reference.isLiteral(reference)) {
+        range.setStart(textEl, 0);
+    } else {
+        range.collapse(false);
+    }
     var selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
+    Main.update();
 };
 
 })();

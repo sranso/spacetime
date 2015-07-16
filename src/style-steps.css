@@ -6,6 +6,7 @@
   padding-left: 20px;
   position: relative;
 }
+
   .step .matches-indicator-container {
     position: absolute;
     left: -20px;
@@ -136,8 +137,12 @@
         height: 1px;
       }
 
+  /***** reference */
+
   .reference {
     position: absolute;
+  }
+  .real-reference {
     text-align: center;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -147,8 +152,17 @@
     border-radius: 6px;
     height: 17px;
   }
-  .active .step-box .reference {
-    border-color: #bbb;
+  .literal {
+    border-bottom: solid 2px #ccc;
+    height: 20px;
+    margin-top: -20px;
+  }
+  .literal.reference-inserting {
+    height: 1px;
+    margin-top: 0px;
+  }
+  .reference.reference-absolute {
+    border-radius: 0;
   }
     .reference-content-text {
       display: none;
@@ -172,6 +186,22 @@
       height: 15px; /* also update .expression above */
       border: dotted 1px #ccc;
     }
+
+  .active .step-box .reference {
+    border-color: #bbb;
+  }
+  .active .step-box .literal.reference-inserting {
+    border-color: black;
+  }
+  .step-box .reference.reference-inserting {
+    background-color: #ccc;
+  }
+  .super-step .reference.reference-inserting {
+    background-color: #648ba0;
+  }
+
+
+  /***** result */
 
   .step .result {
     position: absolute;
@@ -248,17 +278,6 @@
       border-bottom: 12px solid #566e7b;
       border-top-width: 0px;
       cursor: pointer;
-    }
-
-    .step-box .reference.reference-inserting {
-      background-color: #ccc;
-    }
-    .super-step .reference.reference-inserting {
-      background-color: #648ba0;
-    }
-
-    .step .reference.reference-absolute {
-      border-radius: 0;
     }
 
 .step.active .step-box,
