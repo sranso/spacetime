@@ -285,7 +285,8 @@ DrawReferences.draw = function (d) {
         })
         .on('click', function (d, i) {
             if (!SuperStep.insertOrUpdateReference(containingStep, d)) {
-                selectReference(d, i, container);
+                DrawReferences.selectReference(d, i, container);
+                Main.update();
             }
         }) ;
 
@@ -341,7 +342,7 @@ DrawReferences.draw = function (d) {
         }) ;
 };
 
-var selectReference = function (reference, i, container) {
+DrawReferences.selectReference = function (reference, i, container) {
     var textEl = container.select('.placeholder.reference-' + i).node();
 
     var range = document.createRange();
@@ -354,7 +355,6 @@ var selectReference = function (reference, i, container) {
     var selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-    Main.update();
 };
 
 })();

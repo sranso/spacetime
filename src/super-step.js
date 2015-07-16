@@ -90,6 +90,10 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
     var referenceI = _.indexOf(reference.sink.references, reference);
 
     if (Global.inputReferenceIs.length) {
+        var inputReferenceI = Global.inputReferenceIs[0];
+        var replaceReference = inputStep.references[inputReferenceI];
+        var fixCursor = Reference.isLiteral(reference) !== Reference.isLiteral(replaceReference);
+
         _.each(Global.active, function (stretch) {
             var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
@@ -104,6 +108,14 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
                 step.references[referenceI] = reference;
             });
         });
+
+        Main.update();
+
+        if (fixCursor) {
+            var container = d3.select(expressionEl);
+            DrawReferences.selectReference(reference, inputReferenceI, container);
+        }
+
     } else {
         var insertBeforeI = Global.inputReferenceIs.cursorIndex;
         var cursorOffset = DomRange.currentCursorOffset(expressionEl);
@@ -136,9 +148,10 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
             }
         });
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
+
+        Main.update();
     }
 
-    Main.update();
     return true;
 };
 

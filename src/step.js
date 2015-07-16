@@ -106,7 +106,11 @@ Step.insertOrUpdateReference = function (resultStepView) {
 
     if (Global.inputReferenceIs.length) {
         var inputReferences = Global.inputStepView.step.references;
-        var absolute = inputReferences[Global.inputReferenceIs[0]].absolute;
+        var inputReferenceI = Global.inputReferenceIs[0];
+        var changeReference = inputReferences[inputReferenceI];
+        var fixCursor = Reference.isLiteral(changeReference);
+
+        var absolute = changeReference.absolute;
         if (resultStep.__index === -1) {
             absolute = true;
         }
@@ -133,6 +137,13 @@ Step.insertOrUpdateReference = function (resultStepView) {
                 Reference.setSource(reference, source);
             });
         });
+
+        Main.update();
+
+        if (fixCursor) {
+            var container = d3.select(expressionEl);
+            DrawReferences.selectReference(changeReference, inputReferenceI, container);
+        }
 
     } else {
         var insertBeforeI = Global.inputReferenceIs.cursorIndex;
@@ -165,9 +176,10 @@ Step.insertOrUpdateReference = function (resultStepView) {
         });
 
         DomRange.setCurrentCursorOffset(expressionEl, (before + innerText).length);
+
+        Main.update();
     }
 
-    Main.update();
 };
 
 var lexFromExpression = function (expressionEl) {
