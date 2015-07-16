@@ -182,7 +182,7 @@ Step.insertOrUpdateReference = function (resultStepView) {
 
 };
 
-Step.maybeSwitchToLiteral = function (key) {
+Step.enteringLiteral = function (key) {
     var inputReferenceI = Global.inputReferenceIs[0];
     var range = DomRange.currentRange();
     if (
@@ -220,6 +220,10 @@ Step.maybeSwitchToLiteral = function (key) {
 
     d3.event.preventDefault();
     Main.update();
+};
+
+Step.enteringNonLiteral = function (key) {
+    Global.lostLiterals = {};
 };
 
 var lexFromExpression = function (expressionEl) {
@@ -278,7 +282,35 @@ Step.updateText = function (expressionEl) {
         return token.type === 'literal' || token.type === 'reference';
     });
 
-    var isSuperStep = SuperStep.isSuperStep(Global.inputStepView.step);
+    var inputStep = Global.inputStepView.step;
+    var isSuperStep = SuperStep.isSuperStep(inputStep);
+
+    ///// lost literal
+    var originalReferenceIs = _.pluck(referenceTokens, 'originalReferenceI');
+    var lostReferences = _.filter(inputStep.references, function (reference, i) {
+        return !_.contains(originalReferenceIs, i);
+    });
+    if (
+        lostReferences.length === 1 &&
+        Reference.isLiteral(lostReferences[0])
+    ) {
+        var lostLiteral = lostReferences[0];
+        var lostLiteralI = _.indexOf(inputStep.references, lostLiteral);
+        var originalParsed = StepExecution.lex(inputStep.text);
+        var minusLostParsed = _.filter(originalParsed, function (token) {
+            return token.referenceI !== lostLiteralI;
+        });
+        var minusLostText = Step.textFromParsed(minusLostParsed);
+        var didLoseLiteral = text === minusLostText;
+
+    } else {
+        var didLoseLiteral = false;
+    }
+
+    if (didLoseLiteral) {
+        Global.lostLiterals = {};
+    }
+
     _.each(Global.active, function (stretch) {
         if (isSuperStep) {
             var step = SuperStep.findFromSteps(stretch.steps);
@@ -288,11 +320,19 @@ Step.updateText = function (expressionEl) {
         } else {
             var step = stretch.steps[0];
         }
-        step.text = text;
+
         var references = _.map(referenceTokens, function (ref) {
             if (ref.originalReferenceI == null) {
-                var reference = Reference.create();
-                reference.sink = step;
+                var lostLiteral = Global.lostLiterals[step.id];
+                if (
+                    ref.type === 'literal' &&
+                    lostLiteral
+                ) {
+                    var reference = lostLiteral;
+                } else {
+                    var reference = Reference.create();
+                    reference.sink = step;
+                }
             } else {
                 var reference = step.references[ref.originalReferenceI];
             }
@@ -302,12 +342,25 @@ Step.updateText = function (expressionEl) {
             }
             return reference;
         });
+
+        if (didLoseLiteral) {
+            var lostLiteral = step.references[lostLiteralI];
+            if (lostLiteral) {
+                Global.lostLiterals[step.id] = lostLiteral;
+            }
+        }
+
+        step.text = text;
         if (isSuperStep) {
             step.references = references;
         } else {
             Step.setReferences(step, references);
         }
     });
+
+    if (!didLoseLiteral) {
+        Global.lostLiterals = {};
+    }
 
     Main.update();
 };

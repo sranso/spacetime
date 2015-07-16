@@ -106,6 +106,7 @@ DrawSteps.draw = function () {
             Main.maybeUpdate(function () {
                 window.getSelection().removeAllRanges();
                 Input.startInput(d);
+                Global.lostLiterals = {};
                 Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
             });
@@ -306,7 +307,7 @@ DrawSteps.stepHtml = function (stepView) {
             var reference = references[token.referenceI];
             var result = reference.source.result;
             if (Reference.isLiteral(reference)) {
-                return '<span class="placeholder literal-placeholder' +
+                return '<span class="reference-placeholder literal-placeholder' +
                         ' reference-'+token.referenceI +
                         '">' + result + '</span>';
             }
@@ -322,7 +323,7 @@ DrawSteps.stepHtml = function (stepView) {
             if (resultText.indexOf('.') !== -1) {
                 width -= 4;
             }
-            return '<span class="placeholder reference-placeholder reference-' +
+            return '<span class="reference-placeholder variable-placeholder reference-' +
                     token.referenceI + '" style="width: ' + width + 'px;">' +
                     token.text + '</span>';
 

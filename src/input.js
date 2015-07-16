@@ -60,7 +60,9 @@ Input.textInputEvent = function (step, key) {
     } else if (key === 'A') {
         Reference.toggleAbsolute();
     } else if (_.contains(startNumberChars, key)) {
-        Step.maybeSwitchToLiteral(key);
+        Step.enteringLiteral(key);
+    } else {
+        Step.enteringNonLiteral(key);
     }
     d3.event.stopPropagation();
 };

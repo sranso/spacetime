@@ -130,11 +130,14 @@
       padding: 1px 8px 1px 8px;
     }
 
-      .expression .reference-placeholder {
+      .expression .variable-placeholder {
         display: inline-block;
         margin-right: 1px;
         font-size: 1px;
         height: 1px;
+      }
+      .super-step .expression .literal-placeholder {
+        font-size: 15px;
       }
 
   /***** reference */
@@ -142,7 +145,7 @@
   .reference {
     position: absolute;
   }
-  .real-reference {
+  .variable {
     text-align: center;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -159,7 +162,7 @@
   }
   .literal.reference-inserting {
     height: 1px;
-    margin-top: 0px;
+    margin-top: -1px;
   }
   .reference.reference-absolute {
     border-radius: 0;
@@ -192,6 +195,9 @@
   }
   .active .step-box .literal.reference-inserting {
     border-color: black;
+  }
+  .super-step.active .literal.reference-inserting {
+    border-color: white;
   }
   .step-box .reference.reference-inserting {
     background-color: #ccc;

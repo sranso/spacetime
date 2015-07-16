@@ -74,6 +74,7 @@ DrawSuperSteps.draw = function (stepEls) {
             Main.maybeUpdate(function () {
                 window.getSelection().removeAllRanges();
                 Input.startInput(d);
+                Global.lostLiterals = {};
                 Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
             });

@@ -181,7 +181,7 @@ var referenceClass = function (reference, referenceI) {
     if (Reference.isLiteral(reference)) {
         classes.push('literal');
     } else {
-        classes.push('real-reference');
+        classes.push('variable');
         var result = reference.source.result;
         if (Quads.isQuads(result)) {
             classes.push('canvas-reference');
@@ -237,7 +237,7 @@ DrawReferences.updateInputting = function () {
 
     var cursorIndex = 0;
     _.each(references, function (reference, i) {
-        var textEl = container.select('.placeholder.reference-' + i).node();
+        var textEl = container.select('.reference-placeholder.reference-' + i).node();
         var range = document.createRange();
         range.selectNodeContents(textEl);
         if (textEl.previousSibling && textEl.previousSibling.nodeType === 3) {
@@ -300,20 +300,21 @@ DrawReferences.draw = function (d) {
 
 
     referenceEls.each(function (reference, i) {
-        var textEl = container.select('.placeholder.reference-' + i).node();
+        var textEl = container.select('.reference-placeholder.reference-' + i).node();
         d3.select(this)
-            .attr('class', referenceClass(reference, i))
-            .style('left', textEl.offsetLeft + 'px') ;
+            .attr('class', referenceClass(reference, i)) ;
 
         if (Reference.isLiteral(reference)) {
             var top = textEl.offsetTop + textEl.offsetHeight;
             d3.select(this)
                 .style('top', top + 'px')
-                .style('width', textEl.offsetWidth + 'px') ;
+                .style('width', textEl.offsetWidth + 'px')
+                .style('left', textEl.offsetLeft + 'px') ;
         } else {
             d3.select(this)
                 .style('top', textEl.offsetTop + 'px')
-                .style('width', (textEl.offsetWidth - 2) + 'px') ;
+                .style('width', (textEl.offsetWidth - 2) + 'px')
+                .style('left', textEl.offsetLeft + 'px') ;
         }
     });
 
@@ -343,7 +344,7 @@ DrawReferences.draw = function (d) {
 };
 
 DrawReferences.selectReference = function (reference, i, container) {
-    var textEl = container.select('.placeholder.reference-' + i).node();
+    var textEl = container.select('.reference-placeholder.reference-' + i).node();
 
     var range = document.createRange();
     range.setEnd(textEl, 1);
