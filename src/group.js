@@ -6,7 +6,7 @@ Group.create = function () {
     return {
         id: Main.newId(),
         stretches: [],
-        color: [_.random(360), _.random(70, 95), _.random(78, 83)],
+        color: [_.random(360), _.random(70, 95), _.random(58, 63)],
         text: '',
         remember: false,
         stretchViews: [],

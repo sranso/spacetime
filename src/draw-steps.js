@@ -3,8 +3,6 @@ var DrawSteps = {};
 (function () {
 
 DrawSteps.setup = function () {
-    Draw.trackHtml.append('div')
-        .attr('class', 'selection-area-background') ;
 };
 
 DrawSteps.draw = function () {
@@ -300,9 +298,9 @@ DrawSteps.draw = function () {
 };
 
 DrawSteps.stepHtml = function (stepView) {
-    var parsed = StepExecution.lex(stepView.step.text);
+    var tokens = StepExecution.lex(stepView.step.text);
     var references = stepView.step.references;
-    var htmls = _.map(parsed, function (token) {
+    var htmls = _.map(tokens, function (token) {
         if (token.type === 'reference') {
             var reference = references[token.referenceI];
             var result = reference.source.result;

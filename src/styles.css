@@ -2,7 +2,7 @@ body {
   padding: 0;
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
-  background-color: #566e7b; /* change below and in draw.js */
+  background-color: #ebf2f5; /* change below and in style-steps.css */
 }
 
 a {
@@ -70,14 +70,19 @@ h1 {
   float: left;
   z-index: 1;
   position: relative;
+  padding-top: 50px;
+  padding-bottom: 1000px;
 }
   .selection-area-background {
     position: absolute;
+    width: 40px;
+    background-color: white;
+  }
+  #track-html > .selection-area-background {
+    box-shadow: 1px 1px 1px #d3dde3;
     top: -10px;
     bottom: -10px;
     left: 27px;
-    width: 40px;
-    background-color: #c6d1d7;
   }
 
 #right-side {
@@ -90,6 +95,7 @@ h1 {
   width: 640px;  /* update below and in global.js too */
   height: 400px;  /* update below and in global.js too */
   margin: 25px 10px 25px 17px;
+  box-shadow: 1px 1px 1px #d3dde3;
 }
 /* update below in .result-canvas if the aspect changes */
 #canvas canvas {

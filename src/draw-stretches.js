@@ -128,11 +128,14 @@ var drawStretches = function () {
         .attr('x', 0)
         .attr('y', 0)
         .on('mousedown', function (d) {
-            var kind = Selection.buttonSelectionKind();
-            Global.selection[kind].focus = d.stretch;
-            Global.selection[kind].group = d.stretch.group;
-            Global.connectStepView = null;
-            Main.update();
+            var series = d.stretch.series;
+            if (!series || !SuperStep.insertOrUpdateReference(null, series.targetLengthBy)) {
+                var kind = Selection.buttonSelectionKind();
+                Global.selection[kind].focus = d.stretch;
+                Global.selection[kind].group = d.stretch.group;
+                Global.connectStepView = null;
+                Main.update();
+            }
             d3.event.stopPropagation();
         })
         .on('mouseenter', function (d) {
@@ -175,19 +178,14 @@ var drawStretches = function () {
 
     var fill = function (d, i) {
         if (d.kind === 'selected') {
-            return '#566e7b';
+            return 'none';
         }
         if (d.stretch.group.remember) {
             var c = d.stretch.group.color;
         } else {
-            var c = [0, 0, 78];
+            var c = [0, 0, 58];
         }
-        var light = c[2];
-        if (d.kind === 'foreground' &&
-            d.stretch === Global.selection.foreground.focus) {
-            light -= 20;
-        }
-        return 'hsl(' + c[0] + ',' + c[1] + '%,' + light + '%)';
+        return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
     };
 
     stretchEls.select('rect.background')

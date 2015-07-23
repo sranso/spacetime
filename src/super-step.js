@@ -11,6 +11,7 @@ SuperStep.create = function () {
         collapsed: false,
         groupStretch: null,
         references: [],
+        autocompleted: false,
     };
     superStep.stepView = StepView.create(superStep);
     return superStep;
@@ -78,29 +79,55 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
         return false;
     }
 
-    if (!_.contains(inputStep.steps, reference.sink)) {
-        return false;
+    var isSeries = Series.isSeries(reference.sink);
+    if (isSeries) {
+        var stretches = reference.sink.stretches;
+        if (!_.contains(inputStep.steps, stretches[0].steps[0])) {
+            return false;
+        }
+        var lastStretch = stretches[stretches.length - 1];
+        if (!_.contains(inputStep.steps, lastStretch.steps[lastStretch.steps.length - 1])) {
+            return false;
+        }
+    } else {
+        if (!_.contains(inputStep.steps, reference.sink)) {
+            return false;
+        }
     }
 
     d3.event.stopPropagation();
 
     var expressionEl = d3.select(Global.inputStepView.__el__).select('.expression').node();
 
-    var referenceAway = reference.sink.__index - inputStep.steps[0].__index;
-    var referenceI = _.indexOf(reference.sink.references, reference);
+    if (isSeries) {
+        var stretch = reference.sink.stretches[0];
+        var active = Active.computeActive(stretch.group.stretches, Global.active, stretch, Global.active.focus);
+    } else {
+        var referenceI = _.indexOf(reference.sink.references, reference);
+        var referenceAway = reference.sink.__index - inputStep.steps[0].__index;
+        var active = _.map(Global.active, function (stretch) {
+            return [null, stretch];
+        });
+    }
 
     if (Global.inputReferenceIs.length) {
         var inputReferenceI = Global.inputReferenceIs[0];
         var replaceReference = inputStep.references[inputReferenceI];
         var fixCursor = Reference.isLiteral(reference) !== Reference.isLiteral(replaceReference);
 
-        _.each(Global.active, function (stretch) {
+        _.each(active, function (a) {
+            var stretch = a[1];
             var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }
-            var sink = Global.steps[step.steps[0].__index + referenceAway];
-            var reference = sink.references[referenceI];
+            if (isSeries) {
+                var series = a[0].series;
+                var reference = series && series.targetLengthBy;
+            } else {
+                var sink = Global.steps[step.steps[0].__index + referenceAway];
+                var reference = sink.references[referenceI];
+            }
             if (!reference) {
                 return;
             }
@@ -132,16 +159,23 @@ SuperStep.insertOrUpdateReference = function (containingStep, reference) {
             innerText = ' ' + innerText;
         }
         expressionEl.textContent = before + innerText + after;
-        var parsed = StepExecution.lex(expressionEl.textContent);
-        var text = Step.textFromParsed(parsed);
+        var tokens = StepExecution.lex(expressionEl.textContent);
+        var text = Step.textFromLexedTokens(tokens);
 
-        _.each(Global.active, function (stretch) {
+        _.each(active, function (a) {
+            var stretch = a[1];
             var step = SuperStep.findFromSteps(stretch.steps);
             if (!step) {
                 return;
             }
-            var sink = Global.steps[step.steps[0].__index + referenceAway];
-            var reference = sink.references[referenceI];
+            var sinkStep = Global.steps[step.steps[0].__index + referenceAway];
+            if (isSeries) {
+                var series = a[0].series;
+                var reference = series && series.targetLengthBy;
+            } else {
+                var sink = Global.steps[step.steps[0].__index + referenceAway];
+                var reference = sink.references[referenceI];
+            }
             if (reference) {
                 step.text = text;
                 step.references.splice(insertBeforeI, 0, reference);

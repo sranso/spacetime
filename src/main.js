@@ -21,6 +21,7 @@ Main.update = function () {
     StepView.computeViews();
     SuperStepView.computeViews();
     Active.computeMainActive();
+    Autocomplete.computeAutocomplete();
     Draw.draw();
     Webgl.drawMainCanvas();
 };

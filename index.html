@@ -6,9 +6,10 @@
   <link rel="stylesheet" type="text/css" href="./src/styles.css">
   <link rel="stylesheet" type="text/css" href="./src/style-steps.css">
   <link rel="stylesheet" type="text/css" href="./src/style-super-steps.css">
+  <link rel="stylesheet" type="text/css" href="./src/style-stretches.css">
+  <link rel="stylesheet" type="text/css" href="./src/style-autocomplete.css">
   <link rel="stylesheet" type="text/css" href="./src/style-environment.css">
   <link rel="stylesheet" type="text/css" href="./src/style-player.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-stretches.css">
   <link rel="stylesheet" type="text/css" href="./src/style-colors-for.css">
 </head>
 <body>
@@ -28,7 +29,9 @@
     <div id="track">
       <svg id="track-svg"></svg>
       <div id="track-foreground-indices"></div>
-      <div id="track-html"></div>
+      <div id="track-html">
+        <div id="autocomplete"></div>
+      </div>
       <div class="clear"></div>
     </div>
     <div id="right-side">
@@ -78,6 +81,7 @@ void main() {
 <script src="./src/series.js"></script>
 <script src="./src/player.js"></script>
 <script src="./src/active.js"></script>
+<script src="./src/autocomplete.js"></script>
 <script src="./src/selection.js"></script>
 <script src="./src/manipulation.js"></script>
 <script src="./src/dom-range.js"></script>
@@ -86,6 +90,7 @@ void main() {
 <script src="./src/draw-steps.js"></script>
 <script src="./src/draw-super-steps.js"></script>
 <script src="./src/draw-stretches.js"></script>
+<script src="./src/draw-autocomplete.js"></script>
 <script src="./src/draw-foreground-indices.js"></script>
 <script src="./src/draw-environment.js"></script>
 <script src="./src/draw-player.js"></script>

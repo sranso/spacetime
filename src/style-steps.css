@@ -9,10 +9,10 @@
 
   .step .matches-indicator-container {
     position: absolute;
-    left: -20px;
+    left: 0;
     top: 50%;
     margin-top: -6px;
-    background-color: #566e7b;
+    background-color: #ebf2f5;
     width: 12px;
     height: 12px;
   }
@@ -20,7 +20,7 @@
     position: absolute;
     left: 2px;
     top: 2px;
-    border: solid 1px #999;
+    border: solid 1px #becdd5; /* #d3dde3 darkened */
     border-radius: 5px;
     width: 5px;
     height: 5px;
@@ -30,11 +30,11 @@
     display: block;
   }
   .step.target .matches-indicator {
-    background-color: #999;
+    background-color: #becdd5;
   }
   .step.matches-hover .matches-indicator {
-    background-color: white;
-    border-color: white;
+    background-color: black;
+    border-color: black;
   }
 
 
@@ -42,6 +42,8 @@
   background-color: white;
   width: 425px;
   position: relative;
+  margin-bottom: 1px;
+  box-shadow: 1px 1px 1px #d3dde3;
 }
   .step .enable-disable {
     position: absolute;
@@ -51,7 +53,7 @@
     width: 9px;
     border-top-left-radius: 5px 15px;
     border-bottom-left-radius: 5px 15px;
-    border-right: dotted 1px #ccc;
+    border-right: dotted 1px #ddd;
     background-color: white;
     z-index: 3;
     cursor: pointer;
@@ -102,13 +104,13 @@
   }
   .step-box .expression-container {
     float: left;
-    width: 190px;
+    width: 224px;
     margin-right: 15px;
     margin-left: 53px; /* update above */
   }
   .super-step .expression-container {
-    margin: 4px 0 2px 80px;
-    width: 350px;
+    margin: 5px 0 5px 90px;
+    width: 340px;
   }
     .expression {
       font-size: 14px;
@@ -125,8 +127,6 @@
       min-height: 32px;  /* also update .result-canvas canvas below */
     }
     .super-step .expression {
-      color: white;
-      font-size: 17px;
       padding: 1px 8px 1px 8px;
     }
 
@@ -135,9 +135,6 @@
         margin-right: 1px;
         font-size: 1px;
         height: 1px;
-      }
-      .super-step .expression .literal-placeholder {
-        font-size: 15px;
       }
 
   /***** reference */
@@ -173,9 +170,6 @@
     .text-reference .reference-content-text {
       display: block;
     }
-    .super-step .reference-content-text {
-      color: white;
-    }
 
     .reference-content-canvas {
       display: none;
@@ -188,6 +182,7 @@
       width: 24px;
       height: 15px; /* also update .expression above */
       border: dotted 1px #ccc;
+      background-color: white;
     }
 
   .active .step-box .reference {
@@ -197,13 +192,13 @@
     border-color: black;
   }
   .super-step.active .literal.reference-inserting {
-    border-color: white;
+    border-color: black;
   }
   .step-box .reference.reference-inserting {
     background-color: #ccc;
   }
   .super-step .reference.reference-inserting {
-    background-color: #648ba0;
+    background-color: #ccc;
   }
 
 
@@ -261,7 +256,7 @@
       border-style: solid;
       border-width: 0 0 2px 2px;
       height: 4px;
-      border-color: #566e7b;
+      border-color: #d3dde3;
     }
 
     .result-corner-container {
@@ -281,7 +276,7 @@
       height: 0;
       border-left: 15px solid transparent;
       border-right: 15px solid transparent;
-      border-bottom: 12px solid #566e7b;
+      border-bottom: 12px solid #d3dde3;
       border-top-width: 0px;
       cursor: pointer;
     }
@@ -289,11 +284,11 @@
 .step.active .step-box,
 .step.active .result,
 .step.active .enable-disable {
-  background-color: #d6ebe4;  /* change below too */
+  background-color: #fffdcc;
 }
 .super-step.active .expression,
 .super-step.active .reference-content-text {
-  color: #d6ebe4;
+  color: #706c00;
 }
 
 .step.disabled .enable-disable {

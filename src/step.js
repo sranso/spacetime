@@ -19,6 +19,7 @@ Step.create = function () {
         forceDisabled: 0,
         forceEnabled: [],
         __startSeries: [],
+        autocompleted: false,
         // editable: true/false,  // only environment steps
     };
     step.stepView = StepView.create(step);
@@ -157,8 +158,8 @@ Step.insertOrUpdateReference = function (resultStepView) {
             innerText = ' ' + innerText;
         }
         expressionEl.textContent = before + innerText + after;
-        var parsed = StepExecution.lex(expressionEl.textContent);
-        var text = Step.textFromParsed(parsed);
+        var tokens = StepExecution.lex(expressionEl.textContent);
+        var text = Step.textFromLexedTokens(tokens);
 
         _.each(Global.active, function (stretch) {
             var step = stretch.steps[0];
@@ -227,7 +228,7 @@ Step.enteringNonLiteral = function (key) {
 };
 
 var lexFromExpression = function (expressionEl) {
-    var parsed = [];
+    var tokens = [];
     _.each(expressionEl.childNodes, function (childNode) {
         if (childNode.nodeType === 3) {
             var originalReferenceI = null;
@@ -239,34 +240,34 @@ var lexFromExpression = function (expressionEl) {
                 return !_.isNaN(i);
             });
         }
-        var childParsed = StepExecution.lex(childNode.textContent);
-        _.each(childParsed, function (token) {
+        var childTokens = StepExecution.lex(childNode.textContent);
+        _.each(childTokens, function (token) {
             if (token.type === 'reference' || token.type === 'literal') {
                 token.originalReferenceI = originalReferenceI;
             }
         });
-        parsed = parsed.concat(childParsed);
+        tokens = tokens.concat(childTokens);
     });
 
-    var mergedParsed = [];
+    var mergedTokens = [];
     var lastToken = {type: 'start-token'};
-    _.each(parsed, function (token) {
+    _.each(tokens, function (token) {
         if (token.type === 'literal' && lastToken.type === 'literal') {
             lastToken.text += token.text;
             if (lastToken.originalReferenceI == null) {
                 lastToken.originalReferenceI = token.originalReferenceI;
             }
         } else {
-            mergedParsed.push(token);
+            mergedTokens.push(token);
             lastToken = token;
         }
     });
 
-    return mergedParsed;
+    return mergedTokens;
 };
 
-Step.textFromParsed = function (parsed) {
-    return _.map(parsed, function (token) {
+Step.textFromLexedTokens = function (tokens) {
+    return _.map(tokens, function (token) {
         if (token.type === 'reference' || token.type === 'literal') {
             return Reference.sentinelCharacter;
         } else {
@@ -276,9 +277,9 @@ Step.textFromParsed = function (parsed) {
 };
 
 Step.updateText = function (expressionEl) {
-    var parsed = lexFromExpression(expressionEl);
-    var text = Step.textFromParsed(parsed);
-    var referenceTokens = _.filter(parsed, function (token) {
+    var tokens = lexFromExpression(expressionEl);
+    var text = Step.textFromLexedTokens(tokens);
+    var referenceTokens = _.filter(tokens, function (token) {
         return token.type === 'literal' || token.type === 'reference';
     });
 
@@ -296,11 +297,11 @@ Step.updateText = function (expressionEl) {
     ) {
         var lostLiteral = lostReferences[0];
         var lostLiteralI = _.indexOf(inputStep.references, lostLiteral);
-        var originalParsed = StepExecution.lex(inputStep.text);
-        var minusLostParsed = _.filter(originalParsed, function (token) {
+        var originalTokens = StepExecution.lex(inputStep.text);
+        var minusLostTokens = _.filter(originalTokens, function (token) {
             return token.referenceI !== lostLiteralI;
         });
-        var minusLostText = Step.textFromParsed(minusLostParsed);
+        var minusLostText = Step.textFromLexedTokens(minusLostTokens);
         var didLoseLiteral = text === minusLostText;
 
     } else {

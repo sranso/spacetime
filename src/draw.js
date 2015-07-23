@@ -13,6 +13,7 @@ Draw.setup = function () {
     drawOverallSetup();
     DrawSteps.setup();
     DrawStretches.setup();
+    DrawAutocomplete.setup();
     DrawEnvironment.setup();
     DrawPlayer.setup();
     drawSelectionInfoSetup();
@@ -21,6 +22,7 @@ Draw.setup = function () {
 Draw.draw = function () {
     DrawSteps.draw();
     DrawStretches.draw();
+    DrawAutocomplete.draw();
     DrawEnvironment.draw();
     DrawPlayer.draw();
     drawSelectionInfo();
@@ -64,6 +66,9 @@ var drawOverallSetup = function() {
             Global.mouseDown.result = true;
             Main.update();
         }) ;
+
+    Draw.trackHtml.append('div')
+        .attr('class', 'selection-area-background') ;
 };
 
 

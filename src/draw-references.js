@@ -20,7 +20,7 @@ DrawReferences.colorForResult = function (resultStepView) {
         }
     } else if (targetIndexStretch) {
         var series = targetIndexStretch.series;
-        if (series && series.targetLengthBy === resultStep) {
+        if (series && series.targetLengthBy.source === resultStep) {
             return 'referenced-by-color';
         } else {
             return '';
@@ -84,7 +84,7 @@ DrawReferences.colorForIndex = function (indexView) {
     if (!series) {
         return '';
     }
-    if (!series.targetLengthBy) {
+    if (Reference.isLiteral(series.targetLengthBy)) {
         return '';
     }
 
@@ -99,7 +99,7 @@ DrawReferences.colorForIndex = function (indexView) {
     var targetStepView = Main.targetStepView();
     if (targetStepView && targetStepView === Global.hoverResultStepView) {
         var resultStep = targetStepView.steps[targetStepView.steps.length - 1];
-        if (series.targetLengthBy === resultStep) {
+        if (series.targetLengthBy.source === resultStep) {
             return 'referenced-by-color';
         } else {
             return '';
@@ -279,7 +279,7 @@ DrawReferences.draw = function (d) {
 
     var referenceEnterEls = referenceEls.enter().append('div')
         .attr('class', 'reference')
-        .on('mousedown', function (d, i) {
+        .on('mousedown', function () {
             d3.event.stopPropagation();
             d3.event.preventDefault();
         })

@@ -2,17 +2,23 @@
   border-radius: 5px;
   position: relative;
 }
+.super-steps-container.contains-start {
+  padding-top: 10px;
+}
+.super-steps-container.contains-end {
+  height: 25px;
+}
+.super-steps-container.contains-none {
+  height: 1px;
+}
   .super-steps-container .selection-area-background {
     left: 27px;
     top: 0;
     bottom: 0;
     z-index: 1;
-    opacity: 0.8;
-    pointer-events: none;
   }
   .super-steps-container .super-step {
     position: relative;
-    min-height: 18px;
   }
     .super-step .group-stretch {
       height: 7px;
@@ -20,8 +26,8 @@
       top: 50%;
       margin-top: -3px;
       border-radius: 2px;
-      left: 14px;
-      width: 67px;
+      left: 17px;
+      width: 70px;
     }
 
   /* expression related stuff with style-step.css */

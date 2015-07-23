@@ -10,78 +10,23 @@ Series.create = function () {
     };
 };
 
+Series.isSeries = function (series) {
+    return series.targetLengthBy;
+};
+
 Series.setActiveSeriesLength = function (targetLength) {
-    if (targetLength === '' || _.isNaN(+targetLength)) {
-        return;
-    }
-    if (targetLength > 999) {  // TODO: better performance (don't show all views)
-        return;
-    }
     var stretch = Global.inputForegroundIndexStretch;
     if (!stretch) {
         return;
     }
 
-    targetLength = Math.floor(+targetLength);
-    var series = stretch.series;
-    if (series) {
-        var lastStretch = series.stretches[series.stretches.length - 1];
-    } else {
-        var lastStretch = stretch;
-    }
-
-    var active = Active.computeActiveWithSelection(lastStretch);
-    _.each(_.pluck(active, '0'), function (lastStretch) {
-        setStretchSeriesLength(lastStretch, targetLength);
+    _.each(Global.active, function (stretch) {
+        var series = stretch.series;
+        series.targetLengthBy.source = series.targetLengthBy;
+        series.targetLengthBy.result = targetLength;
     });
 
     Main.update();
-};
-
-var setStretchSeriesLength = function (stretch, targetLength) {
-    var series = stretch.series;
-
-    if (series) {
-        if (series.targetLengthBy) {
-            series.targetLengthBy = null;
-            series.stretches = series.stretches.slice(0, series.stretches.length);
-        }
-    } else {
-        series = {stretches: [stretch]};
-    }
-
-    adjustSeriesLength(series, targetLength);
-};
-
-var adjustSeriesLength = function (series, targetLength) {
-    var length = series.stretches.length;
-    if (length === targetLength) {
-        return;
-    }
-    var setInputForegroundIndexStretch = _.contains(series.stretches, Global.inputForegroundIndexStretch);
-    var lastStretch = series.stretches[series.stretches.length - 1];
-    if (length < targetLength) {
-        var underBy = targetLength - length;
-        for (var i = 0; i < underBy; i++) {
-            lastStretch = Manipulation.copyStretch(lastStretch);
-        }
-        if (_.contains(series.stretches, Global.selection.foreground.focus)) {
-            Global.selection.foreground.focus = lastStretch;
-        }
-    } else {
-        var overBy = length - targetLength;
-        for (var i = 0; i < overBy; i++) {
-            Manipulation.deleteStretch(lastStretch);
-            lastStretch = series.stretches[series.stretches.length - 1];
-        }
-        Manipulation.fixupSelectionAfterDelete();
-        if (targetLength === 0) {
-            lastStretch = null;
-        }
-    }
-    if (setInputForegroundIndexStretch) {
-        Global.inputForegroundIndexStretch = lastStretch;
-    }
 };
 
 Series.setActiveSeriesTargetLengthBy = function (resultStepView) {
@@ -93,6 +38,10 @@ Series.setActiveSeriesTargetLengthBy = function (resultStepView) {
     var series = stretch.series;
     if (!series) {
         series = Series.create();
+        var reference = Reference.create();
+        reference.sink = series;
+        series.targetLengthBy = reference;
+
         Global.newSeries.push(series);
         series.stretches = [stretch];
         stretch.series = series;
@@ -105,7 +54,7 @@ Series.setActiveSeriesTargetLengthBy = function (resultStepView) {
         return;
     }
 
-    series.targetLengthBy = resultStep;
+    series.targetLengthBy.source = resultStep;
     Global.inputForegroundIndexStretch = null;
 
     Main.update();
@@ -118,8 +67,7 @@ Series.clearStartSeries = function () {
 };
 
 Series.tagStartSeries = function (series) {
-    var dynamicSeries = _.filter(series, 'targetLengthBy');
-    _.each(dynamicSeries, function (series) {
+    _.each(series, function (series) {
         var step = series.stretches[0].steps[0];
 
         var seriesEnd = series.stretches[series.stretches.length - 1];
@@ -137,16 +85,20 @@ Series.tagStartSeries = function (series) {
     });
 };
 
-Series.adjustDynamicSeriesFor = function (step) {
+Series.adjustSeriesLengthFor = function (step) {
     Global.newSeries = [];
-    _.each(step.__startSeries, adjustDynamicSeries);
+    _.each(step.__startSeries, adjustSeriesLength);
     Series.tagStartSeries(Global.newSeries);
     Global.series = Global.series.concat(Global.newSeries);
     Global.newSeries = Global.series;
 };
 
-var adjustDynamicSeries = function (series) {
-    var targetLength = +series.targetLengthBy.result;
+var adjustSeriesLength = function (series) {
+    var targetLength = +series.targetLengthBy.source.result;
+    var length = series.stretches.length;
+    if (length === targetLength) {
+        return;
+    }
     if (_.isNaN(targetLength)) {
         targetLength = 1;
     }
@@ -157,7 +109,30 @@ var adjustDynamicSeries = function (series) {
     if (targetLength > 999) {
         targetLength = 999;
     }
-    adjustSeriesLength(series, targetLength);
+    var setInputForegroundIndexStretch = _.contains(series.stretches, Global.inputForegroundIndexStretch);
+    var lastStretch = series.stretches[series.stretches.length - 1];
+    if (length < targetLength) {
+        var underBy = targetLength - length;
+        for (var i = 0; i < underBy; i++) {
+            lastStretch = Manipulation.copyStretch(lastStretch);
+        }
+        if (_.contains(series.stretches, Global.selection.foreground.focus)) {
+            Global.selection.foreground.focus = lastStretch;
+        }
+    } else {
+        var overBy = length - targetLength;
+        for (var i = 0; i < overBy; i++) {
+            Manipulation.deleteStretch(lastStretch, false);
+            lastStretch = series.stretches[series.stretches.length - 1];
+        }
+        Manipulation.fixupSelectionAfterDelete(series.stretches[0].group);
+        if (targetLength === 0) {
+            lastStretch = null;
+        }
+    }
+    if (setInputForegroundIndexStretch) {
+        Global.inputForegroundIndexStretch = lastStretch;
+    }
 };
 
 })();

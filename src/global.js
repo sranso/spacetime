@@ -28,6 +28,7 @@ Global.mouseY = null;
 Global.lastQuads = null;
 Global.canvasFullWidth = 640;
 Global.canvasFullHeight = 400;
+Global.autocomplete = null;
 
 // var selectionHistory = [{selection: Global.selection}];
 // var selectionHistoryI = 0;

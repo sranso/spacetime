@@ -6,7 +6,7 @@ StepExecution.execute = function () {
     var start = +Date.now();
     Global.lastQuads = null;
     Series.clearStartSeries();
-    Series.tagStartSeries();
+    Series.tagStartSeries(Global.series);
     executeSteps();
     _.each(Global.environment, updateEnvironment);
     Player.updateAfterExecute();
@@ -101,7 +101,7 @@ var actions = {
     scale: {args: [3, 3], execute: Quads.scale},
 };
 
-StepExecution.parse = function (step) {
+var parse = function (step) {
     var tokens = StepExecution.lex(step.text);
     tokens = parseTokenType(step, tokens);
     tokens = consumeActionArguments(tokens);
@@ -196,7 +196,7 @@ var executeSteps = function () {
         if (!step) {
             return;
         }
-        Series.adjustDynamicSeriesFor(step);
+        Series.adjustSeriesLengthFor(step);
         executeStep(step);
         lastStep = step;
     }
@@ -204,7 +204,7 @@ var executeSteps = function () {
 
 var executeStep = function (step) {
     if (Step.isEnabled(step)) {
-        var tokens = StepExecution.parse(step);
+        var tokens = parse(step);
 
         if (!tokens.length) {
             step.result = null;

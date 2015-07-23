@@ -1,9 +1,10 @@
 .player {
   width: 310px;
   height: 40px;
-  background-color: #e4e4e4;
+  background-color: white;
   padding: 3px 5px;
   border-radius: 16px;
+  box-shadow: 1px 1px 1px #d3dde3;
 }
   .player .player-result {
     position: relative;
@@ -19,7 +20,7 @@
       top: 11px;
       width: 21px;
       height: 20px;
-      background-color: #ccc;
+      background-color: #ddd;
       border-top-left-radius: 5px;
       border-bottom-left-radius: 5px;
       cursor: pointer;
@@ -45,7 +46,7 @@
       left: -4px;
       height: 35px;
       width: 35px;
-      background-color: #ccc;
+      background-color: #ddd;
       border-radius: 24px;
       cursor: pointer;
     }
@@ -80,7 +81,7 @@
       left: -1px;
       width: 21px;
       height: 20px;
-      background-color: #ccc;
+      background-color: #ddd;
       border-top-right-radius: 5px;
       border-bottom-right-radius: 5px;
       cursor: pointer;
@@ -133,7 +134,7 @@
       top: 15px;
       left: 0;
       right: 0;
-      background-color: #ccc;
+      background-color: #ddd;
       height: 10px;
       cursor: pointer;
     }

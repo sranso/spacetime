@@ -21,7 +21,7 @@ Manipulation.copyStretch = function (original) {
     var originalEnd = original.steps[original.steps.length - 1].__index;
 
     ///// clone series
-    var originalSeries = _.filter(_.pluck(notCovering, 'series'));
+    var originalSeries = _.uniq(_.filter(_.pluck(notCovering, 'series')));
     var notCoveringSeries = _.filter(originalSeries, function (series) {
         var start = series.stretches[0].steps[0].__index;
         var end = series.stretches[series.stretches.length - 1];
@@ -36,6 +36,12 @@ Manipulation.copyStretch = function (original) {
     var seriesCloneMap = {};
     _.each(notCoveringSeries, function (originalSeries) {
         var series = Series.create();
+        var originalReference = originalSeries.targetLengthBy;
+        var originalStep = originalSeries.stretches[0].steps[0];
+        series.targetLengthBy = {
+            reference: originalReference,
+            referenceAway: originalStep.__index - originalReference.source.__index,
+        };
         Global.newSeries.push(series);
         seriesCloneMap[originalSeries.id] = series;
     });
@@ -58,6 +64,7 @@ Manipulation.copyStretch = function (original) {
             cloneMap[originalStretch.id] = stretch;
         } else {
             var stretch = SuperStep.create();
+            Autocomplete.registerStep(stretch);
             stretch.matchesId = originalStretch.matchesId;
             stretch.text = originalStretch.text;
             stretch.collapsed = originalStretch.collapsed;
@@ -70,6 +77,7 @@ Manipulation.copyStretch = function (original) {
             stretch.references = _.map(originalStretch.references, function (originalReference) {
                 var sink = originalReference.sink;
                 return {
+                    reference: originalReference,
                     referenceI: _.indexOf(sink.references, originalReference),
                     referenceAway: sink.__index - stretchIndex,
                 };
@@ -127,10 +135,10 @@ Manipulation.copyStretch = function (original) {
         var references = _.map(step.references, function (r) {
             var reference = Reference.create();
             reference.sink = step;
-            if (
-                !_.contains(original.steps, r.reference.source) &&
-                r.reference.absolute
-            ) {
+            if (Reference.isLiteral(r.reference)) {
+                reference.source = reference;
+                reference.result = r.reference.result;
+            } else if (r.reference.absolute && !_.contains(original.steps, r.reference.source)) {
                 reference.source = r.reference.source;
             } else {
                 reference.source = Global.steps[step.__index - r.referenceAway];
@@ -140,20 +148,6 @@ Manipulation.copyStretch = function (original) {
         });
         step.references = [];
         Step.setReferences(step, references);
-    });
-
-    ///// fixup superSteps
-    _.each(cloneMap, function (stretch) {
-        if (SuperStep.isSuperStep(stretch)) {
-            var groupStretch = stretch.groupStretch;
-            stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
-            var stretchIndex = stretch.steps[0].__index;
-            stretch.references = _.map(stretch.references, function (r) {
-                var step = Global.steps[stretchIndex + r.referenceAway];
-                return step.references[r.referenceI];
-            });
-            // TODO: handle null reference
-        }
     });
 
     ///// fixup stretch steps
@@ -174,13 +168,51 @@ Manipulation.copyStretch = function (original) {
         series.stretches = _.sortBy(series.stretches, function (stretch) {
             return stretch.steps[0].__index;
         });
+        series.targetLengthBy.result = series.stretches.length;
     });
     var series = original.series;
     if (!original.series) {
         series = copy.series = original.series = Series.create();
         Global.newSeries.push(series);
         series.stretches = [original, copy];
+        series.targetLengthBy = {reference: {}};
+        series.targetLengthBy.reference.source = series.targetLengthBy.reference;
+        seriesCloneMap[series.id] = series;
     }
+    _.each(seriesCloneMap, function (series) {
+        var originalReference = series.targetLengthBy.reference;
+        var referenceAway = series.targetLengthBy.referenceAway;
+
+        var reference = Reference.create();
+        reference.sink = series;
+        if (Reference.isLiteral(originalReference)) {
+            reference.source = reference;
+            reference.result = series.stretches.length;
+        } else {
+            var step = series.stretches[0].steps[0];
+            reference.source = Global.steps[step.__index - referenceAway];
+        }
+        series.targetLengthBy = reference;
+    });
+
+    ///// fixup superSteps
+    _.each(cloneMap, function (stretch) {
+        if (SuperStep.isSuperStep(stretch)) {
+            var groupStretch = stretch.groupStretch;
+            stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
+            var stretchIndex = stretch.steps[0].__index;
+            stretch.references = _.map(stretch.references, function (r) {
+                if (Series.isSeries(r.reference)) {
+                    var series = seriesCloneMap[r.reference.id];
+                    return series.targetLengthBy;
+                } else {
+                    var step = Global.steps[stretchIndex + r.referenceAway];
+                    return step.references[r.referenceI];
+                }
+            });
+            // TODO: handle null reference
+        }
+    });
 
     ///// fixup focus
     var focus = Global.selection.foreground.focus;
@@ -224,16 +256,21 @@ var _insertNewStep = function (stretch, matchesId) {
 };
 
 Manipulation.deleteActiveStretches = function () {
-    _.each(Global.active, Manipulation.deleteStretch);
+    _.each(Global.active, function (stretch) {
+        Manipulation.deleteStretch(stretch, true);
+    });
     if (Global.active[0].group) {
-        Manipulation.fixupSelectionAfterDelete();
+        Manipulation.fixupSelectionAfterDelete(Global.active[0].group);
     }
     Main.update();
 };
 
-Manipulation.fixupSelectionAfterDelete = function () {
-    var group = Global.selection.foreground.group;
+Manipulation.fixupSelectionAfterDelete = function (group) {
+    if (Global.selection.foreground.group !== group) {
+        return;
+    }
     var focus = Global.selection.foreground.focus;
+
     if (!group.stretches.length) {
         Group.remove(group);
 
@@ -272,7 +309,7 @@ Manipulation.fixupSelectionAfterDelete = function () {
     }
 };
 
-Manipulation.deleteStretch = function (stretch) {
+Manipulation.deleteStretch = function (stretch, manual) {
     var start = stretch.steps[0];
     var end = stretch.steps[stretch.steps.length - 1];
     var previous = start.previous;
@@ -305,8 +342,10 @@ Manipulation.deleteStretch = function (stretch) {
         if (series.stretches.length === 0) {
             Global.series = _.without(Global.series, series);
             Global.newSeries = _.without(Global.newSeries, series);
-        } else if (series.stretches.length === 1 && !series.targetLengthBy) {
+        } else if (manual && series.stretches.length === 1 && Reference.isLiteral(series.targetLengthBy)) {
             series.stretches[0].series = null;
+        } else {
+            series.targetLengthBy.result = series.stretches.length;
         }
     });
 

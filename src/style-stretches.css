@@ -9,6 +9,7 @@
   .stretch .index-in-series {
     text-anchor: middle;
     font-size: 10px;
+    fill: white;
   }
 
   .stretch .mouse {
@@ -45,7 +46,6 @@
   margin-top: -12px;
   min-width: 37px;
   text-align: center;
-  color: white;
   pointer-events: none;
 }
 .foreground-index.series {

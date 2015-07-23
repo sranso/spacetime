@@ -1,0 +1,13 @@
+#autocomplete {
+  position: absolute;
+  left: 60px;
+  width: 300px;
+  height: 200px;
+  display: none;
+  background-color: #eee;
+  z-index: 5;
+}
+
+.autocomplete {
+  height: 20px;
+}

@@ -78,6 +78,7 @@ DrawForegroundIndices.draw = function () {
         })
         .on('mousedown', function () {
             d3.event.stopPropagation();
+            d3.event.preventDefault();
         }) ;
 
     foregroundIndexEnterEls.append('div')

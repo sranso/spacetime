@@ -12,14 +12,16 @@ DrawSuperSteps.setup = function (stepEnterEls) {
 
 DrawSuperSteps.draw = function (stepEls) {
     var superStepsContainer = stepEls.select('.super-steps-container')
-        .style('height', function (d) {
+        .attr('class', function (d) {
+            var classes = ['super-steps-container'];
             if (d.startSuperSteps.length) {
-                return null;
+                classes.push('contains-start');
             } else if (d.previous && d.previous.endSuperSteps.length) {
-                return '5px';
+                classes.push('contains-end');
             } else {
-                return '1px';
+                classes.push('contains-none');
             }
+            return classes.join(' ');
         }) ;
 
     var superStepEls = superStepsContainer.selectAll('.super-step')
