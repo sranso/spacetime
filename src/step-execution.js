@@ -91,21 +91,9 @@ StepExecution.lex = function (text) {
     return tokens;
 };
 
-var actions = {
-    combine: {args: [2, 2], execute: Quads.combine},
-    shear: {args: [2, 2], execute: Quads.shear},
-    move: {args: [3, 3], execute: Quads.move},
-    pin: {args: [2, 3], execute: Quads.pin},
-    pixel: {args: [0, 1], execute: Quads.pixel},
-    rotate: {args: [2, 2], execute: Quads.rotate},
-    scale: {args: [3, 3], execute: Quads.scale},
-};
-
 var parse = function (step) {
     var tokens = StepExecution.lex(step.text);
-    tokens = parseTokenType(step, tokens);
-    tokens = consumeActionArguments(tokens);
-    return tokens;
+    return parseTokenType(step, tokens);
 };
 
 var parseTokenType = function (step, lexedTokens) {
@@ -113,12 +101,7 @@ var parseTokenType = function (step, lexedTokens) {
     for (var i = 0; i < lexedTokens.length; i++) {
         var token = lexedTokens[i];
 
-        if (token.type === 'text' && actions[token.text]) {
-            tokens.push({
-                type: 'action',
-                action: actions[token.text],
-            });
-        } else if (token.type === 'reference') {
+        if (token.type === 'reference') {
             tokens.push({
                 type: 'reference',
                 reference: step.references[token.referenceI],
@@ -128,49 +111,13 @@ var parseTokenType = function (step, lexedTokens) {
                 type: 'token',
                 value: token.text,
             });
-        } // else if 'whitespace' or non-action text, throw out
-    }
-    return tokens;
-};
-
-var consumeActionArguments = function (typedTokens) {
-    var tokens = [];
-    var i = 0;
-    while (i < typedTokens.length) {
-        var token = typedTokens[i];
-        var tokensRemaining = typedTokens.length - 1 - i;
-
-        if (token.type === 'action') {
-            var take = Math.min(tokensRemaining, token.action.args[1]);
-            token.args = typedTokens.slice(i + 1, i + 1 + take);
-            tokens.push(token);
-            i += take || 1;
-        } else {
-            tokens.push(token);
-            i += 1;
-        }
+        } // else if 'whitespace' throw out
     }
     return tokens;
 };
 
 var evaluateToken = function (token) {
-    if (token.type === 'action') {
-        var action = token.action;
-        if (token.args.length < action.args[0]) {
-            token.result = null;
-            token.error = 'too few args';
-            return token;
-        }
-        var args = _.map(token.args, evaluateToken);
-        var error = _.find(args, 'error');
-        if (error) {
-            token.result = null;
-            token.error = error;
-            return token;
-        }
-        token.result = action.execute.apply(null, _.pluck(args, 'result'));
-        token.error = null;
-    } else if (token.type === 'reference') {
+    if (token.type === 'reference') {
         token.result = token.reference.source.result;
         token.error = token.reference.source.error;
     } else {
@@ -204,6 +151,23 @@ var executeSteps = function () {
 
 var executeStep = function (step) {
     if (Step.isEnabled(step)) {
+        var action = Library.actions[step.matchesId];
+        if (action) {
+            var sources = _.pluck(step.references, 'source');
+            var error = _.find(tokens, 'error');
+            if (error) {
+                step.result = null;
+                step.error = error;
+            } else {
+                step.result = action.apply(null, _.pluck(sources, 'result'));
+                if (Quads.isQuads(step.result)) {
+                    Global.lastQuads = step.result;
+                }
+                step.error = null;
+            }
+            return;
+        }
+
         var tokens = parse(step);
 
         if (!tokens.length) {

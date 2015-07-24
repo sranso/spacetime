@@ -87,7 +87,9 @@ DrawSteps.draw = function () {
 
     expressionContainerEnterEls.append('div')
         .attr('class', 'expression')
-        .attr('contenteditable', true)
+        .attr('contenteditable', function (d) {
+            return !d.step.base
+        })
         .on('focus', function (d) {
             Main.maybeUpdate(function () { Input.startInput(d) });
         })
@@ -100,7 +102,9 @@ DrawSteps.draw = function () {
         .on('mousedown', function (d) {
             Main.maybeUpdate(function () {
                 window.getSelection().removeAllRanges();
-                Input.startInput(d);
+                if (!d.step.base) {
+                    Input.startInput(d);
+                }
                 Global.lostLiterals = {};
                 Global.inputForegroundIndexStretch = null;
                 Global.connectStepView = null;
@@ -195,6 +199,9 @@ DrawSteps.draw = function () {
             }
             if (d === targetStepView) {
                 classes.push('target');
+            }
+            if (d.step.base) {
+                classes.push('base');
             }
             if (
                 targetStepView &&

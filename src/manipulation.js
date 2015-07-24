@@ -101,6 +101,7 @@ Manipulation.copyStretch = function (original, autocomplete, inputStretch) {
         var step = Step.create();
         step.matchesId = originalStep.matchesId;
         step.text = originalStep.text;
+        step.base = originalStep.base;
         step.stretches = _.filter(originalStep.stretches, function (originalStretch) {
             return _.contains(notCovering, originalStretch);
         });
@@ -129,10 +130,8 @@ Manipulation.copyStretch = function (original, autocomplete, inputStretch) {
 
     ///// link steps
     if (autocomplete) {
-        //Manipulation.deleteStretch(inputStretch, false);
         var previous = inputStretch.steps[0].previous;
         var next = inputStretch.steps[0];
-        //var next = inputStretch.steps[inputStretch.steps.length - 1].next;
     } else {
         var previous = original.steps[original.steps.length - 1];
         var next = previous.next;
@@ -374,6 +373,8 @@ Manipulation.deleteStretch = function (stretch, manual) {
             Global.series = _.without(Global.series, series);
             Global.newSeries = _.without(Global.newSeries, series);
         } else if (manual && series.stretches.length === 1 && Reference.isLiteral(series.targetLengthBy)) {
+            Global.series = _.without(Global.series, series);
+            Global.newSeries = _.without(Global.newSeries, series);
             series.stretches[0].series = null;
         } else {
             series.targetLengthBy.result = series.stretches.length;

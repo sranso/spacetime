@@ -51,23 +51,24 @@ Autocomplete.computeAutocomplete = function () {
         return;
     }
 
-    var sortMatches = function (matches) {
-        return _.sortBy(matches, function (match) {
-            return -match.step.id; // TODO: better sorting
-        });
-    };
-
-    matches = sortMatches(matches);
     var matchesByMatchesId = _.groupBy(matches, function (match) {
         return match.step.matchesId;
     });
     matchesByMatchesId = _.map(matchesByMatchesId, function (matches) {
-        matches = sortMatches(matches);
-        return _.uniq(matches, false, 'text');
+        matches = _.sortBy(matches, function (match) {
+            return match.step.id; // TODO: better sorting
+        });
+        matches = _.uniq(matches, false, 'text');
+        matches = _.sortBy(matches, function (match) {
+            return -match.step.id; // TODO: better sorting
+        });
+        return matches;
     });
     var firstOfMatchesId = _.map(matchesByMatchesId, _.first);
     var restOfMatchesId = _.map(matchesByMatchesId, _.rest);
-    restOfMatchesId = sortMatches(_.flatten(restOfMatchesId));
+    restOfMatchesId = _.sortBy(_.flatten(restOfMatchesId), function (match) {
+        return -match.step.id; // TODO: better sorting
+    });
     matches = _.flatten(firstOfMatchesId).concat(restOfMatchesId);
 
     Global.autocomplete = _.map(matches, function (match) {

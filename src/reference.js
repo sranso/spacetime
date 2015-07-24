@@ -36,8 +36,11 @@ Reference.toggleAbsolute = function () {
         _.each(Global.active, function (stretch) {
             var references = stretch.steps[0].references;
             _.each(Global.inputReferenceIs, function (referenceI) {
-                references[referenceI].absolute = !absolute;
-                Reference.setSource(references[referenceI], sources[referenceI]);
+                var reference = references[referenceI];
+                if (!Reference.isLiteral(reference)) {
+                    reference.absolute = !absolute;
+                    Reference.setSource(reference, sources[referenceI]);
+                }
             });
         });
         d3.event.preventDefault();

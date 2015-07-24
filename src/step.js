@@ -19,7 +19,7 @@ Step.create = function () {
         forceDisabled: 0,
         forceEnabled: [],
         __startSeries: [],
-        autocompleted: false,
+        base: false,
         // editable: true/false,  // only environment steps
     };
     step.stepView = StepView.create(step);

@@ -103,6 +103,7 @@ var environment = [
 ];
 Global.environment = _.map(environment, StepView.create);
 
+Library.setup();
 Input.dvorak();
 Draw.setup();
 Main.update();

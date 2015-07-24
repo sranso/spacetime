@@ -112,6 +112,10 @@
     margin: 5px 0 5px 90px;
     width: 340px;
   }
+  .base .step-box .expression-container {
+    background-color: #4c4c4c;
+    color: white;
+  }
     .expression {
       font-size: 14px;
       padding: 7px;
@@ -306,4 +310,7 @@
 
 .step.disabled .expression-container {
   color: #ccc;
+}
+.step.base.disabled .step-box .expression-container {
+  color: #888;
 }

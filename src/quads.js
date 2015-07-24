@@ -4,7 +4,7 @@ var Quads = {};
 
 var numQuadCoordinates = 4 * 2;
 
-var createQuads = function () {
+Quads.create = function () {
     return {
         matrix: mat2d.create(),
         pin: new Float32Array(2),
@@ -31,7 +31,7 @@ var inverseMatrix = mat2d.create();
 
 Quads.pixel = function (quads) {
     if (!quads) {
-        quads = createQuads();
+        quads = Quads.create();
     }
     return pixel(quads);
 };
@@ -53,6 +53,9 @@ var pixel = function (originalQuads) {
 };
 
 Quads.scale = function (quads, x, y) {
+    if (!quads) {
+        quads = Quads.create();
+    }
     return scale(quads, [+x, +y]);
 };
 
@@ -71,6 +74,9 @@ var scale = function (originalQuads, v) {
 };
 
 Quads.rotate = function (quads, degrees) {
+    if (!quads) {
+        quads = Quads.create();
+    }
     return rotate(quads, +degrees / 360 * 2 * Math.PI);
 };
 
@@ -89,6 +95,9 @@ var rotate = function (originalQuads, rad) {
 };
 
 Quads.shear = function (quads, amount) {
+    if (!quads) {
+        quads = Quads.create();
+    }
     return shear(quads, +amount);
 };
 
@@ -112,6 +121,9 @@ var shear = function (originalQuads, amount) {
 };
 
 Quads.move = function (quads, x, y) {
+    if (!quads) {
+        quads = Quads.create();
+    }
     return move(quads, [+x, +y]);
 };
 
@@ -125,10 +137,8 @@ var move = function (originalQuads, v) {
 };
 
 Quads.pin = function (quads, x, y) {
-    if (!y) {
-        y = x;
-        x = quads;
-        quads = createQuads();
+    if (!quads) {
+        quads = Quads.create();
     }
     return pin(quads, [+x, +y]);
 };
@@ -140,6 +150,12 @@ var pin = function (originalQuads, v) {
 };
 
 Quads.combine = function (quads1, quads2) {
+    if (!quads1) {
+        quads1 = Quads.create();
+    }
+    if (!quads2) {
+        quads2 = Quads.create();
+    }
     return combine(quads1, quads2);
 };
 
