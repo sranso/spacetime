@@ -4,18 +4,26 @@ var Manipulation = {};
 
 Manipulation.copyActiveStretches = function () {
     Global.active[0].group.remember = true;
-    _.each(Global.active, Manipulation.copyStretch);
+    _.each(Global.active, function (stretch) {
+        Manipulation.copyStretch(stretch, false);
+    });
 
     Main.update();
 };
 
-Manipulation.copyStretch = function (original) {
+Manipulation.copyStretch = function (original, autocomplete, inputStretch) {
     var p = Stretch.overlappingPartitions(original);
     var notCovering = _.union(
         p("<=[==>_]__"),
         p("__[_<==]=>"),
         p("__[<<>>]__")
     );
+
+    if (autocomplete) {
+        var targetP = Stretch.overlappingPartitions(inputStretch);
+    } else {
+        var targetP = p;
+    }
 
     var originalStart = original.steps[0].__index;
     var originalEnd = original.steps[original.steps.length - 1].__index;
@@ -120,8 +128,15 @@ Manipulation.copyStretch = function (original) {
     });
 
     ///// link steps
-    var previous = original.steps[original.steps.length - 1];
-    var next = previous.next;
+    if (autocomplete) {
+        //Manipulation.deleteStretch(inputStretch, false);
+        var previous = inputStretch.steps[0].previous;
+        var next = inputStretch.steps[0];
+        //var next = inputStretch.steps[inputStretch.steps.length - 1].next;
+    } else {
+        var previous = original.steps[original.steps.length - 1];
+        var next = previous.next;
+    }
     var lastCopyStep = copy.steps[copy.steps.length - 1];
     Step.linkSteps([previous, copy.steps[0]]);
     Step.linkSteps(copy.steps);
@@ -130,7 +145,7 @@ Manipulation.copyStretch = function (original) {
     /////
     Step.computeSteps();
 
-    ///// fixup refereneces
+    ///// fixup references
     _.each(copy.steps, function (step) {
         var references = _.map(step.references, function (r) {
             var reference = Reference.create();
@@ -151,17 +166,27 @@ Manipulation.copyStretch = function (original) {
     });
 
     ///// fixup stretch steps
-    _.each(p("<=[===>]__"), function (stretch) {
+    _.each(targetP("<=[===>]__"), function (stretch) {
         stretch.steps.push(lastCopyStep);
     });
-    _.each(p("<<[<==>]>>"), Stretch.fixupSteps);
-    _.each(p("__[_<<<]=>"), function (originalAfter) {
-        var stretch = cloneMap[originalAfter.id];
-        stretch.steps.push(originalAfter.steps[originalAfter.steps.length - 1]);
-        Stretch.fixupSteps(stretch);
-        originalAfter.steps.push(original.steps[original.steps.length - 1]);
-        Stretch.fixupSteps(originalAfter);
-    });
+    if (autocomplete) {
+        var focusOverlapping = _.intersection(targetP("__[<==>]__"), Selection.foregroundStretches());
+        _.each(targetP("__[<===]=>").concat(focusOverlapping), function (stretch) {
+            stretch.steps.unshift(copy.steps[0]);
+        });
+    }
+    _.each(targetP("<=[====]=>"), Stretch.fixupSteps);
+    _.each(targetP("<=[===>]__"), Stretch.fixupSteps);
+    _.each(targetP("__[<===]=>"), Stretch.fixupSteps);
+    if (!autocomplete) {
+        _.each(targetP("__[_<<<]=>"), function (originalAfter) {
+            var stretch = cloneMap[originalAfter.id];
+            stretch.steps.push(originalAfter.steps[originalAfter.steps.length - 1]);
+            Stretch.fixupSteps(stretch);
+            originalAfter.steps.push(original.steps[original.steps.length - 1]);
+            Stretch.fixupSteps(originalAfter);
+        });
+    }
 
     ///// fixup series
     _.each(originalSeries, function (series) {
@@ -171,7 +196,7 @@ Manipulation.copyStretch = function (original) {
         series.targetLengthBy.result = series.stretches.length;
     });
     var series = original.series;
-    if (!original.series) {
+    if (!autocomplete && !original.series) {
         series = copy.series = original.series = Series.create();
         Global.newSeries.push(series);
         series.stretches = [original, copy];
@@ -202,8 +227,8 @@ Manipulation.copyStretch = function (original) {
             stretch.groupStretch = cloneMap[groupStretch.id] || groupStretch;
             var stretchIndex = stretch.steps[0].__index;
             stretch.references = _.map(stretch.references, function (r) {
-                if (Series.isSeries(r.reference)) {
-                    var series = seriesCloneMap[r.reference.id];
+                if (Series.isSeries(r.reference.sink)) {
+                    var series = seriesCloneMap[r.reference.sink.id];
                     return series.targetLengthBy;
                 } else {
                     var step = Global.steps[stretchIndex + r.referenceAway];
@@ -216,8 +241,14 @@ Manipulation.copyStretch = function (original) {
 
     ///// fixup focus
     var focus = Global.selection.foreground.focus;
-    if (cloneMap[focus.id]) {
+    if (!autocomplete && cloneMap[focus.id]) {
         Global.selection.foreground.focus = cloneMap[focus.id];
+    }
+
+    ///// collapse copy (autocomplete)
+    if (autocomplete) {
+        copy.collapsed = true;
+        copy.autocompleted = true;
     }
 
     return copy;

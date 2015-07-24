@@ -134,6 +134,7 @@ var drawStretches = function () {
                 Global.selection[kind].focus = d.stretch;
                 Global.selection[kind].group = d.stretch.group;
                 Global.connectStepView = null;
+                Global.inputStepView = null;
                 Main.update();
             }
             d3.event.stopPropagation();

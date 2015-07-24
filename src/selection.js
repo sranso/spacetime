@@ -75,6 +75,7 @@ var makeSuperStep = function (toggleCollapsed) {
         var superStep = SuperStep.findFromSteps(stretch.steps);
         if (!superStep) {
             superStep = SuperStep.create();
+            superStep.autocompleted = true;
             Autocomplete.registerStep(superStep);
             superStep.matchesId = matchesId;
             superStep.groupStretch = stretch;

@@ -91,9 +91,6 @@ DrawSteps.draw = function () {
         .on('focus', function (d) {
             Main.maybeUpdate(function () { Input.startInput(d) });
         })
-        .on('blur', function (d) {
-            Main.maybeUpdate(function () { Global.inputStepView = null });
-        })
         .on('input', function (d) {
             if (d !== Global.inputStepView) {
                 Input.startInput(d);
@@ -243,7 +240,9 @@ DrawSteps.draw = function () {
 
     DrawReferences.updateInputting();
 
-    stepBoxEls.select('.expression-container').each(DrawReferences.draw);
+    stepBoxEls.select('.expression-container').each(function (d) {
+        DrawReferences.draw(this, d, false);
+    });
     DrawSuperSteps.drawReferences(stepEls);
 
     /////////////////// must be after updateInputting

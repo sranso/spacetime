@@ -26,18 +26,24 @@ Autocomplete.computeAutocomplete = function () {
         return;
     }
 
-    var matches = _.filter(stepBank, function (step) {
+    var matches = [];
+    _.each(stepBank, function (step) {
         var s = Autocomplete.searchInfo(step);
         if (
             s.searchable &&
             s.text.length >= 2 &&
             s.text.indexOf(search.text) === 0
         ) {
-            return _.every(search.referenceTypes, function (type, i) {
+            var typesMatch = _.every(search.referenceTypes, function (type, i) {
                 return type === s.referenceTypes[i];
             });
+            if (typesMatch) {
+                matches.push({
+                    step: step,
+                    text: s.text,
+                });
+            }
         }
-        return false;
     });
 
     if (!matches.length) {
@@ -45,19 +51,31 @@ Autocomplete.computeAutocomplete = function () {
         return;
     }
 
-    matches = _.sortBy(matches, function (match) {
-        return -match.id; // TODO: better sorting
-    });
+    var sortMatches = function (matches) {
+        return _.sortBy(matches, function (match) {
+            return -match.step.id; // TODO: better sorting
+        });
+    };
 
-    var matchesByMatchesId = _.groupBy(matches, 'matchesId');
+    matches = sortMatches(matches);
+    var matchesByMatchesId = _.groupBy(matches, function (match) {
+        return match.step.matchesId;
+    });
+    matchesByMatchesId = _.map(matchesByMatchesId, function (matches) {
+        matches = sortMatches(matches);
+        return _.uniq(matches, false, 'text');
+    });
     var firstOfMatchesId = _.map(matchesByMatchesId, _.first);
     var restOfMatchesId = _.map(matchesByMatchesId, _.rest);
-    restOfMatchesId = _.sortBy(_.flatten(restOfMatchesId), function (match) {
-        return -match.id; // TODO: better sorting
-    });
+    restOfMatchesId = sortMatches(_.flatten(restOfMatchesId));
     matches = _.flatten(firstOfMatchesId).concat(restOfMatchesId);
 
-    Global.autocomplete = matches;
+    Global.autocomplete = _.map(matches, function (match) {
+        return {
+            step: match.step,
+            __el__: null,
+        };
+    });
 };
 
 Autocomplete.registerStep = function (step) {
@@ -97,12 +115,27 @@ Autocomplete.searchInfo = function (step) {
     };
 };
 
-Autocomplete.select = function (step) {
+Autocomplete.select = function (original) {
     if (!Global.inputStepView) {
         return;
     }
 
-    console.log(step.text);
+    _.each(Global.active, function (stretch) {
+        var copy = Manipulation.copyStretch(original, true, stretch);
+        if (_.intersection(stretch.steps, Global.inputStepView.steps).length) {
+            Global.inputStepView = copy.stepView;
+        }
+    });
+
+    _.each(Global.active, function (stretch) {
+        Manipulation.deleteStretch(stretch, false);
+    });
+
+    Main.update();
+    window.getSelection().removeAllRanges();
+    var expressionEl = d3.select(Global.inputStepView.__el__).select('.expression').node();
+    expressionEl.focus();
+    DomRange.setCurrentCursorOffset(expressionEl, expressionEl.textContent.length);
 };
 
 })();

@@ -58,6 +58,8 @@ Group.remove = function (group) {
     _.each(group.stretches, function (stretch) {
         Stretch.setSteps(stretch, []);
     });
+    var series = _.pluck(group.stretches, 'series');
+    Global.series = _.difference(Global.series, series);
     Global.groups = _.without(Global.groups, group);
 };
 

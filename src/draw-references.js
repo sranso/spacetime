@@ -270,25 +270,29 @@ DrawReferences.updateInputting = function () {
     }
 };
 
-DrawReferences.draw = function (d) {
-    var container = d3.select(this);
+DrawReferences.draw = function (containerEl, d, autocomplete) {
+    var container = d3.select(containerEl);
     var containingStep = d.step;
 
     var referenceEls = container.selectAll('.reference')
         .data(containingStep.references) ;
 
     var referenceEnterEls = referenceEls.enter().append('div')
-        .attr('class', 'reference')
-        .on('mousedown', function () {
-            d3.event.stopPropagation();
-            d3.event.preventDefault();
-        })
-        .on('click', function (d, i) {
-            if (!SuperStep.insertOrUpdateReference(containingStep, d)) {
-                DrawReferences.selectReference(d, i, container);
-                Main.update();
-            }
-        }) ;
+        .attr('class', 'reference') ;
+
+    if (!autocomplete) {
+        referenceEnterEls
+            .on('mousedown', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+            })
+            .on('click', function (d, i) {
+                if (!SuperStep.insertOrUpdateReference(containingStep, d)) {
+                    DrawReferences.selectReference(d, i, container);
+                    Main.update();
+                }
+            }) ;
+    }
 
     referenceEnterEls.append('div')
         .attr('class', 'reference-content-text') ;

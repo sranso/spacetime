@@ -65,9 +65,6 @@ DrawSuperSteps.draw = function (stepEls) {
         .on('focus', function (d) {
             Main.maybeUpdate(function () { Input.startInput(d) });
         })
-        .on('blur', function (d) {
-            Main.maybeUpdate(function () { Global.inputStepView = null });
-        })
         .on('input', function (d) {
             Input.startInput(d);
             Step.updateText(this);
@@ -131,7 +128,9 @@ DrawSuperSteps.draw = function (stepEls) {
 DrawSuperSteps.drawReferences = function (stepEls) {
     var superStepsContainer = stepEls.select('.super-steps-container')
     var superStepEls = superStepsContainer.selectAll('.super-step');
-    superStepEls.select('.expression-container').each(DrawReferences.draw);
+    superStepEls.select('.expression-container').each(function (d) {
+        DrawReferences.draw(this, d, false);
+    });
 };
 
 })();
