@@ -91,7 +91,7 @@ Library.setup = function () {
     actions.push([baseShear, Quads.shear]);
 
 
-    ///// pin
+    ///// pin/origin
     var basePin = createBase();
     var references = [
         createReference(basePin, blankQuadsStep),
@@ -99,7 +99,7 @@ Library.setup = function () {
         createLiteral(basePin, 20),
     ];
     Step.setReferences(basePin, references);
-    basePin.text = 'pin ' + Reference.sentinelCharacter + ' ' + Reference.sentinelCharacter + ' ' + Reference.sentinelCharacter;
+    basePin.text = 'origin ' + Reference.sentinelCharacter + ' ' + Reference.sentinelCharacter + ' ' + Reference.sentinelCharacter;
 
     setupSuper(basePin);
     actions.push([basePin, Quads.pin]);
@@ -132,6 +132,7 @@ var setupSuper = function (base) {
     baseGroup.stretches.push(stretch);
 
     var step = SuperStep.create();
+    step.matchesId = Main.newId();
     step.groupStretch = stretch;
     step.references = base.references.slice();
     step.text = base.text;

@@ -30,7 +30,7 @@ var cloneQuads = function (originalQuads, length) {
 var inverseMatrix = mat2d.create();
 
 Quads.pixel = function (quads) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return pixel(quads);
@@ -53,7 +53,7 @@ var pixel = function (originalQuads) {
 };
 
 Quads.scale = function (quads, x, y) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return scale(quads, [+x, +y]);
@@ -74,7 +74,7 @@ var scale = function (originalQuads, v) {
 };
 
 Quads.rotate = function (quads, degrees) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return rotate(quads, +degrees / 360 * 2 * Math.PI);
@@ -95,7 +95,7 @@ var rotate = function (originalQuads, rad) {
 };
 
 Quads.shear = function (quads, amount) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return shear(quads, +amount);
@@ -121,7 +121,7 @@ var shear = function (originalQuads, amount) {
 };
 
 Quads.move = function (quads, x, y) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return move(quads, [+x, +y]);
@@ -137,7 +137,7 @@ var move = function (originalQuads, v) {
 };
 
 Quads.pin = function (quads, x, y) {
-    if (!quads) {
+    if (!Quads.isQuads(quads)) {
         quads = Quads.create();
     }
     return pin(quads, [+x, +y]);
@@ -150,10 +150,10 @@ var pin = function (originalQuads, v) {
 };
 
 Quads.combine = function (quads1, quads2) {
-    if (!quads1) {
+    if (!Quads.isQuads(quads1)) {
         quads1 = Quads.create();
     }
-    if (!quads2) {
+    if (!Quads.isQuads(quads2)) {
         quads2 = Quads.create();
     }
     return combine(quads1, quads2);

@@ -42,7 +42,7 @@ h1 {
 #track {
   float: left;
   position: relative;
-  margin-top: 50px;
+  margin-top: 20px;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -70,7 +70,7 @@ h1 {
   float: left;
   z-index: 1;
   position: relative;
-  padding-top: 50px;
+  padding-top: 40px;
   padding-bottom: 1000px;
 }
   .selection-area-background {
@@ -86,8 +86,9 @@ h1 {
   }
 
 #right-side {
-  float: left;
   width: 682px;
+  position: fixed;
+  right: 0;
 }
 
 #canvas {

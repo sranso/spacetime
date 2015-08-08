@@ -122,7 +122,7 @@ Autocomplete.select = function (original) {
     }
 
     _.each(Global.active, function (stretch) {
-        var copy = Manipulation.copyStretch(original, true, stretch);
+        var copy = Manipulation.copyStretch(original, stretch);
         if (_.intersection(stretch.steps, Global.inputStepView.steps).length) {
             Global.inputStepView = copy.stepView;
         }

@@ -17,7 +17,7 @@ StepExecution.execute = function () {
 var startNumberChars = ['-', '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 var numberChars = ['.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-var tokenChars = ['(', ')', '+', '-', '*', '/', '%'];
+var tokenChars = ['(', ')', '+', '~', '*', '/', '%', '<', '>', '&', '|', '='];
 
 StepExecution.lex = function (text) {
     var tokens = [];
@@ -52,8 +52,7 @@ StepExecution.lex = function (text) {
 
         if (
             _.contains(startNumberChars, c) &&
-            token.type !== 'literal' &&
-            (c !== '-' || _.contains(numberChars, nextC))
+            token.type !== 'literal'
         ) {
             token = {
                 type: 'literal',
@@ -121,7 +120,7 @@ var evaluateToken = function (token) {
         token.result = token.reference.source.result;
         token.error = token.reference.source.error;
     } else {
-        token.result = token.value;
+        token.result = token.value.replace('~', '-');
         token.error = null;
     }
     return token;

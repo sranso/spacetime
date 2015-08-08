@@ -5,13 +5,14 @@ var Manipulation = {};
 Manipulation.copyActiveStretches = function () {
     Global.active[0].group.remember = true;
     _.each(Global.active, function (stretch) {
-        Manipulation.copyStretch(stretch, false);
+        Manipulation.copyStretch(stretch, null);
     });
 
     Main.update();
 };
 
-Manipulation.copyStretch = function (original, autocomplete, inputStretch) {
+Manipulation.copyStretch = function (original, inputStretch) {
+    var autocomplete = inputStretch != null;
     var p = Stretch.overlappingPartitions(original);
     var notCovering = _.union(
         p("<=[==>_]__"),
@@ -240,7 +241,7 @@ Manipulation.copyStretch = function (original, autocomplete, inputStretch) {
 
     ///// fixup focus
     var focus = Global.selection.foreground.focus;
-    if (!autocomplete && cloneMap[focus.id]) {
+    if (!autocomplete && focus && cloneMap[focus.id]) {
         Global.selection.foreground.focus = cloneMap[focus.id];
     }
 

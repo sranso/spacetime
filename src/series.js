@@ -114,7 +114,7 @@ var adjustSeriesLength = function (series) {
     if (length < targetLength) {
         var underBy = targetLength - length;
         for (var i = 0; i < underBy; i++) {
-            lastStretch = Manipulation.copyStretch(lastStretch);
+            lastStretch = Manipulation.copyStretch(lastStretch, null);
         }
         if (_.contains(series.stretches, Global.selection.foreground.focus)) {
             Global.selection.foreground.focus = lastStretch;

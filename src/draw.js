@@ -16,7 +16,6 @@ Draw.setup = function () {
     DrawAutocomplete.setup();
     DrawEnvironment.setup();
     DrawPlayer.setup();
-    drawSelectionInfoSetup();
 };
 
 Draw.draw = function () {
@@ -25,7 +24,6 @@ Draw.draw = function () {
     DrawAutocomplete.draw();
     DrawEnvironment.draw();
     DrawPlayer.draw();
-    drawSelectionInfo();
 };
 
 var drawOverallSetup = function() {
@@ -69,41 +67,6 @@ var drawOverallSetup = function() {
 
     Draw.trackHtml.append('div')
         .attr('class', 'selection-area-background') ;
-};
-
-
-///////////////// Selections
-
-var drawSelectionInfoSetup = function () {
-    selectionInfoEl = d3.select('#selection');
-};
-
-var drawSelectionInfo = function () {
-    var selections = [
-        Global.selection.foreground,
-        Global.selection.background,
-    ];
-
-    var selectionEls = selectionInfoEl.selectAll('.selection-info')
-        .data(selections) ;
-
-    selectionEls.select('.selection-color-border')
-        .style('border-color', function (d) {
-            return d.group ? '#555' : '#eee';
-        }) ;
-
-    selectionEls.select('.selection-color')
-        .style('background-color', function (d) {
-            if (d.group) {
-                if (d.group.remember) {
-                    var c = d.group.color;
-                } else {
-                    var c = [0, 0, 78];
-                }
-                return 'hsl(' + c[0] + ',' + c[1] + '%,' + c[2] + '%)';
-            }
-            return 'white';
-        }) ;
 };
 
 })();
