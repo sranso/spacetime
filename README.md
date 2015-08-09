@@ -1,3 +1,3 @@
-# CompA (temporary name)
+# Grid
 
 Programming editor and environment.

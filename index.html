@@ -2,89 +2,13 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Comp A Editor</title>
-  <link rel="stylesheet" type="text/css" href="./src/styles.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-steps.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-super-steps.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-stretches.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-autocomplete.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-environment.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-player.css">
-  <link rel="stylesheet" type="text/css" href="./src/style-colors-for.css">
+  <title>Grid Editor</title>
 </head>
 <body>
-  <div id="editor">
-    <div id="track">
-      <svg id="track-svg"></svg>
-      <div id="track-foreground-indices"></div>
-      <div id="track-html">
-        <div id="autocomplete"></div>
-      </div>
-      <div class="clear"></div>
-    </div>
-    <div id="right-side">
-      <div id="canvas"></div>
-      <div id="control"></div>
-      <div id="environment">
-        <div id="add-environment">+</div>
-      </div>
-    </div>
-  </div>
-<script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec2 a_position;
-
-uniform mat3 u_matrix;
-
-void main() {
-  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
-}
-</script>
-
-<script id="fragment-shader" type="x-shader/x-fragment">
-precision mediump float;
-
-uniform vec4 u_color;
-
-void main() {
-  gl_FragColor = u_color;
-}
-</script>
 
 <script src="./vendor/underscore.js"></script>
 <script src="./vendor/d3.js"></script>
 <script src="./vendor/gl-matrix.js"></script>
 
-<script src="./src/global.js"></script>
-<script src="./src/input.js"></script>
-<script src="./src/quads.js"></script><!-- must be before step-execution -->
-<script src="./src/step.js"></script>
-<script src="./src/step-view.js"></script>
-<script src="./src/step-execution.js"></script>
-<script src="./src/super-step.js"></script>
-<script src="./src/super-step-view.js"></script>
-<script src="./src/reference.js"></script>
-<script src="./src/group.js"></script>
-<script src="./src/stretch.js"></script>
-<script src="./src/stretch-view.js"></script>
-<script src="./src/series.js"></script>
-<script src="./src/player.js"></script>
-<script src="./src/active.js"></script>
-<script src="./src/autocomplete.js"></script>
-<script src="./src/selection.js"></script>
-<script src="./src/manipulation.js"></script>
-<script src="./src/dom-range.js"></script>
-<script src="./src/webgl.js"></script>
-<script src="./src/draw.js"></script>
-<script src="./src/draw-steps.js"></script>
-<script src="./src/draw-super-steps.js"></script>
-<script src="./src/draw-stretches.js"></script>
-<script src="./src/draw-autocomplete.js"></script>
-<script src="./src/draw-foreground-indices.js"></script>
-<script src="./src/draw-environment.js"></script>
-<script src="./src/draw-player.js"></script>
-<script src="./src/draw-references.js"></script>
-<script src="./src/draw-helper.js"></script>
-<script src="./src/library.js"></script>
-<script src="./src/main.js"></script>
 </body>
 </html>
