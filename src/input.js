@@ -162,11 +162,21 @@ var dvorakKeypressMap = {
 var keypressMap;
 
 Input.dvorak = function () {
-    keypressMap = dvorakKeypressMap;
+    localStorage.setItem('CompA_keyboard_mode', 'dvorak');
+    Input.setup();
 };
 
 Input.qwerty = function () {
-    keypressMap = qwertyKeypressMap;
+    localStorage.setItem('CompA_keyboard_mode', 'qwerty');
+    Input.setup();
+};
+
+Input.setup = function () {
+    if (localStorage.getItem('CompA_keyboard_mode') === 'dvorak') {
+        keypressMap = dvorakKeypressMap;
+    } else {
+        keypressMap = qwertyKeypressMap;
+    }
 };
 
 })();
