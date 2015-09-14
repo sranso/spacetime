@@ -1,0 +1,3 @@
+_ = {
+    random: _.random,
+};
