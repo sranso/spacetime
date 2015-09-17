@@ -6,7 +6,14 @@ Operation.create = function (text, execute) {
     return {
         text: text,
         execute: execute,
+        data: 0,
     };
+};
+
+Operation.clone = function (oldOperation) {
+    var operation = Operation.create(oldOperation.text, oldOperation.execute);
+    // operation.data = oldOperation.data;
+    return operation;
 };
 
 Operation.none = Operation.create('none', function () { return null });
@@ -24,7 +31,7 @@ Operation.double = Operation.create('double', function (cell, a) {
 });
 
 Operation.literal = Operation.create('literal', function (cell) {
-    return +cell.text;
+    return +cell.operation.data;
 });
 
 })();

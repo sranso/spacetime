@@ -8,11 +8,14 @@ Execute.transform = function () {
 };
 
 Execute.transformGrid = function (grid) {
+    grid.numFrames = 0;
+
     for (var c = 0; c < grid.cells.length; c++) {
         for (var r = 0; r < grid.cells[0].length; r++) {
-            var cell = Grid.cellAt(grid, c, r);
+            var cell = grid.cells[c][r];
             Execute.transformCell(grid, cell, c, r);
         }
+        grid.numFrames += grid.cells[c][grid.cells[0].length - 1].grid.numFrames;
     }
 };
 
@@ -47,7 +50,10 @@ var transformArgs = function (grid, args, c, r) {
 
 var appendHistory = function (cell, main, additional) {
     if (main) {
-        var historyLayer = main.grid.cells[0].slice();
+        var historyLayer = main.grid.cells[0].slice(0, -1);
+        var mainClone = Cell.clone(main);
+        mainClone.args = Cell.autoArgs[main.args.length];
+        historyLayer.push(mainClone);
     } else {
         var historyLayer = [];
     }
@@ -56,32 +62,22 @@ var appendHistory = function (cell, main, additional) {
     grid.cells[0] = historyLayer;
 
     additional.forEach(function (originalArgCell) {
-        var argCell = Cell.create();
-        argCell.grid = originalArgCell.grid;
-        argCell.group = originalArgCell.group;
-        argCell.text = originalArgCell.text;
-        argCell.gridTick = Global.transformationTick;
+        var argCell = Cell.clone(originalArgCell);
         argCell.transformation = Transformation.detached;
         historyLayer.push(argCell);
     });
 
-    var historyCell = Cell.create();
-    historyCell.group = cell.group;
-    historyCell.text = cell.text;
-    var t = cell.transformation;
-    historyCell.transformation = Transformation.create(t.text, t.transform);
+    var historyCell = Cell.clone(cell);
+    historyCell.transformation = Transformation.clone(cell.transformation);
+    historyCell.transformation.data = cell.transformation.data;
     historyCell.transformation.apply = true;
-    var args = [];
-    var j = -cell.args.length / 2;
-    for (var i = 0; i < cell.args.length; i += 2) {
-        args[i] = 0;
-        args[i + 1] = j;
-        j++;
-    }
-    historyCell.args = args;
+    historyCell.args = Cell.autoArgs[cell.args.length];
+    historyCell.grid = grid;
     historyLayer.push(historyCell);
 
     Execute.transformCell(grid, historyCell, 0, historyLayer.length - 1);
+
+    grid.numFrames = historyCell.grid.numFrames;
 
     return grid;
 };

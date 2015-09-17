@@ -5,6 +5,7 @@ var Grid = {};
 Grid.create = function () {
     return {
         layer: 'over',
+        numFrames: 0,
         cells: [],
         areas: [],
     };
