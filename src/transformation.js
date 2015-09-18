@@ -20,6 +20,27 @@ Transformation.clone = function (oldTransformation) {
     return transformation;
 };
 
+Transformation.basicStartOfTransform = function (main, additional) {
+    if (main) {
+        var layer = main.grid.cells[0].slice(0, -1);
+        var mainClone = Cell.clone(main);
+        mainClone.args = Cell.autoArgs[main.args.length];
+        mainClone.gridTick = Global.transformationTick;
+        layer.push(mainClone);
+    } else {
+        var layer = [];
+    }
+
+    additional.forEach(function (originalArgCell) {
+        var argCell = Cell.clone(originalArgCell);
+        argCell.transformation = Transformation.detached;
+        argCell.gridTick = Global.transformationTick;
+        layer.push(argCell);
+    });
+
+    return layer;
+};
+
 Transformation.immediate = function (operation) {
     var transformation = Transformation.create(operation.text, immediateTransform);
     transformation.operation = operation;
@@ -107,15 +128,14 @@ Transformation.literal = Transformation.immediate(Operation.literal);
 
 Transformation.none = Transformation.create('none', function (cell, main, additional) {
     var grid = Grid.create();
-    grid.cells[0] = cell.grid.cells[0].slice();
     grid.layer = 'under';
+    grid.cells[0] = Transformation.basicStartOfTransform(main, additional);
 
-    var original = grid.cells[0].pop();
-    var baseCell = Cell.clone(original);
+    var baseCell = Cell.clone(cell);
     baseCell.base = true;
     baseCell.transformation = Transformation.none;
-
     grid.cells[0].push(baseCell);
+
     grid.numFrames = 1;
 
     return grid;
@@ -126,6 +146,37 @@ Transformation.detached = Transformation.create('detached', function (cell) {
     return cell.grid;
 });
 Transformation.detached.apply = true;
+
+Transformation.expand = Transformation.create('expand', function (cell, main, additional) {
+    var grid = cell.grid;
+    var originalCells = grid.cells;
+    var area = grid.areas[0];
+
+    var argLayer = Transformation.basicStartOfTransform(main, additional);
+    grid.cells = [];
+
+    for (var c = 0; c <= area.coords[2]; c++) {
+        var expanded = originalCells[c].slice(area.coords[1]);
+        var column = argLayer.concat(expanded);
+        grid.cells.push(column);
+    }
+
+    var rowDiff = argLayer.length - area.coords[1];
+    grid.areas.forEach(function (area) {
+        area.coords[1] += rowDiff;
+        area.coords[3] += rowDiff;
+    });
+
+    for (var c = 0; c <= area.coords[2]; c++) {
+        for (var r = area.coords[1]; r <= area.coords[3]; r++) {
+            var cell = grid.cells[c][r];
+            Execute.transformCell(grid, cell, c, r);
+        }
+        grid.numFrames += grid.cells[c][grid.cells[0].length - 1].grid.numFrames;
+    }
+
+    return grid;
+});
 
 Transformation.sampleAtData = Transformation.create('sampleAtData', function (cell, main, additional) {
     var sampleInfo = cell.transformation.data;

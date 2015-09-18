@@ -49,33 +49,22 @@ var transformArgs = function (grid, args, c, r) {
 };
 
 var appendHistory = function (cell, main, additional) {
-    if (main) {
-        var historyLayer = main.grid.cells[0].slice(0, -1);
-        var mainClone = Cell.clone(main);
-        mainClone.args = Cell.autoArgs[main.args.length];
-        historyLayer.push(mainClone);
-    } else {
-        var historyLayer = [];
-    }
     var grid = Grid.create();
     grid.layer = 'history';
-    grid.cells[0] = historyLayer;
+    grid.cells[0] = Transformation.basicStartOfTransform(main, additional);
 
-    additional.forEach(function (originalArgCell) {
-        var argCell = Cell.clone(originalArgCell);
-        argCell.transformation = Transformation.detached;
-        historyLayer.push(argCell);
-    });
-
-    var historyCell = Cell.clone(cell);
-    historyCell.transformation = Transformation.clone(cell.transformation);
-    historyCell.transformation.data = cell.transformation.data;
-    historyCell.transformation.apply = true;
+    if (cell.grid === Grid.none) {
+        var historyCell = Cell.clone(cell);
+        historyCell.transformation = Transformation.clone(cell.transformation);
+        historyCell.transformation.data = cell.transformation.data;
+        historyCell.transformation.apply = true;
+    } else {
+        var historyCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
+    }
     historyCell.args = Cell.autoArgs[cell.args.length];
-    historyCell.grid = grid;
-    historyLayer.push(historyCell);
+    grid.cells[0].push(historyCell);
 
-    Execute.transformCell(grid, historyCell, 0, historyLayer.length - 1);
+    Execute.transformCell(grid, historyCell, 0, grid.cells[0].length - 1);
 
     grid.numFrames = historyCell.grid.numFrames;
 
