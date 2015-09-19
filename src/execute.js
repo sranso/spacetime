@@ -4,6 +4,9 @@ var Execute = {};
 
 Execute.transform = function () {
     Global.transformationTick += 1;
+    Global.stats.numCellsTransformed = 0;
+    Global.stats.numCellsTouchedSampling = 0;
+
     Execute.transformGrid(Global.grid);
 };
 
@@ -24,6 +27,7 @@ Execute.transformCell = function (grid, cell, c, r) {
         return;
     }
     cell.gridTick = Global.transformationTick;
+    Global.stats.numCellsTransformed += 1;
 
     if (cell.detached) {
         var transformation = Transformation.detached;

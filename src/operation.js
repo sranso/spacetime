@@ -10,12 +10,6 @@ Operation.create = function (text, execute) {
     };
 };
 
-Operation.clone = function (oldOperation) {
-    var operation = Operation.create(oldOperation.text, oldOperation.execute);
-    // operation.data = oldOperation.data;
-    return operation;
-};
-
 Operation.none = Operation.create('none', function () {
     throw new Error('illegal Operation.none used');
 });

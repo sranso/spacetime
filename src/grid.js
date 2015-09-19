@@ -6,8 +6,8 @@ Grid.create = function () {
     return {
         layer: 'over',
         numFrames: 0,
-        cells: [],
-        areas: [],
+        cells: [], // TODO: make this Grid.noCells,
+        areas: [], // TODO: make this Grid.noAreas,
     };
 };
 
@@ -24,5 +24,8 @@ Grid.cellAt = function (grid, c, r) {
         return grid.cells[c][r];
     }
 };
+
+Grid.noCells = [];
+Grid.noAreas = [];
 
 })();

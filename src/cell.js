@@ -8,33 +8,14 @@ Cell.create = function () {
         group: Group.none,
         transformation: Transformation.none,
         operation: Operation.none,
-        args: [],     // [c1, r1, c2, r2, ...]
+        args: Cell.noArgs,     // [c1, r1, c2, r2, ...]
         text: '',
-
         gridTick: 0,
-        //conditional: false,
-        //disabled: false,
         detached: false,
         apply: false,
         base: false,
         result: null,
     };
-};
-
-Cell.clone = function (original) {
-    var cell = Cell.create();
-    cell.grid = original.grid;
-    cell.group = original.group;
-    cell.transformation = original.transformation;
-    cell.operation = original.operation;
-    cell.args = original.args;
-    cell.text = original.text;
-    //cell.gridTick = original.gridTick;
-    cell.detached = original.detached;
-    cell.apply = original.apply;
-    cell.base = original.base;
-    // cell.result = original.result;
-    return cell;
 };
 
 Cell.none = Cell.create();

@@ -16,14 +16,24 @@ Main.setup = function () {
     var subCell, operation;
 
         subCell = Cell.create();
-        operation = Operation.clone(Operation.literal);
+        //======== BEGIN (Operation) ========
+        operation = Operation.create(
+            Operation.literal.text,
+            Operation.literal.execute
+        );
         operation.data = 3;
+        //======== END (Operation) ========
         subCell.transformation = Transformation.immediate(operation);
         subGrid.cells.push([subCell]);
 
         subCell = Cell.create();
-        operation = Operation.clone(Operation.literal);
+        //======== BEGIN (Operation) ========
+        operation = Operation.create(
+            Operation.literal.text,
+            Operation.literal.execute
+        );
         operation.data = 7;
+        //======== END (Operation) ========
         subCell.transformation = Transformation.immediate(operation);
         subGrid.cells.push([subCell]);
 
@@ -42,8 +52,13 @@ Main.setup = function () {
     column.push(cell);
 
     // simple 3 -> 4 -> 5
-    //var operation = Operation.clone(Operation.literal);
+    ////======== BEGIN (Operation) ========
+    //var operation = Operation.create(
+    //    Operation.literal.text,
+    //    Operation.literal.execute
+    //);
     //operation.data = 3;
+    ////======== END (Operation) ========
     //cell.transformation = Transformation.immediate(operation);
     //column.push(cell);
 
