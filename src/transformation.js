@@ -337,15 +337,15 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
 var fillFrames = function (cell, frames, startSample, endSample) {
     Global.stats.numCellsTouchedSampling += 1;
     var sample = 0;
-    var subCells = cell.grid.cells;
-    var r = subCells[0].length - 1;
-    for (var c = 0; c < cell.grid.cells.length; c++) {
-        var subCell = subCells[c][r];
+    var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
+    var r = applyingCell.grid.cells[0].length - 1;
+    for (var c = 0; c < applyingCell.grid.cells.length; c++) {
+        var subCell = applyingCell.grid.cells[c][r];
         var subEnd = sample + subCell.grid.numFrames - 1;
         if (sample <= endSample && subEnd >= startSample) {
-            if (subCell.base) {
+            if (subCell.grid.numFrames === 1) {
                 Global.stats.numCellsTouchedSampling += 1;
-                Execute.transformCell(cell.grid, subCell, c, r);
+                Execute.transformCell(applyingCell.grid, subCell, c, r);
                 frames.push(subCell);
             } else {
                 var newStart = startSample - sample;
