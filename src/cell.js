@@ -10,9 +10,12 @@ Cell.create = function () {
         operation: Operation.none,
         args: [],     // [c1, r1, c2, r2, ...]
         text: '',
+
         gridTick: 0,
         //conditional: false,
         //disabled: false,
+        detached: false,
+        apply: false,
         base: false,
         result: null,
     };
@@ -24,9 +27,11 @@ Cell.clone = function (original) {
     cell.group = original.group;
     cell.transformation = original.transformation;
     cell.operation = original.operation;
-    // cell.args = original.args;
+    cell.args = original.args;
     cell.text = original.text;
     //cell.gridTick = original.gridTick;
+    cell.detached = original.detached;
+    cell.apply = original.apply;
     cell.base = original.base;
     // cell.result = original.result;
     return cell;
@@ -53,5 +58,7 @@ var setupAutoArgs = function () {
 };
 
 Cell.autoArgs = setupAutoArgs();
+
+Cell.noArgs = Cell.autoArgs[0];
 
 })();

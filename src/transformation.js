@@ -7,7 +7,6 @@ Transformation.create = function (text, transform) {
         text: text,
         transform: transform,
         operation: Operation.none,
-        apply: false,
         data: 0,
     };
 };
@@ -15,15 +14,15 @@ Transformation.create = function (text, transform) {
 Transformation.clone = function (oldTransformation) {
     var transformation = Transformation.create(oldTransformation.text, oldTransformation.transform);
     transformation.operation = oldTransformation.operation;
-    // transformation.apply = oldTransformation.apply;
     // transformation.data = oldTransformation.data;
     return transformation;
 };
 
-Transformation.basicStartOfTransform = function (main, additional) {
+var basicStartOfTransform = function (main, additional) {
     if (main) {
         var layer = main.grid.cells[0].slice(0, -1);
         var mainClone = Cell.clone(main);
+        mainClone.detached = main.transformation === Transformation.detached;
         mainClone.args = Cell.autoArgs[main.args.length];
         mainClone.gridTick = Global.transformationTick;
         layer.push(mainClone);
@@ -33,7 +32,7 @@ Transformation.basicStartOfTransform = function (main, additional) {
 
     additional.forEach(function (originalArgCell) {
         var argCell = Cell.clone(originalArgCell);
-        argCell.transformation = Transformation.detached;
+        argCell.detached = true;
         argCell.gridTick = Global.transformationTick;
         layer.push(argCell);
     });
@@ -49,21 +48,15 @@ Transformation.immediate = function (operation) {
 
 var immediateTransform = function (cell, main, additional) {
     var grid = Grid.create();
-    grid.cells = [];
     grid.layer = 'under';
+    grid.cells[0] = basicStartOfTransform(main, additional);
 
-    // TODO: immediate transformation with args.
-    grid.cells[0] = [];
-
-    var baseCell = Cell.create();
+    var baseCell = Cell.clone(cell);
     baseCell.base = true;
-    baseCell.group = cell.group;
-    baseCell.text = cell.text;
+    baseCell.apply = false;
     baseCell.operation = cell.transformation.operation;
-    baseCell.transformation = Transformation.none;
-    baseCell.args = Cell.autoArgs[cell.args.length];
-
     grid.cells[0].push(baseCell);
+
     grid.numFrames = 1;
 
     return grid;
@@ -80,8 +73,18 @@ var linearTransform = function (cell, main, additional) {
     grid.cells = [];
     grid.layer = 'under';
 
-    var sampleAt = 0;
+    var sampleStart = 0;
     var sampleInfo = additional.map(function (argCell) {
+        if (argCell.transformation.transform === Transformation.sampleAtData.transform) {
+            return {
+                start: argCell.transformation.data[0],
+                cell: argCell.grid.cells[0][argCell.grid.cells[0].length - 2],
+            };
+        }
+        return {
+            start: 0,
+            cell: argCell,
+        };
     });
 
     var appliedMain = main.grid.cells[0][main.grid.cells[0].length - 1];
@@ -90,19 +93,43 @@ var linearTransform = function (cell, main, additional) {
 
         var r = column.length - 1;
         var subMain = column[column.length - 1];
-        // additional.forEach(function (add
+        sampleInfo.forEach(function (info) {
+            var argCell = info.cell;
+            var argSampleStart = sampleStart + info.start;
+            var argSampleEnd = argSampleStart + subMain.grid.numFrames - 1;
 
-        var transformCell = Cell.create();
-        transformCell.group = cell.group;
-        transformCell.text = cell.text;
+            var layer = basicStartOfTransform(argCell, Cell.noArgs);
+
+            var sampleCell = Cell.create();
+            sampleCell.transformation = Transformation.clone(Transformation.sampleAtData);
+            sampleCell.transformation.data = [argSampleStart, argSampleEnd];
+            sampleCell.apply = true;
+            sampleCell.args = Cell.autoArgs[2];
+            layer.push(sampleCell);
+
+            var historyCell = Cell.create();
+            historyCell.transformation = sampleCell.transformation;
+            historyCell.detached = true;
+            historyCell.grid = Grid.create();
+            historyCell.grid.layer = 'history';
+            historyCell.grid.cells.push(layer);
+            historyCell.gridTick = Global.transformationTick;
+
+            var r = layer.length - 1;
+            Execute.transformCell(historyCell.grid, sampleCell, 0, r);
+
+            column.push(historyCell);
+        });
+
+        sampleStart += subMain.grid.numFrames;
+
+        var transformCell = Cell.clone(cell);
         if (subMain.base) {
             transformCell.base = true;
             transformCell.operation = cell.transformation.operation;
         }
-        transformCell.transformation = Transformation.clone(cell.transformation);
-        transformCell.transformation.data = cell.transformation.data;
-        transformCell.transformation.apply = false;
         transformCell.args = Cell.autoArgs[cell.args.length];
+        transformCell.apply = false;
         column.push(transformCell);
 
 
@@ -125,34 +152,42 @@ Transformation.plusOne = Transformation.linear(Operation.plusOne);
 Transformation.double = Transformation.linear(Operation.double);
 
 Transformation.literal = Transformation.immediate(Operation.literal);
-
-Transformation.none = Transformation.create('none', function (cell, main, additional) {
-    var grid = Grid.create();
-    grid.layer = 'under';
-    grid.cells[0] = Transformation.basicStartOfTransform(main, additional);
-
-    var baseCell = Cell.clone(cell);
-    baseCell.base = true;
-    baseCell.transformation = Transformation.none;
-    grid.cells[0].push(baseCell);
-
-    grid.numFrames = 1;
-
-    return grid;
-});
+Transformation.none = Transformation.immediate(Operation.none);
 
 Transformation.detached = Transformation.create('detached', function (cell) {
     Execute.transformGrid(cell.grid);
     return cell.grid;
 });
-Transformation.detached.apply = true;
+
+Transformation.history = Transformation.create('history', function (cell, main, additional) {
+    var grid = Grid.create();
+    grid.layer = 'history';
+    grid.cells[0] = basicStartOfTransform(main, additional);
+
+    if (cell.grid === Grid.none) {
+        var historyCell = Cell.clone(cell);
+        historyCell.base = false;
+        historyCell.operation = Operation.none;
+        historyCell.apply = true;
+    } else {
+        var historyCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
+    }
+    historyCell.args = Cell.autoArgs[cell.args.length];
+    grid.cells[0].push(historyCell);
+
+    Execute.transformCell(grid, historyCell, 0, grid.cells[0].length - 1);
+
+    grid.numFrames = historyCell.grid.numFrames;
+
+    return grid;
+});
 
 Transformation.expand = Transformation.create('expand', function (cell, main, additional) {
     var grid = cell.grid;
     var originalCells = grid.cells;
     var area = grid.areas[0];
 
-    var argLayer = Transformation.basicStartOfTransform(main, additional);
+    var argLayer = basicStartOfTransform(main, additional);
     grid.cells = [];
 
     for (var c = 0; c <= area.coords[2]; c++) {
@@ -180,18 +215,49 @@ Transformation.expand = Transformation.create('expand', function (cell, main, ad
 
 Transformation.sampleAtData = Transformation.create('sampleAtData', function (cell, main, additional) {
     var sampleInfo = cell.transformation.data;
-    var samples = [];
-    fillSamples(main, samples, 0, sampleInfo[0], sampleInfo[1]);
+    var frames = [];
+    fillFrames(main, frames, sampleInfo[0], sampleInfo[1]);
 
     var grid = Grid.create();
     grid.cells = [];
     grid.layer = 'under';
-    samples.forEach(function (originalSample) {
-        var sample = Cell.create();
-        sample.grid = originalSample.grid;
-        sample.transformation = Transformation.detached;
-        grid.cells.push([sample]);
+    frames.forEach(function (originalFrame) {
+        var frame = Cell.clone(originalFrame);
+        frame.base = false;
+        frame.operation = Operation.none;
+        frame.detached = true;
+        frame.transformation = Transformation.detached;
+        frame.gridTick = Global.transformationTick;
+        grid.cells.push([frame]);
     });
+
+    var targetSamples = sampleInfo[1] - sampleInfo[0];
+    for (var i = frames.length; i < targetSamples; i++) {
+        grid.cells.push([Cell.create()]);
+    }
+
+    return grid;
 });
+
+var fillFrames = function (cell, frames, startSample, endSample) {
+    var sample = 0;
+    var subCells = cell.grid.cells;
+    var r = subCells[0].length - 1;
+    for (var c = 0; c < cell.grid.cells.length; c++) {
+        var subCell = subCells[c][r];
+        var subEnd = sample + subCell.grid.numFrames - 1;
+        if (sample <= endSample && subEnd >= startSample) {
+            if (subCell.base) {
+                Execute.transformCell(cell.grid, subCell, c, r);
+                frames.push(subCell);
+            } else {
+                var newStart = startSample - sample;
+                var newEnd = endSample - sample;
+                fillFrames(subCell, frames, newStart, newEnd);
+            }
+        }
+        sample = subEnd + 1;
+    }
+};
 
 })();

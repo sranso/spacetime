@@ -13,6 +13,7 @@ Grid.create = function () {
 
 Grid.none = Grid.create();
 Grid.none.layer = 'none';
+Grid.none.numFrames = 1;
 
 Grid.cellAt = function (grid, c, r) {
     if (c < 0 || c >= grid.cells.length) {
