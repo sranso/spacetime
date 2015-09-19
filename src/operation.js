@@ -16,9 +16,8 @@ Operation.clone = function (oldOperation) {
     return operation;
 };
 
-Operation.none = Operation.create('none', function (cell) {
-    var firstColumn = cell.grid.cells[0];
-    return firstColumn[firstColumn.length - 1].result;
+Operation.none = Operation.create('none', function () {
+    throw new Error('illegal Operation.none used');
 });
 
 Operation.add = Operation.create('add', function (cell, a, b) {

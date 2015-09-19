@@ -101,7 +101,7 @@ Main.setup = function () {
     column.push(cell);
 
     Execute.transform();
-    Execute.execute();
+    Execute.executeAll();
 };
 
 Main.setup();

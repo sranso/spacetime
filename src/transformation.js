@@ -124,7 +124,7 @@ var linearTransform = function (cell, main, additional) {
         sampleStart += subMain.grid.numFrames;
 
         var transformCell = Cell.clone(cell);
-        if (subMain.base) {
+        if (subMain.grid.numFrames === 1) {
             transformCell.base = true;
             transformCell.operation = cell.transformation.operation;
         }
@@ -135,7 +135,7 @@ var linearTransform = function (cell, main, additional) {
 
         grid.cells.push(column);
 
-        if (subMain.base) {
+        if (subMain.grid.numFrames === 1) {
             grid.numFrames += 1;
         } else {
             Execute.transformCell(grid, transformCell, c, column.length - 1);
@@ -152,7 +152,10 @@ Transformation.plusOne = Transformation.linear(Operation.plusOne);
 Transformation.double = Transformation.linear(Operation.double);
 
 Transformation.literal = Transformation.immediate(Operation.literal);
-Transformation.none = Transformation.immediate(Operation.none);
+
+Transformation.none = Transformation.create('none', function () {
+    throw new Error('illegal Transformation.none used');
+});
 
 Transformation.detached = Transformation.create('detached', function (cell) {
     Execute.transformGrid(cell.grid);

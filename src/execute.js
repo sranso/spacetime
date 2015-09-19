@@ -55,31 +55,36 @@ var transformArgs = function (grid, args, c, r) {
     return argCells;
 };
 
-Execute.execute = function () {
-    executeGrid(Global.grid);
+Execute.executeAll = function () {
+    Global.stats.numCellsExecuteAll = 0;
+    executeAllGrid(Global.grid);
 };
 
-var executeGrid = function (grid) {
+var executeAllGrid = function (grid) {
     for (var c = 0; c < grid.cells.length; c++) {
         for (var r = 0; r < grid.cells[0].length; r++) {
             var cell = Grid.cellAt(grid, c, r);
-            executeCell(grid, cell, c, r);
+            executeAllCell(grid, cell, c, r);
         }
     }
 };
 
-var executeCell = function (grid, cell, c, r) {
-    if (!cell.base) {
-        executeGrid(cell.grid);
+var executeAllCell = function (grid, cell, c, r) {
+    Global.stats.numCellsExecuteAll += 1;
+    if (cell.base) {
+        var argCells = [cell];
+        for (var i = 0; i < cell.args.length; i += 2) {
+            var argC = c + cell.args[i];
+            var argR = r + cell.args[i + 1];
+            var argCell = Grid.cellAt(grid, argC, argR);
+            argCells.push(argCell);
+        }
+        cell.result = cell.operation.execute.apply(cell.operation, argCells);
+    } else {
+        executeAllGrid(cell.grid);
+        var firstColumn = cell.grid.cells[0];
+        cell.result = firstColumn[firstColumn.length - 1].result;
     }
-    var argCells = [cell];
-    for (var i = 0; i < cell.args.length; i += 2) {
-        var argC = c + cell.args[i];
-        var argR = r + cell.args[i + 1];
-        var argCell = Grid.cellAt(grid, argC, argR);
-        argCells.push(argCell);
-    }
-    cell.result = cell.operation.execute.apply(cell.operation, argCells);
 };
 
 })();
