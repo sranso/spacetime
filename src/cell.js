@@ -11,6 +11,7 @@ Cell.create = function () {
         args: Cell.noArgs,     // [c1, r1, c2, r2, ...]
         text: '',
         gridTick: 0,
+        resultTick: 0,
         detached: false,
         apply: false,
         base: false,
