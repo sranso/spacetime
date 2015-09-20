@@ -99,7 +99,7 @@ var linearTransform = function (cell, main, additional) {
     grid.cells = [];
     grid.layer = 'under';
 
-    var sampleStart = 0;
+    var atFrame = 0;
     var sampleInfo = additional.map(function (argCell) {
         if (argCell.transformation.transform === Transformation.sampleAtData.transform) {
             return {
@@ -121,8 +121,8 @@ var linearTransform = function (cell, main, additional) {
         var subMain = column[column.length - 1];
         sampleInfo.forEach(function (info) {
             var argCell = info.cell;
-            var argSampleStart = sampleStart + info.start;
-            var argSampleEnd = argSampleStart + subMain.grid.numFrames - 1;
+            var argFrameStart = atFrame + info.start;
+            var argFrameEnd = argFrameStart + subMain.grid.numFrames - 1;
 
             var layer = basicStartOfTransform(argCell, Cell.noArgs);
 
@@ -132,7 +132,7 @@ var linearTransform = function (cell, main, additional) {
                 Transformation.sampleAtData.transform
             );
             // sampleCell.transformation.operation = Operation.none
-            sampleTransformation.data = [argSampleStart, argSampleEnd];
+            sampleTransformation.data = [argFrameStart, argFrameEnd];
             //======== END (Transformation) =====
 
             //======== BEGIN (Cell) ==========
@@ -174,7 +174,7 @@ var linearTransform = function (cell, main, additional) {
             column.push(historyCell);
         });
 
-        sampleStart += subMain.grid.numFrames;
+        atFrame += subMain.grid.numFrames;
 
         //========= BEGIN (Cell) ==========
         var linearCell = Cell.create();
@@ -318,34 +318,34 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
         grid.cells.push([frame]);
     });
 
-    var targetSamples = sampleInfo[1] - sampleInfo[0];
-    for (var i = frames.length; i < targetSamples; i++) {
+    var targetNumFrames = sampleInfo[1] - sampleInfo[0];
+    for (var i = frames.length; i < targetNumFrames; i++) {
         grid.cells.push([Cell.create()]); // TODO: will this work?
     }
 
     return grid;
 });
 
-var fillFrames = function (cell, frames, startSample, endSample) {
-    $Stats.numCellsTouchedSampling += 1;
-    var sample = 0;
+var fillFrames = function (cell, frames, startFrame, endFrame) {
+    $_stats.transform_numCellsSampling += 1;
+    var atFrame = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
     for (var c = 0; c < applyingCell.grid.cells.length; c++) {
         var subCell = applyingCell.grid.cells[c][r];
-        var subEnd = sample + subCell.grid.numFrames - 1;
-        if (sample <= endSample && subEnd >= startSample) {
+        var subEnd = atFrame + subCell.grid.numFrames - 1;
+        if (atFrame <= endFrame && subEnd >= startFrame) {
             if (subCell.grid.numFrames === 1) {
-                $Stats.numCellsTouchedSampling += 1;
+                $_stats.transform_numCellsSampling += 1;
                 Execute.transformCell(applyingCell.grid, subCell, c, r);
                 frames.push(subCell);
             } else {
-                var newStart = startSample - sample;
-                var newEnd = endSample - sample;
+                var newStart = startFrame - atFrame;
+                var newEnd = endFrame - atFrame;
                 fillFrames(subCell, frames, newStart, newEnd);
             }
         }
-        sample = subEnd + 1;
+        atFrame = subEnd + 1;
     }
 };
 

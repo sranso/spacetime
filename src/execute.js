@@ -4,8 +4,8 @@ var Execute = {};
 
 Execute.transform = function () {
     $Project.transformationTick += 1;
-    $Stats.numCellsTransformed = 0;
-    $Stats.numCellsTouchedSampling = 0;
+    $_stats.transform_numCells = 0;
+    $_stats.transform_numCellsSampling = 0;
 
     Execute.transformGrid($Project.grid);
 };
@@ -27,7 +27,7 @@ Execute.transformCell = function (grid, cell, c, r) {
         return;
     }
     cell.gridTick = $Project.transformationTick;
-    $Stats.numCellsTransformed += 1;
+    $_stats.transform_numCells += 1;
 
     if (cell.detached) {
         var transformation = Transformation.detached;
@@ -55,10 +55,10 @@ Execute.transformCell = function (grid, cell, c, r) {
 };
 
 Execute.executeAll = function () {
-    $Stats.timeExecuteAll = performance.now();
-    $Stats.numCellsExecuteAll = 0;
+    $_stats.execAll_time = performance.now();
+    $_stats.execAll_numCells = 0;
     executeAllGrid($Project.grid);
-    $Stats.timeExecuteAll = performance.now() - $Stats.timeExecuteAll;
+    $_stats.execAll_time = performance.now() - $_stats.execAll_time;
 };
 
 var executeAllGrid = function (grid) {
@@ -71,7 +71,7 @@ var executeAllGrid = function (grid) {
 };
 
 var executeAllCell = function (grid, cell, c, r) {
-    $Stats.numCellsExecuteAll += 1;
+    $_stats.execAll_numCells += 1;
     if (cell.base) {
         var argCells = [cell];
         for (var i = 0; i < cell.args.length; i += 2) {
@@ -88,42 +88,60 @@ var executeAllCell = function (grid, cell, c, r) {
     }
 };
 
-Execute.execute = function () {
-    $Global.frames = [];
-    $Stats.timeExecute = performance.now();
-    Execute.executeCell($Project.cell, $Global.frames, 0, $Project.grid.numFrames - 1);
-    $Stats.timeExecute = performance.now() - $Stats.timeExecute;
+Execute.executeGrid = function (grid) {
+    $_stats.execGrid_time = performance.now();
+    var oldStats = $_stats;
+    var capturedStats = {
+        execCell_numCells: 0,
+        execCell_numBaseCells: 0,
+    };
+    $_stats = capturedStats;
+    for (var c = 0; c < grid.cells.length; c++) {
+        for (var r = 0; r < grid.cells[0].length; r++) {
+            var cell = grid.cells[c][r];
+            var frame = executeCell(cell, 0);
+            cell.result = frame.result;
+        }
+    }
+    $_stats = oldStats;
+    $_stats.execGrid_numCells = capturedStats.execCell_numCells;
+    $_stats.execGrid_numBaseCells = capturedStats.execCell_numBaseCells;
+    $_stats.execGrid_time = performance.now() - $_stats.execGrid_time;
 };
 
-Execute.executeCell = function (cell, frames, startSample, endSample) {
-    $Stats.numCellsExecute = 0;
-    $Stats.numBaseCellsExecute = 0;
+Execute.executeCell = function (cell, fetchFrame) {
+    $_stats.timeExecute = performance.now();
+    $_stats.execCell_numCells = 0;
+    $_stats.execCell_numBaseCells = 0;
     $Project.executionTick += 1;
-    executeCell(cell, frames, startSample, endSample);
+    var frame = executeCell(cell, fetchFrame);
+    $_stats.timeExecute = performance.now() - $_stats.timeExecute;
+    return frame;
 };
 
-var executeCell = function (cell, frames, startSample, endSample) {
-    $Stats.numCellsExecute += 1;
-    var sample = 0;
+var executeCell = function (cell, fetchFrame) {
+    $_stats.execCell_numCells += 1;
+    var atFrame = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
 
     for (var c = 0; c < applyingCell.grid.cells.length; c++) {
         var subCell = applyingCell.grid.cells[c][r];
-        var subEnd = sample + subCell.grid.numFrames - 1;
+        var subEnd = atFrame + subCell.grid.numFrames - 1;
 
-        if (sample <= endSample && subEnd >= startSample) {
+        if (atFrame <= fetchFrame && fetchFrame <= subEnd) {
             if (subCell.operation !== Operation.none) {
                 executeBaseCell(applyingCell.grid, subCell, c, r);
-                frames.push(subCell);
+                return subCell;
             } else {
-                var newStart = startSample - sample;
-                var newEnd = endSample - sample;
-                executeCell(subCell, frames, newStart, newEnd);
+                return executeCell(subCell, fetchFrame - atFrame);
             }
         }
-        sample = subEnd + 1;
+        atFrame = subEnd + 1;
     }
+
+    var maxFrame = cell.grid.numFrames - 1;
+    throw new Error('frame not found: ' + fetchFrame + ' / ' + maxFrame);
 };
 
 var executeBaseCell = function (grid, cell, c, r) {
@@ -131,8 +149,8 @@ var executeBaseCell = function (grid, cell, c, r) {
         return;
     }
     cell.resultTick = $Project.executionTick;
-    $Stats.numCellsExecute += 1;
-    $Stats.numBaseCellsExecute += 1;
+    $_stats.execCell_numCells += 1;
+    $_stats.execCell_numBaseCells += 1;
 
     var argCells = [cell];
     for (var i = 0; i < cell.args.length; i += 2) {
@@ -147,12 +165,12 @@ var executeBaseCell = function (grid, cell, c, r) {
 
 var executeBaseCellArg = function (grid, cell, c, r) {
     if (cell.operation === Operation.none) {
-        // TODO: does this help any:
+        // TODO: does this help any?:
         // if (cell.resultTick === $Project.executionTick) {
         //     return;
         // }
         // cell.resultTick = $Project.executionTick;
-        $Stats.numCellsExecute += 1;
+        $_stats.execCell_numCells += 1;
 
         var subGrid = cell.grid.cells[0][cell.grid.cells[0].length - 1].grid;
 

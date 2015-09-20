@@ -3,20 +3,18 @@ var $Project = Project.none;
 
 var $Global = {};
 
-$Global.frames = [];
+var $_stats = {
+    transform_numCells: 0,
+    transform_numCellsSampling: 0,
 
-var $Stats = {
-    numCellsTransformed: 0,
-    numCellsTouchedSampling: 0,
+    execAll_numCells: 0,
+    execAll_time: 0,
 
-    numCellsExecuteAll: 0,
-    timeExecuteAll: 0,
+    execCell_numCells: 0,
+    execCell_numBaseCells: 0,
+    execCell_time: 0,
 
-    numCellsExecute: 0,
-    timeExecute: 0,
-    numBaseCellsExecute: 0,
-
-    numCellsExecuteGrid: 0,
-    timeExecuteGrid: 0,
-    numBaseCellsExecuteGrid: 0,
+    execGrid_numCells: 0,
+    execGrid_time: 0,
+    execGrid_numBaseCells: 0,
 };

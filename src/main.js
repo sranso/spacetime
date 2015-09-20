@@ -117,8 +117,9 @@ Main.setup = function () {
     column.push(cell);
 
     Execute.transform();
-    Execute.execute();
-    Execute.executeAll();
+    //Execute.execute();
+    //Execute.executeAll();
+    Execute.executeGrid($Project.grid);
 };
 
 Main.setup();
