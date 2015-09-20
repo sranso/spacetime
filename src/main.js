@@ -3,53 +3,18 @@ var Main = {};
 (function () {
 
 Main.setup = function () {
-    Global.grid = Grid.create();
-
-    //======== BEGIN (Cell) ==========
-    var historyCell = Cell.create();
-    historyCell.grid = Global.grid;
-        // historyCell.group = Group.none;
-    historyCell.transformation = Transformation.detached;
-        // historyCell.operation = cell.operation;
-        // historyCell.args = Cell.noArgs;
-        // historyCell.text = '';
-        // historyCell.gridTick = 0;
-        // historyCell.resultTick = 0;
-    historyCell.detached = true;
-    historyCell.apply = true;
-        // historyCell.base = false;
-        // historyCell.result = null;
-    //======== END (Cell) ==========
-
-    //======== BEGIN (Cell) ==========
-    Global.cell = Cell.create();
-    Global.cell.grid = Grid.create();
-        // Global.cell.group = Group.none;
-    Global.cell.transformation = Transformation.detached;
-        // Global.cell.operation = cell.operation;
-        // Global.cell.args = Cell.noArgs;
-        // Global.cell.text = '';
-        // Global.cell.gridTick = 0;
-        // Global.cell.resultTick = 0;
-    Global.cell.detached = true;
-        // Global.cell.apply = false;
-        // Global.cell.base = false;
-        // Global.cell.result = null;
-    //======== END (Cell) ==========
-
-    Global.cell.grid.layer = 'history';
-    Global.cell.grid.cells.push([historyCell]);
-
+    $Project = Project.createBlank();
 
     var column = [];
-    var cell;
-    Global.grid.cells = [column];
+    var cell = Cell.none;
+    $Project.grid.cells = [column];
 
     cell = Cell.create();
 
     // complicated (3, 7) -> (4, 8) -> (5, 9)
     var subGrid = Grid.create();
-    var subCell, operation;
+    var subCell = Cell.none;
+    var operation = Operation.none;
 
         subCell = Cell.create();
         //======== BEGIN (Operation) ========

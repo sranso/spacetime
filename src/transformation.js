@@ -23,12 +23,10 @@ var basicStartOfTransform = function (main, additional) {
             mainClone.operation = main.operation;
         mainClone.args = Cell.autoArgs[main.args.length];
             mainClone.text = main.text;
-        mainClone.gridTick = Global.transformationTick;
-            // mainClone.resultTick = 0;
+        mainClone.gridTick = $Project.transformationTick;
         mainClone.detached = main.transformation === Transformation.detached;
             // mainClone.apply = false;
             mainClone.base = main.base;
-            // mainClone.result = null;
         //========= END (Cell) =======
 
         layer.push(mainClone);
@@ -46,12 +44,10 @@ var basicStartOfTransform = function (main, additional) {
             argCell.operation = original.operation;
             argCell.args = original.args;
             argCell.text = original.text;
-        argCell.gridTick = Global.transformationTick;
-            // argCell.resultTick = 0;
+        argCell.gridTick = $Project.transformationTick;
         argCell.detached = true;
             // argCell.apply = false;
             argCell.base = original.base;
-            // argCell.result = null;
         //========= END (Cell) ========
 
         layer.push(argCell);
@@ -80,11 +76,9 @@ var immediateTransform = function (cell, main, additional) {
         baseCell.args = cell.args;
         baseCell.text = cell.text;
         // baseCell.gridTick = 0;
-        // baseCell.resultTick = 0;
         // baseCell.detached = false;
         // baseCell.apply = false;
     baseCell.base = true;
-        // baseCell.result = null;
     //========= END (Cell) ========
 
     grid.cells[0].push(baseCell);
@@ -150,11 +144,9 @@ var linearTransform = function (cell, main, additional) {
             sampleCell.args = Cell.autoArgs[2];
                 // sampleCell.text = '';  TODO: what text?
                 // sampleCell.gridTick = 0;
-                // sampleCell.resultTick = 0;
                 // sampleCell.detached = false;
             sampleCell.apply = true;
                 // sampleCell.base = false;
-                // sampleCell.result = null;
             //======== END (Cell) ==========
 
             layer.push(sampleCell);
@@ -167,12 +159,10 @@ var linearTransform = function (cell, main, additional) {
                 // historyCell.operation = cell.operation;
                 // historyCell.args = Cell.noArgs;
                 // historyCell.text = '';  TODO: what text?
-            historyCell.gridTick = Global.transformationTick;
-                // historyCell.resultTick = 0;
+            historyCell.gridTick = $Project.transformationTick;
             historyCell.detached = true;
                 // historyCell.apply = false;
                 // historyCell.base = false;
-                // historyCell.result = null;
             //======== END (Cell) ==========
 
             historyCell.grid.layer = 'history';
@@ -195,11 +185,9 @@ var linearTransform = function (cell, main, additional) {
         linearCell.args = Cell.autoArgs[cell.args.length];
             linearCell.text = cell.text;
             // linearCell.gridTick = 0;
-            // linearCell.resultTick = 0;
             // linearCell.detached = false;
             // linearCell.apply = false;
             // linearCell.base = false;
-            // linearCell.result = null;
         //========= END (Cell) ==========
 
         if (subMain.grid.numFrames === 1) {
@@ -254,11 +242,9 @@ Transformation.history = Transformation.create('history', function (cell, main, 
             // historyCell.args = Cell.noArgs; // set below
             historyCell.text = cell.text;
             // historyCell.gridTick = 0;
-            // historyCell.resultTick = 0;
             // historyCell.detached = false;
         historyCell.apply = true;
             // historyCell.base = false;
-            // historyCell.result = null;
         //========= END (Cell) ==========
 
     } else {
@@ -323,12 +309,10 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
             // frame.operation = Operation.none;
             // frame.args = Cell.noArgs;
             frame.text = original.text;
-        frame.gridTick = Global.transformationTick;
-            // frame.resultTick = 0;
+        frame.gridTick = $Project.transformationTick;
         frame.detached = true;
             // frame.apply = false;
             // frame.base = false;
-            // frame.result = null;
         //========= END (Cell) =========
 
         grid.cells.push([frame]);
@@ -343,7 +327,7 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
 });
 
 var fillFrames = function (cell, frames, startSample, endSample) {
-    Global.stats.numCellsTouchedSampling += 1;
+    $Stats.numCellsTouchedSampling += 1;
     var sample = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
@@ -352,7 +336,7 @@ var fillFrames = function (cell, frames, startSample, endSample) {
         var subEnd = sample + subCell.grid.numFrames - 1;
         if (sample <= endSample && subEnd >= startSample) {
             if (subCell.grid.numFrames === 1) {
-                Global.stats.numCellsTouchedSampling += 1;
+                $Stats.numCellsTouchedSampling += 1;
                 Execute.transformCell(applyingCell.grid, subCell, c, r);
                 frames.push(subCell);
             } else {

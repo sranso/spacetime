@@ -3,11 +3,11 @@ var Execute = {};
 (function () {
 
 Execute.transform = function () {
-    Global.transformationTick += 1;
-    Global.stats.numCellsTransformed = 0;
-    Global.stats.numCellsTouchedSampling = 0;
+    $Project.transformationTick += 1;
+    $Stats.numCellsTransformed = 0;
+    $Stats.numCellsTouchedSampling = 0;
 
-    Execute.transformGrid(Global.grid);
+    Execute.transformGrid($Project.grid);
 };
 
 Execute.transformGrid = function (grid) {
@@ -23,11 +23,11 @@ Execute.transformGrid = function (grid) {
 };
 
 Execute.transformCell = function (grid, cell, c, r) {
-    if (cell.gridTick === Global.transformationTick) {
+    if (cell.gridTick === $Project.transformationTick) {
         return;
     }
-    cell.gridTick = Global.transformationTick;
-    Global.stats.numCellsTransformed += 1;
+    cell.gridTick = $Project.transformationTick;
+    $Stats.numCellsTransformed += 1;
 
     if (cell.detached) {
         var transformation = Transformation.detached;
@@ -44,7 +44,7 @@ Execute.transformCell = function (grid, cell, c, r) {
     for (var i = 0; i < args.length; i += 2) {
         var argC = c + args[i];
         var argR = r + args[i + 1];
-        var argCell = Grid.cellAt(grid, argC, argR);
+        var argCell = grid.cells[argC][argR];
         argCells.push(argCell);
         Execute.transformCell(grid, argCell, argC, argR);
     }
@@ -55,8 +55,10 @@ Execute.transformCell = function (grid, cell, c, r) {
 };
 
 Execute.executeAll = function () {
-    Global.stats.numCellsExecuteAll = 0;
-    executeAllGrid(Global.grid);
+    $Stats.timeExecuteAll = performance.now();
+    $Stats.numCellsExecuteAll = 0;
+    executeAllGrid($Project.grid);
+    $Stats.timeExecuteAll = performance.now() - $Stats.timeExecuteAll;
 };
 
 var executeAllGrid = function (grid) {
@@ -69,13 +71,13 @@ var executeAllGrid = function (grid) {
 };
 
 var executeAllCell = function (grid, cell, c, r) {
-    Global.stats.numCellsExecuteAll += 1;
+    $Stats.numCellsExecuteAll += 1;
     if (cell.base) {
         var argCells = [cell];
         for (var i = 0; i < cell.args.length; i += 2) {
             var argC = c + cell.args[i];
             var argR = r + cell.args[i + 1];
-            var argCell = Grid.cellAt(grid, argC, argR);
+            var argCell = grid.cells[argC][argR];
             argCells.push(argCell);
         }
         cell.result = cell.operation.execute.apply(cell.operation, argCells);
@@ -87,19 +89,21 @@ var executeAllCell = function (grid, cell, c, r) {
 };
 
 Execute.execute = function () {
-    Global.frames = [];
-    Execute.executeCell(Global.cell, Global.frames, 0, Global.grid.numFrames - 1);
+    $Global.frames = [];
+    $Stats.timeExecute = performance.now();
+    Execute.executeCell($Project.cell, $Global.frames, 0, $Project.grid.numFrames - 1);
+    $Stats.timeExecute = performance.now() - $Stats.timeExecute;
 };
 
 Execute.executeCell = function (cell, frames, startSample, endSample) {
-    Global.stats.numCellsExecute = 0;
-    Global.stats.numBaseCellsExecute = 0;
-    Global.executionTick += 1;
+    $Stats.numCellsExecute = 0;
+    $Stats.numBaseCellsExecute = 0;
+    $Project.executionTick += 1;
     executeCell(cell, frames, startSample, endSample);
 };
 
 var executeCell = function (cell, frames, startSample, endSample) {
-    Global.stats.numCellsExecute += 1;
+    $Stats.numCellsExecute += 1;
     var sample = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
@@ -123,18 +127,18 @@ var executeCell = function (cell, frames, startSample, endSample) {
 };
 
 var executeBaseCell = function (grid, cell, c, r) {
-    if (cell.resultTick === Global.executionTick) {
+    if (cell.resultTick === $Project.executionTick) {
         return;
     }
-    cell.resultTick = Global.executionTick;
-    Global.stats.numCellsExecute += 1;
-    Global.stats.numBaseCellsExecute += 1;
+    cell.resultTick = $Project.executionTick;
+    $Stats.numCellsExecute += 1;
+    $Stats.numBaseCellsExecute += 1;
 
     var argCells = [cell];
     for (var i = 0; i < cell.args.length; i += 2) {
         var argC = c + cell.args[i];
         var argR = r + cell.args[i + 1];
-        var argCell = Grid.cellAt(grid, argC, argR);
+        var argCell = grid.cells[argC][argR];
         argCells.push(argCell);
         executeBaseCellArg(grid, argCell, argC, argR);
     }
@@ -144,11 +148,11 @@ var executeBaseCell = function (grid, cell, c, r) {
 var executeBaseCellArg = function (grid, cell, c, r) {
     if (cell.operation === Operation.none) {
         // TODO: does this help any:
-        // if (cell.resultTick === Global.executionTick) {
+        // if (cell.resultTick === $Project.executionTick) {
         //     return;
         // }
-        // cell.resultTick = Global.executionTick;
-        Global.stats.numCellsExecute += 1;
+        // cell.resultTick = $Project.executionTick;
+        $Stats.numCellsExecute += 1;
 
         var subGrid = cell.grid.cells[0][cell.grid.cells[0].length - 1].grid;
 

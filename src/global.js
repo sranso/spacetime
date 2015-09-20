@@ -1,15 +1,22 @@
 'use strict';
-var Global = {};
+var $Project = Project.none;
 
-Global.grid = Grid.create();
-Global.cell = Cell.create();
-Global.frames = [];
-Global.transformationTick = 1;
-Global.executionTick = 1;
-Global.stats = {
+var $Global = {};
+
+$Global.frames = [];
+
+var $Stats = {
     numCellsTransformed: 0,
     numCellsTouchedSampling: 0,
+
     numCellsExecuteAll: 0,
+    timeExecuteAll: 0,
+
     numCellsExecute: 0,
+    timeExecute: 0,
     numBaseCellsExecute: 0,
+
+    numCellsExecuteGrid: 0,
+    timeExecuteGrid: 0,
+    numBaseCellsExecuteGrid: 0,
 };
