@@ -7,7 +7,19 @@ Execute.transform = function () {
     $_stats.transform_numCells = 0;
     $_stats.transform_numCellsSampling = 0;
 
-    Execute.transformGrid($Project.grid);
+    var cell = $Project.cellLevels[0][0];
+    Execute.transformCell(Grid.none, cell, 0, 0);
+    var grid = cell.grid;
+    for (var i = 1; i < $Project.cellLevels; i++) {
+        var c = level[1];
+        var r = level[2];
+        var cell = grid.cells[c][r];
+        Execute.transformCell(grid, cell, c, r);
+        level[0] = cell;
+        grid = cell.grid;
+    }
+
+    Execute.transformGrid($Project.cellLevels[$Project.currentLevel][0].grid);
 };
 
 Execute.transformGrid = function (grid) {

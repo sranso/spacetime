@@ -1,0 +1,30 @@
+body {
+  padding: 0;
+  margin: 0;
+  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  background-color: white;
+}
+
+#grid {
+  position: relative;
+  margin: 50px;
+}
+
+.cell {
+  position: absolute;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+.cell .text {
+  height: 20px;
+  width: 160px;
+  text-align: center;
+}
+
+.cell .result {
+  width: 160px;
+  height: 100px;
+  border: solid 1px #ccc;
+}

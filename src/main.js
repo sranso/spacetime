@@ -2,12 +2,39 @@
 var Main = {};
 (function () {
 
+Main.update = function () {
+    Execute.transform();
+    //Execute.execute();
+    //Execute.executeAll();
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    Execute.executeGrid(grid);
+    Draw.draw();
+};
+
 Main.setup = function () {
-    $Project = Project.createBlank();
+    $Project = buildProject();
+
+    Input.setup();
+    Draw.setup();
+    Main.update();
+};
+
+Main.mouseDown = function () {
+};
+
+Main.mouseMove = function () {
+};
+
+Main.mouseUp = function () {
+};
+
+var buildProject = function () {
+    var project = Project.createBlank();
 
     var column = [];
     var cell = Cell.none;
-    $Project.grid.cells = [column];
+    var grid = project.cellLevels[project.currentLevel][0].grid;
+    grid.cells = [column];
 
     cell = Cell.create();
 
@@ -25,6 +52,7 @@ Main.setup = function () {
         operation.data = 3;
         //======== END (Operation) ========
         subCell.transformation = Transformation.immediate(operation);
+        subCell.text = '3';
         subGrid.cells.push([subCell]);
 
         subCell = Cell.create();
@@ -36,6 +64,7 @@ Main.setup = function () {
         operation.data = 7;
         //======== END (Operation) ========
         subCell.transformation = Transformation.immediate(operation);
+        subCell.text = '7';
         subGrid.cells.push([subCell]);
 
     var subHistoryCell = Cell.create();
@@ -43,6 +72,7 @@ Main.setup = function () {
     subHistoryCell.apply = true;
     subHistoryCell.detached = true;
     subHistoryCell.grid = subGrid;
+    subHistoryCell.text = '3, 7';
     var subHistoryGrid = Grid.create();
     subHistoryGrid.layer = 'history';
     subHistoryGrid.cells.push([subHistoryCell]);
@@ -50,6 +80,7 @@ Main.setup = function () {
     cell.transformation = Transformation.detached;
     cell.detached = true;
     cell.grid = subHistoryGrid;
+    cell.text = '3, 7';
     column.push(cell);
 
     // simple 3 -> 4 -> 5
@@ -68,6 +99,7 @@ Main.setup = function () {
         cell = Cell.create();
         cell.transformation = Transformation.plusOne;
         cell.args = [0, -1];
+        cell.text = '+1';
         column.push(cell);
 
     var originalColumn = column;
@@ -77,6 +109,7 @@ Main.setup = function () {
     multiCellHistory.args = [0, -1];
     multiCellHistory.grid = Grid.create();
     multiCellHistory.grid.layer = 'history';
+    multiCellHistory.text = '+2';
     originalColumn.push(multiCellHistory);
 
     var multiCell = Cell.create();
@@ -84,6 +117,7 @@ Main.setup = function () {
     multiCell.apply = true;
     multiCell.grid = Grid.create();
     multiCell.grid.layer = 'over';
+    multiCell.text = '+2';
     multiCellHistory.grid.cells.push([multiCell]);
 
     var area = Area.create();
@@ -96,11 +130,13 @@ Main.setup = function () {
       cell = Cell.create();
       cell.transformation = Transformation.plusOne;
       cell.args = [0, -1];
+      cell.text = '+1';
       column.push(cell);
 
       cell = Cell.create();
       cell.transformation = Transformation.plusOne;
       cell.args = [0, -1];
+      cell.text = '+1';
       column.push(cell);
 
     column = originalColumn;
@@ -109,17 +145,16 @@ Main.setup = function () {
     //cell = Cell.create();
     //cell.transformation = Transformation.plusOne;
     //cell.args = [0, -1];
+    //cell.text = '+1';
     //column.push(cell);
 
     cell = Cell.create();
     cell.transformation = Transformation.add;
     cell.args = [0, -2, 0, -1];
+    cell.text = '+';
     column.push(cell);
 
-    Execute.transform();
-    //Execute.execute();
-    //Execute.executeAll();
-    Execute.executeGrid($Project.grid);
+    return project;
 };
 
 Main.setup();

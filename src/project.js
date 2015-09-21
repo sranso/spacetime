@@ -4,10 +4,11 @@ var Project = {};
 
 Project.create = function () {
     return {
-        grid: Grid.none,
-        cell: Cell.none,
+        cellLevels: [],
+        currentLevel: 0,
         transformationTick: 1,
         executionTick: 1,
+        showHistory: false,
     };
 };
 
@@ -15,11 +16,10 @@ Project.none = Project.create();
 
 Project.createBlank = function () {
     var project = Project.create();
-    project.grid = Grid.create();
 
     //======== BEGIN (Cell) ==========
     var historyCell = Cell.create();
-    historyCell.grid = project.grid;
+    historyCell.grid = Grid.create();
         // historyCell.group = Group.none;
     historyCell.transformation = Transformation.detached;
         // historyCell.operation = cell.operation;
@@ -32,23 +32,50 @@ Project.createBlank = function () {
     //======== END (Cell) ==========
 
     //======== BEGIN (Cell) ==========
-    project.cell = Cell.create();
-    project.cell.grid = Grid.create();
-        // project.cell.group = Group.none;
-    project.cell.transformation = Transformation.detached;
-        // project.cell.operation = cell.operation;
-        // project.cell.args = Cell.noArgs;
-        // project.cell.text = '';
-        // project.cell.gridTick = 0;
-    project.cell.detached = true;
-        // project.cell.apply = false;
-        // project.cell.base = false;
+    var topCell = Cell.create();
+    topCell.grid = Grid.create();
+        // topCell.group = Group.none;
+    topCell.transformation = Transformation.detached;
+        // topCell.operation = cell.operation;
+        // topCell.args = Cell.noArgs;
+        // topCell.text = '';
+        // topCell.gridTick = 0;
+    topCell.detached = true;
+        // topCell.apply = false;
+        // topCell.base = false;
     //======== END (Cell) ==========
 
-    project.cell.grid.layer = 'history';
-    project.cell.grid.cells.push([historyCell]);
+    topCell.grid.layer = 'history';
+    topCell.grid.cells.push([historyCell]);
+
+    project.cellLevels = [
+        [topCell, 0, 0],
+        [historyCell, 0, 0],
+    ];
+    project.currentLevel = 1;
 
     return project;
+};
+
+Project.openCell = function (project, cell, c, r) {
+    var removeAt = project.currentLevel + 1;
+    var toRemove = project.cellLevels.length - removeAt;
+    var newLevel = [cell, c, r];
+    project.cellLevels.splice(removeAt, toRemove, newLevel);
+    project.currentLevel += 1;
+
+    if (!project.showHistory && cell.grid.layer === 'history') {
+        r = cell.grid.cells[0].length - 1;
+        Project.openCell(project, cell.grid.cells[0][r], 0, r);
+    }
+};
+
+Project.upLevel = function (project) {
+    if (project.showHistory) {
+        project.currentLevel -= 1;
+    } else {
+        project.currentLevel -= 2;
+    }
 };
 
 })();
