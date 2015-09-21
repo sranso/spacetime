@@ -101,10 +101,13 @@ var linearTransform = function (cell, main, additional) {
 
     var atFrame = 0;
     var sampleInfo = additional.map(function (argCell) {
-        if (argCell.transformation.transform === Transformation.sampleAtData.transform) {
+        var applyingArg = argCell.grid.cells[0][argCell.grid.cells[0].length - 1];
+        var applyingColumn = applyingArg.grid.cells[0];
+        var subArg = applyingColumn[applyingColumn.length - 1];
+        if (subArg.transformation.transform === Transformation.sampleAtData.transform) {
             return {
-                start: argCell.transformation.data[0],
-                cell: argCell.grid.cells[0][argCell.grid.cells[0].length - 2],
+                start: subArg.transformation.data[0],
+                cell: applyingColumn[applyingColumn.length - 2],
             };
         }
         return {
@@ -116,9 +119,10 @@ var linearTransform = function (cell, main, additional) {
     var applyingMain = main.grid.cells[0][main.grid.cells[0].length - 1];
     applyingMain.grid.cells.forEach(function (oldColumn, c) {
         var column = oldColumn.slice();
-
-        var r = column.length - 1;
         var subMain = column[column.length - 1];
+
+        grid.cells.push(column);
+
         sampleInfo.forEach(function (info) {
             var argCell = info.cell;
             var argFrameStart = atFrame + info.start;
@@ -139,13 +143,13 @@ var linearTransform = function (cell, main, additional) {
             var sampleCell = Cell.create();
                 // sampleCell.grid = Grid.none;
                 // sampleCell.group = Group.none; TODO: what group?
-            sampleCell.transformation = sampleTransformation;
+            sampleCell.transformation = sampleTransformation
                 // sampleCell.operation = cell.operation;
             sampleCell.args = Cell.autoArgs[2];
-                // sampleCell.text = '';  TODO: what text?
+            sampleCell.text = 'sample';
                 // sampleCell.gridTick = 0;
                 // sampleCell.detached = false;
-            sampleCell.apply = true;
+                // sampleCell.apply = false;
                 // sampleCell.base = false;
             //======== END (Cell) ==========
 
@@ -158,20 +162,34 @@ var linearTransform = function (cell, main, additional) {
             historyCell.transformation = Transformation.detached;
                 // historyCell.operation = cell.operation;
                 // historyCell.args = Cell.noArgs;
-                // historyCell.text = '';  TODO: what text?
-            historyCell.gridTick = $Project.transformationTick;
+            historyCell.text = 'sample';
+                // historyCell.gridTick = 0;
             historyCell.detached = true;
-                // historyCell.apply = false;
+            historyCell.apply = true;
                 // historyCell.base = false;
             //======== END (Cell) ==========
 
-            historyCell.grid.layer = 'history';
             historyCell.grid.cells.push(layer);
 
-            var r = layer.length - 1;
-            Execute.transformCell(historyCell.grid, sampleCell, 0, r);
+            //======== BEGIN (Cell) ==========
+            var topCell = Cell.create();
+            topCell.grid = Grid.create();
+                // topCell.group = Group.none; TODO: what group?
+            topCell.transformation = Transformation.detached;
+                // topCell.operation = cell.operation;
+                // topCell.args = Cell.noArgs;
+            topCell.text = 'sample';
+                // topCell.gridTick = 0;
+            topCell.detached = true;
+                // topCell.apply = false;
+                // topCell.base = false;
+            //======== END (Cell) ==========
 
-            column.push(historyCell);
+            topCell.grid.layer = 'history';
+            topCell.grid.cells.push([historyCell]);
+
+            column.push(topCell);
+            Execute.transformCell(grid, topCell, c, column.length - 1);
         });
 
         atFrame += subMain.grid.numFrames;
@@ -195,9 +213,6 @@ var linearTransform = function (cell, main, additional) {
             linearCell.operation = cell.transformation.operation;
         }
         column.push(linearCell);
-
-
-        grid.cells.push(column);
 
         if (subMain.grid.numFrames === 1) {
             grid.numFrames += 1;
@@ -318,10 +333,12 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
         grid.cells.push([frame]);
     });
 
-    var targetNumFrames = sampleInfo[1] - sampleInfo[0];
+    var targetNumFrames = sampleInfo[1] - sampleInfo[0] + 1;
     for (var i = frames.length; i < targetNumFrames; i++) {
         grid.cells.push([Cell.create()]); // TODO: will this work?
     }
+
+    grid.numFrames = targetNumFrames;
 
     return grid;
 });
