@@ -132,10 +132,10 @@ var linearTransform = function (cell, main, additional) {
 
             //======== BEGIN (Transformation) =====
             var sampleTransformation = Transformation.create(
-                Transformation.sampleAtData.text,
-                Transformation.sampleAtData.transform
+                    Transformation.sampleAtData.text,
+                    Transformation.sampleAtData.transform
             );
-            // sampleCell.transformation.operation = Operation.none
+                // sampleCell.transformation.operation = Operation.none
             sampleTransformation.data = [argFrameStart, argFrameEnd];
             //======== END (Transformation) =====
 
@@ -225,12 +225,6 @@ var linearTransform = function (cell, main, additional) {
     return grid;
 };
 
-
-Transformation.add = Transformation.linear(Operation.add);
-Transformation.plusOne = Transformation.linear(Operation.plusOne);
-Transformation.double = Transformation.linear(Operation.double);
-
-Transformation.literal = Transformation.immediate(Operation.literal);
 
 Transformation.none = Transformation.create('none', function () {
     throw new Error('illegal Transformation.none used');

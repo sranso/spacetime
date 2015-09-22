@@ -22,7 +22,7 @@ var drawOverallSetup = function () {
         .on('keypress', function () {
             Input.keypressEvent(d3.event.keyCode)
         })
-        .on('click', function () {
+        .on('mousedown', function () {
             Global.targetCellView = null;
             Draw.draw();
         })
@@ -72,7 +72,7 @@ var drawGrid = function () {
 
     var cellEnterEls = cellEls.enter().append('div')
         .attr('class', 'cell')
-        .on('click', function (d) {
+        .on('mousedown', function (d) {
             d3.event.stopPropagation();
             if (d3.event.shiftKey) {
                 adjustArgs(d);
@@ -90,7 +90,12 @@ var drawGrid = function () {
         }) ;
 
     cellEnterEls.append('div')
-        .attr('class', 'text') ;
+        .attr('class', 'text')
+        .attr('contenteditable', true)
+        .on('input', function (d) {
+            d.cell.text = this.textContent;
+            Main.update();
+        }) ;
 
     cellEnterEls.append('div')
         .attr('class', 'result')

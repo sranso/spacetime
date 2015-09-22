@@ -14,20 +14,4 @@ Operation.none = Operation.create('none', function () {
     throw new Error('illegal Operation.none used');
 });
 
-Operation.add = Operation.create('add', function (cell, a, b) {
-    return a.result + b.result;
-});
-
-Operation.plusOne = Operation.create('plusOne', function (cell, a) {
-    return a.result + 1;
-});
-
-Operation.double = Operation.create('double', function (cell, a) {
-    return a.result * 2;
-});
-
-Operation.literal = Operation.create('literal', function (cell) {
-    return +cell.operation.data;
-});
-
 })();

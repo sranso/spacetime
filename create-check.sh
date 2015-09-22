@@ -1,6 +1,6 @@
 #!/bin/bash
 
-creates="Cell:11 Transformation:6 Operation:5"
+creates="Cell:11 Transformation:6 Operation:5 Grid:5 Area:4"
 
 for c in $creates; do
     create="$(echo $c | cut -d: -f1)"
