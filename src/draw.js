@@ -65,7 +65,19 @@ var drawGrid = function () {
         .attr('class', 'text') ;
 
     cellEnterEls.append('div')
-        .attr('class', 'result') ;
+        .attr('class', 'result')
+        .on('mousemove', function (d) {
+            var x = d3.mouse(this)[0];
+            x = Math.max(0, Math.min(159, x));
+            var cell = d.cell;
+            var fetchFrame = Math.floor(cell.grid.numFrames * x / 160);
+            Execute.executeCell(cell, fetchFrame);
+            Draw.draw();
+        })
+        .on('mouseleave', function (d) {
+            Execute.executeCell(d.cell, 0);
+            Draw.draw();
+        })
 
     cellEls.exit().remove();
 
