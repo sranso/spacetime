@@ -9,6 +9,19 @@ Main.update = function () {
     var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
     Execute.executeGrid(grid);
     Draw.draw();
+    logStats();
+};
+
+var logStats = function () {
+    var clamp = function (x) {
+        var s = '' + x;
+        return s.slice(0, 3);
+    };
+    console.log(
+        clamp(__stats.transform_time) + '   ' +
+        clamp(__stats.execGrid_time) + '   ' +
+        clamp(__stats.draw_time)
+    );
 };
 
 Main.setup = function () {
@@ -17,15 +30,6 @@ Main.setup = function () {
     Input.setup();
     Draw.setup();
     Main.update();
-};
-
-Main.mouseDown = function () {
-};
-
-Main.mouseMove = function () {
-};
-
-Main.mouseUp = function () {
 };
 
 var buildProject = function () {

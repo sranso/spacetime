@@ -3,9 +3,9 @@ var Execute = {};
 (function () {
 
 Execute.transform = function () {
-    $_stats.transform_time = performance.now();
-    $_stats.transform_numCells = 0;
-    $_stats.transform_numCellsSampling = 0;
+    __stats.transform_time = performance.now();
+    __stats.transform_numCells = 0;
+    __stats.transform_numCellsSampling = 0;
 
     $Project.transformationTick += 1;
 
@@ -23,7 +23,7 @@ Execute.transform = function () {
 
     Execute.transformGrid($Project.cellLevels[$Project.currentLevel][0].grid);
 
-    $_stats.transform_time = performance.now() - $_stats.transform_time;
+    __stats.transform_time = performance.now() - __stats.transform_time;
 };
 
 Execute.transformGrid = function (grid) {
@@ -43,7 +43,7 @@ Execute.transformCell = function (grid, cell, c, r) {
         return;
     }
     cell.gridTick = $Project.transformationTick;
-    $_stats.transform_numCells += 1;
+    __stats.transform_numCells += 1;
 
     if (cell.detached) {
         var transformation = Transformation.detached;
@@ -71,13 +71,14 @@ Execute.transformCell = function (grid, cell, c, r) {
 };
 
 Execute.executeGrid = function (grid) {
-    $_stats.execGrid_time = performance.now();
-    var oldStats = $_stats;
+    __stats.execGrid_time = performance.now();
+    var oldStats = __stats;
     var capturedStats = {
         execCell_numCells: 0,
         execCell_numBaseCells: 0,
     };
-    $_stats = capturedStats;
+    __stats = capturedStats;
+
     for (var c = 0; c < grid.cells.length; c++) {
         for (var r = 0; r < grid.cells[0].length; r++) {
             var cell = grid.cells[c][r];
@@ -85,24 +86,27 @@ Execute.executeGrid = function (grid) {
             cell.result = frame.result;
         }
     }
-    $_stats = oldStats;
-    $_stats.execGrid_numCells = capturedStats.execCell_numCells;
-    $_stats.execGrid_numBaseCells = capturedStats.execCell_numBaseCells;
-    $_stats.execGrid_time = performance.now() - $_stats.execGrid_time;
+
+    __stats = oldStats;
+    __stats.execGrid_numCells = capturedStats.execCell_numCells;
+    __stats.execGrid_numBaseCells = capturedStats.execCell_numBaseCells;
+    __stats.execGrid_time = performance.now() - __stats.execGrid_time;
 };
 
 Execute.executeCell = function (cell, fetchFrame) {
-    $_stats.timeExecute = performance.now();
-    $_stats.execCell_numCells = 0;
-    $_stats.execCell_numBaseCells = 0;
+    __stats.execCell_time = performance.now();
+    __stats.execCell_numCells = 0;
+    __stats.execCell_numBaseCells = 0;
+
     $Project.executionTick += 1;
     var frame = executeCell(cell, fetchFrame);
     cell.result = frame.result;
-    $_stats.timeExecute = performance.now() - $_stats.timeExecute;
+
+    __stats.execCell_time = performance.now() - __stats.execCell_time;
 };
 
 var executeCell = function (cell, fetchFrame) {
-    $_stats.execCell_numCells += 1;
+    __stats.execCell_numCells += 1;
     var atFrame = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
@@ -131,8 +135,8 @@ var executeBaseCell = function (grid, cell, c, r) {
         return;
     }
     cell.resultTick = $Project.executionTick;
-    $_stats.execCell_numCells += 1;
-    $_stats.execCell_numBaseCells += 1;
+    __stats.execCell_numCells += 1;
+    __stats.execCell_numBaseCells += 1;
 
     var argCells = [cell];
     for (var i = 0; i < cell.args.length; i += 2) {
@@ -152,7 +156,7 @@ var executeBaseCellArg = function (grid, cell, c, r) {
         //     return;
         // }
         // cell.resultTick = $Project.executionTick;
-        $_stats.execCell_numCells += 1;
+        __stats.execCell_numCells += 1;
 
         var subGrid = cell.grid.cells[0][cell.grid.cells[0].length - 1].grid;
 
@@ -167,10 +171,10 @@ var executeBaseCellArg = function (grid, cell, c, r) {
 };
 
 Execute.executeAll = function () {
-    $_stats.execAll_time = performance.now();
-    $_stats.execAll_numCells = 0;
+    __stats.execAll_time = performance.now();
+    __stats.execAll_numCells = 0;
     executeAllGrid($Project.grid);
-    $_stats.execAll_time = performance.now() - $_stats.execAll_time;
+    __stats.execAll_time = performance.now() - __stats.execAll_time;
 };
 
 var executeAllGrid = function (grid) {
@@ -183,7 +187,7 @@ var executeAllGrid = function (grid) {
 };
 
 var executeAllCell = function (grid, cell, c, r) {
-    $_stats.execAll_numCells += 1;
+    __stats.execAll_numCells += 1;
     if (cell.base) {
         var argCells = [cell];
         for (var i = 0; i < cell.args.length; i += 2) {

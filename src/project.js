@@ -47,6 +47,17 @@ Project.upLevel = function (project) {
     }
 };
 
+Project.downLevel = function (project) {
+    if (project.showHistory) {
+        project.currentLevel += 1;
+    } else {
+        project.currentLevel += 2;
+    }
+    if (project.currentLevel >= project.cellLevels.length) {
+        project.currentLevel = project.cellLevels.length - 1;
+    }
+};
+
 Project.wrapFromAbove = function (project) {
     var historyCell = wrapFromAbovePart(project);
     historyCell.grid.cells = [[project.cellLevels[2][0]]];

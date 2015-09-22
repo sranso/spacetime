@@ -25,6 +25,9 @@ Input.keypressEvent = function (keyCode, key) {
     if (key === 'w') {
         Project.upLevel($Project);
     }
+    if (key === 't') {
+        Project.downLevel($Project);
+    }
 
     Main.update();
 };

@@ -45,4 +45,27 @@ Cell.autoArgs = setupAutoArgs();
 
 Cell.noArgs = Cell.autoArgs[0];
 
+Cell.pointToArg = function (cell, c, r, argIndex, argC, argR) {
+    if (argIndex >= cell.args.length) {
+        return;
+    }
+    var diffC = argC - c;
+    var diffR = argR - r;
+    if (diffC > 0 || (diffC === 0 && diffR >= 0)) {
+        return;
+    }
+    cell.args[argIndex] = diffC;
+    cell.args[argIndex + 1] = diffR;
+};
+
+Cell.argIndex = function (cell, c, r, argC, argR) {
+    var args = cell.args;
+    for (var i = 0; i < args.length; i += 2) {
+        if (argC === c + args[i] && argR === r + args[i + 1]) {
+            return i;
+        }
+    }
+    return -1;
+};
+
 })();

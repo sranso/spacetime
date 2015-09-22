@@ -283,6 +283,7 @@ Transformation.expand = Transformation.create('expand', function (cell, main, ad
 
     var argLayer = basicStartOfTransform(main, additional);
     grid.cells = [];
+    grid.numFrames = 0;
 
     for (var c = 0; c <= area.coords[2]; c++) {
         var expanded = originalCells[c].slice(area.coords[1]);
@@ -344,7 +345,7 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
 });
 
 var fillFrames = function (cell, frames, startFrame, endFrame) {
-    $_stats.transform_numCellsSampling += 1;
+    __stats.transform_numCellsSampling += 1;
     var atFrame = 0;
     var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
     var r = applyingCell.grid.cells[0].length - 1;
@@ -353,7 +354,7 @@ var fillFrames = function (cell, frames, startFrame, endFrame) {
         var subEnd = atFrame + subCell.grid.numFrames - 1;
         if (atFrame <= endFrame && subEnd >= startFrame) {
             if (subCell.grid.numFrames === 1) {
-                $_stats.transform_numCellsSampling += 1;
+                __stats.transform_numCellsSampling += 1;
                 Execute.transformCell(applyingCell.grid, subCell, c, r);
                 frames.push(subCell);
             } else {

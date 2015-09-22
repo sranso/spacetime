@@ -10,7 +10,9 @@ Draw.setup = function () {
 };
 
 Draw.draw = function () {
+    __stats.draw_time = performance.now();
     drawGrid();
+    __stats.draw_time = performance.now() - __stats.draw_time;
 };
 
 var drawOverallSetup = function () {
@@ -20,9 +22,10 @@ var drawOverallSetup = function () {
         .on('keypress', function () {
             Input.keypressEvent(d3.event.keyCode)
         })
-        .on('mousedown', Main.mouseDown)
-        .on('mouseup', Main.mouseUp)
-        .on('mousemove', Main.mouseMove)
+        .on('click', function () {
+            Global.targetCellView = null;
+            Draw.draw();
+        })
         .on('contextmenu', function () {
             d3.event.preventDefault();
         }) ;
@@ -33,6 +36,20 @@ var drawOverallSetup = function () {
 
 var drawGridSetup = function () {
     gridHtml = d3.select('#grid');
+};
+
+var adjustArgs = function (d) {
+    var t = Global.targetCellView;
+    if (!t) {
+        return;
+    }
+    var argIndex = Cell.argIndex(t.cell, t.c, t.r, d.c, d.r);
+    if (argIndex === -1) {
+        Cell.pointToArg(t.cell, t.c, t.r, Global.targetCellArg, d.c, d.r);
+        Main.update();
+    } else {
+        Global.targetCellArg = argIndex;
+    }
 };
 
 var drawGrid = function () {
@@ -55,8 +72,19 @@ var drawGrid = function () {
 
     var cellEnterEls = cellEls.enter().append('div')
         .attr('class', 'cell')
+        .on('click', function (d) {
+            d3.event.stopPropagation();
+            if (d3.event.shiftKey) {
+                adjustArgs(d);
+            } else {
+                Global.targetCellView = d;
+                Global.targetCellArg = 0;
+                Draw.draw();
+            }
+        })
         .on('dblclick', function (d) {
             Project.openCell($Project, d.cell, d.c, d.r);
+            Global.targetCellView = null;
             Main.update();
             d3.event.preventDefault();
         }) ;
@@ -77,11 +105,27 @@ var drawGrid = function () {
         .on('mouseleave', function (d) {
             Execute.executeCell(d.cell, 0);
             Draw.draw();
-        })
+        }) ;
 
     cellEls.exit().remove();
 
+    var targetCell = Global.targetCellView ? Global.targetCellView.cell : Cell.none;
+
     cellEls
+        .attr('class', function (d) {
+            var classes = ['cell'];
+            if (d.cell === targetCell) {
+                classes.push('target');
+            }
+            var t = Global.targetCellView;
+            if (t) {
+                var argIndex = Cell.argIndex(t.cell, t.c, t.r, d.c, d.r);
+                if (argIndex !== -1) {
+                    classes.push('arg-' + argIndex);
+                }
+            }
+            return classes.join(' ');
+        })
         .style('top', function (d) {
             return (d.r * 140) + 'px';
         })

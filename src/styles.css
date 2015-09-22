@@ -26,5 +26,21 @@ body {
 .cell .result {
   width: 160px;
   height: 100px;
-  border: solid 1px #ccc;
+  border: solid 4px #ddd;
+}
+
+.cell.arg-0 .result {
+  border-color: #ccf;
+}
+
+.cell.arg-2 .result {
+  border-color: #cec;
+}
+
+.cell.arg-4 .result {
+  border-color: #f00;
+}
+
+.cell.target .result {
+  border-color: #000;
 }
