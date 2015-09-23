@@ -39,14 +39,42 @@ Grid.insertColumn = function (grid, c, after) {
     for (var r = 0; r < column.length; r++) {
         column[r] = Cell.deepCopy(column[r]);
     }
-    grid.cells.splice(r + (+after), 0, column);
+    grid.cells.splice(c + (+after), 0, column);
     grid.areas.forEach(function (area) {
-        if (area.coords[2] >= r) {
+        if (area.coords[2] >= c) {
             area.coords[2]++;
         }
-        if (area.coords[0] > r) {
+        if (area.coords[0] > c) {
             area.coords[0]++;
         }
+    });
+};
+
+Grid.deleteRow = function (grid, r) {
+    for (var c = 0; c < grid.cells.length; c++) {
+        grid.cells[c].splice(r, 1);
+    }
+    grid.areas = grid.areas.filter(function (area) {
+        if (area.coords[3] >= r) {
+            area.coords[3]--;
+        }
+        if (area.coords[1] > r) {
+            area.coords[1]--;
+        }
+        return area.coords[3] >= area.coords[1];
+    });
+};
+
+Grid.deleteColumn = function (grid, c) {
+    grid.cells.splice(c, 1);
+    grid.areas = grid.areas.filter(function (area) {
+        if (area.coords[2] >= c) {
+            area.coords[2]--;
+        }
+        if (area.coords[0] > c) {
+            area.coords[0]--;
+        }
+        return area.coords[2] >= area.coords[0];
     });
 };
 

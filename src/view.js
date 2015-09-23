@@ -8,6 +8,15 @@ View.selectCell = function (d) {
     Draw.draw();
 };
 
+var deselectCellWithoutDraw = function () {
+    Global.targetCellView = null;
+};
+
+View.deselectCell = function () {
+    deselectCellWithoutDraw();
+    Draw.draw();
+};
+
 View.changeCellArgs = function (d) {
     var t = Global.targetCellView;
     if (!t) {
@@ -59,8 +68,10 @@ View.insertRow = function (d, after) {
     }
     d.cell = grid.cells[d.c][d.r];
     Main.update();
-    var cellEl = Global.cellEls[d.c][d.r];
-    d3.select(cellEl).select('.text').node().focus();
+    if (Global.inputCell) {
+        var cellEl = Global.cellEls[d.c][d.r];
+        d3.select(cellEl).select('.text').node().focus();
+    }
 };
 
 View.insertColumn = function (d, after) {
@@ -75,8 +86,37 @@ View.insertColumn = function (d, after) {
     }
     d.cell = grid.cells[d.c][d.r];
     Main.update();
-    var cellEl = Global.cellEls[d.c][d.r];
-    d3.select(cellEl).select('.text').node().focus();
+    if (Global.inputCell) {
+        var cellEl = Global.cellEls[d.c][d.r];
+        d3.select(cellEl).select('.text').node().focus();
+    }
+};
+
+View.deleteCell = function (d, deleteColumn) {
+    Global.targetCellView = d;
+    if (!d) {
+        return;
+    }
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    if (deleteColumn) {
+        Grid.deleteColumn(grid, d.c);
+        d.c--;
+        if (d.c < 0) {
+            d.c = 0;
+        }
+    } else {
+        Grid.deleteRow(grid, d.r);
+        d.r--;
+        if (d.r < 0) {
+            d.r = 0;
+        }
+    }
+    d.cell = grid.cells[d.c][d.r];
+    Main.update();
+    if (Global.inputCell) {
+        var cellEl = Global.cellEls[d.c][d.r];
+        d3.select(cellEl).select('.text').node().focus();
+    }
 };
 
 View.showFrame = function (d, x) {

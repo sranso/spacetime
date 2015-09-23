@@ -24,9 +24,8 @@ var drawOverallSetup = function () {
         })
         .on('mousedown', function () {
             if (!d3.event.shiftKey) {
-                Global.targetCellView = null;
+                View.deselectCell();
             }
-            Draw.draw();
         })
         .on('contextmenu', function () {
             d3.event.preventDefault();
