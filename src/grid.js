@@ -18,11 +18,11 @@ Grid.none.numFrames = 1;
 Grid.noCells = [];
 Grid.noAreas = [];
 
-Grid.insertRowAfter = function (grid, r) {
+Grid.insertRow = function (grid, r, after) {
     for (var c = 0; c < grid.cells.length; c++) {
         var column = grid.cells[c];
         var cell = Cell.deepCopy(Library.empty);
-        column.splice(r + 1, 0, cell);
+        column.splice(r + (+after), 0, cell);
     }
     grid.areas.forEach(function (area) {
         if (area.coords[3] >= r) {
@@ -33,5 +33,22 @@ Grid.insertRowAfter = function (grid, r) {
         }
     });
 };
+
+Grid.insertColumn = function (grid, c, after) {
+    var column = grid.cells[c].slice();
+    for (var r = 0; r < column.length; r++) {
+        column[r] = Cell.deepCopy(column[r]);
+    }
+    grid.cells.splice(r + (+after), 0, column);
+    grid.areas.forEach(function (area) {
+        if (area.coords[2] >= r) {
+            area.coords[2]++;
+        }
+        if (area.coords[0] > r) {
+            area.coords[0]++;
+        }
+    });
+};
+
 
 })();

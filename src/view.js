@@ -47,14 +47,32 @@ View.inputText = function (d, text) {
     Main.update();
 };
 
-View.insertRowAfter = function (d) {
+View.insertRow = function (d, after) {
     Global.targetCellView = d;
     if (!d) {
         return;
     }
     var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
-    Grid.insertRowAfter(grid, d.r);
-    d.r++;
+    Grid.insertRow(grid, d.r, after);
+    if (after) {
+        d.r++;
+    }
+    d.cell = grid.cells[d.c][d.r];
+    Main.update();
+    var cellEl = Global.cellEls[d.c][d.r];
+    d3.select(cellEl).select('.text').node().focus();
+};
+
+View.insertColumn = function (d, after) {
+    Global.targetCellView = d;
+    if (!d) {
+        return;
+    }
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    Grid.insertColumn(grid, d.c, after);
+    if (after) {
+        d.c++;
+    }
     d.cell = grid.cells[d.c][d.r];
     Main.update();
     var cellEl = Global.cellEls[d.c][d.r];

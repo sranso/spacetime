@@ -11,6 +11,9 @@ var go = function () { debugger; };
 Input.inputEvent = function (key, eventType) {
     if (key === '\\') {
         go();  // define go to test something out
+    } else if (key === 'tab' && eventType === 'down') {
+        d3.event.preventDefault();
+        Input.keypressEvent(null, 'tab');
     }
 };
 
@@ -27,13 +30,18 @@ Input.keypressEvent = function (keyCode, key) {
     } else if (key === 't') {
         View.downLevel();
     } else if (key === 'enter') {
-        View.insertRowAfter(Global.targetCellView);
+        View.insertRow(Global.targetCellView, !d3.event.shiftKey);
+    } else if (key === 'tab') {
+        View.insertColumn(Global.targetCellView, !d3.event.shiftKey);
     }
 };
 
 Input.textInputEvent = function (d, key) {
     if (key === 'enter') {
-        View.insertRowAfter(d);
+        View.insertRow(d, !d3.event.shiftKey);
+    } else if (key === 'tab') {
+        View.insertColumn(d, !d3.event.shiftKey);
+        d3.event.preventDefault();
     }
     d3.event.stopPropagation();
 };
