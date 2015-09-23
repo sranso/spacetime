@@ -230,6 +230,8 @@ Transformation.none = Transformation.create('none', function () {
     throw new Error('illegal Transformation.none used');
 });
 
+Transformation.empty = Transformation.immediate(Operation.empty);
+
 Transformation.detached = Transformation.create('detached', function (cell) {
     Execute.transformGrid(cell.grid);
     return cell.grid;

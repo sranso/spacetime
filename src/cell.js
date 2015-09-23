@@ -45,6 +45,23 @@ Cell.autoArgs = setupAutoArgs();
 
 Cell.noArgs = Cell.autoArgs[0];
 
+Cell.empty = (function () {
+    //======== BEGIN (Cell) ==========
+    var cell = Cell.create();
+        // cell.grid = Grid.none;
+        // cell.group = Group.none; // TODO: groups for all empty?
+    cell.transformation = Transformation.empty;
+        // cell.operation = Transformation.none;
+    cell.args = Cell.autoArgs[0];
+    cell.text = '';
+        // cell.gridTick = 0;
+        // cell.detached = false;
+        // cell.apply = false;
+        // cell.base = false;
+    //======== END (Cell) ==========
+    return cell;
+})();
+
 Cell.pointToArg = function (cell, c, r, argIndex, argC, argR) {
     if (argIndex >= cell.args.length) {
         return;
@@ -54,7 +71,6 @@ Cell.pointToArg = function (cell, c, r, argIndex, argC, argR) {
     if (diffC > 0 || (diffC === 0 && diffR >= 0)) {
         return;
     }
-    cell.args = cell.args.slice();
     cell.args[argIndex] = diffC;
     cell.args[argIndex + 1] = diffR;
 };
@@ -76,7 +92,7 @@ Cell.deepCopy = function (original) {
         cell.group = original.group;
         cell.transformation = original.transformation;
         cell.operation = original.operation;
-        cell.args = original.args;
+        cell.args = original.args.slice();
         cell.text = original.text;
         cell.gridTick = original.gridTick;
         cell.detached = original.detached;

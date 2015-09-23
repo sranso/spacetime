@@ -94,6 +94,8 @@ var drawGrid = function () {
         .attr('contenteditable', true)
         .on('input', function (d) {
             d.cell.text = this.textContent;
+            var cell = Autocomplete.updateFromText(grid, d.cell, d.c, d.r);
+            Global.targetCellView.cell = cell;
             Main.update();
         }) ;
 

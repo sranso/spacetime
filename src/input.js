@@ -22,11 +22,11 @@ Input.keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
+    console.log(key);
     if (key === 'w') {
         Project.upLevel($Project);
         Main.update();
-    }
-    if (key === 't') {
+    } else if (key === 't') {
         Project.downLevel($Project);
         Main.update();
     }

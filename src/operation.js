@@ -14,4 +14,9 @@ Operation.none = Operation.create('none', function () {
     throw new Error('illegal Operation.none used');
 });
 
+Operation.empty = Operation.create('empty', function () {
+    return 0;
+});
+
+
 })();

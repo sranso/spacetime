@@ -21,7 +21,7 @@ Library.literal = (function () {
     var cell = Cell.create();
         // cell.grid = Grid.none;
         // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.linear(baseOperation.literal);
+    cell.transformation = Transformation.immediate(baseOperation.literal);
         // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[0];
     cell.text = '<literal>';
@@ -118,5 +118,13 @@ Library.plusTwo = (function () {
 
     return topCell;
 })();
+
+Library.empty = Cell.deepCopy(Cell.empty);
+
+Library.lookup = {
+    '+': Library.add,
+    '+1': Library.plusOne,
+    '+2': Library.plusTwo,
+};
 
 })();
