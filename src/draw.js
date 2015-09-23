@@ -23,7 +23,9 @@ var drawOverallSetup = function () {
             Input.keypressEvent(d3.event.keyCode)
         })
         .on('mousedown', function () {
-            Global.targetCellView = null;
+            if (!d3.event.shiftKey) {
+                Global.targetCellView = null;
+            }
             Draw.draw();
         })
         .on('contextmenu', function () {
@@ -36,20 +38,6 @@ var drawOverallSetup = function () {
 
 var drawGridSetup = function () {
     gridHtml = d3.select('#grid');
-};
-
-var adjustArgs = function (d) {
-    var t = Global.targetCellView;
-    if (!t) {
-        return;
-    }
-    var argIndex = Cell.argIndex(t.cell, t.c, t.r, d.c, d.r);
-    if (argIndex === -1) {
-        Cell.pointToArg(t.cell, t.c, t.r, Global.targetCellArg, d.c, d.r);
-        Main.update();
-    } else {
-        Global.targetCellArg = argIndex;
-    }
 };
 
 var drawGrid = function () {
@@ -73,50 +61,57 @@ var drawGrid = function () {
     var cellEnterEls = cellEls.enter().append('div')
         .attr('class', 'cell')
         .on('mousedown', function (d) {
-            d3.event.stopPropagation();
             if (d3.event.shiftKey) {
-                adjustArgs(d);
+                View.changeCellArgs(d);
             } else {
-                Global.targetCellView = d;
-                Global.targetCellArg = 0;
-                Draw.draw();
+                View.selectCell(d);
             }
+            d3.event.stopPropagation();
         })
         .on('dblclick', function (d) {
-            Project.openCell($Project, d.cell, d.c, d.r);
-            Global.targetCellView = null;
-            Main.update();
+            View.openCell(d);
             d3.event.preventDefault();
         }) ;
 
     cellEnterEls.append('div')
         .attr('class', 'text')
         .attr('contenteditable', true)
+        .on('focus', function (d) {
+            Global.inputCell = true;
+        })
+        .on('blur', function (d) {
+            Global.inputCell = false;
+        })
         .on('input', function (d) {
-            d.cell.text = this.textContent;
-            var cell = Autocomplete.updateFromText(grid, d.cell, d.c, d.r);
-            Global.targetCellView.cell = cell;
-            Main.update();
-        }) ;
+            View.inputText(d, this.textContent);
+        })
+        .on('keydown', function (d) {
+            Input.textInputEvent(d, Input.keyForEvent());
+        })
+        .on('keypress', function () {
+            d3.event.stopPropagation();
+        })
 
     cellEnterEls.append('div')
         .attr('class', 'result')
         .on('mousemove', function (d) {
-            var x = d3.mouse(this)[0];
-            x = Math.max(0, Math.min(159, x));
-            var cell = d.cell;
-            var fetchFrame = Math.floor(cell.grid.numFrames * x / 160);
-            Execute.executeCell(cell, fetchFrame);
-            Draw.draw();
+            View.showFrame(d, d3.mouse(this)[0]);
         })
         .on('mouseleave', function (d) {
-            Execute.executeCell(d.cell, 0);
-            Draw.draw();
+            View.showFrame(d, 0);
         }) ;
 
     cellEls.exit().remove();
 
     var targetCell = Global.targetCellView ? Global.targetCellView.cell : Cell.none;
+
+    Global.cellEls = [];
+    cellEls.each(function (d) {
+        if (!Global.cellEls[d.c]) {
+            Global.cellEls[d.c] = [];
+        }
+        Global.cellEls[d.c][d.r] = this;
+    });
 
     cellEls
         .attr('class', function (d) {

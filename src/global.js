@@ -5,6 +5,8 @@ var Global = {};
 
 Global.targetCellView = null;
 Global.targetCellArg = 0;
+Global.inputCell = false;
+Global.cellEls = [];
 
 var __stats = {
     transform_numCells: 0,

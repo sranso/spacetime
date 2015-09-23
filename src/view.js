@@ -1,0 +1,71 @@
+'use strict';
+var View = {};
+(function () {
+
+View.selectCell = function (d) {
+    Global.targetCellView = d;
+    Global.targetCellArg = 0;
+    Draw.draw();
+};
+
+View.changeCellArgs = function (d) {
+    var t = Global.targetCellView;
+    if (!t) {
+        return;
+    }
+    var argIndex = Cell.argIndex(t.cell, t.c, t.r, d.c, d.r);
+    if (argIndex === -1) {
+        Cell.pointToArg(t.cell, t.c, t.r, Global.targetCellArg, d.c, d.r);
+        Main.update();
+    } else {
+        Global.targetCellArg = argIndex;
+    }
+};
+
+View.openCell = function (d) {
+    Project.openCell($Project, d.cell, d.c, d.r);
+    Global.targetCellView = null;
+    Main.update();
+};
+
+View.upLevel = function () {
+    Project.upLevel($Project);
+    Main.update();
+};
+
+View.downLevel = function () {
+    Project.downLevel($Project);
+    Main.update();
+};
+
+View.inputText = function (d, text) {
+    Global.targetCellView = d;
+    d.cell.text = text;
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var cell = Autocomplete.updateFromText(grid, d.cell, d.c, d.r);
+    Global.targetCellView.cell = cell;
+    Main.update();
+};
+
+View.insertRowAfter = function (d) {
+    Global.targetCellView = d;
+    if (!d) {
+        return;
+    }
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    Grid.insertRowAfter(grid, d.r);
+    d.r++;
+    d.cell = grid.cells[d.c][d.r];
+    Main.update();
+    var cellEl = Global.cellEls[d.c][d.r];
+    d3.select(cellEl).select('.text').node().focus();
+};
+
+View.showFrame = function (d, x) {
+    x = Math.max(0, Math.min(159, x));
+    var fetchFrame = Math.floor(d.cell.grid.numFrames * x / 160);
+    Execute.executeCell(d.cell, fetchFrame);
+    Draw.draw();
+};
+
+})();
