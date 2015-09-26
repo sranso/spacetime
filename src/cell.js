@@ -12,7 +12,6 @@ Cell.create = function () {
         text: '',
         gridTick: 0,
         detached: false,
-        apply: false,
         base: false,
 
         // The following are never included in 'clone' properties:
@@ -56,7 +55,6 @@ Cell.empty = (function () {
     cell.text = '';
         // cell.gridTick = 0;
         // cell.detached = false;
-        // cell.apply = false;
         // cell.base = false;
     //======== END (Cell) ==========
     return cell;
@@ -96,7 +94,6 @@ Cell.deepCopy = function (original) {
         cell.text = original.text;
         cell.gridTick = original.gridTick;
         cell.detached = original.detached;
-        cell.apply = original.apply;
         cell.base = original.base;
     //======== END (Cell) ==========
 

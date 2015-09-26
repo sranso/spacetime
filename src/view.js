@@ -37,13 +37,13 @@ View.openCell = function (d) {
     Main.update();
 };
 
-View.upLevel = function () {
-    Project.upLevel($Project);
+View.outLevel = function () {
+    Project.outLevel($Project);
     Main.update();
 };
 
-View.downLevel = function () {
-    Project.downLevel($Project);
+View.intoLevel = function () {
+    Project.intoLevel($Project);
     Main.update();
 };
 

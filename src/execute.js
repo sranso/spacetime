@@ -48,11 +48,8 @@ Execute.transformCell = function (grid, cell, c, r) {
     if (cell.detached) {
         var transformation = Transformation.detached;
         var args = Cell.noArgs;
-    } else if (cell.apply) {
-        var transformation = cell.transformation;
-        var args = cell.args;
     } else {
-        var transformation = Transformation.history;
+        var transformation = cell.transformation;
         var args = cell.args;
     }
 
@@ -108,16 +105,15 @@ Execute.executeCell = function (cell, fetchFrame) {
 var executeCell = function (cell, fetchFrame) {
     __stats.execCell_numCells += 1;
     var atFrame = 0;
-    var applyingCell = cell.grid.cells[0][cell.grid.cells[0].length - 1];
-    var r = applyingCell.grid.cells[0].length - 1;
+    var r = cell.grid.cells[0].length - 1;
 
-    for (var c = 0; c < applyingCell.grid.cells.length; c++) {
-        var subCell = applyingCell.grid.cells[c][r];
+    for (var c = 0; c < cell.grid.cells.length; c++) {
+        var subCell = cell.grid.cells[c][r];
         var subEnd = atFrame + subCell.grid.numFrames - 1;
 
         if (atFrame <= fetchFrame && fetchFrame <= subEnd) {
             if (subCell.operation !== Operation.none) {
-                executeBaseCell(applyingCell.grid, subCell, c, r);
+                executeBaseCell(cell.grid, subCell, c, r);
                 return subCell;
             } else {
                 return executeCell(subCell, fetchFrame - atFrame);
@@ -158,11 +154,10 @@ var executeBaseCellArg = function (grid, cell, c, r) {
         // cell.resultTick = $Project.executionTick;
         __stats.execCell_numCells += 1;
 
-        var subGrid = cell.grid.cells[0][cell.grid.cells[0].length - 1].grid;
 
-        var r = subGrid.cells[0].length - 1;
-        var subCell = subGrid.cells[0][r];
-        executeBaseCellArg(subGrid, subCell, 0, r);
+        var r = cell.grid.cells[0].length - 1;
+        var subCell = cell.grid.cells[0][r];
+        executeBaseCellArg(cell.grid, subCell, 0, r);
 
         cell.result = subCell.result;
     } else {
