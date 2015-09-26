@@ -67,6 +67,23 @@ Library.add = (function () {
     return cell;
 })();
 
+Library.identity = (function () {
+    //======== BEGIN (Cell) ==========
+    var cell = Cell.create();
+        // cell.grid = Grid.none;
+        // cell.group = Group.none; // TODO: groups for all base?
+    cell.transformation = Transformation.identity;
+        // cell.operation = Transformation.none;
+    cell.args = Cell.autoArgs[2];
+    cell.text = 'id';
+        // cell.gridTick = 0;
+        // cell.detached = false;
+        // cell.apply = false;
+        // cell.base = false;
+    //======== END (Cell) ==========
+    return cell;
+})();
+
 Library.plusTwo = (function () {
     var column = [
         Cell.deepCopy(Library.plusOne),
@@ -125,6 +142,7 @@ Library.lookup = {
     '+': Library.add,
     '+1': Library.plusOne,
     '+2': Library.plusTwo,
+    'id': Library.identity,
 };
 
 })();

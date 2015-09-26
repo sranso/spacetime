@@ -88,6 +88,15 @@ var immediateTransform = function (cell, main, additional) {
     return grid;
 };
 
+Transformation.identity = Transformation.create('identity', function (cell, main, additional) {
+    var grid = Grid.create();
+    grid.layer = 'under';
+    grid.cells[0] = basicStartOfTransform(main, Cell.noArgs);
+    grid.numFrames = main.grid.numFrames;
+
+    return grid;
+});
+
 Transformation.linear = function (operation) {
     var transformation = Transformation.create(operation.text, linearTransform);
     transformation.operation = operation;

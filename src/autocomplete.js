@@ -5,7 +5,9 @@ var Autocomplete = {};
 Autocomplete.updateFromText = function (grid, original, c, r) {
     var n = +original.text;
     var libraryCell = Library.lookup[original.text];
-    if (!libraryCell && original.text !== '' && !isNaN(n)) {
+    if (libraryCell) {
+        var cell = Cell.deepCopy(libraryCell);
+    } else if (!libraryCell && original.text !== '' && !isNaN(n)) {
         var libraryCell = Library.literal;
         //======== BEGIN (Operation) ========
         var operation = Operation.create(
@@ -19,8 +21,9 @@ Autocomplete.updateFromText = function (grid, original, c, r) {
         cell.transformation = Transformation.immediate(operation);
         cell.text = original.text;
     } else {
-        libraryCell = libraryCell || Library.empty;
+        libraryCell = Library.empty;
         var cell = Cell.deepCopy(libraryCell);
+        cell.text = original.text;
     }
 
     grid.cells[c][r] = cell;
