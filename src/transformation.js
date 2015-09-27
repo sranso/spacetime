@@ -14,19 +14,8 @@ Transformation.create = function (text, transform) {
 var basicStartOfTransform = function (main, additional) {
     if (main) {
         var layer = main.grid.cells[0].slice(0, -1);
-
-        //========= BEGIN (Cell) =======
-        var mainClone = Cell.create();
-            mainClone.grid = main.grid;
-            mainClone.group = main.group;
-            mainClone.transformation = main.transformation;
-            mainClone.operation = main.operation;
+        var mainClone = Cell.clonePostTransform(main);
         mainClone.args = Cell.autoArgs[main.args.length];
-            mainClone.text = main.text;
-        mainClone.gridTick = $Project.transformationTick;
-        mainClone.detached = main.transformation === Transformation.detached;
-            mainClone.base = main.base;
-        //========= END (Cell) =======
 
         layer.push(mainClone);
     } else {
@@ -34,19 +23,8 @@ var basicStartOfTransform = function (main, additional) {
     }
 
     additional.forEach(function (original) {
-
-        //========= BEGIN (Cell) ========
-        var argCell = Cell.create();
-            argCell.grid = original.grid;
-            argCell.group = original.group;
-            argCell.transformation = original.transformation;
-            argCell.operation = original.operation;
-            argCell.args = original.args;
-            argCell.text = original.text;
-        argCell.gridTick = $Project.transformationTick;
+        var argCell = Cell.clonePostTransform(original);
         argCell.detached = true;
-            argCell.base = original.base;
-        //========= END (Cell) ========
 
         layer.push(argCell);
     });
@@ -65,18 +43,10 @@ var immediateTransform = function (cell, main, additional) {
     grid.layer = 'under';
     grid.cells[0] = basicStartOfTransform(main, additional);
 
-    //======== BEGIN (Cell) ========
-    var baseCell = Cell.create();
-        // baseCell.grid = Grid.none;
-        baseCell.group = cell.group;
-        baseCell.transformation = cell.transformation;
+    var baseCell = Cell.cloneForSimilar(cell);
     baseCell.operation = cell.transformation.operation;
-        baseCell.args = cell.args;
-        baseCell.text = cell.text;
-        // baseCell.gridTick = 0;
-        // baseCell.detached = false;
+    baseCell.args = Cell.autoArgs[cell.args.length];
     baseCell.base = true;
-    //========= END (Cell) ========
 
     grid.cells[0].push(baseCell);
 
@@ -134,42 +104,25 @@ var linearTransform = function (cell, main, additional) {
 
             var layer = basicStartOfTransform(argCell, Cell.noArgs);
 
-            //======== BEGIN (Transformation) =====
             var sampleTransformation = Transformation.create(
                     Transformation.sampleAtData.text,
                     Transformation.sampleAtData.transform
             );
-                // sampleCell.transformation.operation = Operation.none
             sampleTransformation.data = [argFrameStart, argFrameEnd];
-            //======== END (Transformation) =====
 
-            //======== BEGIN (Cell) ==========
             var sampleCell = Cell.create();
-                // sampleCell.grid = Grid.none;
-                // sampleCell.group = Group.none; TODO: what group?
-            sampleCell.transformation = sampleTransformation
-                // sampleCell.operation = cell.operation;
             sampleCell.args = Cell.autoArgs[2];
+            sampleCell.transformation = sampleTransformation
+            // sampleCell.group = Group.none; TODO: what group?
             sampleCell.text = 'sample';
-                // sampleCell.gridTick = 0;
-                // sampleCell.detached = false;
-                // sampleCell.base = false;
-            //======== END (Cell) ==========
 
             layer.push(sampleCell);
 
-            //======== BEGIN (Cell) ==========
             var cell = Cell.create();
             cell.grid = Grid.create();
-                // cell.group = Group.none; TODO: what group?
             cell.transformation = Transformation.detached;
-                // cell.operation = cell.operation;
-                // cell.args = Cell.noArgs;
+            // cell.group = Group.none; TODO: what group?
             cell.text = 'sample';
-                // cell.gridTick = 0;
-            cell.detached = true;
-                // cell.base = false;
-            //======== END (Cell) ==========
 
             cell.grid.cells.push(layer);
 
@@ -179,18 +132,8 @@ var linearTransform = function (cell, main, additional) {
 
         atFrame += subMain.grid.numFrames;
 
-        //========= BEGIN (Cell) ==========
-        var linearCell = Cell.create();
-            // linearCell.grid = Grid.none;
-            linearCell.group = cell.group;
-            linearCell.transformation = cell.transformation;
-            // linearCell.operation = Operation.none;
+        var linearCell = Cell.cloneForSimilar(cell);
         linearCell.args = Cell.autoArgs[cell.args.length];
-            linearCell.text = cell.text;
-            // linearCell.gridTick = 0;
-            // linearCell.detached = false;
-            // linearCell.base = false;
-        //========= END (Cell) ==========
 
         if (subMain.grid.numFrames === 1) {
             linearCell.base = true;
@@ -262,18 +205,10 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
     grid.cells = [];
     grid.layer = 'under';
     frames.forEach(function (original) {
-        //========= BEGIN (Cell) =========
-        var frame = Cell.create();
-            frame.grid = original.grid;
-            frame.group = original.group;
-        frame.transformation = Transformation.detached;
-            // frame.operation = Operation.none;
-            // frame.args = Cell.noArgs;
-            frame.text = original.text;
-        frame.gridTick = $Project.transformationTick;
+        var frame = Cell.clonePostTransform(original);
+        frame.operation = Operation.none;
+        frame.base = false;
         frame.detached = true;
-            // frame.base = false;
-        //========= END (Cell) =========
 
         grid.cells.push([frame]);
     });

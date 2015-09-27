@@ -168,7 +168,7 @@ var executeBaseCellArg = function (grid, cell, c, r) {
 Execute.executeAll = function () {
     __stats.execAll_time = performance.now();
     __stats.execAll_numCells = 0;
-    executeAllGrid($Project.grid);
+    executeAllGrid($Project.cellLevels[$Project.currentLevel][0].grid);
     __stats.execAll_time = performance.now() - __stats.execAll_time;
 };
 

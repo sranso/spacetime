@@ -5,22 +5,57 @@ var Cell = {};
 Cell.create = function () {
     return {
         grid: Grid.none,
-        group: Group.none,
+        args: Cell.noArgs,     // [c1, r1, c2, r2, ...]
         transformation: Transformation.none,
         operation: Operation.none,
-        args: Cell.noArgs,     // [c1, r1, c2, r2, ...]
+
+        group: Group.none,
         text: '',
+
         gridTick: 0,
         detached: false,
         base: false,
 
-        // The following are never included in 'clone' properties:
         result: null,
         resultTick: 0,
     };
 };
 
 Cell.none = Cell.create();
+
+Cell.clonePostTransform = function (original) {
+    var cell = Cell.create();
+    cell.grid = original.grid;
+    // cell.args = Cell.noArgs;
+    cell.transformation = original.transformation;
+    cell.operation = original.transformation;
+
+    cell.group = original.group;
+    cell.text = original.text;
+
+    cell.gridTick = original.gridTick;
+    // cell.detached = false;
+    cell.base = original.base;
+
+    return cell;
+};
+
+Cell.cloneForSimilar = function (original) {
+    var cell = Cell.create();
+    // cell.grid = Grid.none;
+    // cell.args = Cell.noArgs;
+    cell.transformation = original.transformation;
+    // cell.operation = Operation.none;
+
+    cell.group = original.group;
+    cell.text = original.text;
+
+    // cell.gridTick = 0;
+    // cell.detached = false;
+    // cell.base = false;
+
+    return cell;
+};
 
 var autoArgs = function (numArgs) {
     return args;
@@ -45,18 +80,11 @@ Cell.autoArgs = setupAutoArgs();
 Cell.noArgs = Cell.autoArgs[0];
 
 Cell.empty = (function () {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        // cell.group = Group.none; // TODO: groups for all empty?
     cell.transformation = Transformation.empty;
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[0];
     cell.text = '';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
+
     return cell;
 })();
 
@@ -84,38 +112,33 @@ Cell.argIndex = function (cell, c, r, argC, argR) {
 };
 
 Cell.deepCopy = function (original) {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        cell.group = original.group;
-        cell.transformation = original.transformation;
-        cell.operation = original.operation;
-        cell.args = original.args.slice();
-        cell.text = original.text;
-        cell.gridTick = original.gridTick;
-        cell.detached = original.detached;
-        cell.base = original.base;
-    //======== END (Cell) ==========
+    // cell.grid = Grid.none;
+    cell.args = original.args.slice();
+    cell.transformation = original.transformation;
+    cell.operation = original.operation;
+
+    cell.group = original.group;
+    cell.text = original.text;
+
+    cell.gridTick = original.gridTick;
+    cell.detached = original.detached;
+    cell.base = original.base;
 
     if (original.grid === Grid.none) {
         return cell;
     }
 
-    //======== BEGIN (Grid) ==========
     cell.grid = Grid.create();
-        cell.grid.layer = original.grid.layer;
-        cell.grid.numFrames = original.grid.numFrames;
-        // cell.grid.cells = [];
-        // cell.grid.areas = [];
-    //======== End (Grid) ==========
+    cell.grid.layer = original.grid.layer;
+    cell.grid.numFrames = original.grid.numFrames;
 
     cell.grid.areas = original.grid.areas.map(function (original) {
-        //======== BEGIN (Area) ==========
         var area = Area.create();
-            area.group = original.group;
-            area.coords = original.coords.slice();
-            area.text = original.text;
-        //======== End (Area) ==========
+        area.group = original.group;
+        area.coords = original.coords.slice();
+        area.text = original.text;
+
         return area;
     });
 

@@ -9,13 +9,11 @@ Autocomplete.updateFromText = function (grid, original, c, r) {
         var cell = Cell.deepCopy(libraryCell);
     } else if (!libraryCell && original.text !== '' && !isNaN(n)) {
         var libraryCell = Library.literal;
-        //======== BEGIN (Operation) ========
         var operation = Operation.create(
                 libraryCell.transformation.operation.text,
                 libraryCell.transformation.operation.execute
         );
         operation.data = n;
-        //======== END (Operation) ========
 
         var cell = Cell.deepCopy(libraryCell);
         cell.transformation = Transformation.immediate(operation);

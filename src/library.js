@@ -17,66 +17,39 @@ baseOperation.add = Operation.create('add', function (cell, a, b) {
 });
 
 Library.literal = (function () {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.immediate(baseOperation.literal);
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[0];
+    cell.transformation = Transformation.immediate(baseOperation.literal);
+    // cell.group = Group.none; // TODO: groups for all library?
     cell.text = '<literal>';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
+
     return cell;
 })();
 
 Library.plusOne = (function () {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.linear(baseOperation.plusOne);
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.linear(baseOperation.plusOne);
     cell.text = '+1';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
+
     return cell;
 })();
 
 Library.add = (function () {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.linear(baseOperation.add);
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[4];
+    cell.transformation = Transformation.linear(baseOperation.add);
     cell.text = '+';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
+
     return cell;
 })();
 
 Library.identity = (function () {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
-        // cell.grid = Grid.none;
-        // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.identity;
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.identity;
     cell.text = 'id';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
+
     return cell;
 })();
 
@@ -86,28 +59,18 @@ Library.plusTwo = (function () {
         Cell.deepCopy(Library.plusOne),
     ];
 
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
     cell.grid = Grid.create();
-        // cell.group = Group.none; // TODO: groups for all base?
-    cell.transformation = Transformation.expand;
-        // cell.operation = Transformation.none;
     cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.expand;
     cell.text = '+2';
-        // cell.gridTick = 0;
-        // cell.detached = false;
-        // cell.base = false;
-    //======== END (Cell) ==========
 
     cell.grid.cells[0] = column;
     cell.grid.layer = 'over';
 
-    //======== BEGIN (Area) ==========
     var area = Area.create();
-        // area.group = Group.none;
     area.coords = [0, 0, 0, 1];
-        // area.text = '';
-    //======== END (Area) ==========
+
     cell.grid.areas.push(area);
 
     return cell;

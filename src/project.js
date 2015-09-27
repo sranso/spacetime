@@ -49,18 +49,9 @@ Project.wrapFromAbove = function (project) {
 };
 
 var wrapFromAbovePart = function (project) {
-    //======== BEGIN (Cell) ==========
     var cell = Cell.create();
     cell.grid = Grid.create();
-        // cell.group = Group.none;
     cell.transformation = Transformation.detached;
-        // cell.operation = cell.operation;
-        // cell.args = Cell.noArgs;
-        // cell.text = '';
-        // cell.gridTick = 0;
-    cell.detached = true;
-        // cell.base = false;
-    //======== END (Cell) ==========
 
     project.cellLevels.splice(0, 0,
         [cell, 0, 0]

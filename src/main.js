@@ -48,25 +48,23 @@ var buildProject = function () {
     var operation = Operation.none;
 
         subCell = Cell.deepCopy(Library.literal);
-        //======== BEGIN (Operation) ========
         operation = Operation.create(
                 subCell.transformation.operation.text,
                 subCell.transformation.operation.execute
         );
         operation.data = 3;
-        //======== END (Operation) ========
+
         subCell.transformation = Transformation.immediate(operation);
         subCell.text = '3';
         subGrid.cells.push([subCell]);
 
         subCell = Cell.deepCopy(Library.literal);
-        //======== BEGIN (Operation) ========
         operation = Operation.create(
                 subCell.transformation.operation.text,
                 subCell.transformation.operation.execute
         );
         operation.data = 7;
-        //======== END (Operation) ========
+
         subCell.transformation = Transformation.immediate(operation);
         subCell.text = '7';
         subGrid.cells.push([subCell]);
