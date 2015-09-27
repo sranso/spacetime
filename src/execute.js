@@ -38,7 +38,7 @@ Execute.transformGrid = function (grid) {
     }
 };
 
-Execute.transformCell = function (grid, cell, c, r) {
+Execute.transformCell = function (aboveGrid, cell, c, r) {
     if (cell.gridTick === $Project.transformationTick) {
         return;
     }
@@ -47,24 +47,22 @@ Execute.transformCell = function (grid, cell, c, r) {
 
     if (cell.detached) {
         var transformation = Transformation.detached;
-        var args = Cell.noArgs;
     } else {
         var transformation = cell.transformation;
-        var args = cell.args;
     }
+    transformation.transform(aboveGrid, cell, c, r);
+};
 
+Execute.transformArgs = function (aboveGrid, cell, c, r) {
     var argCells = [];
-    for (var i = 0; i < args.length; i += 2) {
-        var argC = c + args[i];
-        var argR = r + args[i + 1];
-        var argCell = grid.cells[argC][argR];
+    for (var i = 0; i < cell.args.length; i += 2) {
+        var argC = c + cell.args[i];
+        var argR = r + cell.args[i + 1];
+        var argCell = aboveGrid.cells[argC][argR];
         argCells.push(argCell);
-        Execute.transformCell(grid, argCell, argC, argR);
+        Execute.transformCell(aboveGrid, argCell, argC, argR);
     }
-    var main = argCells[0];
-    var additional = argCells.slice(1);
-
-    cell.grid = transformation.transform(cell, main, additional);
+    return argCells;
 };
 
 Execute.executeGrid = function (grid) {

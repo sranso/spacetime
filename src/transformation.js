@@ -38,10 +38,11 @@ Transformation.immediate = function (operation) {
     return transformation;
 };
 
-var immediateTransform = function (cell, main, additional) {
-    var grid = Grid.create();
+var immediateTransform = function (aboveGrid, cell, c, r) {
+    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+    var grid = cell.grid = Grid.create();
     grid.layer = 'under';
-    grid.cells[0] = basicStartOfTransform(main, additional);
+    grid.cells[0] = basicStartOfTransform(argCells[0], argCells.slice(1));
 
     var baseCell = Cell.cloneForSimilar(cell);
     baseCell.operation = cell.transformation.operation;
@@ -51,17 +52,15 @@ var immediateTransform = function (cell, main, additional) {
     grid.cells[0].push(baseCell);
 
     grid.numFrames = 1;
-
-    return grid;
 };
 
-Transformation.identity = Transformation.create('identity', function (cell, main, additional) {
-    var grid = Grid.create();
+Transformation.identity = Transformation.create('identity', function (aboveGrid, cell, c, r) {
+    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+    var main = argCells[0];
+    var grid = cell.grid = Grid.create();
     grid.layer = 'under';
     grid.cells[0] = basicStartOfTransform(main, Cell.noArgs);
     grid.numFrames = main.grid.numFrames;
-
-    return grid;
 });
 
 Transformation.linear = function (operation) {
@@ -70,8 +69,12 @@ Transformation.linear = function (operation) {
     return transformation;
 };
 
-var linearTransform = function (cell, main, additional) {
-    var grid = Grid.create();
+var linearTransform = function (aboveGrid, cell, c, r) {
+    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+    var main = argCells[0];
+    var additional = argCells.slice(1);
+
+    var grid = cell.grid = Grid.create();
     grid.cells = [];
     grid.layer = 'under';
 
@@ -148,8 +151,6 @@ var linearTransform = function (cell, main, additional) {
             grid.numFrames += linearCell.grid.numFrames;
         }
     });
-
-    return grid;
 };
 
 
@@ -159,17 +160,17 @@ Transformation.none = Transformation.create('none', function () {
 
 Transformation.empty = Transformation.immediate(Operation.empty);
 
-Transformation.detached = Transformation.create('detached', function (cell) {
+Transformation.detached = Transformation.create('detached', function (aboveGrid, cell, c, r) {
     Execute.transformGrid(cell.grid);
-    return cell.grid;
 });
 
-Transformation.expand = Transformation.create('expand', function (cell, main, additional) {
+Transformation.expand = Transformation.create('expand', function (aboveGrid, cell, c, r) {
+    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
     var grid = cell.grid;
     var originalCells = grid.cells;
     var area = grid.areas[0];
 
-    var argLayer = basicStartOfTransform(main, additional);
+    var argLayer = basicStartOfTransform(argCells[0], argCells.slice(1));
     grid.cells = [];
     grid.numFrames = 0;
 
@@ -192,16 +193,17 @@ Transformation.expand = Transformation.create('expand', function (cell, main, ad
         }
         grid.numFrames += grid.cells[c][grid.cells[0].length - 1].grid.numFrames;
     }
-
-    return grid;
 });
 
-Transformation.sampleAtData = Transformation.create('sampleAtData', function (cell, main, additional) {
+Transformation.sampleAtData = Transformation.create('sampleAtData', function (aboveGrid, cell, c, r) {
+    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+    var main = argCells[0];
+
     var sampleInfo = cell.transformation.data;
     var frames = [];
     fillFrames(main, frames, sampleInfo[0], sampleInfo[1]);
 
-    var grid = Grid.create();
+    var grid = cell.grid = Grid.create();
     grid.cells = [];
     grid.layer = 'under';
     frames.forEach(function (original) {
@@ -219,22 +221,23 @@ Transformation.sampleAtData = Transformation.create('sampleAtData', function (ce
     }
 
     grid.numFrames = targetNumFrames;
-
-    return grid;
 });
 
 var fillFrames = function (cell, frames, startFrame, endFrame) {
     __stats.transform_numCellsSampling += 1;
     var atFrame = 0;
     var r = cell.grid.cells[0].length - 1;
+
     for (var c = 0; c < cell.grid.cells.length; c++) {
         var subCell = cell.grid.cells[c][r];
         var subEnd = atFrame + subCell.grid.numFrames - 1;
+
         if (atFrame <= endFrame && subEnd >= startFrame) {
             if (subCell.grid.numFrames === 1) {
                 __stats.transform_numCellsSampling += 1;
                 Execute.transformCell(cell.grid, subCell, c, r);
                 frames.push(subCell);
+
             } else {
                 var newStart = startFrame - atFrame;
                 var newEnd = endFrame - atFrame;
