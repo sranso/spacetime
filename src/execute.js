@@ -38,7 +38,7 @@ Execute.transformGrid = function (grid) {
     }
 };
 
-Execute.transformCell = function (aboveGrid, cell, c, r) {
+Execute.transformCell = function (grid, cell, c, r) {
     if (cell.gridTick === $Project.transformationTick) {
         return;
     }
@@ -50,17 +50,17 @@ Execute.transformCell = function (aboveGrid, cell, c, r) {
     } else {
         var transformation = cell.transformation;
     }
-    transformation.transform(aboveGrid, cell, c, r);
+    transformation.transform(grid, cell, c, r);
 };
 
-Execute.transformArgs = function (aboveGrid, cell, c, r) {
+Execute.transformArgs = function (grid, cell, c, r) {
     var argCells = [];
     for (var i = 0; i < cell.args.length; i += 2) {
         var argC = c + cell.args[i];
         var argR = r + cell.args[i + 1];
-        var argCell = aboveGrid.cells[argC][argR];
+        var argCell = grid.cells[argC][argR];
         argCells.push(argCell);
-        Execute.transformCell(aboveGrid, argCell, argC, argR);
+        Execute.transformCell(grid, argCell, argC, argR);
     }
     return argCells;
 };
@@ -181,7 +181,7 @@ var executeAllGrid = function (grid) {
 
 var executeAllCell = function (grid, cell, c, r) {
     __stats.execAll_numCells += 1;
-    if (cell.base) {
+    if (cell.operation !== Operation.none) {
         var argCells = [cell];
         for (var i = 0; i < cell.args.length; i += 2) {
             var argC = c + cell.args[i];

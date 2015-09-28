@@ -38,8 +38,11 @@ Transformation.immediate = function (operation) {
     return transformation;
 };
 
-var immediateTransform = function (aboveGrid, cell, c, r) {
-    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+var immediateTransform = function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
+
+    cell.operation = cell.transformation.operation;
+
     var grid = cell.grid = Grid.create();
     grid.layer = 'under';
     grid.cells[0] = basicStartOfTransform(argCells[0], argCells.slice(1));
@@ -54,9 +57,10 @@ var immediateTransform = function (aboveGrid, cell, c, r) {
     grid.numFrames = 1;
 };
 
-Transformation.identity = Transformation.create('identity', function (aboveGrid, cell, c, r) {
-    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+Transformation.identity = Transformation.create('identity', function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
     var main = argCells[0];
+
     var grid = cell.grid = Grid.create();
     grid.layer = 'under';
     grid.cells[0] = basicStartOfTransform(main, Cell.noArgs);
@@ -69,8 +73,8 @@ Transformation.linear = function (operation) {
     return transformation;
 };
 
-var linearTransform = function (aboveGrid, cell, c, r) {
-    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+var linearTransform = function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
     var main = argCells[0];
     var additional = argCells.slice(1);
 
@@ -160,12 +164,12 @@ Transformation.none = Transformation.create('none', function () {
 
 Transformation.empty = Transformation.immediate(Operation.empty);
 
-Transformation.detached = Transformation.create('detached', function (aboveGrid, cell, c, r) {
+Transformation.detached = Transformation.create('detached', function (atGrid, cell) {
     Execute.transformGrid(cell.grid);
 });
 
-Transformation.expand = Transformation.create('expand', function (aboveGrid, cell, c, r) {
-    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+Transformation.expand = Transformation.create('expand', function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
     var grid = cell.grid;
     var originalCells = grid.cells;
     var area = grid.areas[0];
@@ -195,8 +199,8 @@ Transformation.expand = Transformation.create('expand', function (aboveGrid, cel
     }
 });
 
-Transformation.sampleAtData = Transformation.create('sampleAtData', function (aboveGrid, cell, c, r) {
-    var argCells = Execute.transformArgs(aboveGrid, cell, c, r);
+Transformation.sampleAtData = Transformation.create('sampleAtData', function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
     var main = argCells[0];
 
     var sampleInfo = cell.transformation.data;

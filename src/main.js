@@ -30,6 +30,7 @@ Main.setup = function () {
     Input.setup();
     Draw.setup();
     Main.update();
+    Execute.executeAll();
 };
 
 var buildProject = function () {

@@ -28,7 +28,7 @@ Cell.clonePostTransform = function (original) {
     cell.grid = original.grid;
     // cell.args = Cell.noArgs;
     cell.transformation = original.transformation;
-    cell.operation = original.transformation;
+    cell.operation = original.operation;
 
     cell.group = original.group;
     cell.text = original.text;
