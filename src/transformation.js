@@ -11,6 +11,16 @@ Transformation.create = function (text, transform) {
     };
 };
 
+Transformation.cloneWithoutData = function (original) {
+    var transformation = Transformation.create(
+        original.text,
+        original.transform
+    );
+    transformation.operation = original.operation;
+    // transformation.data = 0;
+    return transformation;
+};
+
 var basicStartOfTransform = function (main, additional) {
     if (main) {
         var layer = main.grid.cells[0].slice(0, -1);
@@ -111,10 +121,7 @@ var linearTransform = function (atGrid, cell, atC, atR) {
 
             var layer = basicStartOfTransform(argCell, Cell.noArgs);
 
-            var sampleTransformation = Transformation.create(
-                    Transformation.sampleAtData.text,
-                    Transformation.sampleAtData.transform
-            );
+            var sampleTransformation = Transformation.cloneWithoutData(Transformation.sampleAtData);
             sampleTransformation.data = [argFrameStart, argFrameEnd];
 
             var sampleCell = Cell.create();
