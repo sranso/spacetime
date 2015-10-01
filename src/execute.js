@@ -151,4 +151,11 @@ var executeBaseCell = function (grid, cell, c, r) {
     cell.result = cell.operation.execute.apply(cell.operation, argCells);
 };
 
+Execute.executeArg = function (grid, cell, fetchFrame, argIndex, c, r) {
+    var argC = c + cell.args[argIndex];
+    var argR = r + cell.args[argIndex + 1];
+    var argCell = grid.cells[argC][argR];
+    Execute.executeCell(grid, argCell, 0, argC, argR);
+};
+
 })();

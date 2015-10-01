@@ -184,18 +184,25 @@ Transformation.expand = Transformation.create('expand', function (atGrid, cell, 
 Transformation.sample = Transformation.create('sample', function (atGrid, cell, atC, atR) {
     var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
     var main = argCells[0];
-    var sampleCell = argCells[1];
-    var sampleC = atC + cell.args[2];
-    var sampleR = atR + cell.args[3];
-    Execute.executeCell(atGrid, sampleCell, 0, sampleC, sampleR);
+    Execute.executeArg(atGrid, cell, 0, 2, atC, atR);
 
-    var sampleNumFrames = sampleCell.result;
-
+    var sampleNumFrames = argCells[1].result;
     cell.grid = main.grid;
     cell.startFrame = main.startFrame;
     cell.endFrame = main.startFrame + sampleNumFrames - 1;
 
-    cell.grid.numFrames = main.grid.numFrames;
+    transformDynamicHistory(cell, argCells);
+});
+
+Transformation.drop = Transformation.create('drop', function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
+    var main = argCells[0];
+    Execute.executeArg(atGrid, cell, 0, 2, atC, atR);
+
+    var dropNumFrames = argCells[1].result;
+    cell.grid = main.grid;
+    cell.startFrame = main.startFrame + dropNumFrames;
+    cell.endFrame = main.endFrame;
 
     transformDynamicHistory(cell, argCells);
 });

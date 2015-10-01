@@ -56,6 +56,15 @@ Library.sample = (function () {
     return cell;
 })();
 
+Library.drop = (function () {
+    var cell = Cell.create();
+    cell.text = 'drop';
+    cell.args = Cell.autoArgs[4];
+    cell.transformation = Transformation.drop;
+
+    return cell;
+})();
+
 Library.plusTwo = (function () {
     var column = [
         Cell.deepCopy(Library.plusOne),
@@ -84,6 +93,7 @@ Library.lookup = {
     '+1': Library.plusOne,
     '+2': Library.plusTwo,
     'sample': Library.sample,
+    'drop': Library.drop,
 };
 
 })();
