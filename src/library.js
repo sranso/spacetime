@@ -16,39 +16,42 @@ baseOperation.add = Operation.create('add', function (cell, a, b) {
     return a.result + b.result;
 });
 
+Library.empty = Cell.deepCopy(Cell.empty);
+
 Library.literal = (function () {
     var cell = Cell.create();
-    cell.args = Cell.autoArgs[0];
-    cell.transformation = Transformation.immediate(baseOperation.literal);
     // cell.group = Group.none; // TODO: groups for all library?
     cell.text = '<literal>';
+    cell.args = Cell.autoArgs[0];
+    cell.transformation = Transformation.immediate(baseOperation.literal);
+    cell.dynamicHistory = [cell];
 
     return cell;
 })();
 
 Library.plusOne = (function () {
     var cell = Cell.create();
+    cell.text = '+1';
     cell.args = Cell.autoArgs[2];
     cell.transformation = Transformation.linear(baseOperation.plusOne);
-    cell.text = '+1';
 
     return cell;
 })();
 
 Library.add = (function () {
     var cell = Cell.create();
+    cell.text = '+';
     cell.args = Cell.autoArgs[4];
     cell.transformation = Transformation.linear(baseOperation.add);
-    cell.text = '+';
 
     return cell;
 })();
 
-Library.identity = (function () {
+Library.sample = (function () {
     var cell = Cell.create();
-    cell.args = Cell.autoArgs[2];
-    cell.transformation = Transformation.identity;
-    cell.text = 'id';
+    cell.text = 'sample';
+    cell.args = Cell.autoArgs[4];
+    cell.transformation = Transformation.sample;
 
     return cell;
 })();
@@ -60,11 +63,11 @@ Library.plusTwo = (function () {
     ];
 
     var cell = Cell.create();
-    cell.grid = Grid.create();
-    cell.args = Cell.autoArgs[2];
-    cell.transformation = Transformation.expand;
     cell.text = '+2';
+    cell.transformation = Transformation.expand;
+    cell.args = Cell.autoArgs[2];
 
+    cell.grid = Grid.create();
     cell.grid.cells[0] = column;
     cell.grid.layer = 'over';
 
@@ -76,13 +79,11 @@ Library.plusTwo = (function () {
     return cell;
 })();
 
-Library.empty = Cell.deepCopy(Cell.empty);
-
 Library.lookup = {
     '+': Library.add,
     '+1': Library.plusOne,
     '+2': Library.plusTwo,
-    'id': Library.identity,
+    'sample': Library.sample,
 };
 
 })();

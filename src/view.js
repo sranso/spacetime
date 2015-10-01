@@ -50,7 +50,7 @@ View.intoLevel = function () {
 View.inputText = function (d, text) {
     Global.targetCellView = d;
     d.cell.text = text;
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     var cell = Autocomplete.updateFromText(grid, d.cell, d.c, d.r);
     Global.targetCellView.cell = cell;
     Main.update();
@@ -61,7 +61,7 @@ View.insertRow = function (d, after) {
     if (!d) {
         return;
     }
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     Grid.insertRow(grid, d.r, after);
     if (after) {
         d.r++;
@@ -79,7 +79,7 @@ View.insertColumn = function (d, after) {
     if (!d) {
         return;
     }
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     Grid.insertColumn(grid, d.c, after);
     if (after) {
         d.c++;
@@ -97,7 +97,7 @@ View.deleteCell = function (d, deleteColumn) {
     if (!d) {
         return;
     }
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     if (deleteColumn) {
         Grid.deleteColumn(grid, d.c);
         d.c--;
@@ -123,7 +123,7 @@ View.showFrame = function (d, x) {
     x = Math.max(0, Math.min(159, x));
     var numFrames = Cell.numFrames(d.cell);
     var fetchFrame = Math.floor(numFrames * x / 160);
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     Execute.executeCell(grid, d.cell, fetchFrame, d.c, d.r);
     Draw.draw();
 };

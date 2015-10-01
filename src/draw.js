@@ -42,7 +42,7 @@ var drawGridSetup = function () {
 var drawTick = 0;
 
 var drawGrid = function () {
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    var grid = Project.currentGrid($Project);
     drawTick += 1;
 
     var cells = [];
@@ -88,6 +88,9 @@ var drawGrid = function () {
         })
         .on('input', function (d) {
             View.inputText(d, this.textContent);
+        })
+        .on('dblclick', function (d) {
+            d3.event.stopPropagation();
         })
         .on('keydown', function (d) {
             Input.textInputEvent(d, Input.keyForEvent());

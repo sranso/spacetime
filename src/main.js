@@ -4,8 +4,7 @@ var Main = {};
 
 Main.update = function () {
     Execute.transform();
-    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
-    Execute.executeGrid(grid);
+    Execute.executeGrid(Project.currentGrid($Project));
     Draw.draw();
     logStats();
 };
@@ -47,38 +46,29 @@ var buildProject = function () {
 
     cell = Cell.create();
 
-    // complicated (3, 7) -> (4, 8) -> (5, 9)
     var subGrid = Grid.create();
     var subCell = Cell.none;
     var operation = Operation.none;
 
+    [3, 7, 8, 9].forEach(function (i) {
         subCell = Cell.deepCopy(Library.literal);
         operation = Operation.create(
                 subCell.transformation.operation.text,
                 subCell.transformation.operation.execute
         );
-        operation.data = 3;
+        operation.data = i;
 
         subCell.transformation = Transformation.immediate(operation);
-        subCell.text = '3';
+        subCell.text = '' + i;
         subGrid.cells.push([subCell]);
-
-        subCell = Cell.deepCopy(Library.literal);
-        operation = Operation.create(
-                subCell.transformation.operation.text,
-                subCell.transformation.operation.execute
-        );
-        operation.data = 7;
-
-        subCell.transformation = Transformation.immediate(operation);
-        subCell.text = '7';
-        subGrid.cells.push([subCell]);
+    });
 
     var cell = Cell.create();
+    cell.text = '3, 7, 8, 9';
     cell.transformation = Transformation.detached;
     cell.detached = true;
     cell.grid = subGrid;
-    cell.text = '3, 7';
+    cell.dynamicHistory = [cell];
     column.push(cell);
 
     column.push(Cell.deepCopy(Library.plusOne));

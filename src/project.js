@@ -13,6 +13,14 @@ Project.create = function () {
 
 Project.none = Project.create();
 
+Project.currentCell = function (project) {
+    return project.cellLevels[project.currentLevel][0];
+};
+
+Project.currentGrid = function (project) {
+    return project.cellLevels[project.currentLevel][0].grid;
+};
+
 Project.createBlank = function () {
     var project = Project.create();
     wrapFromAbovePart(project);

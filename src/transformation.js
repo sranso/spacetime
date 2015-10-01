@@ -21,25 +21,32 @@ Transformation.cloneWithoutData = function (original) {
     return transformation;
 };
 
-var basicStartOfTransform = function (main, additional) {
-    if (main) {
-        var layer = main.grid.cells[0].slice(0, -1);
-        var mainClone = Cell.clonePostTransform(main);
-        mainClone.args = Cell.autoArgs[main.args.length];
+var startOfDynamicHistory = function (argCells) {
+    var main = argCells[0];
+    var additional = argCells.slice(1);
 
-        layer.push(mainClone);
+    if (main) {
+        var history = main.dynamicHistory.slice();
     } else {
-        var layer = [];
+        var history = [];
     }
 
     additional.forEach(function (original) {
         var argCell = Cell.clonePostTransform(original);
         argCell.detached = true;
 
-        layer.push(argCell);
+        history.push(argCell);
     });
 
-    return layer;
+    return history;
+};
+
+var transformDynamicHistory = function (cell, argCells) {
+    cell.dynamicHistory = startOfDynamicHistory(argCells);
+
+    var historyCell = Cell.clonePostTransform(cell);
+    historyCell.args = Cell.autoArgs[cell.args.length];
+    cell.dynamicHistory.push(historyCell);
 };
 
 Transformation.immediate = function (operation) {
@@ -55,27 +62,17 @@ var immediateTransform = function (atGrid, cell, atC, atR) {
 
     var grid = cell.grid = Grid.create();
     grid.layer = 'under';
-    grid.cells[0] = basicStartOfTransform(argCells[0], argCells.slice(1));
+    grid.cells[0] = startOfDynamicHistory(argCells);
 
     var baseCell = Cell.cloneForSimilar(cell);
-    baseCell.operation = cell.transformation.operation;
     baseCell.args = Cell.autoArgs[cell.args.length];
-    baseCell.base = true;
 
     grid.cells[0].push(baseCell);
 
     grid.numFrames = 1;
+
+    transformDynamicHistory(cell, argCells);
 };
-
-Transformation.identity = Transformation.create('identity', function (atGrid, cell, atC, atR) {
-    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
-    var main = argCells[0];
-
-    var grid = cell.grid = Grid.create();
-    grid.layer = 'under';
-    grid.cells[0] = basicStartOfTransform(main, Cell.noArgs);
-    grid.numFrames = main.grid.numFrames;
-});
 
 Transformation.linear = function (operation) {
     var transformation = Transformation.create(operation.text, linearTransform);
@@ -92,6 +89,8 @@ var linearTransform = function (atGrid, cell, atC, atR) {
     grid.cells = [];
     grid.layer = 'under';
 
+    var numMainFrames = Cell.numFrames(main);
+
     var atFrame = 0;
 
     main.grid.cells.forEach(function (oldColumn, c) {
@@ -99,34 +98,42 @@ var linearTransform = function (atGrid, cell, atC, atR) {
         var subMain = column[column.length - 1];
 
         grid.cells.push(column);
+        var numSubFrames = Cell.numFrames(subMain);
 
         additional.forEach(function (original) {
             var argCell = Cell.clonePostTransform(original);
             argCell.detached = true;
             argCell.startFrame += atFrame;
-            argCell.endFrame = argCell.startFrame + subMain.grid.numFrames - 1;
+            argCell.endFrame = argCell.startFrame + numSubFrames - 1;
 
             column.push(argCell);
         });
 
-        atFrame += subMain.grid.numFrames;
+        atFrame += numSubFrames;
 
         var linearCell = Cell.cloneForSimilar(cell);
         linearCell.args = Cell.autoArgs[cell.args.length];
 
-        if (subMain.grid.numFrames === 1) {
-            linearCell.base = true;
-            linearCell.operation = cell.transformation.operation;
-        }
         column.push(linearCell);
 
-        if (subMain.grid.numFrames === 1) {
-            grid.numFrames += 1;
-        } else {
+        if (numMainFrames > 1) {
             Execute.transformCell(grid, linearCell, c, column.length - 1);
-            grid.numFrames += linearCell.grid.numFrames;
         }
     });
+
+    grid.numFrames = main.grid.numFrames;
+
+    // TODO: maybe some linear transforms will not keep number
+    // of frames the same.
+    cell.startFrame = main.startFrame;
+    cell.endFrame = main.endFrame;
+    if (numMainFrames === 1) {
+        cell.operation = cell.transformation.operation;
+    } else {
+        cell.operation = Operation.none;
+    }
+
+    transformDynamicHistory(cell, argCells);
 };
 
 
@@ -146,7 +153,7 @@ Transformation.expand = Transformation.create('expand', function (atGrid, cell, 
     var originalCells = grid.cells;
     var area = grid.areas[0];
 
-    var argLayer = basicStartOfTransform(argCells[0], argCells.slice(1));
+    var argLayer = startOfDynamicHistory(argCells);
     grid.cells = [];
     grid.numFrames = 0;
 
@@ -163,12 +170,34 @@ Transformation.expand = Transformation.create('expand', function (atGrid, cell, 
     });
 
     for (var c = 0; c <= area.coords[2]; c++) {
+        var cell;
         for (var r = area.coords[1]; r <= area.coords[3]; r++) {
-            var cell = grid.cells[c][r];
+            cell = grid.cells[c][r];
             Execute.transformCell(grid, cell, c, r);
         }
-        grid.numFrames += grid.cells[c][grid.cells[0].length - 1].grid.numFrames;
+        grid.numFrames += Cell.numFrames(cell);
     }
+
+    transformDynamicHistory(cell, argCells);
+});
+
+Transformation.sample = Transformation.create('sample', function (atGrid, cell, atC, atR) {
+    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
+    var main = argCells[0];
+    var sampleCell = argCells[1];
+    var sampleC = atC + cell.args[2];
+    var sampleR = atR + cell.args[3];
+    Execute.executeCell(atGrid, sampleCell, 0, sampleC, sampleR);
+
+    var sampleNumFrames = sampleCell.result;
+
+    cell.grid = main.grid;
+    cell.startFrame = main.startFrame;
+    cell.endFrame = main.startFrame + sampleNumFrames - 1;
+
+    cell.grid.numFrames = main.grid.numFrames;
+
+    transformDynamicHistory(cell, argCells);
 });
 
 })();

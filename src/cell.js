@@ -4,61 +4,73 @@ var Cell = {};
 
 Cell.create = function () {
     return {
-        grid: Grid.none,
-        args: Cell.noArgs,      // [c1, r1, c2, r2, ...]
-        startFrame: 0,
-        endFrame: Infinity,     // Infinity == grid.numFrames - 1
-        transformation: Transformation.none,
-        operation: Operation.none,
-
+        // Meta-data
         group: Group.none,
         text: '',
 
-        gridTick: 0,
+        // Pre-transform
+        transformation: Transformation.none,
+        args: Cell.noArgs,      // [c1, r1, c2, r2, ...]
         detached: false,
-        base: false,
+        startFrame: 0,
+        endFrame: Infinity,     // Infinity == grid.numFrames - 1
 
+        // Post-transform
+        grid: Grid.none,
+        gridTick: 0,
+        dynamicHistory: Cell.noHistory,
+        operation: Operation.none,
+
+        // Post-execute
         result: null,
         resultTick: 0,
     };
 };
 
+Cell.noHistory = [];
+
 Cell.none = Cell.create();
 
 Cell.clonePostTransform = function (original) {
     var cell = Cell.create();
-    cell.grid = original.grid;
-    // cell.args = Cell.noArgs;
-    cell.startFrame = original.startFrame;
-    cell.endFrame = original.endFrame;
-    cell.transformation = original.transformation;
-    cell.operation = original.operation;
-
     cell.group = original.group;
     cell.text = original.text;
 
-    cell.gridTick = original.gridTick;
+    cell.transformation = original.transformation;
+    // cell.args = Cell.noArgs;
+    cell.startFrame = original.startFrame;
+    cell.endFrame = original.endFrame;
     // cell.detached = false;
-    cell.base = original.base;
+
+    cell.grid = original.grid;
+    cell.gridTick = original.gridTick;
+    cell.dynamicHistory = original.dynamicHistory;
+    cell.operation = original.operation;
+
+    // cell.result = null;
+    // cell.resultTick = 0;
 
     return cell;
 };
 
 Cell.cloneForSimilar = function (original) {
     var cell = Cell.create();
-    // cell.grid = Grid.none;
-    // cell.args = Cell.noArgs;
-    // cell.startFrame = 0;
-    // cell.endFrame = Infinity;
-    cell.transformation = original.transformation;
-    // cell.operation = Operation.none;
-
     cell.group = original.group;
     cell.text = original.text;
 
-    // cell.gridTick = 0;
+    cell.transformation = original.transformation;
+    // cell.args = Cell.noArgs;
+    // cell.startFrame = 0;
+    // cell.endFrame = Infinity;
     // cell.detached = false;
-    // cell.base = false;
+
+    // cell.grid = Grid.none;
+    // cell.gridTick = 0;
+    // cell.dynamicHistory = Cell.noHistory;
+    // cell.operation = Operation.none;
+
+    // cell.result = null;
+    // cell.resultTick = 0;
 
     return cell;
 };
@@ -127,19 +139,33 @@ Cell.numFrames = function (cell) {
     return endFrame - cell.startFrame + 1;
 };
 
+// TODO: deepCopy is a bad replacement for `build` functions that setup
+// a cell of a certain transformation type properly.
 Cell.deepCopy = function (original) {
     var cell = Cell.create();
-    // cell.grid = Grid.none;
-    cell.args = original.args.slice();
-    cell.transformation = original.transformation;
-    cell.operation = original.operation;
-
     cell.group = original.group;
     cell.text = original.text;
 
-    cell.gridTick = original.gridTick;
+    cell.transformation = original.transformation;
+    cell.args = original.args.slice();
+    cell.startFrame = original.startFrame;
+    cell.endFrame = original.endFrame;
     cell.detached = original.detached;
-    cell.base = original.base;
+
+    // cell.grid = Grid.none;
+    cell.gridTick = original.gridTick;
+    // cell.dynamicHistory = Cell.noHistory;
+    cell.operation = original.operation;
+
+    // cell.result = null;
+    // cell.resultTick = 0;
+
+    if (original.dynamicHistory.length) {
+        cell.dynamicHistory = original.dynamicHistory.slice(0, -1);
+        var historyCell = Cell.clonePostTransform(cell);
+        historyCell.args = Cell.autoArgs[cell.args.length];
+        cell.dynamicHistory.push(historyCell);
+    }
 
     if (original.grid === Grid.none) {
         return cell;
