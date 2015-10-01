@@ -10,11 +10,7 @@ Global.cellEls = [];
 
 var __stats = {
     transform_numCells: 0,
-    transform_numCellsSampling: 0,
     transform_time: 0,
-
-    execAll_numCells: 0,
-    execAll_time: 0,
 
     execCell_numCells: 0,
     execCell_numBaseCells: 0,

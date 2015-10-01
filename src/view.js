@@ -121,8 +121,10 @@ View.deleteCell = function (d, deleteColumn) {
 
 View.showFrame = function (d, x) {
     x = Math.max(0, Math.min(159, x));
-    var fetchFrame = Math.floor(d.cell.grid.numFrames * x / 160);
-    Execute.executeCell(d.cell, fetchFrame);
+    var numFrames = Cell.numFrames(d.cell);
+    var fetchFrame = Math.floor(numFrames * x / 160);
+    var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    Execute.executeCell(grid, d.cell, fetchFrame, d.c, d.r);
     Draw.draw();
 };
 

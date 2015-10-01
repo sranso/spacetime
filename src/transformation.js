@@ -93,20 +93,6 @@ var linearTransform = function (atGrid, cell, atC, atR) {
     grid.layer = 'under';
 
     var atFrame = 0;
-    var sampleInfo = additional.map(function (argCell) {
-        var argColumn = argCell.grid.cells[0];
-        var subArg = argColumn[argColumn.length - 1];
-        if (subArg.transformation.transform === Transformation.sampleAtData.transform) {
-            return {
-                start: subArg.transformation.data[0],
-                cell: argColumn[argColumn.length - 2],
-            };
-        }
-        return {
-            start: 0,
-            cell: argCell,
-        };
-    });
 
     main.grid.cells.forEach(function (oldColumn, c) {
         var column = oldColumn.slice();
@@ -114,34 +100,13 @@ var linearTransform = function (atGrid, cell, atC, atR) {
 
         grid.cells.push(column);
 
-        sampleInfo.forEach(function (info) {
-            var argCell = info.cell;
-            var argFrameStart = atFrame + info.start;
-            var argFrameEnd = argFrameStart + subMain.grid.numFrames - 1;
+        additional.forEach(function (original) {
+            var argCell = Cell.clonePostTransform(original);
+            argCell.detached = true;
+            argCell.startFrame += atFrame;
+            argCell.endFrame = argCell.startFrame + subMain.grid.numFrames - 1;
 
-            var layer = basicStartOfTransform(argCell, Cell.noArgs);
-
-            var sampleTransformation = Transformation.cloneWithoutData(Transformation.sampleAtData);
-            sampleTransformation.data = [argFrameStart, argFrameEnd];
-
-            var sampleCell = Cell.create();
-            sampleCell.args = Cell.autoArgs[2];
-            sampleCell.transformation = sampleTransformation
-            // sampleCell.group = Group.none; TODO: what group?
-            sampleCell.text = 'sample';
-
-            layer.push(sampleCell);
-
-            var cell = Cell.create();
-            cell.grid = Grid.create();
-            cell.transformation = Transformation.detached;
-            // cell.group = Group.none; TODO: what group?
-            cell.text = 'sample';
-
-            cell.grid.cells.push(layer);
-
-            column.push(cell);
-            Execute.transformCell(grid, cell, c, column.length - 1);
+            column.push(argCell);
         });
 
         atFrame += subMain.grid.numFrames;
@@ -205,58 +170,5 @@ Transformation.expand = Transformation.create('expand', function (atGrid, cell, 
         grid.numFrames += grid.cells[c][grid.cells[0].length - 1].grid.numFrames;
     }
 });
-
-Transformation.sampleAtData = Transformation.create('sampleAtData', function (atGrid, cell, atC, atR) {
-    var argCells = Execute.transformArgs(atGrid, cell, atC, atR);
-    var main = argCells[0];
-
-    var sampleInfo = cell.transformation.data;
-    var frames = [];
-    fillFrames(main, frames, sampleInfo[0], sampleInfo[1]);
-
-    var grid = cell.grid = Grid.create();
-    grid.cells = [];
-    grid.layer = 'under';
-    frames.forEach(function (original) {
-        var frame = Cell.clonePostTransform(original);
-        frame.operation = Operation.none;
-        frame.base = false;
-        frame.detached = true;
-
-        grid.cells.push([frame]);
-    });
-
-    var targetNumFrames = sampleInfo[1] - sampleInfo[0] + 1;
-    for (var i = frames.length; i < targetNumFrames; i++) {
-        grid.cells.push([Cell.create()]); // TODO: will this work?
-    }
-
-    grid.numFrames = targetNumFrames;
-});
-
-var fillFrames = function (cell, frames, startFrame, endFrame) {
-    __stats.transform_numCellsSampling += 1;
-    var atFrame = 0;
-    var r = cell.grid.cells[0].length - 1;
-
-    for (var c = 0; c < cell.grid.cells.length; c++) {
-        var subCell = cell.grid.cells[c][r];
-        var subEnd = atFrame + subCell.grid.numFrames - 1;
-
-        if (atFrame <= endFrame && subEnd >= startFrame) {
-            if (subCell.grid.numFrames === 1) {
-                __stats.transform_numCellsSampling += 1;
-                Execute.transformCell(cell.grid, subCell, c, r);
-                frames.push(subCell);
-
-            } else {
-                var newStart = startFrame - atFrame;
-                var newEnd = endFrame - atFrame;
-                fillFrames(subCell, frames, newStart, newEnd);
-            }
-        }
-        atFrame = subEnd + 1;
-    }
-};
 
 })();

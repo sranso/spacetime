@@ -39,8 +39,12 @@ var drawGridSetup = function () {
     gridHtml = d3.select('#grid');
 };
 
+var drawTick = 0;
+
 var drawGrid = function () {
     var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
+    drawTick += 1;
+
     var cells = [];
     var numColumns = Math.min(grid.cells.length, 60);
     for (var c = 0; c < numColumns; c++) {
@@ -50,6 +54,7 @@ var drawGrid = function () {
                 cell: cell,
                 c: c,
                 r: r,
+                drawTick: drawTick,
             });
         }
     }
@@ -97,7 +102,9 @@ var drawGrid = function () {
             View.showFrame(d, d3.mouse(this)[0]);
         })
         .on('mouseleave', function (d) {
-            View.showFrame(d, 0);
+            if (d.drawTick === drawTick) {
+                View.showFrame(d, 0);
+            }
         }) ;
 
     cellEls.exit().remove();

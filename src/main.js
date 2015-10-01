@@ -4,23 +4,22 @@ var Main = {};
 
 Main.update = function () {
     Execute.transform();
-    //Execute.execute();
-    //Execute.executeAll();
     var grid = $Project.cellLevels[$Project.currentLevel][0].grid;
     Execute.executeGrid(grid);
     Draw.draw();
     logStats();
 };
 
+var clampLogPart = function (x) {
+    var s = '' + x;
+    return s.slice(0, 3);
+};
+
 var logStats = function () {
-    var clamp = function (x) {
-        var s = '' + x;
-        return s.slice(0, 3);
-    };
     console.log(
-        clamp(__stats.transform_time) + '   ' +
-        clamp(__stats.execGrid_time) + '   ' +
-        clamp(__stats.draw_time)
+        clampLogPart(__stats.transform_time) + '   ' +
+        clampLogPart(__stats.execGrid_time) + '   ' +
+        clampLogPart(__stats.draw_time)
     );
 };
 
@@ -29,8 +28,13 @@ Main.setup = function () {
 
     Input.setup();
     Draw.setup();
+
+    console.log(
+        'trans ' +
+        'exec  ' +
+        'draw  '
+    );
     Main.update();
-    Execute.executeAll();
 };
 
 var buildProject = function () {
