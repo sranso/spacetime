@@ -17,10 +17,10 @@ Draw.draw = function () {
 
 var drawOverallSetup = function () {
     d3.select(document)
-        .on('keydown', function () { Input.inputEvent(Input.keyForEvent(), 'down') })
-        .on('keyup', function () { Input.inputEvent(Input.keyForEvent(), 'up') })
+        .on('keydown', function () { Keyboard.inputEvent(Keyboard.keyForEvent(), 'down') })
+        .on('keyup', function () { Keyboard.inputEvent(Keyboard.keyForEvent(), 'up') })
         .on('keypress', function () {
-            Input.keypressEvent(d3.event.keyCode)
+            Keyboard.keypressEvent(d3.event.keyCode)
         })
         .on('mousedown', function () {
             if (!d3.event.shiftKey) {
@@ -93,7 +93,7 @@ var drawGrid = function () {
             d3.event.stopPropagation();
         })
         .on('keydown', function (d) {
-            Input.textInputEvent(d, Input.keyForEvent());
+            Keyboard.textInputEvent(d, Keyboard.keyForEvent());
         })
         .on('keypress', function () {
             d3.event.stopPropagation();

@@ -25,7 +25,7 @@ var logStats = function () {
 Main.setup = function () {
     $Project = buildProject();
 
-    Input.setup();
+    Keyboard.setup();
     Draw.setup();
 
     console.log(

@@ -1,25 +1,25 @@
 'use strict';
-var Input = {};
+var Keyboard = {};
 (function () {
 
-Input.keyForEvent = function () {
+Keyboard.keyForEvent = function () {
     return keyMap[d3.event.keyCode];
 };
 
 var go = function () { debugger; };
 
-Input.inputEvent = function (key, eventType) {
+Keyboard.inputEvent = function (key, eventType) {
     if (key === '\\') {
         go();  // define go to test something out
     } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
-        Input.keypressEvent(null, 'tab');
+        Keyboard.keypressEvent(null, 'tab');
     }
 };
 
-Input.keypressEvent = function (keyCode, key) {
+Keyboard.keypressEvent = function (keyCode, key) {
     key = key || String.fromCharCode(keyCode);
-    if (Input.keyForEvent() === 'enter') {
+    if (Keyboard.keyForEvent() === 'enter') {
         key = 'enter';
     }
 
@@ -38,7 +38,7 @@ Input.keypressEvent = function (keyCode, key) {
     }
 };
 
-Input.textInputEvent = function (d, key) {
+Keyboard.textInputEvent = function (d, key) {
     if (key === 'enter') {
         View.insertRow(d, !d3.event.shiftKey);
     } else if (key === 'tab') {
@@ -162,17 +162,17 @@ var dvorakKeypressMap = {
 
 var keypressMap;
 
-Input.dvorak = function () {
+Keyboard.dvorak = function () {
     localStorage.setItem('grid_keyboard_mode', 'dvorak');
-    Input.setup();
+    Keyboard.setup();
 };
 
-Input.qwerty = function () {
+Keyboard.qwerty = function () {
     localStorage.setItem('grid_keyboard_mode', 'qwerty');
-    Input.setup();
+    Keyboard.setup();
 };
 
-Input.setup = function () {
+Keyboard.setup = function () {
     if (localStorage.getItem('grid_keyboard_mode') === 'dvorak') {
         keypressMap = dvorakKeypressMap;
     } else {
