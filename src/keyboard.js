@@ -26,23 +26,23 @@ Keyboard.keypressEvent = function (keyCode, key) {
     key = keypressMap[key] || key;
 
     if (key === 'w') {
-        View.outLevel();
+        Do.outLevel();
     } else if (key === 't') {
-        View.intoLevel();
+        Do.intoLevel();
     } else if (key === 'enter') {
-        View.insertRow(Global.targetCellView, !d3.event.shiftKey);
+        Do.insertRow(Global.targetCellView, !d3.event.shiftKey);
     } else if (key === 'tab') {
-        View.insertColumn(Global.targetCellView, !d3.event.shiftKey);
+        Do.insertColumn(Global.targetCellView, !d3.event.shiftKey);
     } else if (key === 'd' || key === 'D') {
-        View.deleteCell(Global.targetCellView, key === 'D');
+        Do.deleteCell(Global.targetCellView, key === 'D');
     }
 };
 
 Keyboard.textInputEvent = function (d, key) {
     if (key === 'enter') {
-        View.insertRow(d, !d3.event.shiftKey);
+        Do.insertRow(d, !d3.event.shiftKey);
     } else if (key === 'tab') {
-        View.insertColumn(d, !d3.event.shiftKey);
+        Do.insertColumn(d, !d3.event.shiftKey);
         d3.event.preventDefault();
     }
     d3.event.stopPropagation();

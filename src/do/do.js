@@ -1,8 +1,8 @@
 'use strict';
-var View = {};
+var Do = {};
 (function () {
 
-View.selectCell = function (d) {
+Do.selectCell = function (d) {
     Global.targetCellView = d;
     Global.targetCellArg = 0;
     Draw.draw();
@@ -12,12 +12,12 @@ var deselectCellWithoutDraw = function () {
     Global.targetCellView = null;
 };
 
-View.deselectCell = function () {
+Do.deselectCell = function () {
     deselectCellWithoutDraw();
     Draw.draw();
 };
 
-View.changeCellArgs = function (d) {
+Do.changeCellArgs = function (d) {
     var t = Global.targetCellView;
     if (!t) {
         return;
@@ -31,23 +31,23 @@ View.changeCellArgs = function (d) {
     }
 };
 
-View.openCell = function (d) {
+Do.openCell = function (d) {
     Project.openCell($Project, d.cell, d.c, d.r);
     Global.targetCellView = null;
     Main.update();
 };
 
-View.outLevel = function () {
+Do.outLevel = function () {
     Project.outLevel($Project);
     Main.update();
 };
 
-View.intoLevel = function () {
+Do.intoLevel = function () {
     Project.intoLevel($Project);
     Main.update();
 };
 
-View.inputText = function (d, text) {
+Do.inputText = function (d, text) {
     Global.targetCellView = d;
     d.cell.text = text;
     var grid = Project.currentGrid($Project);
@@ -56,7 +56,7 @@ View.inputText = function (d, text) {
     Main.update();
 };
 
-View.insertRow = function (d, after) {
+Do.insertRow = function (d, after) {
     Global.targetCellView = d;
     if (!d) {
         return;
@@ -74,7 +74,7 @@ View.insertRow = function (d, after) {
     }
 };
 
-View.insertColumn = function (d, after) {
+Do.insertColumn = function (d, after) {
     Global.targetCellView = d;
     if (!d) {
         return;
@@ -92,7 +92,7 @@ View.insertColumn = function (d, after) {
     }
 };
 
-View.deleteCell = function (d, deleteColumn) {
+Do.deleteCell = function (d, deleteColumn) {
     Global.targetCellView = d;
     if (!d) {
         return;
@@ -119,7 +119,7 @@ View.deleteCell = function (d, deleteColumn) {
     }
 };
 
-View.showFrame = function (d, x) {
+Do.showFrame = function (d, x) {
     x = Math.max(0, Math.min(159, x));
     var numFrames = Cell.numFrames(d.cell);
     var fetchFrame = Math.floor(numFrames * x / 160);

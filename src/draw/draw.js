@@ -25,7 +25,7 @@ var drawOverallSetup = function () {
         .on('mousedown', function () {
             Global.currentInput.mouseDown = true;
             if (!d3.event.shiftKey) {
-                View.deselectCell();
+                Do.deselectCell();
             }
         })
         .on('mouseup', function () {
@@ -75,14 +75,14 @@ var drawGrid = function () {
         .attr('class', 'cell')
         .on('mousedown', function (d) {
             if (d3.event.shiftKey) {
-                View.changeCellArgs(d);
+                Do.changeCellArgs(d);
             } else {
-                View.selectCell(d);
+                Do.selectCell(d);
             }
             d3.event.stopPropagation();
         })
         .on('dblclick', function (d) {
-            View.openCell(d);
+            Do.openCell(d);
             d3.event.preventDefault();
         }) ;
 
@@ -96,7 +96,7 @@ var drawGrid = function () {
             Global.inputCell = false;
         })
         .on('input', function (d) {
-            View.inputText(d, this.textContent);
+            Do.inputText(d, this.textContent);
         })
         .on('dblclick', function (d) {
             d3.event.stopPropagation();
@@ -111,11 +111,11 @@ var drawGrid = function () {
     cellEnterEls.append('div')
         .attr('class', 'result')
         .on('mousemove', function (d) {
-            View.showFrame(d, d3.mouse(this)[0]);
+            Do.showFrame(d, d3.mouse(this)[0]);
         })
         .on('mouseleave', function (d) {
             if (d.drawTick === drawTick) {
-                View.showFrame(d, 0);
+                Do.showFrame(d, 0);
             }
         }) ;
 
