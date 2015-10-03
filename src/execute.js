@@ -99,6 +99,15 @@ Execute.executeGrid = function (grid) {
     __stats.execGrid_time = performance.now() - __stats.execGrid_time;
 };
 
+Execute.executeColumn = function (grid, c, fetchFrame) {
+    $Project.executionTick += 1;
+
+    for (var r = 0; r < grid.cells[0].length; r++) {
+        var cell = grid.cells[c][r];
+        executeCell(cell, fetchFrame, grid, c, r);
+    }
+};
+
 Execute.executeCell = function (cell, fetchFrame, grid, c, r) {
     __stats.execCell_time = performance.now();
     __stats.execCell_numCells = 0;
