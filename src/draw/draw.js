@@ -157,7 +157,10 @@ var drawGrid = function () {
         .text(function (d) { return d.cell.text }) ;
 
     cellEls.select('.result')
-        .text(function (d) { return d.cell.result }) ;
+        .text(function (d) {
+            var result = d.cell.result;
+            return result.error || result.value;
+        }) ;
 };
 
 })();

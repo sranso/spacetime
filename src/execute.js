@@ -61,10 +61,10 @@ Execute.transformGrid = function (grid, currentFrame) {
 };
 
 Execute.transformCell = function (cell, currentFrame, grid, c, r) {
-    if (cell.gridTick === $Project.transformationTick) {
+    if (cell.transformationTick === $Project.transformationTick) {
         return;
     }
-    cell.gridTick = $Project.transformationTick;
+    cell.transformationTick = $Project.transformationTick;
     __stats.transform_numCells += 1;
 
     if (cell.detached) {
@@ -126,11 +126,12 @@ var executeCell = function (cell, fetchFrame, pGrid, pC, pR) {
 
     var endFrame = cell.endFrame;
     if (fetchFrame > endFrame || fetchFrame >= cell.grid.numFrames) {
-        return Cell.empty;
+        cell.result = Result.empty;
+        return cell.result;
     }
     if (cell.operation !== Operation.none) {
         executeBaseCell(cell, pGrid, pC, pR);
-        return cell;
+        return cell.result;
     }
 
     var atFrame = 0;
@@ -141,21 +142,20 @@ var executeCell = function (cell, fetchFrame, pGrid, pC, pR) {
         var subEnd = atFrame + Cell.numFrames(subCell) - 1;
 
         if (atFrame <= fetchFrame && fetchFrame <= subEnd) {
-            var frame = executeCell(subCell, fetchFrame - atFrame, cell.grid, c, r);
-            cell.result = frame.result;
-            return frame;
+            cell.result = executeCell(subCell, fetchFrame - atFrame, cell.grid, c, r);
+            return cell.result;
         }
         atFrame = subEnd + 1;
     }
 
-    return Cell.empty;
+    throw new Error('Could not find frame ' + fetchFrame + ' / ' + cell.grid.numFrames);
 };
 
 var executeBaseCell = function (cell, grid, c, r) {
-    if (cell.resultTick === $Project.executionTick) {
+    if (cell.executionTick === $Project.executionTick) {
         return;
     }
-    cell.resultTick = $Project.executionTick;
+    cell.executionTick = $Project.executionTick;
     __stats.execCell_numCells += 1;
     __stats.execCell_numBaseCells += 1;
 

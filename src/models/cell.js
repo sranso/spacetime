@@ -12,19 +12,19 @@ Cell.create = function () {
         transformation: Transformation.none,
         args: Cell.noArgs,      // [c1, r1, c2, r2, ...]
         detached: false,
-        startFrame: 0,  // TODO: these are kinda pre and post. Split apart?
-        endFrame: Infinity,     // Infinity == grid.numFrames - 1
         input: [],
 
         // Post-transform
+        transformationTick: 0,
         grid: Grid.none,
-        gridTick: 0,
+        startFrame: 0,
+        endFrame: Infinity,     // Infinity == grid.numFrames - 1
         dynamicHistory: Cell.noHistory,
         operation: Operation.none,
 
         // Post-execute
-        result: null,
-        resultTick: 0,
+        executionTick: 0,
+        result: Result.none,
     };
 };
 
@@ -58,17 +58,17 @@ Cell.clonePostTransform = function (original) {
     cell.transformation = original.transformation;
     // cell.args = Cell.noArgs;
     // cell.detached = false;
-    cell.startFrame = original.startFrame;
-    cell.endFrame = original.endFrame;
     cell.input = original.input;
 
+    cell.transformationTick = original.transformationTick;
     cell.grid = original.grid;
-    cell.gridTick = original.gridTick;
+    cell.startFrame = original.startFrame;
+    cell.endFrame = original.endFrame;
     cell.dynamicHistory = original.dynamicHistory;
     cell.operation = original.operation;
 
-    // cell.result = null;
-    // cell.resultTick = 0;
+    // cell.executionTick = 0;
+    // cell.result = Result.none;
 
     return cell;
 };
@@ -80,18 +80,18 @@ Cell.cloneForSimilar = function (original) {
 
     cell.transformation = original.transformation;
     // cell.args = Cell.noArgs;
-    // cell.startFrame = 0;
-    // cell.endFrame = Infinity;
     // cell.detached = false;
     // cell.input = Input.none;
 
+    // cell.transformationTick = 0;
     // cell.grid = Grid.none;
-    // cell.gridTick = 0;
+    // cell.startFrame = 0;
+    // cell.endFrame = Infinity;
     // cell.dynamicHistory = Cell.noHistory;
     // cell.operation = Operation.none;
 
-    // cell.result = null;
-    // cell.resultTick = 0;
+    // cell.result = Result.none;
+    // cell.executionTick = 0;
 
     return cell;
 };
@@ -101,8 +101,6 @@ Cell.empty = (function () {
     cell.transformation = Transformation.empty;
     cell.args = Cell.noArgs;
     cell.text = '';
-
-    cell.result = 0;
 
     return cell;
 })();
@@ -158,17 +156,17 @@ Cell.deepCopy = function (original) {
 
     cell.transformation = original.transformation;
     cell.args = original.args.slice();
-    cell.startFrame = original.startFrame;
-    cell.endFrame = original.endFrame;
     cell.detached = original.detached;
 
+    cell.transformationTick = original.transformationTick;
     // cell.grid = Grid.none;
-    cell.gridTick = original.gridTick;
+    cell.startFrame = original.startFrame;
+    cell.endFrame = original.endFrame;
     // cell.dynamicHistory = Cell.noHistory;
     cell.operation = original.operation;
 
-    // cell.result = null;
-    // cell.resultTick = 0;
+    // cell.executionTick = 0;
+    // cell.result = Result.none;
 
     if (original.dynamicHistory.length) {
         cell.dynamicHistory = original.dynamicHistory.slice(0, -1);

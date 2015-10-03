@@ -5,15 +5,18 @@ var Library = {};
 var baseOperation = {};
 
 baseOperation.literal = Operation.create('literal', function (cell) {
-    return +cell.operation.data;
+    return Result.create(+cell.operation.data);
 });
 
 baseOperation.plusOne = Operation.create('plusOne', function (cell, a) {
-    return a.result + 1;
+    var value = a.result.empty ? 0 : a.result.value;
+    return Result.create(value + 1);
 });
 
 baseOperation.add = Operation.create('add', function (cell, a, b) {
-    return a.result + b.result;
+    var aValue = a.result.empty ? 0 : a.result.value;
+    var bValue = b.result.empty ? 0 : b.result.value;
+    return Result.create(aValue + bValue);
 });
 
 Library.empty = Cell.deepCopy(Cell.empty);
