@@ -9,13 +9,13 @@ baseOperation.literal = Operation.create('literal', function (cell) {
 });
 
 baseOperation.plusOne = Operation.create('plusOne', function (cell, a) {
-    var value = a.result.empty ? 0 : a.result.value;
+    var value = a.result.type === Result.number ? a.result.value : 0;
     return Result.create(value + 1);
 });
 
 baseOperation.add = Operation.create('add', function (cell, a, b) {
-    var aValue = a.result.empty ? 0 : a.result.value;
-    var bValue = b.result.empty ? 0 : b.result.value;
+    var aValue = a.result.type === Result.number ? a.result.value : 0;
+    var bValue = b.result.type === Result.number ? b.result.value : 0;
     return Result.create(aValue + bValue);
 });
 
