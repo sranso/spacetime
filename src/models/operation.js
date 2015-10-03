@@ -27,7 +27,7 @@ Operation.empty = Operation.create('empty', function () {
 Operation.input = Operation.create('input', function (cell) {
     var inputType = cell.operation.data;
     if (cell.input[0]) {
-        return Result.create(cell.input[0][inputType]);
+        return Result.create(Result.number, cell.input[0][inputType]);
     } else {
         return Result.empty;
     }

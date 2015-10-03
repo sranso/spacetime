@@ -159,7 +159,15 @@ var drawGrid = function () {
     cellEls.select('.result')
         .text(function (d) {
             var result = d.cell.result;
-            return result.error || result.value;
+            if (result.error) {
+                return result.error;
+            } else if (result.type === Result.emptyType) {
+                return '';
+            } else if (result.type === Result.number) {
+                return result.value;
+            } else if (result.type === Result.quads) {
+                return result.value.coords.join(', ');
+            }
         }) ;
 };
 

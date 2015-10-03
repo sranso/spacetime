@@ -2,10 +2,8 @@
 var Library = {};
 (function () {
 
-var baseOperation = {};
-
-baseOperation.literalNumber = Operation.create('literalNumber', function (cell) {
-    return Result.create(+cell.operation.data);
+var literalNumber = Operation.create('literalNumber', function (cell) {
+    return Result.create(Result.number, +cell.operation.data);
 });
 
 Library.empty = Cell.deepCopy(Cell.empty);
@@ -15,8 +13,7 @@ Library.literalNumber = (function () {
     // cell.group = Group.none; // TODO: groups for all library?
     cell.text = '<literalNumber>';
     cell.args = Cell.noArgs;
-    cell.transformation = Transformation.immediate(baseOperation.literalNumber);
-    cell.dynamicHistory = [cell];
+    cell.transformation = Transformation.immediate(literalNumber);
 
     return cell;
 })();
@@ -45,20 +42,21 @@ Input.types.forEach(function (inputType) {
     cell.args = Cell.noArgs;
     cell.transformation = Transformation.input(inputType);
 
-    MathLibrary[inputType] = cell;
+    Library[inputType] = cell;
 });
 
-Library.lookup = {
-    'sample': Library.sample,
-    'drop': Library.drop,
-};
+Library.all = [
+    Library.sample,
+    Library.drop,
+].concat(MathLibrary.all).concat(QuadsLibrary.all);
 
 Input.types.forEach(function (inputType) {
-    Library.lookup[inputType] = Library[inputType];
+    Library.all.push(Library[inputType]);
 });
 
-MathLibrary.lookup.forEach(function (ml) {
-    Library[ml[0]] = ml[1];
+Library.lookup = {};
+Library.all.forEach(function (libraryCell) {
+    Library.lookup[libraryCell.text] = libraryCell;
 });
 
 })();
