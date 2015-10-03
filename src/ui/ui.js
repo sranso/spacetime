@@ -1,15 +1,15 @@
 'use strict';
-var Draw = {};
+var Ui = {};
 (function () {
 
 var gridHtml = d3.selection();
 
-Draw.setup = function () {
+Ui.setup = function () {
     drawOverallSetup();
     drawGridSetup();
 };
 
-Draw.draw = function () {
+Ui.draw = function () {
     __stats.draw_time = performance.now();
     drawGrid();
     __stats.draw_time = performance.now() - __stats.draw_time;

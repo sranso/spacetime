@@ -5,7 +5,7 @@ var Main = {};
 Main.update = function () {
     Execute.transform();
     Execute.executeGrid(Project.currentGrid($Project));
-    Draw.draw();
+    Ui.draw();
     logStats();
 };
 
@@ -26,12 +26,12 @@ Main.setup = function () {
     $Project = buildProject();
 
     Keyboard.setup();
-    Draw.setup();
+    Ui.setup();
 
     console.log(
         'trans ' +
         'exec  ' +
-        'draw  '
+        'ui    '
     );
     Main.update();
 

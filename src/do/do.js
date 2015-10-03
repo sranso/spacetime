@@ -5,7 +5,7 @@ var Do = {};
 Do.selectCell = function (d) {
     Global.targetCellView = d;
     Global.targetCellArg = 0;
-    Draw.draw();
+    Ui.draw();
 };
 
 var deselectCellWithoutDraw = function () {
@@ -14,7 +14,7 @@ var deselectCellWithoutDraw = function () {
 
 Do.deselectCell = function () {
     deselectCellWithoutDraw();
-    Draw.draw();
+    Ui.draw();
 };
 
 Do.changeCellArgs = function (d) {
@@ -125,7 +125,7 @@ Do.showFrame = function (d, x) {
     var fetchFrame = Math.floor(numFrames * x / 160);
     var grid = Project.currentGrid($Project);
     Execute.executeColumn(grid, d.c, fetchFrame);
-    Draw.draw();
+    Ui.draw();
 };
 
 })();
