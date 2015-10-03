@@ -8,7 +8,7 @@ Autocomplete.updateFromText = function (grid, original, c, r) {
     if (libraryCell) {
         var cell = Cell.deepCopy(libraryCell);
     } else if (!libraryCell && original.text !== '' && !isNaN(n)) {
-        var libraryCell = Library.literal;
+        var libraryCell = Library.literalNumber;
         var operation = Operation.cloneWithoutData(libraryCell.transformation.operation);
         operation.data = n;
 

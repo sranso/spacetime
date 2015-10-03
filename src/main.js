@@ -53,7 +53,7 @@ var buildProject = function () {
     var operation = Operation.none;
 
     [3, 7, 8, 9].forEach(function (i) {
-        subCell = Cell.deepCopy(Library.literal);
+        subCell = Cell.deepCopy(Library.literalNumber);
         operation = Operation.create(
                 subCell.transformation.operation.text,
                 subCell.transformation.operation.execute
@@ -73,9 +73,9 @@ var buildProject = function () {
     cell.dynamicHistory = [cell];
     column.push(cell);
 
-    column.push(Cell.deepCopy(Library.plusOne));
-    column.push(Cell.deepCopy(Library.plusTwo));
-    column.push(Cell.deepCopy(Library.add));
+    column.push(Cell.deepCopy(MathLibrary.plusOne));
+    column.push(Cell.deepCopy(MathLibrary.plusTwo));
+    column.push(Cell.deepCopy(MathLibrary.add));
 
     return project;
 };
