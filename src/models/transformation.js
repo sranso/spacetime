@@ -79,7 +79,7 @@ var immediateTransform = function (cell, currentFrame, pGrid, c, r) {
     cell.operation = cell.transformation.operation;
 
     var grid = cell.grid = Grid.create();
-    grid.layer = 'under';
+    grid.layer = Grid.under;
     grid.cells[0] = startOfDynamicHistory(argCells);
 
     var baseCell = Cell.cloneForSimilar(cell);
@@ -105,7 +105,7 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
 
     var grid = cell.grid = Grid.create();
     grid.cells = [];
-    grid.layer = 'under';
+    grid.layer = Grid.under;
 
     var numMainFrames = Cell.numFrames(main);
     grid.numFrames = main.grid.numFrames;

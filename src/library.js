@@ -90,7 +90,7 @@ Library.plusTwo = (function () {
 
     cell.grid = Grid.create();
     cell.grid.cells[0] = column;
-    cell.grid.layer = 'over';
+    cell.grid.layer = Grid.over;
 
     var area = Area.create();
     area.coords = [0, 0, 0, 1];

@@ -4,15 +4,19 @@ var Grid = {};
 
 Grid.create = function () {
     return {
-        layer: 'over',
+        layer: Grid.over,
         numFrames: 0,
         cells: [], // TODO: make this Grid.noCells,
         areas: [], // TODO: make this Grid.noAreas,
     };
 };
 
+Grid.over = {_: 'over'};
+Grid.under = {_: 'under'};
+Grid.noneLayer = {_: 'none'};
+
 Grid.none = Grid.create();
-Grid.none.layer = 'none';
+Grid.none.layer = Grid.noneLayer;
 Grid.none.numFrames = 1;
 
 Grid.noCells = [];
