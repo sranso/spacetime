@@ -8,7 +8,8 @@ body {
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
   background-color: white;
-  min-height: 2000px;
+  min-height: 3000px;
+  position: relative;
 }
 
 #grid-container {
@@ -42,12 +43,11 @@ body {
   border-color: #ccf;
 }
 
-.cell.arg-2 .result {
+.cell.arg-2 .result,
+.cell.arg-4 .result,
+.cell.arg-6 .result,
+.cell.arg-8 .result {
   border-color: #cec;
-}
-
-.cell.arg-4 .result {
-  border-color: #f00;
 }
 
 .cell.target .result {
@@ -55,6 +55,5 @@ body {
 }
 
 #canvas {
-  width: 640px;
-  height: 400px;
+  position: absolute;
 }

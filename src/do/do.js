@@ -128,4 +128,10 @@ Do.showFrame = function (d, x) {
     Ui.draw();
 };
 
+Do.drawResult = function (d) {
+    var top = 74 + d.r * 140;
+    var left = 54 + d.c * 190;
+    Webgl.drawResult(d.cell.result.value, top, left);
+};
+
 })();

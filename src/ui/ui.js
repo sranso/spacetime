@@ -5,12 +5,15 @@ var Ui = {};
 var gridHtml = d3.selection();
 
 Ui.setup = function () {
+    Keyboard.setup();
+    Webgl.setup();
     drawOverallSetup();
     drawGridSetup();
 };
 
 Ui.draw = function () {
     __stats.draw_time = performance.now();
+    Webgl.clear();
     drawGrid();
     __stats.draw_time = performance.now() - __stats.draw_time;
 };
@@ -168,9 +171,8 @@ var drawGrid = function () {
             }
         })
         .each(function (d) {
-            var result = d.cell.result;
-            if (result.type === Result.quads) {
-                Webgl.drawResult(d, result.value);
+            if (d.cell.result.type === Result.quads) {
+                Do.drawResult(d);
             }
         }) ;
 };

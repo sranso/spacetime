@@ -8,7 +8,6 @@ var createWebgl = function () {
         program: null,
         canvas: null,
         positionIndices: null,
-        projectionMatrix: null,
 
         positionLocation: null,
         colorLocation: null,
@@ -19,21 +18,20 @@ var createWebgl = function () {
     };
 };
 
-var devicePixelRatio = window.devicePixelRatio || 1;
-
 var coordsLengthToVerticesRatio = 1 / 2;
 var verticesToElementsRatio = 6 / 4;
 var coordsLengthToElementsRatio = coordsLengthToVerticesRatio * verticesToElementsRatio;  // 3 / 4
 
 var resultPixelHeightRatio = 20 - 1;
 
-var mainWebgl;
+var webgl;
 
 Webgl.setup = function () {
     glMatrix.setMatrixArrayType = Float32Array;
 
-    var webgl = mainWebgl = createWebgl();
+    webgl = createWebgl();
     webgl.canvas = d3.select('#canvas').node();
+    resizeCanvas(webgl.canvas);
 
     try {
         webgl.gl = webgl.canvas.getContext('webgl') || webgl.canvas.getContext('experimental-webgl');
@@ -72,21 +70,6 @@ Webgl.setup = function () {
     gl.bindBuffer(gl.ARRAY_BUFFER, webgl.positionBuffer);
     gl.enableVertexAttribArray(webgl.positionLocation);
     gl.vertexAttribPointer(webgl.positionLocation, 2, gl.FLOAT, false, 0, 0);
-};
-
-var resize = function (webgl) {
-    var canvas = webgl.canvas;
-    var canvasWidth = canvas.clientWidth * devicePixelRatio;
-    var canvasHeight = canvas.clientHeight * devicePixelRatio;
-    if (canvas.width != canvasWidth || canvas.height != canvasHeight) {
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        webgl.gl.viewport(0, 0, canvasWidth, canvasHeight);
-        webgl.projectionMatrix = null;
-    }
-    if (!webgl.projectionMatrix) {
-        webgl.projectionMatrix = createBasicProjectionMatrix(canvas);
-    }
 };
 
 var setupShaderProgram = function (gl, vertexId, fragmentId) {
@@ -135,11 +118,36 @@ var createShader = function (gl, id) {
     return shader;
 };
 
-Webgl.drawResult = function (d, quads) {
-    var webgl = mainWebgl;
-    clear(webgl);
-    var matrix = mat2d.multiply(mat2d.create(), webgl.projectionMatrix, quads.matrix);
-    draw(webgl, quads, matrix);
+Webgl.clear = function () {
+    resizeCanvas(webgl.canvas);
+    webgl.gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    webgl.gl.clear(webgl.gl.COLOR_BUFFER_BIT);
+};
+
+Webgl.drawResult = function (quads, top, left) {
+    setViewport(top, left);
+    var projectionMatrix = createBasicProjectionMatrix();
+    var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
+    draw(quads, matrix);
+};
+
+var resizeCanvas = function (canvas) {
+    var canvasWidth = window.innerWidth * window.devicePixelRatio;
+    var canvasHeight = window.innerHeight * window.devicePixelRatio;
+    if (canvas.width != canvasWidth || canvas.height != canvasHeight) {
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+};
+
+var setViewport = function (top, left) {
+    var width = 160 * devicePixelRatio;
+    var height = 100 * devicePixelRatio;
+    var x = left * window.devicePixelRatio;
+    var y = canvas.height - top * window.devicePixelRatio - height;
+    webgl.gl.viewport(x, y, width, height);
 };
 
 Webgl.oldDrawResult = function (quads) {
@@ -150,7 +158,7 @@ Webgl.oldDrawResult = function (quads) {
         var boundary = Quads.boundaryCoords(quads);
         var projectionMatrix = createZoomedProjectionMatrix(boundary, resultPixelHeightRatio);
         var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
-        draw(webgl, quads, matrix);
+        draw(quads, matrix);
     }
 
     var ctx = canvas.getContext('2d');
@@ -158,13 +166,7 @@ Webgl.oldDrawResult = function (quads) {
     ctx.drawImage(webgl.canvas, 0, 0, canvas.width, canvas.height);
 };
 
-var clear = function (webgl) {
-    resize(webgl);
-    webgl.gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    webgl.gl.clear(webgl.gl.COLOR_BUFFER_BIT);
-};
-
-var draw = function (webgl, quads, matrix) {
+var draw = function (quads, matrix) {
     var gl = webgl.gl;
 
     var matrix3 = mat3.fromMat2d(mat3.create(), matrix);
@@ -179,9 +181,9 @@ var draw = function (webgl, quads, matrix) {
     gl.drawElements(gl.TRIANGLES, quads.coords.length * coordsLengthToElementsRatio, gl.UNSIGNED_SHORT, 0);
 };
 
-var createBasicProjectionMatrix = function (canvas) {
-    var width = canvas.width / devicePixelRatio;
-    var height = canvas.height / devicePixelRatio;
+var createBasicProjectionMatrix = function () {
+    var height = window.innerHeight;
+    var width = height * 16 / 10;
     var scaleX = 2 / width;
     var scaleY = 2 / height;
     return new Float32Array([

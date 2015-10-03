@@ -25,8 +25,6 @@ var logStats = function () {
 Main.setup = function () {
     $Project = buildProject();
 
-    Keyboard.setup();
-    Webgl.setup();
     Ui.setup();
 
     console.log(
