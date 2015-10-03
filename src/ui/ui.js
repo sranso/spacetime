@@ -161,12 +161,16 @@ var drawGrid = function () {
             var result = d.cell.result;
             if (result.error) {
                 return result.error;
-            } else if (result.type === Result.emptyType) {
-                return '';
             } else if (result.type === Result.number) {
                 return result.value;
-            } else if (result.type === Result.quads) {
-                return result.value.coords.join(', ');
+            } else {
+                return '';
+            }
+        })
+        .each(function (d) {
+            var result = d.cell.result;
+            if (result.type === Result.quads) {
+                Webgl.drawResult(d, result.value);
             }
         }) ;
 };

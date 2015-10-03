@@ -53,3 +53,8 @@ body {
 .cell.target .result {
   border-color: #000;
 }
+
+#canvas {
+  width: 640px;
+  height: 400px;
+}

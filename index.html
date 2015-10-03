@@ -8,8 +8,25 @@
 <body>
 
 <div id="grid-container">
+  <canvas id="canvas"></canvas>
   <div id="grid"></div>
 </div>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+uniform mat3 u_matrix;
+void main() {
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+uniform vec4 u_color;
+void main() {
+  gl_FragColor = u_color;
+}
+</script>
 
 <script src="./vendor/underscore.js"></script>
 <script src="./vendor/underscore-exports.js"></script>
@@ -38,6 +55,7 @@
 <script src="./src/do/do.js"></script>
 
 <script src="./src/ui/keyboard.js"></script>
+<script src="./src/ui/webgl.js"></script>
 <script src="./src/ui/ui.js"></script>
 
 <script src="./src/main.js"></script>
