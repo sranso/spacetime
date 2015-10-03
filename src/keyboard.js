@@ -25,10 +25,9 @@ Keyboard.keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === 'w') {
+    if (key === ' ') {
         Do.outLevel();
-    } else if (key === 't') {
-        Do.intoLevel();
+        d3.event.preventDefault();
     } else if (key === 'enter') {
         Do.insertRow(Global.targetCellView, !d3.event.shiftKey);
     } else if (key === 'tab') {
