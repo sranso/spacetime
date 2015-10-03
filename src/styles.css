@@ -1,13 +1,22 @@
+html {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   padding: 0;
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
   background-color: white;
+  min-height: 2000px;
+}
+
+#grid-container {
+  padding: 50px;
 }
 
 #grid {
   position: relative;
-  margin: 50px;
 }
 
 .cell {

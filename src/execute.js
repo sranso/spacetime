@@ -6,39 +6,61 @@ Execute.transform = function () {
     __stats.transform_time = performance.now();
     __stats.transform_numCells = 0;
 
-    $Project.transformationTick += 1;
 
     var cell = $Project.cellLevels[0][0];
-    Execute.transformCell(Grid.none, cell, 0, 0);
+    if (Global.forceCaptureInput || Global.framesToAdvance > 0) {
+        Global.capturedInput = Input.clone(Global.currentInput);
+        while (true) {
+            $Project.transformationTick += 1;
+            Execute.transformCell(cell, $Project.currentFrame, Grid.none, 0, 0);
+            if (Global.framesToAdvance > 0) {
+                Global.framesToAdvance--;
+                $Project.currentFrame++;
+                if ($Project.currentFrame >= Cell.numFrames(cell)) {
+                    Global.play = false;
+                    Global.framesToAdvance = 0;
+                }
+            }
+            if (Global.framesToAdvance === 0) {
+                break;
+            }
+        }
+    } else {
+        $Project.transformationTick += 1;
+        Execute.transformCell(cell, -1, Grid.none, 0, 0);
+    }
+
     var grid = cell.grid;
     for (var i = 1; i < $Project.cellLevels; i++) {
         var c = level[1];
         var r = level[2];
         var cell = grid.cells[c][r];
-        Execute.transformCell(grid, cell, c, r);
+        Execute.transformCell(cell, -1, grid, c, r);
         level[0] = cell;
         grid = cell.grid;
     }
 
-    Execute.transformGrid(Project.currentGrid($Project));
+    Execute.transformGrid(Project.currentGrid($Project), -1);
 
     __stats.transform_time = performance.now() - __stats.transform_time;
 };
 
-Execute.transformGrid = function (grid) {
+Execute.transformGrid = function (grid, currentFrame) {
     grid.numFrames = 0;
 
     for (var c = 0; c < grid.cells.length; c++) {
         var cell;
         for (var r = 0; r < grid.cells[0].length; r++) {
             cell = grid.cells[c][r];
-            Execute.transformCell(grid, cell, c, r);
+            Execute.transformCell(cell, currentFrame, grid, c, r);
         }
-        grid.numFrames += Cell.numFrames(cell);
+        var numFrames = Cell.numFrames(cell);
+        grid.numFrames += numFrames;
+        currentFrame -= numFrames;
     }
 };
 
-Execute.transformCell = function (grid, cell, c, r) {
+Execute.transformCell = function (cell, currentFrame, grid, c, r) {
     if (cell.gridTick === $Project.transformationTick) {
         return;
     }
@@ -50,19 +72,7 @@ Execute.transformCell = function (grid, cell, c, r) {
     } else {
         var transformation = cell.transformation;
     }
-    transformation.transform(grid, cell, c, r);
-};
-
-Execute.transformArgs = function (grid, cell, c, r) {
-    var argCells = [];
-    for (var i = 0; i < cell.args.length; i += 2) {
-        var argC = c + cell.args[i];
-        var argR = r + cell.args[i + 1];
-        var argCell = grid.cells[argC][argR];
-        argCells.push(argCell);
-        Execute.transformCell(grid, argCell, argC, argR);
-    }
-    return argCells;
+    transformation.transform(cell, currentFrame, grid, c, r);
 };
 
 Execute.executeGrid = function (grid) {
@@ -79,7 +89,7 @@ Execute.executeGrid = function (grid) {
     for (var c = 0; c < grid.cells.length; c++) {
         for (var r = 0; r < grid.cells[0].length; r++) {
             var cell = grid.cells[c][r];
-            executeCell(grid, cell, 0, c, r);
+            executeCell(cell, 0, grid, c, r);
         }
     }
 
@@ -89,18 +99,18 @@ Execute.executeGrid = function (grid) {
     __stats.execGrid_time = performance.now() - __stats.execGrid_time;
 };
 
-Execute.executeCell = function (grid, cell, fetchFrame, c, r) {
+Execute.executeCell = function (cell, fetchFrame, grid, c, r) {
     __stats.execCell_time = performance.now();
     __stats.execCell_numCells = 0;
     __stats.execCell_numBaseCells = 0;
 
     $Project.executionTick += 1;
-    executeCell(grid, cell, fetchFrame, c, r);
+    executeCell(cell, fetchFrame, grid, c, r);
 
     __stats.execCell_time = performance.now() - __stats.execCell_time;
 };
 
-var executeCell = function (grid, cell, fetchFrame, atC, atR) {
+var executeCell = function (cell, fetchFrame, pGrid, pC, pR) {
     __stats.execCell_numCells += 1;
 
     fetchFrame += cell.startFrame;
@@ -110,7 +120,7 @@ var executeCell = function (grid, cell, fetchFrame, atC, atR) {
         return Cell.empty;
     }
     if (cell.operation !== Operation.none) {
-        executeBaseCell(grid, cell, atC, atR);
+        executeBaseCell(cell, pGrid, pC, pR);
         return cell;
     }
 
@@ -122,7 +132,7 @@ var executeCell = function (grid, cell, fetchFrame, atC, atR) {
         var subEnd = atFrame + Cell.numFrames(subCell) - 1;
 
         if (atFrame <= fetchFrame && fetchFrame <= subEnd) {
-            var frame = executeCell(cell.grid, subCell, fetchFrame - atFrame, c, r);
+            var frame = executeCell(subCell, fetchFrame - atFrame, cell.grid, c, r);
             cell.result = frame.result;
             return frame;
         }
@@ -132,7 +142,7 @@ var executeCell = function (grid, cell, fetchFrame, atC, atR) {
     return Cell.empty;
 };
 
-var executeBaseCell = function (grid, cell, c, r) {
+var executeBaseCell = function (cell, grid, c, r) {
     if (cell.resultTick === $Project.executionTick) {
         return;
     }
@@ -146,16 +156,16 @@ var executeBaseCell = function (grid, cell, c, r) {
         var argR = r + cell.args[i + 1];
         var argCell = grid.cells[argC][argR];
         argCells.push(argCell);
-        executeCell(grid, argCell, 0, argC, argR);
+        executeCell(argCell, 0, grid, argC, argR);
     }
     cell.result = cell.operation.execute.apply(cell.operation, argCells);
 };
 
-Execute.executeArg = function (grid, cell, fetchFrame, argIndex, c, r) {
+Execute.executeArg = function (cell, fetchFrame, argIndex, grid, c, r) {
     var argC = c + cell.args[argIndex];
     var argR = r + cell.args[argIndex + 1];
     var argCell = grid.cells[argC][argR];
-    Execute.executeCell(grid, argCell, 0, argC, argR);
+    Execute.executeCell(argCell, fetchFrame, grid, argC, argR);
 };
 
 })();

@@ -3,6 +3,15 @@ var $Project = Project.none;
 
 var Global = {};
 
+Global.currentInput = Input.create();
+Global.capturedInput = Global.currentInput;
+Global.play = false;
+Global.forceCaptureInput = false;
+Global.timePerFrame = 1000; // (1000 / 60) for 60fps;
+Global.tickTimeAccrued = 0;
+Global.lastTickTime = 0;
+Global.framesToAdvance = 0;
+
 Global.targetCellView = null;
 Global.targetCellArg = 0;
 Global.inputCell = false;

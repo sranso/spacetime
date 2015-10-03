@@ -12,8 +12,9 @@ Cell.create = function () {
         transformation: Transformation.none,
         args: Cell.noArgs,      // [c1, r1, c2, r2, ...]
         detached: false,
-        startFrame: 0,
+        startFrame: 0,  // TODO: these are kinda pre and post. Split apart?
         endFrame: Infinity,     // Infinity == grid.numFrames - 1
+        input: [],
 
         // Post-transform
         grid: Grid.none,
@@ -29,6 +30,24 @@ Cell.create = function () {
 
 Cell.noHistory = [];
 
+var setupAutoArgs = function () {
+    var autoArgs = [];
+    for (var numArgs = 0; numArgs < 20; numArgs++) {
+        var args = [];
+        for (var i = 0; i < numArgs; i++) {
+            args[2 * i] = 0;
+            args[2 * i + 1] = i - numArgs;
+        }
+        autoArgs[2 * numArgs] = args;
+        autoArgs[2 * numArgs + 1] = [];
+    }
+    return autoArgs;
+};
+
+Cell.autoArgs = setupAutoArgs();
+
+Cell.noArgs = Cell.autoArgs[0];
+
 Cell.none = Cell.create();
 
 Cell.clonePostTransform = function (original) {
@@ -38,9 +57,10 @@ Cell.clonePostTransform = function (original) {
 
     cell.transformation = original.transformation;
     // cell.args = Cell.noArgs;
+    // cell.detached = false;
     cell.startFrame = original.startFrame;
     cell.endFrame = original.endFrame;
-    // cell.detached = false;
+    cell.input = original.input;
 
     cell.grid = original.grid;
     cell.gridTick = original.gridTick;
@@ -63,6 +83,7 @@ Cell.cloneForSimilar = function (original) {
     // cell.startFrame = 0;
     // cell.endFrame = Infinity;
     // cell.detached = false;
+    // cell.input = Input.none;
 
     // cell.grid = Grid.none;
     // cell.gridTick = 0;
@@ -75,38 +96,27 @@ Cell.cloneForSimilar = function (original) {
     return cell;
 };
 
-var autoArgs = function (numArgs) {
-    return args;
-};
-
-var setupAutoArgs = function () {
-    var autoArgs = [];
-    for (var numArgs = 0; numArgs < 20; numArgs++) {
-        var args = [];
-        for (var i = 0; i < numArgs; i++) {
-            args[2 * i] = 0;
-            args[2 * i + 1] = i - numArgs;
-        }
-        autoArgs[2 * numArgs] = args;
-        autoArgs[2 * numArgs + 1] = [];
-    }
-    return autoArgs;
-};
-
-Cell.autoArgs = setupAutoArgs();
-
-Cell.noArgs = Cell.autoArgs[0];
-
 Cell.empty = (function () {
     var cell = Cell.create();
     cell.transformation = Transformation.empty;
-    cell.args = Cell.autoArgs[0];
+    cell.args = Cell.noArgs;
     cell.text = '';
 
     cell.result = 0;
 
     return cell;
 })();
+
+Cell.argCells = function (cell, grid, c, r) {
+    var argCells = [];
+    for (var i = 0; i < cell.args.length; i += 2) {
+        var argC = c + cell.args[i];
+        var argR = r + cell.args[i + 1];
+        var argCell = grid.cells[argC][argR];
+        argCells.push(argCell);
+    }
+    return argCells;
+};
 
 Cell.pointToArg = function (cell, c, r, argIndex, argC, argR) {
     if (argIndex >= cell.args.length) {

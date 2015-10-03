@@ -21,7 +21,16 @@ Operation.none = Operation.create('none', function () {
 });
 
 Operation.empty = Operation.create('empty', function () {
-    return 0;
+    return 0; // TODO: should be special empty result type.
+});
+
+Operation.input = Operation.create('input', function (cell) {
+    var inputType = cell.operation.data;
+    if (cell.input[0]) {
+        return cell.input[0][inputType];
+    } else {
+        return 0; // TODO: 0 should be empty result
+    }
 });
 
 

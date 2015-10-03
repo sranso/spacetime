@@ -34,6 +34,8 @@ Main.setup = function () {
         'draw  '
     );
     Main.update();
+
+    window.requestAnimationFrame(Main.tick);
 };
 
 var buildProject = function () {
@@ -76,6 +78,24 @@ var buildProject = function () {
     column.push(Cell.deepCopy(Library.add));
 
     return project;
+};
+
+Main.tick = function (time) {
+    if (Global.play && Global.lastTickTime) {
+        var timeDiff = time - Global.lastTickTime;
+        Global.lastTickTime = time;
+        Global.tickTimeAccrued += timeDiff;
+        Global.framesToAdvance = Math.floor(Global.tickTimeAccrued / Global.timePerFrame);
+        Global.tickTimeAccrued -= Global.framesToAdvance * Global.timePerFrame;
+    } else {
+        Global.framesToAdvance = 0;
+    }
+
+    if (Global.forceCaptureInput || Global.framesToAdvance > 0) {
+        Main.update();
+    }
+
+    window.requestAnimationFrame(Main.tick);
 };
 
 Main.setup();

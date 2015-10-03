@@ -23,9 +23,18 @@ var drawOverallSetup = function () {
             Keyboard.keypressEvent(d3.event.keyCode)
         })
         .on('mousedown', function () {
+            Global.currentInput.mouseDown = true;
             if (!d3.event.shiftKey) {
                 View.deselectCell();
             }
+        })
+        .on('mouseup', function () {
+            Global.currentInput.mouseDown = false;
+        })
+        .on('mousemove', function () {
+            var mouse = d3.mouse(document.body);
+            Global.currentInput.mouseX = mouse[0];
+            Global.currentInput.mouseY = mouse[1];
         })
         .on('contextmenu', function () {
             d3.event.preventDefault();

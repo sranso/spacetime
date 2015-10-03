@@ -124,7 +124,7 @@ View.showFrame = function (d, x) {
     var numFrames = Cell.numFrames(d.cell);
     var fetchFrame = Math.floor(numFrames * x / 160);
     var grid = Project.currentGrid($Project);
-    Execute.executeCell(grid, d.cell, fetchFrame, d.c, d.r);
+    Execute.executeCell(d.cell, fetchFrame, grid, d.c, d.r);
     Draw.draw();
 };
 

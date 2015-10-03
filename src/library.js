@@ -22,12 +22,21 @@ Library.literal = (function () {
     var cell = Cell.create();
     // cell.group = Group.none; // TODO: groups for all library?
     cell.text = '<literal>';
-    cell.args = Cell.autoArgs[0];
+    cell.args = Cell.noArgs;
     cell.transformation = Transformation.immediate(baseOperation.literal);
     cell.dynamicHistory = [cell];
 
     return cell;
 })();
+
+Input.types.forEach(function (inputType) {
+    var cell = Cell.create();
+    cell.text = inputType;
+    cell.args = Cell.noArgs;
+    cell.transformation = Transformation.input(inputType);
+
+    Library[inputType] = cell;
+});
 
 Library.plusOne = (function () {
     var cell = Cell.create();
@@ -95,5 +104,9 @@ Library.lookup = {
     'sample': Library.sample,
     'drop': Library.drop,
 };
+
+Input.types.forEach(function (inputType) {
+    Library.lookup[inputType] = Library[inputType];
+});
 
 })();

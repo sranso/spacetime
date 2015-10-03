@@ -6,6 +6,7 @@ Project.create = function () {
     return {
         cellLevels: [],
         currentLevel: 0,
+        currentFrame: 0,
         transformationTick: 1,
         executionTick: 1,
     };
