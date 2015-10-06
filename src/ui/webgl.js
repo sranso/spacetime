@@ -153,22 +153,6 @@ var setGridCellViewport = function (top, left) {
     webgl.gl.viewport(x, y, width, height);
 };
 
-Webgl.oldDrawResult = function (quads) {
-    var webgl = resultWebgl;
-
-    clear(webgl);
-    if (quads) {
-        var boundary = Quads.boundaryCoords(quads);
-        var projectionMatrix = createZoomedProjectionMatrix(boundary, resultPixelHeightRatio);
-        var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
-        draw(quads, matrix);
-    }
-
-    var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(webgl.canvas, 0, 0, canvas.width, canvas.height);
-};
-
 var draw = function (quads) {
     var projectionMatrix = createBasicProjectionMatrix();
     var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
@@ -196,96 +180,6 @@ var createBasicProjectionMatrix = function () {
         0,      scaleY,
         -1,     -1,
     ]);
-};
-
-var createZoomedProjectionMatrix = function (boundary, pixelHeightRatio) {
-    var fullWidth = Global.canvasFullWidth;
-    var fullHeight = Global.canvasFullHeight;
-    var b = boundary;
-    if (b[0] < 0) {
-        b[0] = 0;
-    }
-    if (b[1] < 0) {
-        b[1] = 0;
-    }
-    if (b[2] > fullWidth) {
-        b[2] = fullWidth;
-    }
-    if (b[3] > fullHeight) {
-        b[3] = fullHeight;
-    }
-    var bWidth = b[2] - b[0];
-    var bHeight = b[3] - b[1];
-    if (bWidth < 1) {
-        b[2] = b[0] + 1;
-        bWidth = 1;
-    }
-    if (bHeight < 1) {
-        b[3] = b[1] + 1;
-        bHeight = 1;
-    }
-
-    var widthPreGap = fullWidth - bWidth;
-    var heightPreGap = fullHeight - bHeight;
-    var widthProportion = bWidth / fullWidth;
-    var heightProportion = bHeight / fullHeight;
-    var proportion = Math.max(widthProportion, heightProportion);
-
-    var x0 = Math.log(1 / fullHeight);
-    var x1 = Math.log(fullHeight / fullHeight); // 0
-    var y0 = pixelHeightRatio;
-    var y1 = 0;
-    var x = Math.log(proportion);
-    var y = linearInterpolate(x0, y0, x1, y1, x);
-    var gapMultiplier = y;
-
-    if (widthProportion > heightProportion) {
-        var widthGap = Math.min(bWidth * gapMultiplier, widthPreGap);
-        var width = bWidth + widthGap;
-        var height = width / fullWidth * fullHeight;
-        var heightGap = height - bHeight;
-    } else {
-        var heightGap = Math.min(bHeight * gapMultiplier, heightPreGap);
-        var height = bHeight + heightGap;
-        var width = height / fullHeight * fullWidth;
-        var widthGap = width - bWidth;
-    }
-
-    var leftPreGap = b[0];
-    var bottomPreGap = b[1];
-
-    if (widthPreGap > 0) {
-        var leftGap = leftPreGap / widthPreGap * widthGap;
-    } else {
-        var leftGap = 0;
-    }
-    if (heightPreGap > 0) {
-        var bottomGap = bottomPreGap / heightPreGap * heightGap;
-    } else {
-        var bottomGap = 0;
-    }
-
-    var left = b[0] - leftGap;
-    var bottom = b[1] - bottomGap;
-
-    var midX = left + width / 2;
-    var midY = bottom + height / 2;
-    var scaleX = 2 / width;
-    var scaleY = 2 / height;
-
-    return new Float32Array([
-        scaleX,         0,
-        0,              scaleY,
-        -midX * scaleX, -midY * scaleY,
-    ]);
-};
-
-var linearInterpolate = function (x0, y0, x1, y1, x) {
-    var xRange = x1 - x0;
-    var yRange = y1 - y0;
-    var numRanges = (x - x0) / xRange;
-    var y = numRanges * yRange + y0;
-    return y;
 };
 
 })();
