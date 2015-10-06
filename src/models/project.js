@@ -14,12 +14,16 @@ Project.create = function () {
 
 Project.none = Project.create();
 
+Project.currentLevel = function (project) {
+    return project.cellLevels[project.currentLevel];
+};
+
 Project.currentCell = function (project) {
-    return project.cellLevels[project.currentLevel][0];
+    return project.cellLevels[project.currentLevel].cell;
 };
 
 Project.currentGrid = function (project) {
-    return project.cellLevels[project.currentLevel][0].grid;
+    return project.cellLevels[project.currentLevel].cell.grid;
 };
 
 Project.createBlank = function () {
@@ -29,10 +33,15 @@ Project.createBlank = function () {
     return project;
 };
 
-Project.openCell = function (project, cell, c, r) {
+Project.openCell = function (project, cell, grid, c, r) {
     var removeAt = project.currentLevel + 1;
     var toRemove = project.cellLevels.length - removeAt;
-    var newLevel = [cell, c, r];
+    var newLevel = {
+        cell: cell,
+        grid: grid,
+        c: c,
+        r: r,
+    };
     project.cellLevels.splice(removeAt, toRemove, newLevel);
     project.currentLevel += 1;
 };
@@ -53,7 +62,9 @@ Project.intoLevel = function (project) {
 
 Project.wrapFromAbove = function (project) {
     var cell = wrapFromAbovePart(project);
-    cell.grid.cells = [[project.cellLevels[1][0]]];
+    var previousTopLevel = project.cellLevels[1];
+    previousTopLevel.grid = cell.grid;
+    cell.grid.cells = [[previousTopLevel.cell]];
     project.currentLevel += 1;
 };
 
@@ -62,9 +73,17 @@ var wrapFromAbovePart = function (project) {
     cell.grid = Grid.create();
     cell.transformation = Transformation.detached;
 
-    project.cellLevels.splice(0, 0,
-        [cell, 0, 0]
-    );
+    var grid = Grid.create();
+    grid.cells = [[cell]];
+
+    var topLevel = {
+        cell: cell,
+        grid: grid,
+        c: 0,
+        r: 0,
+    };
+    project.cellLevels.splice(0, 0, topLevel);
+
     return cell;
 };
 

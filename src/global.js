@@ -12,6 +12,7 @@ Global.tickTimeAccrued = 0;
 Global.lastTickTime = 0;
 Global.framesToAdvance = 0;
 
+Global.fullScreen = false;
 Global.targetCellView = null;
 Global.targetCellArg = 0;
 Global.inputCell = false;

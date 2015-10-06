@@ -14,7 +14,11 @@ Ui.setup = function () {
 Ui.draw = function () {
     __stats.draw_time = performance.now();
     Webgl.clear();
-    drawGrid();
+    if (Global.fullScreen) {
+        drawFullScreen();
+    } else {
+        drawGrid();
+    }
     __stats.draw_time = performance.now() - __stats.draw_time;
 };
 
@@ -35,9 +39,8 @@ var drawOverallSetup = function () {
             Global.currentInput.mouseDown = false;
         })
         .on('mousemove', function () {
-            var mouse = d3.mouse(document.body);
-            Global.currentInput.mouseX = mouse[0];
-            Global.currentInput.mouseY = mouse[1];
+            Global.currentInput.mouseX = d3.event.clientX;
+            Global.currentInput.mouseY = window.innerHeight - d3.event.clientY;
         })
         .on('contextmenu', function () {
             d3.event.preventDefault();
@@ -70,6 +73,12 @@ var drawGrid = function () {
             });
         }
     }
+
+    gridHtml
+        .style('display', 'block') ;
+
+    d3.select('#full-screen-text')
+        .text('') ;
 
     var cellEls = gridHtml.selectAll('.cell')
         .data(cells) ;
@@ -172,9 +181,34 @@ var drawGrid = function () {
         })
         .each(function (d) {
             if (d.cell.result.type === Result.quads) {
-                Do.drawResult(d);
+                Do.drawGridCell(d);
             }
         }) ;
+};
+
+//////////////// Full Screen
+
+var drawFullScreen = function () {
+    gridHtml
+        .style('display', 'none') ;
+
+    var cell = Project.currentCell($Project);
+    var result = cell.result;
+
+    d3.select('#full-screen-text')
+        .text(function () {
+            if (result.error) {
+                return result.error;
+            } else if (result.type === Result.number) {
+                return result.value;
+            } else {
+                return '';
+            }
+        }) ;
+
+    if (result.type === Result.quads) {
+        Webgl.drawFullScreen(cell.result.value);
+    }
 };
 
 })();

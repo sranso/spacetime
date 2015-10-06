@@ -57,3 +57,7 @@ body {
 #canvas {
   position: absolute;
 }
+
+#full-screen-text {
+  position: fixed;
+}

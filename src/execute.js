@@ -7,36 +7,42 @@ Execute.transform = function () {
     __stats.transform_numCells = 0;
 
 
-    var cell = $Project.cellLevels[0][0];
+    var level = Project.currentLevel($Project);
+    var cell = level.cell;
     if (Global.forceCaptureInput || Global.framesToAdvance > 0) {
         Global.capturedInput = Input.clone(Global.currentInput);
         while (true) {
             $Project.transformationTick += 1;
-            Execute.transformCell(cell, $Project.currentFrame, Grid.none, 0, 0);
+            if (Global.framesToAdvance > 0) {
+                $Project.currentFrame++;
+            }
+            Execute.transformCell(cell, $Project.currentFrame, level.grid, level.c, level.r);
             if (Global.framesToAdvance > 0) {
                 Global.framesToAdvance--;
-                $Project.currentFrame++;
-                if ($Project.currentFrame >= Cell.numFrames(cell)) {
+                var numFrames = Cell.numFrames(cell);
+                if ($Project.currentFrame >= numFrames - 1) {
+                    $Project.currentFrame = numFrames - 1;
                     Global.play = false;
-                    Global.framesToAdvance = 0;
+                    break;
                 }
             }
             if (Global.framesToAdvance === 0) {
                 break;
             }
         }
-    } else {
-        $Project.transformationTick += 1;
-        Execute.transformCell(cell, -1, Grid.none, 0, 0);
     }
 
-    var grid = cell.grid;
-    for (var i = 1; i < $Project.cellLevels; i++) {
-        var c = level[1];
-        var r = level[2];
-        var cell = grid.cells[c][r];
-        Execute.transformCell(cell, -1, grid, c, r);
-        level[0] = cell;
+    var grid = $Project.cellLevels[0].grid;
+    for (var i = 0; i < $Project.cellLevels.length; i++) {
+        var level = $Project.cellLevels[i];
+        var cell = grid.cells[level.c][level.r];
+        if (!cell) {
+            $Project.cellLevels.splice(i, $Project.cellLevels.length - i);
+            break;
+        }
+        Execute.transformCell(cell, -1, grid, level.c, level.r);
+        level.cell = cell;
+        level.grid = grid;
         grid = cell.grid;
     }
 

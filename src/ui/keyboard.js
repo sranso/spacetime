@@ -30,6 +30,10 @@ Keyboard.keypressEvent = function (keyCode, key) {
         d3.event.preventDefault();
     } else if (key === 't') {
         Do.intoLevel();
+    } else if (key === 'f') {
+        Do.toggleFullScreen();
+    } else if (key === 'p') {
+        Do.play();
     } else if (key === 'enter') {
         Do.insertRow(Global.targetCellView, !d3.event.shiftKey);
     } else if (key === 'tab') {

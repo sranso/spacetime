@@ -124,13 +124,6 @@ Webgl.clear = function () {
     webgl.gl.clear(webgl.gl.COLOR_BUFFER_BIT);
 };
 
-Webgl.drawResult = function (quads, top, left) {
-    setViewport(top, left);
-    var projectionMatrix = createBasicProjectionMatrix();
-    var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
-    draw(quads, matrix);
-};
-
 var resizeCanvas = function (canvas) {
     var canvasWidth = window.innerWidth * window.devicePixelRatio;
     var canvasHeight = window.innerHeight * window.devicePixelRatio;
@@ -142,7 +135,17 @@ var resizeCanvas = function (canvas) {
     }
 };
 
-var setViewport = function (top, left) {
+Webgl.drawGridCell = function (quads, top, left) {
+    setGridCellViewport(top, left);
+    draw(quads);
+};
+
+Webgl.drawFullScreen = function (quads) {
+    webgl.gl.viewport(0, 0, webgl.canvas.width, webgl.canvas.height);
+    draw(quads);
+};
+
+var setGridCellViewport = function (top, left) {
     var width = 160 * devicePixelRatio;
     var height = 100 * devicePixelRatio;
     var x = left * window.devicePixelRatio;
@@ -166,7 +169,9 @@ Webgl.oldDrawResult = function (quads) {
     ctx.drawImage(webgl.canvas, 0, 0, canvas.width, canvas.height);
 };
 
-var draw = function (quads, matrix) {
+var draw = function (quads) {
+    var projectionMatrix = createBasicProjectionMatrix();
+    var matrix = mat2d.multiply(mat2d.create(), projectionMatrix, quads.matrix);
     var gl = webgl.gl;
 
     var matrix3 = mat3.fromMat2d(mat3.create(), matrix);

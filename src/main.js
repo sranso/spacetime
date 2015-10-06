@@ -4,7 +4,12 @@ var Main = {};
 
 Main.update = function () {
     Execute.transform();
-    Execute.executeGrid(Project.currentGrid($Project));
+    if (Global.fullScreen) {
+        var level = Project.currentLevel($Project);
+        Execute.executeCell(level.cell, $Project.currentFrame, level.grid, level.c, level.r);
+    } else {
+        Execute.executeGrid(Project.currentGrid($Project));
+    }
     Ui.draw();
     logStats();
 };
@@ -42,7 +47,7 @@ var buildProject = function () {
 
     var column = [];
     var cell = Cell.none;
-    var grid = project.cellLevels[project.currentLevel][0].grid;
+    var grid = Project.currentGrid(project);
     grid.cells = [column];
 
     cell = Cell.create();

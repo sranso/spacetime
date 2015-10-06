@@ -32,7 +32,7 @@ Do.changeCellArgs = function (d) {
 };
 
 Do.openCell = function (d) {
-    Project.openCell($Project, d.cell, d.c, d.r);
+    Project.openCell($Project, d.cell, d.grid, d.c, d.r);
     Global.targetCellView = null;
     Main.update();
 };
@@ -128,10 +128,25 @@ Do.showFrame = function (d, x) {
     Ui.draw();
 };
 
-Do.drawResult = function (d) {
+Do.drawGridCell = function (d) {
     var top = 74 + d.r * 140;
     var left = 54 + d.c * 190;
-    Webgl.drawResult(d.cell.result.value, top, left);
+    Webgl.drawGridCell(d.cell.result.value, top, left);
+};
+
+Do.toggleFullScreen = function () {
+    Global.fullScreen = !Global.fullScreen;
+    Main.update();
+};
+
+Do.play = function () {
+    $Project.currentFrame -= 1;
+    Global.lastTickTime = 0;
+    Global.play = true;
+    Global.lastTickTime = performance.now();
+    Global.framesToAdvance = 1;
+
+    Main.update();
 };
 
 })();
