@@ -31,7 +31,7 @@ Webgl.setup = function () {
 
     webgl = createWebgl();
     webgl.canvas = d3.select('#canvas').node();
-    resizeCanvas(webgl.canvas);
+    updateCanvasSize(webgl.canvas);
 
     try {
         webgl.gl = webgl.canvas.getContext('webgl') || webgl.canvas.getContext('experimental-webgl');
@@ -119,24 +119,20 @@ var createShader = function (gl, id) {
 };
 
 Webgl.clear = function () {
-    resizeCanvas(webgl.canvas);
+    updateCanvasSize(webgl.canvas);
     webgl.gl.clearColor(0.0, 0.0, 0.0, 0.0);
     webgl.gl.clear(webgl.gl.COLOR_BUFFER_BIT);
 };
 
-var resizeCanvas = function (canvas) {
-    var canvasWidth = window.innerWidth * window.devicePixelRatio;
-    var canvasHeight = window.innerHeight * window.devicePixelRatio;
-    if (canvas.width != canvasWidth || canvas.height != canvasHeight) {
-        canvas.style.width = window.innerWidth + 'px';
-        canvas.style.height = window.innerHeight + 'px';
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-    }
+var updateCanvasSize = function (canvas) {
+    var canvasWidth = canvas.clientWidth * devicePixelRatio;
+    var canvasHeight = canvas.clientHeight * devicePixelRatio;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 };
 
-Webgl.drawGridCell = function (quads, top, left) {
-    setGridCellViewport(top, left);
+Webgl.drawGridCell = function (quads, c, r) {
+    setGridCellViewport(c, r);
     draw(quads);
 };
 
@@ -145,11 +141,12 @@ Webgl.drawFullScreen = function (quads) {
     draw(quads);
 };
 
-var setGridCellViewport = function (top, left) {
-    var width = 160 * devicePixelRatio;
-    var height = 100 * devicePixelRatio;
-    var x = left * window.devicePixelRatio;
-    var y = canvas.height - top * window.devicePixelRatio - height;
+var setGridCellViewport = function (c, r) {
+    var dpr = window.devicePixelRatio;
+    var width = 160 * dpr;
+    var height = 100 * dpr;
+    var x = (c * 190 + 4) * dpr;
+    var y = (r * 140 + 10 + 6) * dpr;
     webgl.gl.viewport(x, y, width, height);
 };
 

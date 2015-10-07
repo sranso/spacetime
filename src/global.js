@@ -17,6 +17,7 @@ Global.targetCellView = null;
 Global.targetCellArg = 0;
 Global.inputCell = false;
 Global.cellEls = [];
+Global.boxInSight = null;
 
 var __stats = {
     transform_numCells: 0,

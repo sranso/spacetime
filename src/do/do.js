@@ -128,12 +128,6 @@ Do.showFrame = function (d, x) {
     Ui.draw();
 };
 
-Do.drawGridCell = function (d) {
-    var top = 74 + d.r * 140;
-    var left = 54 + d.c * 190;
-    Webgl.drawGridCell(d.cell.result.value, top, left);
-};
-
 Do.toggleFullScreen = function () {
     Global.fullScreen = !Global.fullScreen;
     Main.update();
@@ -148,5 +142,43 @@ Do.play = function () {
 
     Main.update();
 };
+
+Do.maybeRedrawAfterScroll = function (scrollTop, scrollLeft) {
+    var box = boxInSight(scrollTop, scrollLeft);
+    var lastBox = Global.boxInSight;
+    if (
+        box.leftC !== lastBox.leftC ||
+        box.rightC !== lastBox.rightC ||
+        box.topR !== lastBox.topR ||
+        box.bottomR !== lastBox.bottomR
+    ) {
+        Global.boxInSight = box;
+        Ui.draw();
+    }
+};
+
+var boxInSight = function (top, left) {
+    top -= 74;
+    left -= 54;
+    var bottom = top + window.innerHeight;
+    var right = left + window.innerWidth;
+    var height = 140;
+    var width = 190;
+    var extra = 50;
+
+    var leftC = Math.floor((left + width - 160 - extra) / width);
+    var rightC = Math.floor((right - 10 - 4 + extra) / width);
+    var topR = Math.floor((top + height - 100 - extra) / height);
+    var bottomR = Math.floor((bottom - 10 - 4 + extra) / height);
+
+    return {
+        leftC: leftC,
+        rightC: rightC,
+        topR: topR,
+        bottomR: bottomR,
+    };
+};
+
+Global.boxInSight = boxInSight(0, 0);
 
 })();

@@ -13,7 +13,6 @@ Ui.setup = function () {
 
 Ui.draw = function () {
     __stats.draw_time = performance.now();
-    Webgl.clear();
     if (Global.fullScreen) {
         drawFullScreen();
     } else {
@@ -44,6 +43,14 @@ var drawOverallSetup = function () {
         })
         .on('contextmenu', function () {
             d3.event.preventDefault();
+        })
+        .on('scroll', function () {
+            Do.maybeRedrawAfterScroll(document.body.scrollTop, document.body.scrollLeft);
+        }) ;
+
+    d3.select(window)
+        .on('resize', function () {
+            Do.maybeRedrawAfterScroll(document.body.scrollTop, document.body.scrollLeft);
         }) ;
 };
 
@@ -61,9 +68,13 @@ var drawGrid = function () {
     drawTick += 1;
 
     var cells = [];
-    var numColumns = Math.min(grid.cells.length, 60);
-    for (var c = 0; c < numColumns; c++) {
-        for (var r = 0; r < grid.cells[0].length; r++) {
+    var box = Global.boxInSight;
+    var leftC = Math.max(0, Math.min(box.leftC, grid.cells.length - 1));
+    var rightC = Math.min(box.rightC, grid.cells.length - 1);
+    var topR = Math.max(0, Math.min(box.topR, grid.cells[0].length - 1));
+    var bottomR = Math.max(0, Math.min(box.bottomR, grid.cells[0].length - 1));
+    for (var c = leftC; c <= rightC; c++) {
+        for (var r = topR; r <= bottomR; r++) {
             var cell = grid.cells[c][r];
             cells.push({
                 cell: cell,
@@ -74,6 +85,18 @@ var drawGrid = function () {
         }
     }
 
+    d3.select(document.body)
+        .style('min-width', (grid.cells.length * 190 + 50 + 300) + 'px')
+        .style('min-height', (grid.cells[0].length * 140 + 50 + 300) + 'px') ;
+
+    d3.select('#canvas')
+        .style('left', (leftC * 190 + 50) + 'px')
+        .style('width', ((rightC - leftC + 1) * 190) + 'px')
+        .style('top', (topR * 140 + 50) + 'px')
+        .style('height', ((bottomR - topR + 1) * 140) + 'px') ;
+
+    Webgl.clear();
+
     gridHtml
         .style('display', 'block') ;
 
@@ -81,7 +104,9 @@ var drawGrid = function () {
         .text('') ;
 
     var cellEls = gridHtml.selectAll('.cell')
-        .data(cells) ;
+        .data(cells, function (d) {
+            return d.c + ' ' + d.r;
+        }) ;
 
     var cellEnterEls = cellEls.enter().append('div')
         .attr('class', 'cell')
@@ -181,7 +206,9 @@ var drawGrid = function () {
         })
         .each(function (d) {
             if (d.cell.result.type === Result.quads) {
-                Do.drawGridCell(d);
+                var c = d.c - leftC;
+                var r = bottomR - d.r;
+                Webgl.drawGridCell(d.cell.result.value, c, r);
             }
         }) ;
 };
@@ -194,6 +221,14 @@ var drawFullScreen = function () {
 
     var cell = Project.currentCell($Project);
     var result = cell.result;
+
+    d3.select('#canvas')
+        .style('left', '0px')
+        .style('width', window.innerWidth + 'px')
+        .style('top', '0px')
+        .style('height', window.innerHeight + 'px') ;
+
+    Webgl.clear();
 
     d3.select('#full-screen-text')
         .text(function () {
