@@ -18,6 +18,7 @@ Global.targetCellArg = 0;
 Global.inputCell = false;
 Global.cellEls = [];
 Global.boxInSight = null;
+Global.drawTick = 0;
 
 var __stats = {
     transform_numCells: 0,
