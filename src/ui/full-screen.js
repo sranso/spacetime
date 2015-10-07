@@ -3,7 +3,7 @@ var FullScreen = {};
 (function () {
 
 FullScreen.draw = function () {
-    gridHtml
+    d3.select('#grid')
         .style('display', 'none') ;
 
     var cell = Project.currentCell($Project);

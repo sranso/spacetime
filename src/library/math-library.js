@@ -48,6 +48,8 @@ MathLibrary.plusTwo = (function () {
 
     var area = Area.create();
     area.coords = [0, 0, 0, 1];
+    area.group = Group.create();
+    area.group.remember = true;
 
     cell.grid.areas.push(area);
 

@@ -21,6 +21,12 @@ body {
   position: relative;
 }
 
+#cells {
+}
+
+#areas {
+}
+
 .cell {
   position: absolute;
   -moz-user-select: none;
@@ -53,6 +59,26 @@ body {
 
 .cell.target .result {
   border-color: #000;
+}
+
+.area {
+  position: absolute;
+  pointer-events: none;
+}
+
+.area .corner {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.area .corner.horizontal {
+  width: 20px;
+  height: 5px;
+}
+
+.area .corner.vertical {
+  width: 5px;
+  height: 20px;
 }
 
 #canvas {

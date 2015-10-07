@@ -3,7 +3,7 @@ var CellUi = {};
 (function () {
 
 CellUi.draw = function (info) {
-    var cellEls = GridUi.gridHtml.selectAll('.cell')
+    var cellEls = d3.select('#cells').selectAll('.cell')
         .data(info.cells, function (d) {
             return d.c + ' ' + d.r;
         }) ;
@@ -21,6 +21,12 @@ CellUi.draw = function (info) {
         .on('dblclick', function (d) {
             Do.openCell(d);
             d3.event.preventDefault();
+        })
+        .style('top', function (d) {
+            return (d.r * 140) + 'px';
+        })
+        .style('left', function (d) {
+            return (d.c * 190) + 'px';
         }) ;
 
     cellEnterEls.append('div')
@@ -43,7 +49,7 @@ CellUi.draw = function (info) {
         })
         .on('keypress', function () {
             d3.event.stopPropagation();
-        })
+        }) ;
 
     cellEnterEls.append('div')
         .attr('class', 'result')
@@ -82,12 +88,6 @@ CellUi.draw = function (info) {
                 }
             }
             return classes.join(' ');
-        })
-        .style('top', function (d) {
-            return (d.r * 140) + 'px';
-        })
-        .style('left', function (d) {
-            return (d.c * 190) + 'px';
         }) ;
 
     cellEls.select('.text')

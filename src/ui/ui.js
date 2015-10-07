@@ -6,7 +6,6 @@ Ui.setup = function () {
     Keyboard.setup();
     Webgl.setup();
     drawOverallSetup();
-    GridUi.setup();
 };
 
 Ui.draw = function () {
@@ -21,6 +20,7 @@ Ui.draw = function () {
         GridUi.startDraw(info);
         Webgl.clear();
         CellUi.draw(info);
+        AreaUi.draw(info);
     }
     __stats.draw_time = performance.now() - __stats.draw_time;
 };

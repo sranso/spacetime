@@ -10,7 +10,10 @@
 <canvas id="canvas"></canvas>
 <div id="full-screen-text"></div>
 <div id="grid-container">
-  <div id="grid"></div>
+  <div id="grid">
+    <div id="cells"></div>
+    <div id="areas"></div>
+  </div>
 </div>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
@@ -58,6 +61,7 @@ void main() {
 <script src="./src/ui/keyboard.js"></script>
 <script src="./src/ui/webgl.js"></script>
 <script src="./src/ui/cell-ui.js"></script>
+<script src="./src/ui/area-ui.js"></script>
 <script src="./src/ui/grid-ui.js"></script>
 <script src="./src/ui/full-screen.js"></script>
 <script src="./src/ui/ui.js"></script>
