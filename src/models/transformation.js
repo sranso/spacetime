@@ -157,7 +157,35 @@ Transformation.none = Transformation.create('none', function () {
     throw new Error('illegal Transformation.none used');
 });
 
-Transformation.empty = Transformation.immediate(Operation.empty);
+
+Transformation.empty = Transformation.create('empty', function (cell, currentFrame) {
+    currentFrame = captureInput(cell, currentFrame);
+
+    cell.operation = Operation.none;
+
+    if (cell.grid === Grid.none) {
+        var grid = cell.grid = Grid.create();
+        grid.layer = Grid.over;
+
+        var subCell = Cell.cloneForSimilar(cell);
+        subCell.args = Cell.noArgs;
+        subCell.operation = Operation.empty;
+
+        grid.cells = [[subCell]];
+        grid.numFrames = 1;
+    } else {
+        var grid = cell.grid;
+
+        // TODO: this could be done in a better way
+        if (
+            grid.cells.length !== 1 ||
+            grid.cells[0].length !== 1 ||
+            grid.cells[0][0].operation !== Operation.empty
+        ) {
+            Execute.transformGrid(grid, currentFrame);
+        }
+    }
+});
 
 Transformation.detached = Transformation.create('detached', function (cell, currentFrame) {
     currentFrame = captureInput(cell, currentFrame);
