@@ -84,7 +84,7 @@ CellUi.draw = function (info) {
             if (t) {
                 var argIndex = Cell.argIndex(t.cell, t.c, t.r, d.c, d.r);
                 if (argIndex !== -1) {
-                    classes.push('arg-' + argIndex);
+                    classes.push('arg');
                 }
             }
             return classes.join(' ');

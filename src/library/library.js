@@ -36,9 +36,15 @@ Library.drop = (function () {
     return cell;
 })();
 
+var inputText = {
+    mouseX: 'mouse x',
+    mouseY: 'mouse y',
+    mouseDown: 'mouse down',
+};
+
 Input.types.forEach(function (inputType) {
     var cell = Cell.create();
-    cell.text = inputType;
+    cell.text = inputText[inputType];
     cell.args = Cell.noArgs;
     cell.transformation = Transformation.input(inputType);
 

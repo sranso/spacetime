@@ -57,7 +57,6 @@ Do.inputText = function (d, text) {
 };
 
 Do.insertRow = function (d, after) {
-    Global.targetCellView = d;
     if (!d) {
         return;
     }
@@ -67,7 +66,11 @@ Do.insertRow = function (d, after) {
     if (after) {
         r++;
     }
-    d.cell = grid.cells[d.c][r];
+    Global.targetCellView = {
+        cell: grid.cells[d.c][r],
+        c: d.c,
+        r: r,
+    };
     Main.update();
     if (Global.inputCell) {
         var cellEl = Global.cellEls[d.c][r];
@@ -76,7 +79,6 @@ Do.insertRow = function (d, after) {
 };
 
 Do.insertColumn = function (d, after) {
-    Global.targetCellView = d;
     if (!d) {
         return;
     }
@@ -86,7 +88,11 @@ Do.insertColumn = function (d, after) {
     if (after) {
         c++;
     }
-    d.cell = grid.cells[c][d.r];
+    Global.targetCellView = {
+        cell: grid.cells[c][d.r],
+        c: c,
+        r: d.r,
+    };
     Main.update();
     if (Global.inputCell) {
         var cellEl = Global.cellEls[c][d.r];
@@ -95,28 +101,33 @@ Do.insertColumn = function (d, after) {
 };
 
 Do.deleteCell = function (d, deleteColumn) {
-    Global.targetCellView = d;
     if (!d) {
         return;
     }
     var grid = Project.currentGrid($Project);
+    var c = d.c;
+    var r = d.r;
     if (deleteColumn) {
-        Grid.deleteColumn(grid, d.c);
-        d.c--;
-        if (d.c < 0) {
-            d.c = 0;
+        Grid.deleteColumn(grid, c);
+        c--;
+        if (c < 0) {
+            c = 0;
         }
     } else {
-        Grid.deleteRow(grid, d.r);
-        d.r--;
-        if (d.r < 0) {
-            d.r = 0;
+        Grid.deleteRow(grid, r);
+        r--;
+        if (r < 0) {
+            r = 0;
         }
     }
-    d.cell = grid.cells[d.c][d.r];
+    Global.targetCellView = {
+        cell: grid.cells[c][r],
+        c: c,
+        r: r,
+    }
     Main.update();
     if (Global.inputCell) {
-        var cellEl = Global.cellEls[d.c][d.r];
+        var cellEl = Global.cellEls[c][r];
         d3.select(cellEl).select('.text').node().focus();
     }
 };
@@ -141,6 +152,7 @@ Do.play = function () {
     Global.play = true;
     Global.lastTickTime = performance.now();
     Global.framesToAdvance = 1;
+    Global.tickTimeAccrued = 0;
 
     Main.update();
 };

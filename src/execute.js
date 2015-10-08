@@ -30,6 +30,8 @@ Execute.transform = function () {
                 break;
             }
         }
+    } else {
+        $Project.transformationTick += 1;
     }
 
     var grid = $Project.cellLevels[0].grid;
