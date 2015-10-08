@@ -62,14 +62,15 @@ Do.insertRow = function (d, after) {
         return;
     }
     var grid = Project.currentGrid($Project);
-    Grid.insertRow(grid, d.r, after);
+    var r = d.r;
+    Grid.insertRow(grid, r, after);
     if (after) {
-        d.r++;
+        r++;
     }
-    d.cell = grid.cells[d.c][d.r];
+    d.cell = grid.cells[d.c][r];
     Main.update();
     if (Global.inputCell) {
-        var cellEl = Global.cellEls[d.c][d.r];
+        var cellEl = Global.cellEls[d.c][r];
         d3.select(cellEl).select('.text').node().focus();
     }
 };
@@ -80,14 +81,15 @@ Do.insertColumn = function (d, after) {
         return;
     }
     var grid = Project.currentGrid($Project);
-    Grid.insertColumn(grid, d.c, after);
+    var c = d.c;
+    Grid.insertColumn(grid, c, after);
     if (after) {
-        d.c++;
+        c++;
     }
-    d.cell = grid.cells[d.c][d.r];
+    d.cell = grid.cells[c][d.r];
     Main.update();
     if (Global.inputCell) {
-        var cellEl = Global.cellEls[d.c][d.r];
+        var cellEl = Global.cellEls[c][d.r];
         d3.select(cellEl).select('.text').node().focus();
     }
 };
