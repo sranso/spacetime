@@ -1,4 +1,4 @@
-# CompA (temporary name)
+# Pancakes (formerly CompA)
 
 Programming editor and environment.
 
