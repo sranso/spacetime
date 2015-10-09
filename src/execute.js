@@ -21,8 +21,8 @@ Execute.transform = function () {
                 Global.framesToAdvance--;
                 var numFrames = Cell.numFrames(cell);
                 if ($Project.currentFrame >= numFrames - 1) {
-                    $Project.currentFrame = numFrames - 1;
                     Global.play = false;
+                    $Project.currentFrame = 0;
                     break;
                 }
             }

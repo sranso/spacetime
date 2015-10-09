@@ -25,15 +25,17 @@ Keyboard.keypressEvent = function (keyCode, key) {
 
     key = keypressMap[key] || key;
 
-    if (key === ' ' || key === 'w') {
+    if (key === 'w') {
         Do.outLevel();
-        d3.event.preventDefault();
     } else if (key === 't') {
         Do.intoLevel();
     } else if (key === 'f') {
         Do.toggleFullScreen();
-    } else if (key === 'p') {
+    } else if (key === ' ') {
         Do.play();
+        d3.event.preventDefault();
+    } else if (key === 'b') {
+        Do.goToBeginning();
     } else if (key === 'enter') {
         Do.insertRow(Global.targetCellView, !d3.event.shiftKey);
     } else if (key === 'tab') {

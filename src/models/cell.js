@@ -168,6 +168,7 @@ Cell.deepCopy = function (original) {
     cell.transformation = original.transformation;
     cell.args = original.args.slice();
     cell.detached = original.detached;
+    cell.input = original.input.slice();
 
     cell.transformationTick = original.transformationTick;
     // cell.grid = Grid.none;
@@ -191,25 +192,32 @@ Cell.deepCopy = function (original) {
         return cell;
     }
 
-    cell.grid = Grid.create();
-    cell.grid.layer = original.grid.layer;
-    cell.grid.numFrames = original.grid.numFrames;
+    if (
+        cell.transformation === Transformation.empty ||
+        cell.transformation === Transformation.detached ||
+        cell.transformation === Transformation.expand ||
+        cell.detached
+    ) {
+        cell.grid = Grid.create();
+        cell.grid.layer = original.grid.layer;
+        cell.grid.numFrames = original.grid.numFrames;
 
-    cell.grid.areas = original.grid.areas.map(function (original) {
-        var area = Area.create();
-        area.group = original.group;
-        area.coords = original.coords.slice();
-        area.text = original.text;
+        cell.grid.areas = original.grid.areas.map(function (original) {
+            var area = Area.create();
+            area.group = original.group;
+            area.coords = original.coords.slice();
+            area.text = original.text;
 
-        return area;
-    });
+            return area;
+        });
 
-    for (var c = 0; c < original.grid.cells.length; c++) {
-        var column = [];
-        for (var r = 0; r < original.grid.cells[0].length; r++) {
-            column[r] = Cell.deepCopy(original.grid.cells[c][r]);
+        for (var c = 0; c < original.grid.cells.length; c++) {
+            var column = [];
+            for (var r = 0; r < original.grid.cells[0].length; r++) {
+                column[r] = Cell.deepCopy(original.grid.cells[c][r]);
+            }
+            cell.grid.cells.push(column);
         }
-        cell.grid.cells.push(column);
     }
 
     return cell;

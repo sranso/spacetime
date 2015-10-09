@@ -157,6 +157,11 @@ Do.play = function () {
     Main.update();
 };
 
+Do.goToBeginning = function () {
+    $Project.currentFrame = 0;
+    Main.update();
+};
+
 Do.maybeRedrawAfterScroll = function (scrollTop, scrollLeft) {
     var box = boxInSight(scrollTop, scrollLeft);
     var lastBox = Global.boxInSight;
