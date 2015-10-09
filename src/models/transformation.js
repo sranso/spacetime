@@ -54,11 +54,7 @@ var captureInput = function (cell, currentFrame) {
         return -1;
     }
     currentFrame += cell.startFrame;
-    var endFrame = cell.endFrame;
-    if (endFrame === Infinity) {
-        endFrame = cell.grid.numFrames - 1;
-    }
-    if (currentFrame <= endFrame) {
+    if (currentFrame <= Cell.endFrame(cell)) {
         cell.input[currentFrame] = Global.capturedInput;
         return currentFrame;
     } else {
@@ -133,6 +129,7 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
             argCell.detached = true;
             argCell.startFrame += atFrame;
             argCell.endFrame = argCell.startFrame + numSubFrames - 1;
+            argCell.loopFrames = true;
 
             column.push(argCell);
         });

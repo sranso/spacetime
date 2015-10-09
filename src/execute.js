@@ -37,7 +37,8 @@ Execute.transform = function () {
     var grid = $Project.cellLevels[0].grid;
     for (var i = 0; i < $Project.cellLevels.length; i++) {
         var level = $Project.cellLevels[i];
-        var cell = grid.cells[level.c][level.r];
+        var column = grid.cells[level.c];
+        var cell = column && column[level.r];
         if (!cell) {
             $Project.cellLevels.splice(i, $Project.cellLevels.length - i);
             break;
@@ -130,10 +131,15 @@ Execute.executeCell = function (cell, fetchFrame, grid, c, r) {
 var executeCell = function (cell, fetchFrame, pGrid, pC, pR) {
     __stats.execCell_numCells += 1;
 
+    var endFrame = Cell.endFrame(cell);
     fetchFrame += cell.startFrame;
-
-    var endFrame = cell.endFrame;
-    if (fetchFrame > endFrame || fetchFrame >= cell.grid.numFrames) {
+    if (fetchFrame > endFrame) {
+        cell.result = Result.empty;
+        return cell.result;
+    }
+    if (cell.loopFrames) {
+        fetchFrame = fetchFrame % cell.grid.numFrames;
+    } else if (fetchFrame >= cell.grid.numFrames) {
         cell.result = Result.empty;
         return cell.result;
     }

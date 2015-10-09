@@ -19,6 +19,7 @@ Cell.create = function () {
         grid: Grid.none,
         startFrame: 0,
         endFrame: Infinity,     // Infinity == grid.numFrames - 1
+        loopFrames: false,
         dynamicHistory: Cell.noHistory,
         operation: Operation.none,
 
@@ -64,6 +65,7 @@ Cell.clonePostTransform = function (original) {
     cell.grid = original.grid;
     cell.startFrame = original.startFrame;
     cell.endFrame = original.endFrame;
+    cell.loopFrames = original.loopFrames;
     cell.dynamicHistory = original.dynamicHistory;
     cell.operation = original.operation;
 
@@ -87,6 +89,7 @@ Cell.cloneForSimilar = function (original) {
     // cell.grid = Grid.none;
     // cell.startFrame = 0;
     // cell.endFrame = Infinity;
+    // cell.loopFrames = false;
     // cell.dynamicHistory = Cell.noHistory;
     // cell.operation = Operation.none;
 
@@ -139,6 +142,14 @@ Cell.argIndex = function (cell, c, r, argC, argR) {
     return -1;
 };
 
+Cell.endFrame = function (cell) {
+    var endFrame = cell.endFrame;
+    if (endFrame === Infinity) {
+        return cell.grid.numFrames - 1;
+    }
+    return endFrame;
+};
+
 Cell.numFrames = function (cell) {
     var endFrame = cell.endFrame;
     if (endFrame === Infinity) {
@@ -162,6 +173,7 @@ Cell.deepCopy = function (original) {
     // cell.grid = Grid.none;
     cell.startFrame = original.startFrame;
     cell.endFrame = original.endFrame;
+    cell.loopFrames = original.loopFrames;
     // cell.dynamicHistory = Cell.noHistory;
     cell.operation = original.operation;
 
