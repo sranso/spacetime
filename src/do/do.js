@@ -3,13 +3,15 @@ var Do = {};
 (function () {
 
 Do.selectCell = function (d) {
+    deselectCellWithoutDraw();
     Global.targetCellView = d;
-    Global.targetCellArg = 0;
     Ui.draw();
 };
 
 var deselectCellWithoutDraw = function () {
     Global.targetCellView = null;
+    Global.targetCellArg = 0;
+    window.getSelection().removeAllRanges();
 };
 
 Do.deselectCell = function () {

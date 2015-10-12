@@ -28,7 +28,8 @@ var logStats = function () {
 };
 
 Main.setup = function () {
-    $Project = buildProject();
+    // $Project = buildFilledProject();
+    $Project = buildEmptyProject();
 
     Ui.setup();
 
@@ -42,7 +43,18 @@ Main.setup = function () {
     window.requestAnimationFrame(Main.tick);
 };
 
-var buildProject = function () {
+var buildEmptyProject = function () {
+    var project = Project.createBlank();
+
+    var grid = Project.currentGrid(project);
+
+    var cell = Cell.deepCopy(Library.empty);
+    grid.cells = [[cell]];
+
+    return project;
+};
+
+var buildFilledProject = function () {
     var project = Project.createBlank();
 
     var column = [];
