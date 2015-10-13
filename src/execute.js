@@ -42,13 +42,11 @@ Execute.transform = function () {
             $Project.cellLevels.splice(i, $Project.cellLevels.length - i);
             break;
         }
-        Execute.transformCell(cell, -1, grid, level.c, level.r);
+        Execute.transformGrid(grid, -1);
         level.cell = cell;
         level.grid = grid;
         grid = cell.grid;
     }
-
-    Execute.transformGrid(Project.currentGrid($Project), -1);
 
     __stats.transform_time = performance.now() - __stats.transform_time;
 };
