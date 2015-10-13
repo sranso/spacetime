@@ -21,6 +21,15 @@ Transformation.cloneWithoutData = function (original) {
     return transformation;
 };
 
+var detachCell = function (original) {
+    var cell = Cell.clonePostTransform(original);
+    cell.detached = true;
+    cell.operation = Operation.none;
+
+    Execute.transformGrid(cell.grid, -1);
+    return cell;
+};
+
 var startOfDynamicHistory = function (argCells) {
     var main = argCells[0];
     var additional = argCells.slice(1);
@@ -32,10 +41,7 @@ var startOfDynamicHistory = function (argCells) {
     }
 
     additional.forEach(function (original) {
-        var argCell = Cell.clonePostTransform(original);
-        argCell.detached = true;
-
-        history.push(argCell);
+        history.push(detachCell(original));
     });
 
     return history;
@@ -80,6 +86,7 @@ var immediateTransform = function (cell, currentFrame, pGrid, c, r) {
 
     var baseCell = Cell.cloneForSimilar(cell);
     baseCell.args = Cell.autoArgs[cell.args.length];
+    baseCell.input = cell.input.slice();
 
     grid.cells[0].push(baseCell);
 
@@ -116,6 +123,7 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
     }
     currentFrame = captureInput(cell, currentFrame);
 
+    var currentSubFrame = currentFrame;
     var atFrame = 0;
     main.grid.cells.forEach(function (oldColumn, subC) {
         var column = oldColumn.slice();
@@ -125,8 +133,7 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
         var numSubFrames = Cell.numFrames(subMain);
 
         additional.forEach(function (original) {
-            var argCell = Cell.clonePostTransform(original);
-            argCell.detached = true;
+            var argCell = detachCell(original);
             argCell.startFrame += atFrame;
             argCell.endFrame = argCell.startFrame + numSubFrames - 1;
             argCell.loopFrames = true;
@@ -134,16 +141,19 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
             column.push(argCell);
         });
 
-        atFrame += numSubFrames;
-
         var linearCell = Cell.cloneForSimilar(cell);
         linearCell.args = Cell.autoArgs[cell.args.length];
 
         column.push(linearCell);
 
         if (numMainFrames > 1) {
-            Execute.transformCell(linearCell, currentFrame, grid, subC, column.length - 1);
+            // TODO: input won't work on linearCell, as it gets
+            // thrown away.
+            Execute.transformCell(linearCell, currentSubFrame, grid, subC, column.length - 1);
         }
+
+        atFrame += numSubFrames;
+        currentSubFrame -= numSubFrames;
     });
 
     transformDynamicHistory(cell, argCells);
@@ -226,7 +236,7 @@ Transformation.expand = Transformation.create('expand', function (cell, currentF
     transformDynamicHistory(cell, argCells);
 });
 
-// TODO: re-input on sample/drop
+// TODO: re-input on sample/drop/lastFrame
 Transformation.sample = Transformation.create('sample', function (cell, currentFrame, grid, c, r) {
     var argCells = Cell.argCells(cell, grid, c, r);
     var main = argCells[0];
@@ -250,6 +260,19 @@ Transformation.drop = Transformation.create('drop', function (cell, currentFrame
     cell.grid = main.grid;
     cell.startFrame = main.startFrame + dropNumFrames;
     cell.endFrame = main.endFrame;
+    currentFrame = captureInput(cell, currentFrame);
+
+    transformDynamicHistory(cell, argCells);
+});
+
+Transformation.lastFrame = Transformation.create('lastFrame', function (cell, currentFrame, grid, c, r) {
+    var argCells = Cell.argCells(cell, grid, c, r);
+    var main = argCells[0];
+
+    var endFrame = Cell.endFrame(main);
+    cell.grid = main.grid;
+    cell.startFrame = endFrame;
+    cell.endFrame = endFrame;
     currentFrame = captureInput(cell, currentFrame);
 
     transformDynamicHistory(cell, argCells);

@@ -59,7 +59,7 @@ Cell.clonePostTransform = function (original) {
     cell.transformation = original.transformation;
     // cell.args = Cell.noArgs;
     // cell.detached = false;
-    cell.input = original.input;
+    cell.input = original.input.slice();
 
     cell.transformationTick = original.transformationTick;
     cell.grid = original.grid;

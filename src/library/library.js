@@ -36,6 +36,15 @@ Library.drop = (function () {
     return cell;
 })();
 
+Library.lastFrame = (function () {
+    var cell = Cell.create();
+    cell.text = 'last frame';
+    cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.lastFrame;
+
+    return cell;
+})();
+
 var inputText = {
     mouseX: 'mouse x',
     mouseY: 'mouse y',
@@ -54,6 +63,7 @@ Input.types.forEach(function (inputType) {
 Library.all = [
     Library.sample,
     Library.drop,
+    Library.lastFrame,
 ].concat(MathLibrary.all).concat(QuadsLibrary.all);
 
 Input.types.forEach(function (inputType) {
