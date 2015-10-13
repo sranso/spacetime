@@ -18,6 +18,15 @@ Library.literalNumber = (function () {
     return cell;
 })();
 
+Library.identity = (function () {
+    var cell = Cell.create();
+    cell.text = 'id';
+    cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.identity;
+
+    return cell;
+})();
+
 Library.sample = (function () {
     var cell = Cell.create();
     cell.text = 'sample';
@@ -61,6 +70,7 @@ Input.types.forEach(function (inputType) {
 });
 
 Library.all = [
+    Library.identity,
     Library.sample,
     Library.drop,
     Library.lastFrame,

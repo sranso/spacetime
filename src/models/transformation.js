@@ -21,15 +21,6 @@ Transformation.cloneWithoutData = function (original) {
     return transformation;
 };
 
-var detachCell = function (original) {
-    var cell = Cell.clonePostTransform(original);
-    cell.detached = true;
-    cell.operation = Operation.none;
-
-    Execute.transformGrid(cell.grid, -1);
-    return cell;
-};
-
 var startOfDynamicHistory = function (argCells) {
     var main = argCells[0];
     var additional = argCells.slice(1);
@@ -41,7 +32,11 @@ var startOfDynamicHistory = function (argCells) {
     }
 
     additional.forEach(function (original) {
-        history.push(detachCell(original));
+        var argCell = Cell.clonePostTransform(original);
+        argCell.detached = true;
+        argCell.operation = Operation.none;
+
+        history.push(argCell);
     });
 
     return history;
@@ -87,6 +82,7 @@ var immediateTransform = function (cell, currentFrame, pGrid, c, r) {
     var baseCell = Cell.cloneForSimilar(cell);
     baseCell.args = Cell.autoArgs[cell.args.length];
     baseCell.input = cell.input.slice();
+    baseCell.operation = cell.transformation.operation;
 
     grid.cells[0].push(baseCell);
 
@@ -133,7 +129,9 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
         var numSubFrames = Cell.numFrames(subMain);
 
         additional.forEach(function (original) {
-            var argCell = detachCell(original);
+            var argCell = Cell.clonePostTransform(original);
+            argCell.detached = true;
+            argCell.operation = Operation.none;
             argCell.startFrame += atFrame;
             argCell.endFrame = argCell.startFrame + numSubFrames - 1;
             argCell.loopFrames = true;
@@ -150,6 +148,8 @@ var linearTransform = function (cell, currentFrame, pGrid, c, r) {
             // TODO: input won't work on linearCell, as it gets
             // thrown away.
             Execute.transformCell(linearCell, currentSubFrame, grid, subC, column.length - 1);
+        } else {
+            linearCell.operation = cell.transformation.operation;
         }
 
         atFrame += numSubFrames;
@@ -236,7 +236,19 @@ Transformation.expand = Transformation.create('expand', function (cell, currentF
     transformDynamicHistory(cell, argCells);
 });
 
-// TODO: re-input on sample/drop/lastFrame
+// TODO: re-input on identity/sample/drop/lastFrame
+Transformation.identity = Transformation.create('identity', function (cell, currentFrame, grid, c, r) {
+    var argCells = Cell.argCells(cell, grid, c, r);
+    var main = argCells[0];
+
+    cell.grid = main.grid;
+    cell.startFrame = main.startFrame;
+    cell.endFrame = main.endFrame;
+    currentFrame = captureInput(cell, currentFrame);
+
+    transformDynamicHistory(cell, argCells);
+});
+
 Transformation.sample = Transformation.create('sample', function (cell, currentFrame, grid, c, r) {
     var argCells = Cell.argCells(cell, grid, c, r);
     var main = argCells[0];
