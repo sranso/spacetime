@@ -152,7 +152,7 @@ Do.playPause = function () {
     if (Global.play) {
         Global.play = false;
     } else {
-        $Project.currentFrame -= 1;
+        $Project.currentFrame = -1;
         Global.lastTickTime = 0;
         Global.play = true;
         Global.lastTickTime = performance.now();

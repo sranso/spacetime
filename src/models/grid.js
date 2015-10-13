@@ -82,5 +82,18 @@ Grid.deleteColumn = function (grid, c) {
     });
 };
 
+Grid.deleteColumnsAfter = function (grid, c) {
+    var toDelete = grid.cells.length - c;
+    grid.cells.splice(c, toDelete);
+    grid.areas = grid.areas.filter(function (area) {
+        if (area.coords[0] >= c) {
+            return false;
+        }
+        if (area.coords[2] >= c) {
+            area.coords[2] = c - 1;
+        }
+        return true;
+    });
+};
 
 })();

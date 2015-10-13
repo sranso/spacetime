@@ -54,6 +54,15 @@ Library.lastFrame = (function () {
     return cell;
 })();
 
+Library.continueColumns = (function () {
+    var cell = Cell.create();
+    cell.text = 'continue';
+    cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.continueColumns;
+
+    return cell;
+})();
+
 var inputText = {
     mouseX: 'mouse x',
     mouseY: 'mouse y',
@@ -74,6 +83,7 @@ Library.all = [
     Library.sample,
     Library.drop,
     Library.lastFrame,
+    Library.continueColumns,
 ].concat(MathLibrary.all).concat(QuadsLibrary.all);
 
 Input.types.forEach(function (inputType) {

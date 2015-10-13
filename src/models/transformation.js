@@ -290,6 +290,29 @@ Transformation.lastFrame = Transformation.create('lastFrame', function (cell, cu
     transformDynamicHistory(cell, argCells);
 });
 
+Transformation.continueColumns = Transformation.create('continueColumns', function (cell, currentFrame, grid, c, r) {
+    var argCells = Cell.argCells(cell, grid, c, r);
+    var main = argCells[0];
+    Execute.executeArg(cell, 0, 0, grid, c, r);
+
+    cell.grid = main.grid;
+    cell.startFrame = main.startFrame;
+    cell.endFrame = main.endFrame;
+    captureInput(cell, currentFrame);
+
+    // TODO: boolean result type?
+    var shouldContinue = main.result.type === Result.number ? main.result.value : false;
+    if (currentFrame === 0) {
+        if (shouldContinue && c === grid.cells.length - 1) {
+            Grid.insertColumn(grid, c, true);
+        } else if (!shouldContinue) {
+            Grid.deleteColumnsAfter(grid, c + 1);
+        }
+    }
+
+    transformDynamicHistory(cell, argCells);
+});
+
 Transformation.input = function (inputType) {
     var operation = Operation.cloneWithoutData(Operation.input);
     operation.text = inputType;

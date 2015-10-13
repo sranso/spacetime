@@ -170,7 +170,7 @@ Cell.deepCopy = function (original) {
     cell.detached = original.detached;
     cell.input = original.input.slice();
 
-    cell.transformationTick = original.transformationTick;
+    // cell.transformationTick = original.transformationTick;
     // cell.grid = Grid.none;
     cell.startFrame = original.startFrame;
     cell.endFrame = original.endFrame;
@@ -184,6 +184,7 @@ Cell.deepCopy = function (original) {
     if (original.dynamicHistory.length) {
         cell.dynamicHistory = original.dynamicHistory.slice(0, -1);
         var historyCell = Cell.clonePostTransform(cell);
+        historyCell.transformationTick = 0;
         historyCell.args = Cell.autoArgs[cell.args.length];
         cell.dynamicHistory.push(historyCell);
     }

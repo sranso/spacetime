@@ -13,6 +13,11 @@ var add = Operation.create('add', function (cell, a, b) {
     return Result.create(Result.number, aValue + bValue);
 });
 
+var not = Operation.create('not', function (cell, a) {
+    var aValue = a.result.type === Result.number ? a.result.value : 0;
+    return Result.create(Result.number, !aValue);
+});
+
 MathLibrary.plusOne = (function () {
     var cell = Cell.create();
     cell.text = '+1';
@@ -27,6 +32,15 @@ MathLibrary.add = (function () {
     cell.text = '+';
     cell.args = Cell.autoArgs[4];
     cell.transformation = Transformation.linear(add);
+
+    return cell;
+})();
+
+MathLibrary.not = (function () {
+    var cell = Cell.create();
+    cell.text = '!';
+    cell.args = Cell.autoArgs[2];
+    cell.transformation = Transformation.linear(not);
 
     return cell;
 })();
@@ -60,6 +74,7 @@ MathLibrary.all = [
     MathLibrary.plusOne,
     MathLibrary.plusTwo,
     MathLibrary.add,
+    MathLibrary.not,
 ];
 
 })();
