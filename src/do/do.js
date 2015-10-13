@@ -148,15 +148,19 @@ Do.toggleFullScreen = function () {
     Main.update();
 };
 
-Do.play = function () {
-    $Project.currentFrame -= 1;
-    Global.lastTickTime = 0;
-    Global.play = true;
-    Global.lastTickTime = performance.now();
-    Global.framesToAdvance = 1;
-    Global.tickTimeAccrued = 0;
+Do.playPause = function () {
+    if (Global.play) {
+        Global.play = false;
+    } else {
+        $Project.currentFrame -= 1;
+        Global.lastTickTime = 0;
+        Global.play = true;
+        Global.lastTickTime = performance.now();
+        Global.framesToAdvance = 1;
+        Global.tickTimeAccrued = 0;
 
-    Main.update();
+        Main.update();
+    }
 };
 
 Do.goToBeginning = function () {

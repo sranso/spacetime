@@ -32,7 +32,7 @@ Keyboard.keypressEvent = function (keyCode, key) {
     } else if (key === 'f') {
         Do.toggleFullScreen();
     } else if (key === ' ') {
-        Do.play();
+        Do.playPause();
         d3.event.preventDefault();
     } else if (key === 'b') {
         Do.goToBeginning();
