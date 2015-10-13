@@ -21,6 +21,7 @@ Ui.draw = function () {
         Webgl.clear();
         CellUi.draw(info);
         AreaUi.draw(info);
+        LevelUi.draw();
     }
     __stats.draw_time = performance.now() - __stats.draw_time;
 };

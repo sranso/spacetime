@@ -58,6 +58,40 @@ Project.intoLevel = function (project) {
     if (project.currentLevel >= project.cellLevels.length) {
         project.currentLevel = project.cellLevels.length - 1;
     }
+    if (project.currentLevel === 1) {
+        maybeRemoveTop(project);
+    }
+};
+
+Project.toLevel = function (project, level) {
+    var previousLevel = project.currentLevel;
+    if (level < 0) {
+        Project.wrapFromAbove(project);
+        project.currentLevel = 0;
+    } else {
+        project.currentLevel = level;
+    }
+    if (previousLevel < level) {
+        maybeRemoveTop(project);
+    }
+};
+
+var maybeRemoveTop = function (project) {
+    while (project.currentLevel > 0) {
+        var topCell = project.cellLevels[0].cell;
+        var grid = topCell.grid;
+        if (
+            topCell.transformation === Transformation.empty &&
+            grid.cells.length === 1 &&
+            grid.cells[0].length === 1 &&
+            grid.cells[0][0].transformation === Transformation.empty
+        ) {
+            project.cellLevels.splice(0, 1);
+            project.currentLevel -= 1;
+        } else {
+            break;
+        }
+    }
 };
 
 Project.wrapFromAbove = function (project) {
@@ -71,7 +105,7 @@ Project.wrapFromAbove = function (project) {
 var wrapFromAbovePart = function (project) {
     var cell = Cell.create();
     cell.grid = Grid.create();
-    cell.transformation = Transformation.detached;
+    cell.transformation = Transformation.empty;
 
     var grid = Grid.create();
     grid.cells = [[cell]];

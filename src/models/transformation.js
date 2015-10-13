@@ -194,11 +194,6 @@ Transformation.empty = Transformation.create('empty', function (cell, currentFra
     }
 });
 
-Transformation.detached = Transformation.create('detached', function (cell, currentFrame) {
-    currentFrame = captureInput(cell, currentFrame);
-    Execute.transformGrid(cell.grid, currentFrame);
-});
-
 Transformation.expand = Transformation.create('expand', function (cell, currentFrame, pGrid, pC, pR) {
     currentFrame = captureInput(cell, currentFrame);
     var argCells = Cell.argCells(cell, pGrid, pC, pR);

@@ -76,7 +76,7 @@ Execute.transformCell = function (cell, currentFrame, grid, c, r) {
     __stats.transform_numCells += 1;
 
     if (cell.detached) {
-        var transformation = Transformation.detached;
+        var transformation = Transformation.empty;
     } else {
         var transformation = cell.transformation;
     }

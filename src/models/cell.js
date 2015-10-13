@@ -195,7 +195,6 @@ Cell.deepCopy = function (original) {
 
     if (
         cell.transformation === Transformation.empty ||
-        cell.transformation === Transformation.detached ||
         cell.transformation === Transformation.expand ||
         cell.detached
     ) {

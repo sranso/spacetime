@@ -83,7 +83,7 @@ var buildFilledProject = function () {
 
     var cell = Cell.create();
     cell.text = '3, 7, 8, 9';
-    cell.transformation = Transformation.detached;
+    cell.transformation = Transformation.empty;
     cell.detached = true;
     cell.grid = subGrid;
     cell.dynamicHistory = [cell];

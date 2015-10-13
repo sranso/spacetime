@@ -44,6 +44,11 @@ Do.outLevel = function () {
     Main.update();
 };
 
+Do.toLevel = function (d) {
+    Project.toLevel($Project, d.i);
+    Main.update();
+};
+
 Do.intoLevel = function () {
     Project.intoLevel($Project);
     Main.update();

@@ -19,6 +19,7 @@ GridUi.drawInfo = function () {
             var cell = grid.cells[c][r];
             cells.push({
                 cell: cell,
+                grid: grid,
                 c: c,
                 r: r,
                 drawTick: Global.drawTick,
