@@ -3,6 +3,10 @@ var FullScreen = {};
 (function () {
 
 FullScreen.draw = function () {
+    d3.select(document.body)
+        .style('min-width', null)
+        .style('min-height', null) ;
+
     d3.select('#grid')
         .style('display', 'none') ;
 

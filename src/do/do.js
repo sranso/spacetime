@@ -150,7 +150,17 @@ Do.showFrame = function (d, x) {
 
 Do.toggleFullScreen = function () {
     Global.fullScreen = !Global.fullScreen;
-    Main.update();
+    if (Global.fullScreen) {
+        Global.lastScrollTop = document.body.scrollTop;
+        Global.lastScrollLeft = document.body.scrollLeft;
+
+        Main.update();
+    } else {
+        Main.update();
+
+        document.body.scrollTop = Global.lastScrollTop;
+        document.body.scrollLeft = Global.lastScrollLeft;
+    }
 };
 
 Do.playPause = function () {

@@ -13,8 +13,6 @@ body {
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
   background-color: white;
-  min-height: 1000px;
-  min-width: 1600px;
   position: relative;
 }
 

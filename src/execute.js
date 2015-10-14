@@ -6,7 +6,6 @@ Execute.transform = function () {
     __stats.transform_time = performance.now();
     __stats.transform_numCells = 0;
 
-
     var level = Project.currentLevel($Project);
     var cell = level.cell;
     if (Global.forceCaptureInput || Global.framesToAdvance > 0) {

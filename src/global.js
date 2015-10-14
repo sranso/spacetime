@@ -18,6 +18,8 @@ Global.targetCellArg = 0;
 Global.inputCell = false;
 Global.cellEls = [];
 Global.boxInSight = null;
+Global.lastScrollTop = 0;
+Global.lastScrollLeft = 0;
 Global.drawTick = 0;
 
 var __stats = {
