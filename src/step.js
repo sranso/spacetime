@@ -96,9 +96,6 @@ Step.insertOrUpdateReference = function (resultStepView) {
     var expressionEl = d3.select(stepView.__el__).select('.expression').node();
 
     var referenceAway = stepView.steps[0].__index - resultStep.__index;
-    if (referenceAway <= 0) {
-        return;
-    }
 
     var isSuperStep = SuperStep.isSuperStep(stepView.step);
     if (isSuperStep && !Global.inputReferenceIs.length) {
