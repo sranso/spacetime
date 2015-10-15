@@ -180,6 +180,8 @@ Transformation.empty = Transformation.create('empty', function (cell, currentFra
 
         grid.cells = [[subCell]];
         grid.numFrames = 1;
+
+        transformDynamicHistory(cell, Cell.noArgs);
     } else {
         var grid = cell.grid;
 
