@@ -220,12 +220,12 @@ Transformation.expand = Transformation.create('expand', function (cell, currentF
     });
 
     for (var c = 0; c <= area.coords[2]; c++) {
-        var cell;
+        var subCell;
         for (var r = area.coords[1]; r <= area.coords[3]; r++) {
-            cell = grid.cells[c][r];
-            Execute.transformCell(cell, currentFrame, grid, c, r);
+            subCell = grid.cells[c][r];
+            Execute.transformCell(subCell, currentFrame, grid, c, r);
         }
-        var numFrames = Cell.numFrames(cell);
+        var numFrames = Cell.numFrames(subCell);
         grid.numFrames += numFrames;
         currentFrame -= numFrames;
     }
