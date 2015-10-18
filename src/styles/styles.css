@@ -44,6 +44,7 @@ body {
 }
 
 .cell .result {
+  position: relative;
   box-sizing: content-box;
   width: 160px;
   height: 100px;
@@ -62,6 +63,14 @@ body {
   margin-top: -1px;
   margin-left: -1px;
   border-width: 5px;
+}
+
+.cell .result-text {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 19px;
+  color: #4A3579;
 }
 
 .area {

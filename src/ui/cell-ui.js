@@ -51,7 +51,7 @@ CellUi.draw = function (info) {
             d3.event.stopPropagation();
         }) ;
 
-    cellEnterEls.append('div')
+    var resultEnterEls = cellEnterEls.append('div')
         .attr('class', 'result')
         .on('mousemove', function (d) {
             Do.showFrame(d, d3.mouse(this)[0]);
@@ -61,6 +61,9 @@ CellUi.draw = function (info) {
                 Do.showFrame(d, 0);
             }
         }) ;
+
+    resultEnterEls.append('div')
+        .attr('class', 'result-text') ;
 
     cellEls.exit().remove();
 
@@ -93,7 +96,7 @@ CellUi.draw = function (info) {
     cellEls.select('.text')
         .text(function (d) { return d.cell.text }) ;
 
-    cellEls.select('.result')
+    cellEls.select('.result-text')
         .text(function (d) {
             var result = d.cell.result;
             if (result.error) {
@@ -104,6 +107,8 @@ CellUi.draw = function (info) {
                 return '';
             }
         })
+
+    cellEls
         .each(function (d) {
             if (d.cell.result.type === Result.quads) {
                 var c = d.c - info.leftC;
