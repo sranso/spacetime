@@ -50,6 +50,7 @@ Selection.toggleSuperStep = function () {
         _.each(Global.active, function (stretch) {
             var superStep = SuperStep.findFromSteps(stretch.steps);
             if (superStep) {
+                Autocomplete.unregisterStep(superStep);
                 Stretch.setSteps(superStep, []);
             }
         });

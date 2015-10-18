@@ -83,6 +83,10 @@ Autocomplete.registerStep = function (step) {
     stepBank.push(step);
 };
 
+Autocomplete.unregisterStep = function (step) {
+    stepBank = _.without(stepBank, step);
+};
+
 Autocomplete.searchInfo = function (step) {
     var ignoreAutocompleteChars = '()+-*/%';
     if (_.intersection(step.text, ignoreAutocompleteChars).length) {

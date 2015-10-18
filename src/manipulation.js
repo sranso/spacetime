@@ -363,6 +363,8 @@ Manipulation.deleteStretch = function (stretch, manual) {
     _.each(removeStretches, function (stretch) {
         if (Stretch.isGroupStretch(stretch)) {
             stretch.group.stretches = _.without(stretch.group.stretches, stretch);
+        } else {
+            Autocomplete.unregisterStep(stretch);
         }
         if (stretch.series) {
             stretch.series.stretches = _.without(stretch.series.stretches, stretch);
