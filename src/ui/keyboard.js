@@ -14,6 +14,8 @@ Keyboard.inputEvent = function (key, eventType) {
     } else if (key === 'tab' && eventType === 'down') {
         d3.event.preventDefault();
         Keyboard.keypressEvent(null, 'tab');
+    } else if (key === 'backspace' && eventType === 'down') {
+        d3.event.preventDefault();
     }
 };
 
