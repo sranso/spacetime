@@ -105,11 +105,21 @@ body {
   width: 36px;
   height: 14px;
   border-radius: 10px;
-  border: solid 1px #777;
+  border: solid 1px #666;
   cursor: pointer;
+  background-color: white;
+  opacity: 0.9;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 .level.expand-top {
-  border-color: #ccc;
+  border-color: #999;
+  color: #777;
+  text-align: center;
+  font-size: 11px;
+  line-height: 0.9;
+  opacity: 0.5;
 }
 .level.current {
   background-color: red;

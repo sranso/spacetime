@@ -36,6 +36,12 @@ LevelUi.draw = function () {
             }
 
             return classes.join(' ');
+        })
+        .text(function (d) {
+            if (d.i === -1) {
+                return '+';
+            }
+            return '';
         }) ;
 };
 
