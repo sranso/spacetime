@@ -7,7 +7,7 @@ Execute.transform = function () {
     __stats.transform_numCells = 0;
 
     var level = Project.currentLevel($Project);
-    var cell = level.cell;
+    var currentCell = level.cell;
     if (Global.forceCaptureInput || Global.framesToAdvance > 0) {
         Global.capturedInput = Input.clone(Global.currentInput);
         while (true) {
@@ -15,10 +15,10 @@ Execute.transform = function () {
             if (Global.framesToAdvance > 0) {
                 $Project.currentFrame++;
             }
-            Execute.transformCell(cell, $Project.currentFrame, level.grid, level.c, level.r);
+            Execute.transformCell(currentCell, $Project.currentFrame, level.grid, level.c, level.r);
             if (Global.framesToAdvance > 0) {
                 Global.framesToAdvance--;
-                var numFrames = Cell.numFrames(cell);
+                var numFrames = Cell.numFrames(currentCell);
                 if ($Project.currentFrame >= numFrames - 1) {
                     Global.play = false;
                     break;
@@ -45,6 +45,11 @@ Execute.transform = function () {
         level.cell = cell;
         level.grid = grid;
         grid = cell.grid;
+    }
+
+    var numFrames = Cell.numFrames(currentCell);
+    if ($Project.currentFrame >= numFrames) {
+        $Project.currentFrame = numFrames - 1;
     }
 
     __stats.transform_time = performance.now() - __stats.transform_time;

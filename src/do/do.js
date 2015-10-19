@@ -140,11 +140,25 @@ Do.deleteCell = function (d, deleteColumn) {
 };
 
 Do.showFrame = function (d, x) {
-    x = Math.max(0, Math.min(159, x));
-    var numFrames = Cell.numFrames(d.cell);
-    var fetchFrame = Math.floor(numFrames * x / 160);
     var grid = Project.currentGrid($Project);
-    Execute.executeColumn(grid, d.c, fetchFrame);
+    Execute.executeColumn(grid, d.c, frameForCell(d.cell, x));
+    Ui.draw();
+};
+
+var frameForCell = function (cell, x) {
+    x = Math.max(0, Math.min(x, 159));
+    var numFrames = Cell.numFrames(cell);
+    return Math.floor(numFrames * x / 160);
+};
+
+Do.changeCurrentFrame = function (x) {
+    var grid = Project.currentGrid($Project);
+    var c = Math.floor((x + 10) / 190);
+    c = Math.max(0, Math.min(c, grid.cells.length - 1));
+    var ffc = Grid.frameForColumn(grid, c);
+    var xOverCell = x - c * 190 - 4;
+    var frame = frameForCell(ffc.cell, x) + ffc.startFrame;
+    $Project.currentFrame = frame;
     Ui.draw();
 };
 
@@ -167,7 +181,13 @@ Do.playPause = function () {
     if (Global.play) {
         Global.play = false;
     } else {
-        $Project.currentFrame = -1;
+        var cell = Project.currentCell($Project);
+        var numFrames = Cell.numFrames(cell);
+        if ($Project.currentFrame >= numFrames - 1) {
+            $Project.currentFrame = -1;
+        } else {
+            $Project.currentFrame -= 1;
+        }
         Global.lastTickTime = 0;
         Global.play = true;
         Global.lastTickTime = performance.now();
@@ -194,6 +214,8 @@ Do.maybeRedrawAfterScroll = function (scrollTop, scrollLeft) {
     ) {
         Global.boxInSight = box;
         Ui.draw();
+    } else {
+        GridUi.resizeAfterScroll();
     }
 };
 

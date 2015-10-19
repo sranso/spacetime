@@ -6,6 +6,7 @@ var Global = {};
 Global.currentInput = Input.create();
 Global.capturedInput = Global.currentInput;
 Global.play = false;
+Global.wasPlaying = false;
 Global.forceCaptureInput = false;
 Global.timePerFrame = 200; // (1000 / 60) for 60fps;
 Global.tickTimeAccrued = 0;
@@ -21,6 +22,8 @@ Global.boxInSight = null;
 Global.lastScrollTop = 0;
 Global.lastScrollLeft = 0;
 Global.drawTick = 0;
+
+Global.mouseDownOnPlayBar = false;
 
 var __stats = {
     transform_numCells: 0,

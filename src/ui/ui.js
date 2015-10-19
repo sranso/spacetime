@@ -5,6 +5,7 @@ var Ui = {};
 Ui.setup = function () {
     Keyboard.setup();
     Webgl.setup();
+    PlayUi.setup();
     drawOverallSetup();
 };
 
@@ -21,6 +22,7 @@ Ui.draw = function () {
         Webgl.clear();
         CellUi.draw(info);
         AreaUi.draw(info);
+        PlayUi.draw(info);
         LevelUi.draw();
     }
     __stats.draw_time = performance.now() - __stats.draw_time;
@@ -41,6 +43,7 @@ var drawOverallSetup = function () {
         })
         .on('mouseup', function () {
             Global.currentInput.mouseDown = false;
+            Global.mouseDownOnPlayBar = false;
         })
         .on('mousemove', function () {
             Global.currentInput.mouseX = d3.event.clientX;

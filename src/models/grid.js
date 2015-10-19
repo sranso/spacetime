@@ -96,4 +96,44 @@ Grid.deleteColumnsAfter = function (grid, c) {
     });
 };
 
+Grid.columnForFrame = function (grid, frame) {
+    var r = grid.cells[0].length - 1;
+
+    var cell, numFrames;
+    for (var c = 0; c < grid.cells.length; c++) {
+        cell = grid.cells[c][r];
+        numFrames = Cell.numFrames(cell);
+        if (numFrames > frame) {
+            break;
+        }
+        frame -= numFrames;
+    }
+
+    return {
+        c: c,
+        cell: cell,
+        frame: frame,
+        numFrames: numFrames,
+        frameFraction: frame / numFrames,
+    };
+};
+
+Grid.frameForColumn = function (grid, column) {
+    var r = grid.cells[0].length - 1;
+
+    var cell;
+    var frame = 0;
+    for (var c = 0; c <= column; c++) {
+        cell = grid.cells[c][r];
+        if (c < column) {
+            frame += Cell.numFrames(cell);
+        }
+    }
+
+    return {
+        cell: cell,
+        startFrame: frame,
+    };
+};
+
 })();

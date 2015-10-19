@@ -3,6 +3,7 @@ var Main = {};
 (function () {
 
 Main.update = function () {
+    Global.wasPlaying = Global.play;
     Execute.transform();
     if (Global.fullScreen) {
         var level = Project.currentLevel($Project);
@@ -11,6 +12,7 @@ Main.update = function () {
         Execute.executeGrid(Project.currentGrid($Project));
     }
     Ui.draw();
+    Global.wasPlaying = false;
     logStats();
 };
 

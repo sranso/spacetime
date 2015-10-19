@@ -4,6 +4,8 @@ var GridUi = {};
 
 GridUi.drawTick = 0;
 
+var lastDrawInfo;
+
 GridUi.drawInfo = function () {
     var grid = Project.currentGrid($Project);
 
@@ -47,7 +49,7 @@ GridUi.drawInfo = function () {
         }
     });
 
-    return {
+    lastDrawInfo = {
         grid: grid,
         cells: cells,
         areas: areas,
@@ -56,12 +58,16 @@ GridUi.drawInfo = function () {
         topR: topR,
         bottomR: bottomR,
     };
+    return lastDrawInfo;
 };
 
 GridUi.startDraw = function (info) {
+    var minWidth = info.grid.cells.length * 190 + window.innerWidth / 2;
+    var minHeight = info.grid.cells[0].length * 140 + window.innerHeight / 2;
+
     d3.select(document.body)
-        .style('min-width', (info.grid.cells.length * 190 + 50 + 300) + 'px')
-        .style('min-height', (info.grid.cells[0].length * 140 + 50 + 300) + 'px') ;
+        .style('min-width', minWidth + 'px')
+        .style('min-height', minHeight + 'px') ;
 
     d3.select('#canvas')
         .style('left', (info.leftC * 190 + 50) + 'px')
@@ -74,6 +80,28 @@ GridUi.startDraw = function (info) {
 
     d3.select('#full-screen-text')
         .text('') ;
+
+    GridUi.resizeAfterScroll();
+};
+
+GridUi.resizeAfterScroll = function () {
+    var info = lastDrawInfo;
+
+    var gridHeight = info.grid.cells[0].length * 140;
+    var exposed = gridHeight - document.body.scrollTop;
+    var emptySpace = window.innerHeight - exposed;
+    var height = Math.max(emptySpace - 200, 100);
+
+    d3.select('#grid-bottom-container')
+        .style('height', height + 'px') ;
+
+    var marginLeft = 50 - document.body.scrollLeft;
+
+    var width = info.grid.cells.length * 190 - 20;
+
+    d3.select('#grid-bottom')
+        .style('margin-left', marginLeft + 'px')
+        .style('width', width + 'px')
 };
 
 })();
