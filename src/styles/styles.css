@@ -16,15 +16,12 @@ body {
   position: relative;
 }
 
-#grid-container {
-  padding: 50px;
-}
-
 #grid {
   position: relative;
 }
 
 #cells {
+  position: relative;
 }
 
 .cell {
@@ -94,17 +91,20 @@ body {
 }
 
 #grid-bottom-container {
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  width: 100%;
-  background-color: white;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   border: solid 1px #ddd;
   border-width: 1px 0 0 0;
+  background-color: white;
 }
 
 #grid-bottom {
-  margin-top: 5px;
+  position: relative;
+  top: 5px;
+  left: 50px;
+  height: 90px;
 }
 
 #play {

@@ -23,10 +23,10 @@ CellUi.draw = function (info) {
             d3.event.preventDefault();
         })
         .style('top', function (d) {
-            return (d.r * 140) + 'px';
+            return (d.r * 140 + 50) + 'px';
         })
         .style('left', function (d) {
-            return (d.c * 190) + 'px';
+            return (d.c * 190 + 50) + 'px';
         }) ;
 
     cellEnterEls.append('div')

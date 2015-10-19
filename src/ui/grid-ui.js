@@ -62,21 +62,20 @@ GridUi.drawInfo = function () {
 };
 
 GridUi.startDraw = function (info) {
-    var minWidth = info.grid.cells.length * 190 + window.innerWidth / 2;
-    var minHeight = info.grid.cells[0].length * 140 + window.innerHeight / 2;
-
-    d3.select(document.body)
-        .style('min-width', minWidth + 'px')
-        .style('min-height', minHeight + 'px') ;
-
     d3.select('#canvas')
         .style('left', (info.leftC * 190 + 50) + 'px')
         .style('width', ((info.rightC - info.leftC + 1) * 190) + 'px')
         .style('top', (info.topR * 140 + 50) + 'px')
         .style('height', ((info.bottomR - info.topR + 1) * 140) + 'px') ;
 
+    var width = info.grid.cells.length * 190 + window.innerWidth;
+    var height = info.grid.cells[0].length * 140 + window.innerHeight;
+
     d3.select('#grid')
+        .style('width', width + 'px')
+        .style('height', height + 'px')
         .style('display', 'block') ;
+
 
     d3.select('#full-screen-text')
         .text('') ;
@@ -87,21 +86,34 @@ GridUi.startDraw = function (info) {
 GridUi.resizeAfterScroll = function () {
     var info = lastDrawInfo;
 
-    var gridHeight = info.grid.cells[0].length * 140;
-    var exposed = gridHeight - document.body.scrollTop;
-    var emptySpace = window.innerHeight - exposed;
-    var height = Math.max(emptySpace - 200, 100);
+    var minHeight = info.grid.cells[0].length * 140 + window.innerHeight;
 
-    d3.select('#grid-bottom-container')
-        .style('height', height + 'px') ;
+    var cellsHeight = info.grid.cells[0].length * 140;
+    var gridHeight = cellsHeight + window.innerHeight;
+    var top = cellsHeight + 160;
 
-    var marginLeft = 50 - document.body.scrollLeft;
+    var topInScreen = top - document.body.scrollTop;
+
+    if (topInScreen > window.innerHeight - 105) {
+        d3.select('#grid-bottom-container')
+            .style('position', 'fixed')
+            .style('top', null) ;
+
+        d3.select('#grid-bottom')
+            .style('margin-left', -document.body.scrollLeft + 'px') ;
+    } else {
+        d3.select('#grid-bottom-container')
+            .style('position', 'absolute')
+            .style('top', top + 'px') ;
+
+        d3.select('#grid-bottom')
+            .style('margin-left', null) ;
+    }
 
     var width = info.grid.cells.length * 190 - 20;
 
     d3.select('#grid-bottom')
-        .style('margin-left', marginLeft + 'px')
-        .style('width', width + 'px')
+        .style('width', width + 'px') ;
 };
 
 })();
