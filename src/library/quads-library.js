@@ -6,8 +6,8 @@ var inverseMatrix = mat2d.create();
 
 ///////////// pixel
 
-var pixel = Operation.create('pixel', function (cell, a) {
-    var original = a.result.type === Result.quads ? a.result.value : Quads.create();
+var pixel = Operation.create('pixel', function (cell) {
+    var original = Quads.create();
     var quads = Quads.cloneWithLength(original, original.coords.length + Quads.numQuadCoordinates);
     var targetCoords = quads.coords.subarray(-Quads.numQuadCoordinates);
     mat2d.invert(inverseMatrix, quads.matrix)
@@ -131,8 +131,8 @@ var combine = Operation.create('combine', function (cell, a, b) {
 QuadsLibrary.pixel = (function () {
     var cell = Cell.create();
     cell.text = 'pixel';
-    cell.args = Cell.autoArgs[2];
-    cell.transformation = Transformation.linear(pixel);
+    cell.args = Cell.autoArgs[0];
+    cell.transformation = Transformation.immediate(pixel);
 
     return cell;
 })();
