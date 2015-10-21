@@ -180,6 +180,9 @@ Do.toggleFullScreen = function () {
 Do.playPause = function () {
     if (Global.play) {
         Global.play = false;
+        Global.wasPlaying = true;
+        Ui.draw();
+        Global.wasPlaying = false;
     } else {
         var cell = Project.currentCell($Project);
         var numFrames = Cell.numFrames(cell);

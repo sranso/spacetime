@@ -15,6 +15,9 @@ PlayUi.setup = function () {
                 Do.changeCurrentFrame(x);
             }
         })
+
+    d3.select('#play-marker')
+        .style('height', '20px') ;
 };
 
 PlayUi.draw = function (info) {
@@ -27,9 +30,10 @@ PlayUi.draw = function (info) {
     if (Global.wasPlaying) {
         playMarker
             .style('height', window.innerHeight + 'px')
-            .transition() ;
+            .transition();
     }
-    if (!Global.play) {
+
+    if (Global.wasPlaying && !Global.play) {
         playMarker.transition()
             .delay(Global.timePerFrame)
             .duration(Global.play ? 0 : 250)
