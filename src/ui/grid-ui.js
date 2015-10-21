@@ -90,7 +90,7 @@ GridUi.resizeAfterScroll = function () {
 
     var cellsHeight = info.grid.cells[0].length * 140;
     var gridHeight = cellsHeight + window.innerHeight;
-    var top = cellsHeight + 160;
+    var top = cellsHeight + 200;
 
     var topInScreen = top - document.body.scrollTop;
 
