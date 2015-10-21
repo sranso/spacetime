@@ -108,7 +108,7 @@ CellUi.draw = function (info) {
             }
         })
 
-    cellEls
+    cellEls.select('.result')
         .each(function (d) {
             if (d.cell.result.type === Result.quads) {
                 var c = d.c - info.leftC;
