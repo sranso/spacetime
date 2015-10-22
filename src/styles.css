@@ -3,6 +3,7 @@ body {
   margin: 0;
   font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
   background-color: #d6e9f0; /* change below and in style-steps.css */
+  min-width: 1264px;
 }
 
 a {
@@ -87,8 +88,7 @@ h1 {
 
 #right-side {
   width: 682px;
-  position: fixed;
-  right: 0;
+  float: left;
 }
 
 #canvas {
