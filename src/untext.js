@@ -151,6 +151,6 @@ allSteps = _.map([
 linkSteps(allSteps);
 allStepsLinkedList.next = allSteps[0];
 
-dvorak();
+setupInput();
 drawSetup();
 update();
