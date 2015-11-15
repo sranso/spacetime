@@ -83,6 +83,6 @@ linkSteps(allSteps);
 allStepsHead.next = allSteps[0];
 allStepsTail.previous = allSteps[0];
 
-dvorak();
+setupInput();
 drawSetup();
 update();
