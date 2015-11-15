@@ -75,7 +75,7 @@ Global.environment = [
     StepView.create(Global.mouseY),
 ];
 
-Input.dvorak();
+Input.setup();
 Draw.setup();
 Main.update();
 
