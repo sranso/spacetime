@@ -76,3 +76,11 @@ var dvorak = function () {
 var qwerty = function () {
     keypressMap = qwertyKeypressMap;
 };
+
+var setupInput = function () {
+    if (localStorage.getItem('spacetime_keyboard_mode') === 'dvorak') {
+        keypressMap = dvorakKeypressMap;
+    } else {
+        keypressMap = qwertyKeypressMap;
+    }
+};
