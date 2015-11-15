@@ -163,17 +163,17 @@ var dvorakKeypressMap = {
 var keypressMap;
 
 Input.dvorak = function () {
-    localStorage.setItem('grid_keyboard_mode', 'dvorak');
+    localStorage.setItem('spacetime_keyboard_mode', 'dvorak');
     Input.setup();
 };
 
 Input.qwerty = function () {
-    localStorage.setItem('grid_keyboard_mode', 'qwerty');
+    localStorage.setItem('spacetime_keyboard_mode', 'qwerty');
     Input.setup();
 };
 
 Input.setup = function () {
-    if (localStorage.getItem('grid_keyboard_mode') === 'dvorak') {
+    if (localStorage.getItem('spacetime_keyboard_mode') === 'dvorak') {
         keypressMap = dvorakKeypressMap;
     } else {
         keypressMap = qwertyKeypressMap;
