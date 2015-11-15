@@ -61,7 +61,7 @@ Global.active = Group.create();
 Global.active.hidden = true;
 Global.selection = new Selection();
 
-Input.dvorak();
+Input.setup();
 Draw.setup();
 Main.update();
 

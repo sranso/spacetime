@@ -135,4 +135,12 @@ Input.qwerty = function () {
     keypressMap = qwertyKeypressMap;
 };
 
+Input.setup = function () {
+    if (localStorage.getItem('spacetime_keyboard_mode') === 'dvorak') {
+        keypressMap = dvorakKeypressMap;
+    } else {
+        keypressMap = qwertyKeypressMap;
+    }
+};
+
 })();
