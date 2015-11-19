@@ -1,0 +1,9 @@
+{
+    "name": "makespacetime.com",
+    "version": "0.0.0",
+    "private": true,
+    "dependencies": {
+        "clean-css": "3.4.8",
+        "uglify-js": "2.6.1"
+    }
+}
