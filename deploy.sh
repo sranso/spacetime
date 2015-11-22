@@ -16,11 +16,14 @@ cd workspace
 cd spacetime
 git fetch --tags
 git checkout "$tag"
+if git symbolic-ref HEAD 1>/dev/null 2>&1; then
+    git pull
+fi
 cd ..
 ../build.js
 cd ..
 
-branch=$(echo "$tag" | cut -d '.' -f 1)
+branch=$(echo "$tag" | sed 's/[^a-z0-9].*//')
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/:/_/g')
 release="$timestamp--$tag"
 
