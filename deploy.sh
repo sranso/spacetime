@@ -31,4 +31,4 @@ mkdir -p "releases/all/$branch"
 cp -R workspace/dist "releases/all/$branch/$release"
 
 cd releases/current
-ln -sf "../all/$branch/$release" "$branch"
+ln -sfT "../all/$branch/$release" "$branch"
