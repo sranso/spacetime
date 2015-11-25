@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Spacetime Editor</title>
+  <link rel="stylesheet" type="text/css" href="./src/styles/styles.css">
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div id="full-screen-text"></div>
+<div id="grid">
+  <div id="cells"></div>
+  <div id="areas"></div>
+  <div id="levels"></div>
+  <div id="grid-bottom-container">
+    <div id="grid-bottom">
+      <div id="play">
+        <div id="play-bar"></div>
+        <div id="play-marker"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+uniform mat3 u_matrix;
+void main() {
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+uniform vec4 u_color;
+void main() {
+  gl_FragColor = u_color;
+}
+</script>
+
+<script src="./vendor/underscore.js"></script>
+<script src="./vendor/d3.js"></script>
+<script src="./vendor/gl-matrix.js"></script>
+
+<script src="./src/underscore-exports.js"></script>
+
+<script src="./src/models/result.js"></script>
+<script src="./src/models/input.js"></script>
+<script src="./src/models/quads.js"></script>
+<script src="./src/models/operation.js"></script>
+<script src="./src/models/transformation.js"></script>
+<script src="./src/models/group.js"></script>
+<script src="./src/models/area.js"></script>
+<script src="./src/models/grid.js"></script>
+<script src="./src/models/cell.js"></script>
+<script src="./src/models/project.js"></script>
+
+<script src="./src/library/math-library.js"></script>
+<script src="./src/library/quads-library.js"></script>
+<script src="./src/library/library.js"></script>
+
+<script src="./src/autocomplete.js"></script>
+<script src="./src/execute.js"></script>
+<script src="./src/global.js"></script>
+
+<script src="./src/do/do.js"></script>
+
+<script src="./src/ui/keyboard.js"></script>
+<script src="./src/ui/webgl.js"></script>
+<script src="./src/ui/cell-ui.js"></script>
+<script src="./src/ui/area-ui.js"></script>
+<script src="./src/ui/play-ui.js"></script>
+<script src="./src/ui/level-ui.js"></script>
+<script src="./src/ui/grid-ui.js"></script>
+<script src="./src/ui/full-screen.js"></script>
+<script src="./src/ui/ui.js"></script>
+
+<script src="./src/main.js"></script>
+
+</body>
+</html>
