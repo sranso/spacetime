@@ -73,13 +73,31 @@ var buildVendor = function (vendor, callback) {
     });
 };
 
+// See uglify-save-license (https://github.com/shinnn/uglify-save-license)
+var keepLicense = function (state, node, comment) {
+    if (comment.file !== state.previousFile) {
+        state.previousLine = 0;
+    }
+    state.previousFile = comment.file;
+
+    if (comment.line === state.previousLine + 1) {
+        state.previousLine = comment.line;
+        return true;
+    }
+};
+
 var minifyScripts = function (scripts, callback) {
     var key = scripts.join(';');
     var sha = minifiedScriptShas[key];
     if (sha) {
         return callback(null, {text: null, sha: sha});
     }
-    var text = UglifyJS.minify(scripts).code;
+    var options = {
+        output: {
+            comments: async.apply(keepLicense, {}),
+        }
+    };
+    var text = UglifyJS.minify(scripts, options).code;
     sha = crypto.createHash('sha1').update(text).digest('hex');
     minifiedScriptShas[key] = sha;
     callback(null, {text: text, sha: sha});
