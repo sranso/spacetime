@@ -17,7 +17,7 @@ cd spacetime
 git fetch --tags
 git checkout "$tag"
 if git symbolic-ref HEAD 1>/dev/null 2>&1; then
-    git pull
+    git checkout "origin/$tag"
 fi
 cd ..
 ../build.js
