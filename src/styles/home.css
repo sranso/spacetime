@@ -11,7 +11,15 @@ html {
 body {
   padding: 30px;
   margin: 0;
-  font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+  font: 20px Georgia, Cambria, "Times New Roman", Times, serif;
+  color: #444;
   background-color: white;
   position: relative;
+}
+
+#main {
+  margin: 0 auto;
+  max-width: 700px;
+  line-height: 170%;
+  margin-bottom: 70px;
 }
