@@ -28,7 +28,7 @@ timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/:/_/g')
 release="$timestamp--$tag"
 
 mkdir -p "releases/all/$branch"
-cp -R workspace/dist "releases/all/$branch/$release"
+mv workspace/dist "releases/all/$branch/$release"
 
 cd releases/current
 ln -sfT "../all/$branch/$release" "$branch"

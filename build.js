@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs');
+var path = require('path');
 var crypto = require('crypto');
 
 var async = require('async');
@@ -8,54 +9,17 @@ var cheerio = require('cheerio');
 var CleanCSS = require('clean-css');
 var UglifyJS = require('uglify-js');
 
-var main = function () {
-    async.series([
-        cleanDist,
-        buildAll,
-    ], function (err, results) {
-        if (err) throw err;
-    });
-};
-
-var cleanDist = function (distCallback) {
-    async.parallel([
-        function (callback) {
-            fs.readdir('dist/vendor', function (err, files) {
-                if (err) return callback(err);
-                files = files.map(function (file) {
-                    return 'dist/vendor/' + file;
-                });
-                async.eachLimit(files, 8, fs.unlink, callback);
-            });
-        },
-        function (callback) {
-            fs.readdir('dist', function (err, files) {
-                if (err) return callback(err);
-                files.splice(files.indexOf('vendor'), 1);
-                files = files.map(function (file) {
-                    return 'dist/' + file;
-                });
-                async.eachLimit(files, 8, fs.unlink, callback);
-            });
-        },
-    ], distCallback);
-};
-
 var buildAll = function (buildCallback) {
-    process.chdir('spacetime');
-
-    async.waterfall([
-        async.apply(fs.readdir, 'vendor'),
-        function (vendorFiles, callback) {
-            async.eachLimit(vendorFiles, 8, buildVendor, callback);
-        },
-        async.apply(fs.readdir, '.'),
-        function (files, callback) {
-            var htmlFiles = files.filter(function (file) {
-                return file.indexOf('html', file.length - 4) !== -1;
+    async.series([
+        async.apply(fs.mkdir, 'dist'),
+        async.apply(fs.mkdir, 'dist/vendor'),
+        function (callback) {
+            fs.readdir('spacetime/vendor', function (err, vendorFiles) {
+                if (err) return callback(err);
+                async.eachLimit(vendorFiles, 8, buildVendor, callback);
             });
-            async.eachLimit(htmlFiles, 3, buildHtmlFile, callback);
-        }
+        },
+        buildAllHtml
     ], buildCallback);
 };
 
@@ -64,12 +28,12 @@ var minifiedScriptShas = {};
 var minifiedVendors = {};
 
 var buildVendor = function (vendor, callback) {
-    minifyScripts(['vendor/' + vendor], function (err, result) {
+    minifyScripts(['spacetime/vendor/' + vendor], function (err, result) {
         if (err) return callback(err);
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
         minifiedVendors['./vendor/' + vendor] = name;
-        fs.writeFile('../dist/' + name, result.text, 'utf8', callback);
+        fs.writeFile('dist/' + name, result.text, 'utf8', callback);
     });
 };
 
@@ -109,20 +73,82 @@ var minifyStyles = function (styles, callback) {
     if (sha) {
         return callback(null, {text: null, sha: sha});
     }
-    var text = new CleanCSS().minify(styles).styles;
+    var minified = new CleanCSS().minify(styles);
+    if (minified.errors.length) {
+        return callback(new Error(minified.errors.join('; ')));
+    }
+
+    var text = minified.styles;
     sha = crypto.createHash('sha1').update(text).digest('hex');
     minifiedStyleShas[key] = sha;
     callback(null, {text: text, sha: sha});
 };
 
-var buildHtmlFile = function (file, htmlCallback) {
+var ignoreDirectories = ['spacetime/.git', 'spacetime/src', 'spacetime/vendor'];
+
+var buildAllHtml = function (buildCallback) {
+    findAllHtml('spacetime', [], function (err, htmlFiles) {
+        if (err) throw err;
+        async.eachLimit(htmlFiles, 3, buildHtmlFile, buildCallback);
+    });
+};
+
+// http://stackoverflow.com/questions/5827612/node-js-fs-readdir-recursive-directory-search
+var findAllHtml = function (dir, htmlFiles, findCallback) {
+    fs.readdir(dir, function (err, files) {
+        if (err) return findCallback(err);
+        files = files.map(function (file) {
+            return path.join(dir, file);
+        });
+        var newHtmlFiles = files.filter(function (file) {
+            return file.indexOf('.html', file.length - 5) !== -1;
+        });
+        htmlFiles.push.apply(htmlFiles, newHtmlFiles);
+        var possibleDirectories = files.filter(function (file) {
+            return (
+                newHtmlFiles.indexOf(file) === -1 &&
+                ignoreDirectories.indexOf(file) === -1
+            );
+        });
+        async.eachLimit(possibleDirectories, 4, function (file, callback) {
+            fs.lstat(file, function (err, stat) {
+                if (err) return callback(err);
+                if (stat.isDirectory()) {
+                    findAllHtml(file, htmlFiles, callback);
+                } else {
+                    callback(null);
+                }
+            });
+        }, function (err) {
+            if (err) return findCallback(err);
+            findCallback(null, htmlFiles);
+        });
+    });
+};
+
+var buildHtmlFile = function (htmlFile, htmlCallback) {
     async.waterfall([
-        async.apply(fs.readFile, file, 'utf8'),
-        async.apply(buildHtml, file),
+        async.apply(maybeMakeHtmlDir, htmlFile),
+        async.apply(fs.readFile, htmlFile, 'utf8'),
+        async.apply(buildHtml, htmlFile),
     ], htmlCallback);
 };
 
+var htmlDirs = {'spacetime': true};
+
+var maybeMakeHtmlDir = function (htmlFile, callback) {
+    var dir = path.dirname(htmlFile);
+    if (htmlDirs[dir]) return callback(null);
+
+    maybeMakeHtmlDir(dir, function (err) {
+        if (err) return callback(err);
+        htmlDirs[dir] = true;
+        fs.mkdir('dist/' + path.relative('spacetime', dir), callback);
+    });
+};
+
 var buildHtml = function (htmlFile, html, htmlCallback) {
+    var dir = path.dirname(htmlFile);
     var $ = cheerio.load(html);
 
     var styles = [];
@@ -130,7 +156,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
         var href = $(this).attr('href');
         var type = $(this).attr('type');
         if (href && type === 'text/css') {
-            styles.push(href);
+            styles.push(path.join(dir, href));
         }
     });
 
@@ -138,7 +164,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
     $('script').each(function () {
         var src = $(this).attr('src');
         if (src && src.indexOf('./vendor/') === -1) {
-            scripts.push(src);
+            scripts.push(path.join(dir, src));
         }
     });
 
@@ -162,7 +188,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
             $('link').each(function () {
                 if ($(this).attr('type') === 'text/css') {
                     if (first) {
-                        $(this).attr('href', './' + name);
+                        $(this).attr('href', '/' + name);
                         first = false;
                     } else {
                         $(this).remove();
@@ -183,9 +209,9 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                     return;
                 }
                 if (src.indexOf('./vendor/') === 0) {
-                    $(this).attr('src', './' + minifiedVendors[src]);
+                    $(this).attr('src', '/' + minifiedVendors[src]);
                 } else if (first) {
-                    $(this).attr('src', './' + name);
+                    $(this).attr('src', '/' + name);
                     first = false;
                 } else {
                     $(this).remove();
@@ -198,12 +224,14 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
 
         saveFiles.push({
             text: $.html(),
-            name: htmlFile,
+            name: path.relative('spacetime', htmlFile),
         });
         async.each(saveFiles, function (file, callback) {
-            fs.writeFile('../dist/' + file.name, file.text, 'utf8', callback);
+            fs.writeFile('dist/' + file.name, file.text, 'utf8', callback);
         }, htmlCallback);
     });
 };
 
-main();
+buildAll(function (err) {
+    if (err) throw err;
+});
