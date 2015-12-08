@@ -9,6 +9,13 @@ if [ -z "$tag" ]; then
     exit 1
 fi
 
+if [ "$tag" = root ]; then
+    tag=$2
+    root=true
+else
+    root=false
+fi
+
 ./init.sh
 
 cd workspace
@@ -32,3 +39,7 @@ mv workspace/dist "releases/all/$branch/$release"
 
 cd releases/current
 ln -sfT "../all/$branch/$release" "$branch"
+
+if [ $root = true ]; then
+    ln -sfT "../all/$branch/$release" root
+fi
