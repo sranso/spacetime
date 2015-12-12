@@ -13,6 +13,12 @@ $ cd spacetime
 $ open new.html
 ```
 
+## Development
+
+Spacetime is extremely early stage software. It's currently in the "research" phase, which means that the goal is to explore ideas rather than make a polished product. Essential functionality will be missing, and I may throw all the code away and start over (as I've done twice already).
+
+If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/makespacetime) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you're interested in contributing, let me know there.
+
 ## Copyright and License
 
 Copyright (C) 2015  Jacob Sandlund
