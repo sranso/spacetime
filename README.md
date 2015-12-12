@@ -27,4 +27,4 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
-The license is available at LICENSE.txt in this directory.
+The license is available at [LICENSE.txt](https://github.com/makespacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/makespacetime/spacetime/tree/master/LICENSES).
