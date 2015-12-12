@@ -1,8 +1,17 @@
 # Spacetime
 
-<https://makespacetime.com>
+Spacetime is a programming environment for 2D graphics with a different approach to time. Programs are a two dimensional grid of cells with time as the x dimension. See [makespacetime.com](https://makespacetime.com) for an introduction.
 
-Programming editor and environment.
+## Try it out
+
+* On the web: Go to [makespacetime.com/new](https://makespacetime.com/new) to try Spacetime. The usage is on the [home page](https://makespacetime.com) (demo and text).
+* Locally:
+
+``` bash
+$ git clone https://github.com/makespacetime/spacetime.git
+$ cd spacetime
+$ open new.html
+```
 
 ## Copyright and License
 
