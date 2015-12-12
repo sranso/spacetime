@@ -21,7 +21,7 @@ If you are interested in Spacetime, there's a [Google group](https://groups.goog
 
 ## Copyright and License
 
-Copyright (C) 2015  Jacob Sandlund
+Copyright &copy; 2015  Jacob Sandlund
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
