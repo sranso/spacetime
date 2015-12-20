@@ -217,13 +217,13 @@ var largeBuffer = stringToBuffer(largeTest);
 var rusha = new Rusha();
 //var shasum;
 
-//var abc = 'abc';
-//var abcBuffer = stringToBuffer(abc);
-//console.log(Sha1.hash(abcBuffer));
-//
-//var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
-//var blahBuffer = stringToBuffer(blah);
-//console.log(Sha1.hash(blahBuffer));
+var abc = 'abc';
+var abcBuffer = stringToBuffer(abc);
+console.log(Sha1.hash(abcBuffer));
+
+var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
+var blahBuffer = stringToBuffer(blah);
+console.log(Sha1.hash(blahBuffer));
 
 //console.log(Sha1.hash(stringToBuffer(process.argv[2])));
 
@@ -265,6 +265,9 @@ if (Sha1.hash(largeBuffer) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 // Sha1.hash unoptimized
 // small: 3218.391ms  / 100000      = 32.2 us   112  us/kB
 // large: 5926.128ms  /  10000      = 593 us    97.2 us/kB
+
+// small: 758.706ms   / 100000      = 7.59 us   26.3 us/kB
+// large: 945.151ms   /  10000      = 94.5 us   15.5 us/kB
 
 console.time('small');
 for (var i = 0; i < 100000; i++) {
