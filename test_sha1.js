@@ -1,14 +1,14 @@
 var Veness = require('./veness');
 var Rusha = require('./rusha');
 var crypto = require('crypto');
+var Sha1 = require('./sha1');
 
 var stringToBuffer = function (string) {
-    var buffer = new ArrayBuffer(string.length);
-    var view = new Uint8Array(buffer);
+    var view = new Uint8Array(string.length);
     for (var i = 0; i < string.length; i++) {
         view[i] = string.charCodeAt(i);
     }
-    return buffer;
+    return view;
 }
 
 // contents of git tree
@@ -214,18 +214,25 @@ var largeTest =
 var smallBuffer = stringToBuffer(smallTest);
 var largeBuffer = stringToBuffer(largeTest);
 
-//var rusha = new Rusha();
+var rusha = new Rusha();
 //var shasum;
 
-console.log(Veness.hash(smallTest));
-console.log(Veness.hash(largeTest));
+//var abc = 'abc';
+//var abcBuffer = stringToBuffer(abc);
+//console.log(Sha1.hash(abcBuffer));
+//
+//var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
+//var blahBuffer = stringToBuffer(blah);
+//console.log(Sha1.hash(blahBuffer));
 
-if (Veness.hash(smallTest) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
+//console.log(Sha1.hash(stringToBuffer(process.argv[2])));
+
+if (Sha1.hash(smallBuffer) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
     console.log('wrong small digest');
     process.exit(1);
 }
 
-if (Veness.hash(largeTest) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
+if (Sha1.hash(largeBuffer) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
     console.log('wrong large digest');
     process.exit(1);
 }
@@ -255,9 +262,14 @@ if (Veness.hash(largeTest) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 // small: 7468.827ms  / 100000      = 74.7 us   259  us/kB
 // large: 13866.566ms /  10000      = 1387 us   228  us/kB
 
+// Sha1.hash unoptimized
+// small: 3218.391ms  / 100000      = 32.2 us   112  us/kB
+// large: 5926.128ms  /  10000      = 593 us    97.2 us/kB
+
 console.time('small');
 for (var i = 0; i < 100000; i++) {
-    Veness.hash(smallTest);
+    Sha1.hash(smallBuffer);
+    //Veness.hash(smallTest);
     //rusha.digestFromString(smallTest);
     //rusha.digestFromArrayBuffer(smallBuffer);
     //shasum = crypto.createHash('sha1');
@@ -268,7 +280,8 @@ console.timeEnd('small');
 
 console.time('large');
 for (var i = 0; i < 10000; i++) {
-    Veness.hash(largeTest);
+    Sha1.hash(largeBuffer);
+    //Veness.hash(largeTest);
     //rusha.digestFromString(largeTest);
     //rusha.digestFromArrayBuffer(largeBuffer);
     //shasum = crypto.createHash('sha1');
