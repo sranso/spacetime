@@ -16,154 +16,153 @@ var initConstants = function () {
 };
 initConstants();
 
-var W = new Int32Array(80);
+var W = new Int32Array(80 + 5);
+var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 
-// M_buffer is the buffer containing the processed message.
-var M_buffer;
 
-Sha1.gc = function () {
-    M_buffer = new ArrayBuffer(64);
-};
+Sha1.hash = function (M) {
+    var l_bytes = M.length;
+    var startByte;
 
-Sha1.gc();
+    // Set initial hash value [5.3.1]
+    W[80] = 0x67452301 | 0;
+    W[81] = 0xefcdab89 | 0;
+    W[82] = 0x98badcfe | 0;
+    W[83] = 0x10325476 | 0;
+    W[84] = 0xc3d2e1f0 | 0;
 
-// M_input is the message
-// M is the message after pre-processing
-Sha1.hash = function (M_input) {
-    var l_bytes = M_input.length;
-
-    // N is number of blocks after padding
-    // 1 for one bit, 8 for length
-    var N = Math.ceil((l_bytes + 1 + 8) / 64);
-    var N_words = N * 16;
-    var N_bytes = N_words * 4;
-
-    if (M_buffer.byteLength < N_bytes) {
-        M_buffer = new ArrayBuffer(N_bytes + ((N_bytes + 64) / 8));
+    var lastBlockBytes = l_bytes % 64;
+    var fullBlockBytes = l_bytes - lastBlockBytes;
+    for (startByte = 0; startByte < fullBlockBytes; startByte += 64) {
+        convBuf(M, W8, W, startByte, 64);
+        hashBlock(W);
     }
-    var M = new Int32Array(M_buffer, 0, N_words);
-    var M8 = new Uint8Array(M_buffer, 0, N_bytes);
 
-    var lengthIndex = N_words - 1;
-
-    // Preprocess the message [5.1.1]
     var i;
-
-    // Zero out empty space first
-    var messageWordsFloored = l_bytes >>> 3;
-    for (i = messageWordsFloored; i < lengthIndex; i++) {
-        M[i] = 0;
+    for (i = 0; i < 16; i++) {
+        W[i] = 0;
     }
-
-    // Copy message switching from little to big endian
-    convBuf(M_input, M8, M, l_bytes);
+    convBuf(M, W8, W, startByte, lastBlockBytes);
 
     // Pad the message with a "one" bit [5.1.1]
-    var endByteWordAligned = (l_bytes + 4) & ~3;
-    M8[endByteWordAligned - (l_bytes & 3) - 1] = 0x80;
+    var lastWordBytes = lastBlockBytes % 4;
+    W8[lastBlockBytes + 3 - lastWordBytes - lastWordBytes] = 0x80;
+
+    if (lastBlockBytes > 64 - 8 - 1) {
+        hashBlock(W);
+        for (i = 0; i < 16; i++) {
+            W[i] = 0;
+        }
+    }
 
     // Append the length in bits [5.1.1]
     // Message must be less than 500 MB (for this implementation)
-    M[lengthIndex] = l_bytes * 8;
+    W[15] = l_bytes * 8;
+    hashBlock(W);
 
-    // Set initial hash value [5.3.1]
-    var H0 = 0x67452301 | 0;
-    var H1 = 0xefcdab89 | 0;
-    var H2 = 0x98badcfe | 0;
-    var H3 = 0x10325476 | 0;
-    var H4 = 0xc3d2e1f0 | 0;
+    return hexWord(W[80]) + hexWord(W[81]) + hexWord(W[82]) + hexWord(W[83]) + hexWord(W[84]);
+};
 
+// Hash computation [6.1.2]
+var hashBlock = function (W) {
     var t;
 
     var a, b, c, d, e;
     var T, W_t, W_temp;
 
-    // Hash computation [6.1.2]
-    for (i = 0; i < N_words; i += 16) {
-        // 1. Prepare the message schedule
-        for (t = 0; t < 16; t++) {
-            W[t] = M[i + t];
-        }
-        for (; t < 80; t++) {
-            W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
-            // W[t] = ROTL(1, temp);
-            W[t] = (W_temp << 1) | (W_temp >>> 31);
-        }
+    a = W[80];
+    b = W[81];
+    c = W[82];
+    d = W[83];
+    e = W[84];
 
-        // 2. Initialize the working variables
-        a = H0;
-        b = H1;
-        c = H2;
-        d = H3;
-        e = H4;
-
-        for (t = 0; t < 20; t++) {
-            // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
-            T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + K[t] + W[t];
-            e = d;
-            d = c;
-            // c = ROTL(30, b);
-            c = (b << 30) | (b >>> 2);
-            b = a;
-            a = T;
-        }
-
-        for (; t < 40; t++) {
-            // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
-            T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W[t];
-            e = d;
-            d = c;
-            // c = ROTL(30, b);
-            c = (b << 30) | (b >>> 2);
-            b = a;
-            a = T;
-        }
-
-        for (; t < 60; t++) {
-            // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
-            T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (b & d) ^ (c & d)) + e + K[t] + W[t];
-            e = d;
-            d = c;
-            // c = ROTL(30, b);
-            c = (b << 30) | (b >>> 2);
-            b = a;
-            a = T;
-        }
-
-        for (; t < 80; t++) {
-            // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
-            T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W[t];
-            e = d;
-            d = c;
-            // c = ROTL(30, b);
-            c = (b << 30) | (b >>> 2);
-            b = a;
-            a = T;
-        }
-
-        // 3. Compute the intermediate hash value
-        H0 = (a + H0) | 0;
-        H1 = (b + H1) | 0;
-        H2 = (c + H2) | 0;
-        H3 = (d + H3) | 0;
-        H4 = (e + H4) | 0;
+    for (t = 0; t < 16; t++) {
+        // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + K[t] + W[t];
+        e = d;
+        d = c;
+        // c = ROTL(30, b);
+        c = (b << 30) | (b >>> 2);
+        b = a;
+        a = T;
     }
 
-    return hexWord(H0) + hexWord(H1) + hexWord(H2) + hexWord(H3) + hexWord(H4);
+    for (; t < 20; t++) {
+        // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
+        W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
+        // W[t] = ROTL(1, W_temp);
+        W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + K[t] + W_t;
+        e = d;
+        d = c;
+        // c = ROTL(30, b);
+        c = (b << 30) | (b >>> 2);
+        b = a;
+        a = T;
+    }
+
+    for (; t < 40; t++) {
+        // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
+        W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
+        // W[t] = ROTL(1, W_temp);
+        W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
+        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W_t;
+        e = d;
+        d = c;
+        // c = ROTL(30, b);
+        c = (b << 30) | (b >>> 2);
+        b = a;
+        a = T;
+    }
+
+    for (; t < 60; t++) {
+        // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
+        W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
+        // W[t] = ROTL(1, W_temp);
+        W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (b & d) ^ (c & d)) + e + K[t] + W_t;
+        e = d;
+        d = c;
+        // c = ROTL(30, b);
+        c = (b << 30) | (b >>> 2);
+        b = a;
+        a = T;
+    }
+
+    for (; t < 80; t++) {
+        // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
+        W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
+        // W[t] = ROTL(1, W_temp);
+        W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
+        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W_t;
+        e = d;
+        d = c;
+        // c = ROTL(30, b);
+        c = (b << 30) | (b >>> 2);
+        b = a;
+        a = T;
+    }
+
+    // 3. Compute the intermediate hash value
+    W[80] = (a + W[80]) | 0;
+    W[81] = (b + W[81]) | 0;
+    W[82] = (c + W[82]) | 0;
+    W[83] = (d + W[83]) | 0;
+    W[84] = (e + W[84]) | 0;
 };
 
-var convBuf = function (buf, H8, H32, len) {
-    var i, lm = len % 4, j = len - lm;
+var convBuf = function (M, W8, W, start, length) {
+    var i, lm = length % 4, j = length - lm;
     for (i = 0; i < j; i += 4) {
-        H32[i >> 2] = buf[i] << 24 | buf[i + 1] << 16 | buf[i + 2] << 8 | buf[i + 3];
+        W[i >> 2] = M[start + i] << 24 | M[start + i + 1] << 16 | M[start + i + 2] << 8 | M[start + i + 3];
     }
     switch (lm) {
     case 3:
-        H8[j + 1] = buf[j + 2];
+        W8[j + 1] = M[start + j + 2];
     case 2:
-        H8[j + 2] = buf[j + 1];
+        W8[j + 2] = M[start + j + 1];
     case 1:
-        H8[j + 3] = buf[j];
+        W8[j + 3] = M[start + j];
     }
 };
 
@@ -175,21 +174,21 @@ var hexWord = function (word) {
     return hex.slice(hex.length - 8);
 };
 
-var f = function (t, x, y, z) {
-    var t20 = Math.floor(t / 20);
-    switch (t20) {
-        case 0:
-            return (x & y) ^ (~x & z);
-        case 1:
-        case 3:
-            return x ^ y ^ z;
-        case 2:
-            return (x & y) ^ (x & z) ^ (y & z);
-    }
-};
-
-var ROTL = function (n, x) {
-    return (x << n) | (x >>> (32 - n));
-};
+// var f = function (t, x, y, z) {
+//     var t20 = Math.floor(t / 20);
+//     switch (t20) {
+//         case 0:
+//             return (x & y) ^ (~x & z);
+//         case 1:
+//         case 3:
+//             return x ^ y ^ z;
+//         case 2:
+//             return (x & y) ^ (x & z) ^ (y & z);
+//     }
+// };
+//
+// var ROTL = function (n, x) {
+//     return (x << n) | (x >>> (32 - n));
+// };
 
 module.exports = Sha1;

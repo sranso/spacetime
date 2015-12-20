@@ -225,6 +225,8 @@ var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
 var blahBuffer = stringToBuffer(blah);
 console.log(Sha1.hash(blahBuffer));
 
+// process.exit(0);
+
 //console.log(Sha1.hash(stringToBuffer(process.argv[2])));
 
 if (Sha1.hash(smallBuffer) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
@@ -237,7 +239,7 @@ if (Sha1.hash(largeBuffer) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
     process.exit(1);
 }
 
-//process.exit(0);
+// process.exit(0);
 
 // smallTest: 288 bytes
 // largeTest: 6094 bytes
@@ -268,6 +270,9 @@ if (Sha1.hash(largeBuffer) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 
 // small: 758.706ms   / 100000      = 7.59 us   26.3 us/kB
 // large: 945.151ms   /  10000      = 94.5 us   15.5 us/kB
+
+// small: 645.849ms   / 100000      = 6.46 us   22.4 us/kB
+// large: 772.093ms   /  10000      = 77.2 us   12.7 us/kB
 
 console.time('small');
 for (var i = 0; i < 100000; i++) {
