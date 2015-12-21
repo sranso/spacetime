@@ -4,35 +4,25 @@ var Sha1 = {};
 // 512 / 8  = 64
 // 512 / 32 = 16
 
-var K;
-var initConstants = function () {
-    K = new Int32Array(80);
-    var k = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
-
-    // Initialize constants [4.2.1]
-    for (var t = 0; t < 80; t++) {
-        K[t] = k[Math.floor(t / 20)] | 0;
-    }
-};
-initConstants();
-
-var W = new Int32Array(80 + 5);
+var W = new Int32Array(80);
 var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 
+var H0, H1, H2, H3, H4;
 
-Sha1.hash = function (M) {
+Sha1.hash = function (M, H, H_offset) {
     var l_bytes = M.length;
     var startByte;
 
     // Set initial hash value [5.3.1]
-    W[80] = 0x67452301 | 0;
-    W[81] = 0xefcdab89 | 0;
-    W[82] = 0x98badcfe | 0;
-    W[83] = 0x10325476 | 0;
-    W[84] = 0xc3d2e1f0 | 0;
+    H0 = 0x67452301 | 0;
+    H1 = 0xefcdab89 | 0;
+    H2 = 0x98badcfe | 0;
+    H3 = 0x10325476 | 0;
+    H4 = 0xc3d2e1f0 | 0;
 
     var lastBlockBytes = l_bytes % 64;
     var fullBlockBytes = l_bytes - lastBlockBytes;
+    var i;
     for (startByte = 0; startByte < fullBlockBytes; startByte += 64) {
         convBuf(M, W8, W, startByte, 64);
         hashBlock(W);
@@ -60,7 +50,31 @@ Sha1.hash = function (M) {
     W[15] = l_bytes * 8;
     hashBlock(W);
 
-    return hexWord(W[80]) + hexWord(W[81]) + hexWord(W[82]) + hexWord(W[83]) + hexWord(W[84]);
+    // Write hash to output array
+    H[H_offset] = H0 >>> 24;
+    H[H_offset + 1] = (H0 >>> 16) & 255;
+    H[H_offset + 2] = (H0 >>> 8) & 255;
+    H[H_offset + 3] = H0 & 255;
+
+    H[H_offset + 4] = H1 >>> 24;
+    H[H_offset + 5] = (H1 >>> 16) & 255;
+    H[H_offset + 6] = (H1 >>> 8) & 255;
+    H[H_offset + 7] = H1 & 255;
+
+    H[H_offset + 8] = H2 >>> 24;
+    H[H_offset + 9] = (H2 >>> 16) & 255;
+    H[H_offset + 10] = (H2 >>> 8) & 255;
+    H[H_offset + 11] = H2 & 255;
+
+    H[H_offset + 12] = H3 >>> 24;
+    H[H_offset + 13] = (H3 >>> 16) & 255;
+    H[H_offset + 14] = (H3 >>> 8) & 255;
+    H[H_offset + 15] = H3 & 255;
+
+    H[H_offset + 16] = H4 >>> 24;
+    H[H_offset + 17] = (H4 >>> 16) & 255;
+    H[H_offset + 18] = (H4 >>> 8) & 255;
+    H[H_offset + 19] = H4 & 255;
 };
 
 // Hash computation [6.1.2]
@@ -70,15 +84,15 @@ var hashBlock = function (W) {
     var a, b, c, d, e;
     var T, W_t, W_temp;
 
-    a = W[80];
-    b = W[81];
-    c = W[82];
-    d = W[83];
-    e = W[84];
+    a = H0;
+    b = H1;
+    c = H2;
+    d = H3;
+    e = H4;
 
     for (t = 0; t < 16; t++) {
         // T = ROTL(5, a) + f(t, b, c, d) + e + K[t] + W[t];
-        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + K[t] + W[t];
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + 0x5a827999 + W[t];
         e = d;
         d = c;
         // c = ROTL(30, b);
@@ -92,7 +106,7 @@ var hashBlock = function (W) {
         W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
         // W[t] = ROTL(1, W_temp);
         W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
-        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + K[t] + W_t;
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (~b & d)) + e + 0x5a827999 + W_t;
         e = d;
         d = c;
         // c = ROTL(30, b);
@@ -106,7 +120,7 @@ var hashBlock = function (W) {
         W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
         // W[t] = ROTL(1, W_temp);
         W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
-        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W_t;
+        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + 0x6ed9eba1 + W_t;
         e = d;
         d = c;
         // c = ROTL(30, b);
@@ -120,7 +134,7 @@ var hashBlock = function (W) {
         W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
         // W[t] = ROTL(1, W_temp);
         W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
-        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (b & d) ^ (c & d)) + e + K[t] + W_t;
+        T = ((a << 5) | (a >>> 27)) + ((b & c) ^ (b & d) ^ (c & d)) + e + 0x8f1bbcdc + W_t;
         e = d;
         d = c;
         // c = ROTL(30, b);
@@ -134,7 +148,7 @@ var hashBlock = function (W) {
         W_temp = W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16];
         // W[t] = ROTL(1, W_temp);
         W_t = W[t] = (W_temp << 1) | (W_temp >>> 31);
-        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + K[t] + W_t;
+        T = ((a << 5) | (a >>> 27)) + (b ^ c ^ d) + e + 0xca62c1d6 + W_t;
         e = d;
         d = c;
         // c = ROTL(30, b);
@@ -144,11 +158,11 @@ var hashBlock = function (W) {
     }
 
     // 3. Compute the intermediate hash value
-    W[80] = (a + W[80]) | 0;
-    W[81] = (b + W[81]) | 0;
-    W[82] = (c + W[82]) | 0;
-    W[83] = (d + W[83]) | 0;
-    W[84] = (e + W[84]) | 0;
+    H0 = (a + H0) | 0;
+    H1 = (b + H1) | 0;
+    H2 = (c + H2) | 0;
+    H3 = (d + H3) | 0;
+    H4 = (e + H4) | 0;
 };
 
 var convBuf = function (M, W8, W, start, length) {
@@ -166,13 +180,13 @@ var convBuf = function (M, W8, W, start, length) {
     }
 };
 
-var hexWord = function (word) {
-    if (word < 0) {
-        word += Math.pow(2, 32);
-    }
-    var hex = '00000000' + word.toString(16);
-    return hex.slice(hex.length - 8);
-};
+// var hexWord = function (word) {
+//     if (word < 0) {
+//         word += Math.pow(2, 32);
+//     }
+//     var hex = '00000000' + word.toString(16);
+//     return hex.slice(hex.length - 8);
+// };
 
 // var f = function (t, x, y, z) {
 //     var t20 = Math.floor(t / 20);
