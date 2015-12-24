@@ -1,5 +1,7 @@
 'use strict';
 var Sha1 = {};
+module.exports = Sha1;
+(function () {
 
 // 512 / 8  = 64
 // 512 / 32 = 16
@@ -205,4 +207,4 @@ var convBuf = function (M, W8, W, start, length) {
 //     return (x << n) | (x >>> (32 - n));
 // };
 
-module.exports = Sha1;
+})();

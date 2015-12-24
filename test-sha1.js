@@ -3,18 +3,18 @@ var Rusha = require('./rusha');
 var crypto = require('crypto');
 var Sha1 = require('./sha1');
 
-var stringToBuffer = function (string) {
-    var view = new Uint8Array(string.length);
+var stringToArray = function (string) {
+    var array = new Uint8Array(string.length);
     for (var i = 0; i < string.length; i++) {
-        view[i] = string.charCodeAt(i);
+        array[i] = string.charCodeAt(i);
     }
-    return view;
+    return array;
 };
 
-var bufferToString = function (buffer) {
+var hexArrayToString = function (array) {
     var str = [];
-    for (var i = 0; i < buffer.length; i++) {
-        var hex = '00' + buffer[i].toString(16);
+    for (var i = 0; i < array.length; i++) {
+        var hex = '00' + array[i].toString(16);
         str.push(hex.slice(-2));
     }
     return str.join('');
@@ -231,41 +231,42 @@ var rushaRawDigest8 = function (M, H, H_offset) {
     }
 };
 
-var smallBuffer = stringToBuffer(smallTest);
-var mediumBuffer = stringToBuffer(mediumTest);
-var largeBuffer = stringToBuffer(largeTest);
+var smallArray = stringToArray(smallTest);
+var mediumArray = stringToArray(mediumTest);
+var largeArray = stringToArray(largeTest);
+
+var hash = new Uint8Array(20);
 
 var rusha = new Rusha();
 //var shasum;
 
-var hash = new Uint8Array(20);
 var abc = 'abc';
-var abcBuffer = stringToBuffer(abc);
-Sha1.hash(abcBuffer, hash, 0);
-console.log(bufferToString(hash));
+var abcArray = stringToArray(abc);
+Sha1.hash(abcArray, hash, 0);
+console.log(hexArrayToString(hash));
 
 var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
-var blahBuffer = stringToBuffer(blah);
-Sha1.hash(blahBuffer, hash, 0);
-console.log(bufferToString(hash));
+var blahArray = stringToArray(blah);
+Sha1.hash(blahArray, hash, 0);
+console.log(hexArrayToString(hash));
 
-rushaRawDigest8(blahBuffer, hash, 0);
-console.log(bufferToString(hash));
+rushaRawDigest8(blahArray, hash, 0);
+console.log(hexArrayToString(hash));
 
-Sha1.hash(smallBuffer, hash, 0);
-if (bufferToString(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
+Sha1.hash(smallArray, hash, 0);
+if (hexArrayToString(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
     console.log('wrong small digest');
     process.exit(1);
 }
 
-Sha1.hash(mediumBuffer, hash, 0);
-if (bufferToString(hash) !== 'ed7306fdc97d37b3376e818adff5102abfb7ad7f') {
+Sha1.hash(mediumArray, hash, 0);
+if (hexArrayToString(hash) !== 'ed7306fdc97d37b3376e818adff5102abfb7ad7f') {
     console.log('wrong medium digest');
     process.exit(1);
 }
 
-Sha1.hash(largeBuffer, hash, 0);
-if (bufferToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
+Sha1.hash(largeArray, hash, 0);
+if (hexArrayToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
     console.log('wrong large digest');
     process.exit(1);
 }
@@ -321,11 +322,11 @@ if (bufferToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 
 console.time('small');
 for (var i = 0; i < 100000; i++) {
-    Sha1.hash(smallBuffer, hash, 0);
+    Sha1.hash(smallArray, hash, 0);
     //Veness.hash(smallTest);
     //rusha.digestFromString(smallTest);
-    //rusha.digestFromArrayBuffer(smallBuffer);
-    //rushaRawDigest8(smallBuffer, hash, 0);
+    //rusha.digestFromArrayBuffer(smallArray);
+    //rushaRawDigest8(smallArray, hash, 0);
     //shasum = crypto.createHash('sha1');
     //shasum.update(smallTest);
     //shasum.digest('hex');
@@ -334,24 +335,24 @@ console.timeEnd('small');
 
 console.time('medium');
 for (var i = 0; i < 50000; i++) {
-    Sha1.hash(mediumBuffer, hash, 0);
+    Sha1.hash(mediumArray, hash, 0);
     //Veness.hash(mediumTest);
     //rusha.digestFromString(mediumTest);
-    //rusha.digestFromArrayBuffer(mediumBuffer);
-    //rushaRawDigest8(mediumBuffer, hash, 0);
+    //rusha.digestFromArrayBuffer(mediumArray);
+    //rushaRawDigest8(mediumArray, hash, 0);
     //shasum = crypto.createHash('sha1');
-    //shasum.update(mediumBuffer);
+    //shasum.update(mediumArray);
     //shasum.digest('hex');
 }
 console.timeEnd('medium');
 
 console.time('large');
 for (var i = 0; i < 10000; i++) {
-    Sha1.hash(largeBuffer, hash, 0);
+    Sha1.hash(largeArray, hash, 0);
     //Veness.hash(largeTest);
     //rusha.digestFromString(largeTest);
-    //rusha.digestFromArrayBuffer(largeBuffer);
-    //rushaRawDigest8(largeBuffer, hash, 0);
+    //rusha.digestFromArrayBuffer(largeArray);
+    //rushaRawDigest8(largeArray, hash, 0);
     //shasum = crypto.createHash('sha1');
     //shasum.update(largeTest);
     //shasum.digest('hex');
