@@ -12,10 +12,6 @@ var stringToArray = function (string) {
     return array;
 };
 
-var arrayToString = function (array) {
-    return String.fromCharCode.apply(null, array);
-};
-
 GitObject.hexArrayToString = function (array) {
     var str = [];
     for (var i = 0; i < array.length; i++) {
@@ -92,10 +88,10 @@ var treeMode = stringToArray('40000');
 var blobMode = stringToArray('100644');
 
 GitObject.catFile = function (file) {
-    var type = arrayToString(file.slice(0, file.indexOf(0x20)));
+    var type = String.fromCharCode.apply(null, file.slice(0, file.indexOf(0x20)));
 
     if (type === 'blob') {
-        return arrayToString(file.slice(file.indexOf(0)));
+        return String.fromCharCode.apply(null, file.slice(file.indexOf(0)));
 
     } else if (type === 'tree') {
         var pretty = [];
@@ -105,7 +101,7 @@ GitObject.catFile = function (file) {
             var modeEnd = file.indexOf(0x20, j + 5);
             var filenameEnd = file.indexOf(0, modeEnd + 2);
 
-            var mode = arrayToString(file.slice(j, modeEnd));
+            var mode = String.fromCharCode.apply(null, file.slice(j, modeEnd));
             if (mode === '100644') {
                 var subType = 'blob';
             } else if (mode === '40000') {
@@ -116,7 +112,7 @@ GitObject.catFile = function (file) {
             }
 
             j = modeEnd + 1;
-            var filename = arrayToString(file.slice(j, filenameEnd));
+            var filename = String.fromCharCode.apply(null, file.slice(j, filenameEnd));
 
             j = filenameEnd + 1;
             var hash = GitObject.hexArrayToString(file.slice(j, j + 20));
@@ -131,6 +127,9 @@ GitObject.catFile = function (file) {
 };
 
 GitObject.hashEqual = function (hash1, index1, hash2, index2) {
+    if (!hash1 || !hash2) {
+        return false;
+    }
     var i;
     for (i = 0; i < 20; i++) {
         if (hash1[index1 + i] !== hash2[index2 + i]) {
@@ -154,8 +153,8 @@ GitObject.createSkeleton = function (props) {
     return object;
 };
 
-GitObject.addProperty = function (object, name, type) {
-    if (object.hash === emptyTreeHash) {
+GitObject.addProperty = function (object, insertName, type) {
+    if (object.hash === emptyTreeHash || GitObject.hashEqual(object.hash, emptyTreeHash)) {
         var oldFile = actuallyEmptyTree;
     } else {
         var oldFile = object.file;
@@ -165,8 +164,6 @@ GitObject.addProperty = function (object, name, type) {
     var oldHeaderLength = oldFile.indexOf(0, 6) + 1;
     var oldLength = oldFile.length - oldHeaderLength;
 
-    var nameArray = stringToArray(name);
-
     var mode, hash;
     if (type === 'tree') {
         mode = treeMode;
@@ -175,7 +172,7 @@ GitObject.addProperty = function (object, name, type) {
         mode = blobMode;
         hash = emptyBlobHash;
     }
-    var length = oldLength + mode.length + 1 + name.length + 1 + 20;
+    var length = oldLength + mode.length + 1 + insertName.length + 1 + 20;
     var lengthString = '' + length;
     var headerLength = treePrefix.length + lengthString.length + 1;
 
@@ -191,63 +188,65 @@ GitObject.addProperty = function (object, name, type) {
         file[j + i] = lengthString.charCodeAt(i);
     }
 
-    j = oldHeaderLength;
+    var j = oldHeaderLength;
+    var k;
+    var copyEnd;
+    var offset = headerLength - oldHeaderLength;
     while (j < oldFile.length) {
         var modeEnd = oldFile.indexOf(0x20, j + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
 
-        var nameStart = modeEnd + 1;
-        var nameLength = filenameEnd - nameStart;
-        if (nameLength < nameArray.length) {
-            var minNameLength = nameLength;
-        } else {
-            var minNameLength = nameArray.length;
-        }
+        var name = String.fromCharCode.apply(null, oldFile.slice(modeEnd + 1, filenameEnd));
 
-        var diff;
-        for (i = 0; i < minNameLength; i++) {
-            diff = nameArray[i] - oldFile[nameStart + i];
-            if (diff !== 0) {
-                break;
-            }
-        }
-        if (i === minNameLength) {
-            diff = nameArray.length - nameLength;
-        }
-
-        if (diff < 0) {
+        if (insertName < name) {
             break;
+        }
+
+        copyEnd = filenameEnd + 21;
+        for (i = j; i < copyEnd; i++) {
+            file[offset + i] = oldFile[i];
         }
         j = filenameEnd + 21;
     }
 
-    var copyEnd = j - oldHeaderLength;
-    var k = headerLength;
-    for (i = 0; i < copyEnd; i++) {
-        file[k + i] = oldFile[oldHeaderLength + i];
-    }
-    k += i;
-
+    k = j + offset;
     for (i = 0; i < mode.length; i++) {
         file[k + i] = mode[i];
     }
     file[k + i] = 0x20;
     k += i + 1;
 
-    for (i = 0; i < nameArray.length; i++) {
-        file[k + i] = nameArray[i];
+    for (i = 0; i < insertName.length; i++) {
+        file[k + i] = insertName.charCodeAt(i);
     }
-    file[k + i] = 0;
     k += i + 1;
 
+    object[insertName + 'Index'] = k;
     for (i = 0; i < hash.length; i++) {
         file[k + i] = hash[i];
     }
     k += i;
 
-    copyEnd = oldFile.length - j;
-    for (i = 0; i < copyEnd; i++) {
-        file[k + i] = oldFile[j + i];
+    offset = k - j;
+    while (j < oldFile.length) {
+        var modeEnd = oldFile.indexOf(0x20, j + 5);
+        var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
+
+        var name = String.fromCharCode.apply(null, oldFile.slice(modeEnd + 1, filenameEnd));
+
+        copyEnd = filenameEnd + 21;
+        for (i = j; i < copyEnd; i++) {
+            file[offset + i] = oldFile[i];
+        }
+        object[name + 'Index'] = offset + filenameEnd + 1;
+        j = filenameEnd + 21;
+    }
+};
+
+GitObject.setHash = function (object, index, hash, hashStart) {
+    var i;
+    for (i = 0; i < 20; i++) {
+        object.file[index + i] = hash[hashStart + i];
     }
 };
 

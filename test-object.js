@@ -1,6 +1,19 @@
 var GitObject = require('./git-object');
 var Sha1 = require('./sha1');
 
+var prettyPrint = function (array) {
+    var pretty = [];
+    var i;
+    for (i = 0; i < array.length; i++) {
+        if (array[i] === 0x20 || (48 <= array[i] && array[i] <= 57) || (65 <= array[i] && array[i] <= 90) || (97 <= array[i] && array[i] <= 122)) {
+            pretty.push(String.fromCharCode(array[i]));
+        } else {
+            pretty.push('\\x' + ('00' + array[i].toString(16)).slice(-2));
+        }
+    }
+    return pretty.join('');
+};
+
 var emptyHash = new Uint8Array(20);
 var emptyBlob = GitObject.blobFromString('');
 console.log('empty blob is "' + GitObject.catFile(emptyBlob) + '"');
@@ -27,19 +40,27 @@ console.log('###############################################');
 var obj = GitObject.createSkeleton({});
 console.log('empty skeleton file:\n' + GitObject.catFile(obj.file));
 
+var hashAt = function (i) {
+    return GitObject.hexArrayToString(obj.file.slice(i, i + 20));
+};
+
 obj = GitObject.createSkeleton({
     foo: 'blob',
 });
 
 GitObject.addProperty(obj, 'bar', 'tree');
 GitObject.addProperty(obj, 'www', 'blob');
-console.log('barfoowww file:\n' + GitObject.catFile(obj.file));
+console.log('barfoowww file:')
+console.log(prettyPrint(obj.file));
+console.log(GitObject.catFile(obj.file));
+console.log(obj.barIndex, obj.fooIndex, obj.wwwIndex);
+console.log(hashAt(obj.barIndex), hashAt(obj.fooIndex), hashAt(obj.wwwIndex));
 
 obj = GitObject.createSkeleton({
     foo: 'blob',
 });
 GitObject.addProperty(obj, 'food', 'blob');
 GitObject.addProperty(obj, 'fo', 'tree');
-console.log('fofoofood file:\n' + GitObject.catFile(obj.file));
-
-GitObject.setHash(obj, obj.textIndex, helloHash, 0);
+console.log('fofoofood file:');
+GitObject.setHash(obj, obj.fooIndex, helloHash, 0);
+console.log(GitObject.catFile(obj.file));
