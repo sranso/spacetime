@@ -1,6 +1,6 @@
 'use strict';
-var GitObject = {};
-module.exports = GitObject;
+var GitFile = {};
+module.exports = GitFile;
 var Sha1 = require('./sha1');
 (function () {
 
@@ -12,7 +12,7 @@ var stringToArray = function (string) {
     return array;
 };
 
-GitObject.hexArrayToString = function (array) {
+GitFile.hexArrayToString = function (array) {
     var str = [];
     for (var i = 0; i < array.length; i++) {
         var hex = '00' + array[i].toString(16);
@@ -24,7 +24,7 @@ GitObject.hexArrayToString = function (array) {
 
 var blobPrefix = stringToArray('blob ');
 
-GitObject.blobFromString = function (string) {
+GitFile.blobFromString = function (string) {
     var lengthString = '' + string.length;
     var blob = new Uint8Array(6 + lengthString.length + string.length);
 
@@ -45,14 +45,14 @@ GitObject.blobFromString = function (string) {
     return blob;
 };
 
-var emptyBlob = GitObject.emptyBlob = GitObject.blobFromString('');
-var emptyBlobHash = GitObject.emptyBlobHash = new Uint8Array(20);
+var emptyBlob = GitFile.emptyBlob = GitFile.blobFromString('');
+var emptyBlobHash = GitFile.emptyBlobHash = new Uint8Array(20);
 
-var emptyTree = GitObject.emptyTree = null;
-var emptyTreeHash = GitObject.emptyTreeHash = new Uint8Array(20);
+var emptyTree = GitFile.emptyTree = null;
+var emptyTreeHash = GitFile.emptyTreeHash = new Uint8Array(20);
 
 var actuallyEmptyTree = stringToArray('tree 0\0');
-GitObject._actuallyEmptyTree = actuallyEmptyTree;
+GitFile._actuallyEmptyTree = actuallyEmptyTree;
 
 var buildEmpty = function () {
     Sha1.hash(emptyBlob, emptyBlobHash, 0);
@@ -60,7 +60,7 @@ var buildEmpty = function () {
     var emptyTreeFileInfo = stringToArray('100644 .empty\0');
     var emptyTreeLength = emptyTreeFileInfo.length + 20;
     var emptyTreePrefix = stringToArray('tree ' + emptyTreeLength + '\0');
-    GitObject.emptyTree = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
+    GitFile.emptyTree = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
 
     var i, j;
     for (i = 0; i < emptyTreePrefix.length; i++) {
@@ -84,7 +84,7 @@ var treePrefix = stringToArray('tree ');
 var treeMode = stringToArray('40000');
 var blobMode = stringToArray('100644');
 
-GitObject.catFile = function (file) {
+GitFile.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.slice(0, file.indexOf(0x20)));
 
     if (type === 'blob') {
@@ -112,7 +112,7 @@ GitObject.catFile = function (file) {
             var filename = String.fromCharCode.apply(null, file.slice(j, filenameEnd));
 
             j = filenameEnd + 1;
-            var hash = GitObject.hexArrayToString(file.slice(j, j + 20));
+            var hash = GitFile.hexArrayToString(file.slice(j, j + 20));
             pretty.push([mode, subType, hash, '  ', filename].join(' '));
 
             j += 20;
@@ -123,7 +123,7 @@ GitObject.catFile = function (file) {
     }
 };
 
-GitObject.hashEqual = function (hash1, index1, hash2, index2) {
+GitFile.hashEqual = function (hash1, index1, hash2, index2) {
     if (!hash1 || !hash2) {
         return false;
     }
@@ -149,7 +149,7 @@ var arrayEqual = function (array1, array2) {
     return true;
 };
 
-GitObject.createSkeleton = function (indexInfo, props) {
+GitFile.createSkeleton = function (indexInfo, props) {
     var file = emptyTree;
 
     var names = Object.keys(props).sort();
@@ -163,13 +163,13 @@ GitObject.createSkeleton = function (indexInfo, props) {
         } else {
             hash = emptyBlobHash;
         }
-        file = GitObject.appendProperty(file, indexInfo, name, type, hash);
+        file = GitFile.appendProperty(file, indexInfo, name, type, hash);
     }
 
     return file;
 };
 
-GitObject.addProperty = function (oldFile, indexInfo, insertName, type) {
+GitFile.addProperty = function (oldFile, indexInfo, insertName, type) {
     if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
         oldFile = actuallyEmptyTree;
     }
@@ -260,7 +260,7 @@ GitObject.addProperty = function (oldFile, indexInfo, insertName, type) {
 
 // TODO: speed up appendProperty by only allocating a new buffer if
 // more space is needed, or if lengthString.length changes.
-GitObject.appendProperty = function (oldFile, indexInfo, insertName, type, hash) {
+GitFile.appendProperty = function (oldFile, indexInfo, insertName, type, hash) {
     if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
         oldFile = actuallyEmptyTree;
     }
@@ -315,7 +315,7 @@ GitObject.appendProperty = function (oldFile, indexInfo, insertName, type, hash)
     return file;
 };
 
-GitObject.setHash = function (file, index, hash, hashStart) {
+GitFile.setHash = function (file, index, hash, hashStart) {
     var i;
     for (i = 0; i < 20; i++) {
         file[index + i] = hash[hashStart + i];

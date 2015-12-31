@@ -1,5 +1,5 @@
-var Veness = require('./veness');
-var Rusha = require('./rusha');
+var Veness = require('./sha1-help/veness');
+var Rusha = require('./sha1-help/rusha');
 var crypto = require('crypto');
 var Sha1 = require('./sha1');
 
