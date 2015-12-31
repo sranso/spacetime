@@ -32,35 +32,43 @@ console.log('actually empty tree hash: ' + GitObject.hexArrayToString(actuallyEm
 
 console.log('hashes are equal? ' + GitObject.hashEqual(emptyHash, 0, helloHash, 0));
 
-console.log(GitObject.catFile(GitObject.emptyTree.file));
-console.log(GitObject.hexArrayToString(GitObject.emptyTree.hash));
+console.log(GitObject.catFile(GitObject.emptyTree));
+console.log(GitObject.hexArrayToString(GitObject.emptyTreeHash));
 
 console.log('###############################################');
 
-var obj = GitObject.createSkeleton({});
-console.log('empty skeleton file:\n' + GitObject.catFile(obj.file));
+var indexInfo = {};
+var file = GitObject.createSkeleton(indexInfo, {});
+console.log('empty skeleton file:\n' + GitObject.catFile(file));
 
 var hashAt = function (i) {
-    return GitObject.hexArrayToString(obj.file.slice(i, i + 20));
+    return GitObject.hexArrayToString(file.slice(i, i + 20));
 };
 
-obj = GitObject.createSkeleton({
+file = GitObject.createSkeleton(indexInfo, {
     foo: 'blob',
 });
 
-GitObject.addProperty(obj, 'bar', 'tree');
-GitObject.addProperty(obj, 'www', 'blob');
+file = GitObject.addProperty(file, indexInfo, 'bar', 'tree');
+file = GitObject.addProperty(file, indexInfo, 'www', 'blob');
 console.log('barfoowww file:')
-console.log(prettyPrint(obj.file));
-console.log(GitObject.catFile(obj.file));
-console.log(obj.barIndex, obj.fooIndex, obj.wwwIndex);
-console.log(hashAt(obj.barIndex), hashAt(obj.fooIndex), hashAt(obj.wwwIndex));
+console.log(prettyPrint(file));
+console.log(GitObject.catFile(file));
+console.log(indexInfo.bar, indexInfo.foo, indexInfo.www);
+console.log(hashAt(indexInfo.bar), hashAt(indexInfo.foo), hashAt(indexInfo.www));
 
-obj = GitObject.createSkeleton({
+file = GitObject.createSkeleton(indexInfo, {
     foo: 'blob',
 });
-GitObject.addProperty(obj, 'food', 'blob');
-GitObject.addProperty(obj, 'fo', 'tree');
+file = GitObject.addProperty(file, indexInfo, 'food', 'blob');
+file = GitObject.addProperty(file, indexInfo, 'fo', 'tree');
 console.log('fofoofood file:');
-GitObject.setHash(obj, obj.fooIndex, helloHash, 0);
-console.log(GitObject.catFile(obj.file));
+GitObject.setHash(file, indexInfo.foo, helloHash, 0);
+console.log(GitObject.catFile(file));
+
+file = GitObject.createSkeleton(indexInfo, {
+    foo: 'blob',
+    bar: 'tree',
+    baz: 'blob',
+});
+console.log(GitObject.catFile(file));

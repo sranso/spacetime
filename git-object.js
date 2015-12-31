@@ -48,9 +48,8 @@ GitObject.blobFromString = function (string) {
 var emptyBlob = GitObject.emptyBlob = GitObject.blobFromString('');
 var emptyBlobHash = GitObject.emptyBlobHash = new Uint8Array(20);
 
-var emptyTree = null;
-var emptyTreeHash = new Uint8Array(20);
-GitObject.emptyTree = null;
+var emptyTree = GitObject.emptyTree = null;
+var emptyTreeHash = GitObject.emptyTreeHash = new Uint8Array(20);
 
 var actuallyEmptyTree = stringToArray('tree 0\0');
 GitObject._actuallyEmptyTree = actuallyEmptyTree;
@@ -61,7 +60,7 @@ var buildEmpty = function () {
     var emptyTreeFileInfo = stringToArray('100644 .empty\0');
     var emptyTreeLength = emptyTreeFileInfo.length + 20;
     var emptyTreePrefix = stringToArray('tree ' + emptyTreeLength + '\0');
-    emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
+    GitObject.emptyTree = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
 
     var i, j;
     for (i = 0; i < emptyTreePrefix.length; i++) {
@@ -79,8 +78,6 @@ var buildEmpty = function () {
     }
 
     Sha1.hash(emptyTree, emptyTreeHash, 0);
-
-    GitObject.emptyTree = GitObject.createSkeleton({});
 };
 
 var treePrefix = stringToArray('tree ');
@@ -139,27 +136,43 @@ GitObject.hashEqual = function (hash1, index1, hash2, index2) {
     return true;
 };
 
-GitObject.createSkeleton = function (props) {
-    var object = {
-        file: emptyTree,
-        hash: emptyTreeHash,
-    };
-
-    var name;
-    for (name in props) {
-        GitObject.addProperty(object, name, props[name]);
+var arrayEqual = function (array1, array2) {
+    if (array1.length !== array2.length) {
+        return false;
     }
-
-    return object;
+    var i;
+    for (i = 0; i < array1.length; i++) {
+        if (array1[i] !== array2[i]) {
+            return false;
+        }
+    }
+    return true;
 };
 
-GitObject.addProperty = function (object, insertName, type) {
-    if (object.hash === emptyTreeHash || GitObject.hashEqual(object.hash, emptyTreeHash)) {
-        var oldFile = actuallyEmptyTree;
-    } else {
-        var oldFile = object.file;
+GitObject.createSkeleton = function (indexInfo, props) {
+    var file = emptyTree;
+
+    var names = Object.keys(props).sort();
+    var i;
+    for (i = 0; i < names.length; i++) {
+        var name = names[i];
+        var type = props[name];
+        var hash;
+        if (type === 'tree') {
+            hash = emptyTreeHash;
+        } else {
+            hash = emptyBlobHash;
+        }
+        file = GitObject.appendProperty(file, indexInfo, name, type, hash);
     }
-    object.hash = null;
+
+    return file;
+};
+
+GitObject.addProperty = function (oldFile, indexInfo, insertName, type) {
+    if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
+        oldFile = actuallyEmptyTree;
+    }
 
     var oldHeaderLength = oldFile.indexOf(0, 6) + 1;
     var oldLength = oldFile.length - oldHeaderLength;
@@ -176,7 +189,7 @@ GitObject.addProperty = function (object, insertName, type) {
     var lengthString = '' + length;
     var headerLength = treePrefix.length + lengthString.length + 1;
 
-    var file = object.file = new Uint8Array(headerLength + length);
+    var file = new Uint8Array(headerLength + length);
 
     var i, j;
     for (i = 0; i < treePrefix.length; i++) {
@@ -221,7 +234,7 @@ GitObject.addProperty = function (object, insertName, type) {
     }
     k += i + 1;
 
-    object[insertName + 'Index'] = k;
+    indexInfo[insertName] = k;
     for (i = 0; i < hash.length; i++) {
         file[k + i] = hash[i];
     }
@@ -238,15 +251,74 @@ GitObject.addProperty = function (object, insertName, type) {
         for (i = j; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
-        object[name + 'Index'] = offset + filenameEnd + 1;
+        indexInfo[name] = offset + filenameEnd + 1;
         j = filenameEnd + 21;
     }
+
+    return file;
 };
 
-GitObject.setHash = function (object, index, hash, hashStart) {
+// TODO: speed up appendProperty by only allocating a new buffer if
+// more space is needed, or if lengthString.length changes.
+GitObject.appendProperty = function (oldFile, indexInfo, insertName, type, hash) {
+    if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
+        oldFile = actuallyEmptyTree;
+    }
+
+    var oldHeaderLength = oldFile.indexOf(0, 6) + 1;
+    var oldLength = oldFile.length - oldHeaderLength;
+
+    var mode;
+    if (type === 'tree') {
+        mode = treeMode;
+    } else {
+        mode = blobMode;
+    }
+    var length = oldLength + mode.length + 1 + insertName.length + 1 + 20;
+    var lengthString = '' + length;
+    var headerLength = treePrefix.length + lengthString.length + 1;
+
+    var file = new Uint8Array(headerLength + length);
+
+    var i, j;
+    for (i = 0; i < treePrefix.length; i++) {
+        file[i] = treePrefix[i];
+    }
+
+    j = i;
+    for (i = 0; i < lengthString.length; i++) {
+        file[j + i] = lengthString.charCodeAt(i);
+    }
+    j += i + 1;
+
+    for (i = 0; i < oldLength; i++) {
+        file[j + i] = oldFile[oldHeaderLength + i];
+    }
+    j += i;
+
+    for (i = 0; i < mode.length; i++) {
+        file[j + i] = mode[i];
+    }
+    file[j + i] = 0x20;
+    j += i + 1;
+
+    for (i = 0; i < insertName.length; i++) {
+        file[j + i] = insertName.charCodeAt(i);
+    }
+    j += i + 1;
+
+    indexInfo[insertName] = j;
+    for (i = 0; i < hash.length; i++) {
+        file[j + i] = hash[i];
+    }
+
+    return file;
+};
+
+GitObject.setHash = function (file, index, hash, hashStart) {
     var i;
     for (i = 0; i < 20; i++) {
-        object.file[index + i] = hash[hashStart + i];
+        file[index + i] = hash[hashStart + i];
     }
 };
 
