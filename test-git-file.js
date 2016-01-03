@@ -37,38 +37,39 @@ console.log(GitFile.hexArrayToString(GitFile.emptyTreeHash));
 
 console.log('###############################################');
 
-var indexInfo = {};
-var file = GitFile.createSkeleton(indexInfo, {});
+var offsets = {};
+var file = GitFile.createSkeleton(offsets, {});
 console.log('empty skeleton file:\n' + GitFile.catFile(file));
 
 var hashAt = function (i) {
     return GitFile.hexArrayToString(file.slice(i, i + 20));
 };
 
-file = GitFile.createSkeleton(indexInfo, {
+file = GitFile.createSkeleton(offsets, {
     foo: 'blob',
 });
 
-file = GitFile.addProperty(file, indexInfo, 'bar', 'tree');
-file = GitFile.addProperty(file, indexInfo, 'www', 'blob');
+file = GitFile.addProperty(file, offsets, 'bar', 'tree');
+file = GitFile.addProperty(file, offsets, 'www', 'blob');
 console.log('barfoowww file:')
 console.log(prettyPrint(file));
 console.log(GitFile.catFile(file));
-console.log(indexInfo.bar, indexInfo.foo, indexInfo.www);
-console.log(hashAt(indexInfo.bar), hashAt(indexInfo.foo), hashAt(indexInfo.www));
+console.log(offsets.bar, offsets.foo, offsets.www);
+console.log(hashAt(offsets.bar), hashAt(offsets.foo), hashAt(offsets.www));
 
-file = GitFile.createSkeleton(indexInfo, {
+file = GitFile.createSkeleton(offsets, {
     foo: 'blob',
 });
-file = GitFile.addProperty(file, indexInfo, 'food', 'blob');
-file = GitFile.addProperty(file, indexInfo, 'fo', 'tree');
+file = GitFile.addProperty(file, offsets, 'food', 'blob');
+file = GitFile.addProperty(file, offsets, 'fo', 'tree');
 console.log('fofoofood file:');
-GitFile.setHash(file, indexInfo.foo, helloHash, 0);
+GitFile.setHash(file, offsets.foo, helloHash, 0);
 console.log(GitFile.catFile(file));
 
-file = GitFile.createSkeleton(indexInfo, {
-    foo: 'blob',
+file = GitFile.createSkeleton(offsets, {
+    food: 'blob',
     bar: 'tree',
-    baz: 'blob',
+    bazzle: 'blob',
 });
 console.log(GitFile.catFile(file));
+console.log(hashAt(offsets.food));

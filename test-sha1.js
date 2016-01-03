@@ -253,13 +253,13 @@ console.log(hexArrayToString(hash));
 rushaRawDigest8(blahArray, hash, 0);
 console.log(hexArrayToString(hash));
 
-Sha1.hash(smallArray, hash, 0);
+Sha1.hashString(smallTest, hash, 0);
 if (hexArrayToString(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
     console.log('wrong small digest');
     process.exit(1);
 }
 
-Sha1.hash(mediumArray, hash, 0);
+Sha1.hashString(mediumTest, hash, 0);
 if (hexArrayToString(hash) !== 'ed7306fdc97d37b3376e818adff5102abfb7ad7f') {
     console.log('wrong medium digest');
     process.exit(1);

@@ -123,13 +123,13 @@ GitFile.catFile = function (file) {
     }
 };
 
-GitFile.hashEqual = function (hash1, index1, hash2, index2) {
-    if (!hash1 || !hash2) {
-        return false;
+GitFile.hashEqual = function (hash1, offset1, hash2, offset2) {
+    if (hash1 === hash2 && offset1 === offset2) {
+        return true;
     }
     var i;
     for (i = 0; i < 20; i++) {
-        if (hash1[index1 + i] !== hash2[index2 + i]) {
+        if (hash1[offset1 + i] !== hash2[offset2 + i]) {
             return false;
         }
     }
@@ -149,27 +149,18 @@ var arrayEqual = function (array1, array2) {
     return true;
 };
 
-GitFile.createSkeleton = function (indexInfo, props) {
+GitFile.createSkeleton = function (offsets, props) {
     var file = emptyTree;
 
-    var names = Object.keys(props).sort();
-    var i;
-    for (i = 0; i < names.length; i++) {
-        var name = names[i];
-        var type = props[name];
-        var hash;
-        if (type === 'tree') {
-            hash = emptyTreeHash;
-        } else {
-            hash = emptyBlobHash;
-        }
-        file = GitFile.appendProperty(file, indexInfo, name, type, hash);
+    var name;
+    for (name in props) {
+        file = GitFile.addProperty(file, offsets, name, props[name]);
     }
 
     return file;
 };
 
-GitFile.addProperty = function (oldFile, indexInfo, insertName, type) {
+GitFile.addProperty = function (oldFile, offsets, insertName, type) {
     if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
         oldFile = actuallyEmptyTree;
     }
@@ -219,6 +210,7 @@ GitFile.addProperty = function (oldFile, indexInfo, insertName, type) {
         for (i = j; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
+        offsets[name] = offset + filenameEnd + 1;
         j = filenameEnd + 21;
     }
 
@@ -234,7 +226,7 @@ GitFile.addProperty = function (oldFile, indexInfo, insertName, type) {
     }
     k += i + 1;
 
-    indexInfo[insertName] = k;
+    offsets[insertName] = k;
     for (i = 0; i < hash.length; i++) {
         file[k + i] = hash[i];
     }
@@ -251,74 +243,17 @@ GitFile.addProperty = function (oldFile, indexInfo, insertName, type) {
         for (i = j; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
-        indexInfo[name] = offset + filenameEnd + 1;
+        offsets[name] = offset + filenameEnd + 1;
         j = filenameEnd + 21;
     }
 
     return file;
 };
 
-// TODO: speed up appendProperty by only allocating a new buffer if
-// more space is needed, or if lengthString.length changes.
-GitFile.appendProperty = function (oldFile, indexInfo, insertName, type, hash) {
-    if (oldFile === emptyTree || arrayEqual(oldFile, emptyTree)) {
-        oldFile = actuallyEmptyTree;
-    }
-
-    var oldHeaderLength = oldFile.indexOf(0, 6) + 1;
-    var oldLength = oldFile.length - oldHeaderLength;
-
-    var mode;
-    if (type === 'tree') {
-        mode = treeMode;
-    } else {
-        mode = blobMode;
-    }
-    var length = oldLength + mode.length + 1 + insertName.length + 1 + 20;
-    var lengthString = '' + length;
-    var headerLength = treePrefix.length + lengthString.length + 1;
-
-    var file = new Uint8Array(headerLength + length);
-
-    var i, j;
-    for (i = 0; i < treePrefix.length; i++) {
-        file[i] = treePrefix[i];
-    }
-
-    j = i;
-    for (i = 0; i < lengthString.length; i++) {
-        file[j + i] = lengthString.charCodeAt(i);
-    }
-    j += i + 1;
-
-    for (i = 0; i < oldLength; i++) {
-        file[j + i] = oldFile[oldHeaderLength + i];
-    }
-    j += i;
-
-    for (i = 0; i < mode.length; i++) {
-        file[j + i] = mode[i];
-    }
-    file[j + i] = 0x20;
-    j += i + 1;
-
-    for (i = 0; i < insertName.length; i++) {
-        file[j + i] = insertName.charCodeAt(i);
-    }
-    j += i + 1;
-
-    indexInfo[insertName] = j;
-    for (i = 0; i < hash.length; i++) {
-        file[j + i] = hash[i];
-    }
-
-    return file;
-};
-
-GitFile.setHash = function (file, index, hash, hashStart) {
+GitFile.setHash = function (file, offset, hash, hashOffset) {
     var i;
     for (i = 0; i < 20; i++) {
-        file[index + i] = hash[hashStart + i];
+        file[offset + i] = hash[hashOffset + i];
     }
 };
 
