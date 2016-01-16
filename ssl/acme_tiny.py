@@ -32,9 +32,9 @@ def get_crt(account_key, csr, acme_dir, log=LOGGER, CA=DEFAULT_CA):
     header = {
         "alg": "RS256",
         "jwk": {
-            "e": _b64(binascii.unhexlify(pub_exp)),
+            "e": _b64(binascii.unhexlify(pub_exp.encode("utf-8"))),
             "kty": "RSA",
-            "n": _b64(binascii.unhexlify(re.sub(r"(\s|:)", "", pub_hex))),
+            "n": _b64(binascii.unhexlify(re.sub(r"(\s|:)", "", pub_hex).encode("utf-8"))),
         },
     }
     accountkey_json = json.dumps(header['jwk'], sort_keys=True, separators=(',', ':'))
@@ -59,7 +59,7 @@ def get_crt(account_key, csr, acme_dir, log=LOGGER, CA=DEFAULT_CA):
             resp = urlopen(url, data.encode('utf8'))
             return resp.getcode(), resp.read()
         except IOError as e:
-            return e.code, e.read()
+            return getattr(e, "code", None), getattr(e, "read", e.__str__)()
 
     # find domains
     log.info("Parsing CSR...")
