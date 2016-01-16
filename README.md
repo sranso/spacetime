@@ -1,14 +1,14 @@
 # Spacetime
 
-Spacetime is a programming environment for 2D graphics with a different approach to time. Programs are a two dimensional grid of cells with time as the x dimension. See [makespacetime.com](https://makespacetime.com) for an introduction and demo.
+Spacetime is a programming environment for 2D graphics with a different approach to time. Programs are a two dimensional grid of cells with time as the x dimension. See [spacetimeup.com](https://spacetimeup.com) for an introduction and demo.
 
 ## Try it out
 
-* On the web: Go to [makespacetime.com/b13/new](https://makespacetime.com/b13/new) to try Spacetime. The usage is on the [home page](https://makespacetime.com) (demo and text).
+* On the web: Go to [spacetimeup.com/b13/new](https://spacetimeup.com/b13/new) to try Spacetime. The usage is on the [home page](https://spacetimeup.com) (demo and text).
 * Locally:
 
 ``` bash
-$ git clone https://github.com/makespacetime/spacetime.git
+$ git clone https://github.com/spacetimeup/spacetime.git
 $ cd spacetime
 $ open new.html
 ```
@@ -17,7 +17,7 @@ $ open new.html
 
 Spacetime is extremely early stage software. It's currently in the "research" phase, which means that the goal is to explore ideas and not to make a polished product. Essential functionality will be missing, and I may throw all the code away and start over (as I've done twice already).
 
-If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/makespacetime) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you're interested in contributing, let me know there.
+If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/spacetimeup) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you're interested in contributing, let me know there.
 
 ## Copyright and License
 
@@ -33,4 +33,4 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
-The license is available at [LICENSE.txt](https://github.com/makespacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/makespacetime/spacetime/tree/master/LICENSES).
+The license is available at [LICENSE.txt](https://github.com/spacetimeup/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimeup/spacetime/tree/master/LICENSES).
