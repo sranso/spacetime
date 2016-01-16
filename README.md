@@ -19,7 +19,9 @@ Spacetime is extremely early stage software. It's currently in the "research" ph
 
 If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/spacetimeup) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you're interested in contributing, let me know there.
 
-## Copyright and License
+## License and Copyright
+
+The license is available at [LICENSE.txt](https://github.com/spacetimeup/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimeup/spacetime/tree/master/LICENSES).
 
 Copyright &copy; 2015  Jacob Sandlund
 
@@ -32,5 +34,3 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
-
-The license is available at [LICENSE.txt](https://github.com/spacetimeup/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimeup/spacetime/tree/master/LICENSES).
