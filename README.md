@@ -1,6 +1,6 @@
 # Spacetime Platform
 
-This is the platform underlying [makespacetime.com](https://makespacetime.com/). Currently it just handles the deploys, which mostly entails minifying the sources and making them available to Nginx.
+This is the platform underlying [spacetimeup.com](https://spacetimeup.com/). Currently it just handles the deploys, which mostly entails minifying the sources and making them available to Nginx.
 
 ## Copyright and License
 
@@ -16,4 +16,4 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
 
-The license is available at [LICENSE.txt](https://github.com/makespacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/makespacetime/spacetime/tree/master/LICENSES).
+The license is available at [LICENSE.txt](https://github.com/spacetimeup/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimeup/spacetime/tree/master/LICENSES).
