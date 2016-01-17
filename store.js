@@ -5,45 +5,40 @@ var GitFile = require('./git-file');
 (function () {
 
 var hashBitsToShift = 32;
-var objects = Store._objects = [[]];
+var objectStore = Store._objects = [[]];
 var load = 0;
-var al = 2 * Math.floor(Math.random() * Math.pow(2, 15)) + 1;
-var ah = Math.floor(Math.random() * Math.pow(2, 16));
+var a = Math.floor(Math.random() * Math.pow(2, 32)) | 1;
 
 var resizeObjects = function () {
     hashBitsToShift -= 1;
-    var newObjects = new Array(objects.length * 2);
+    var newStore = new Array(objectStore.length * 2);
 
     var i, j;
-    for (i = 0; i < newObjects.length; i += 2) {
-        newObjects[i] = [];
-        newObjects[i + 1] = [];
-        var oldList = objects[i >> 1];
+    for (i = 0; i < newStore.length; i += 2) {
+        newStore[i] = [];
+        newStore[i + 1] = [];
+        var oldList = objectStore[i >> 1];
         for (j = 0; j < oldList.length; j++) {
             var object = oldList[j];
             var hash = object.hash;
             var offset = object.hashOffset;
-            var hl = (hash[offset + 2] << 8) | hash[offset + 3];
-            var hh = (hash[offset] << 8) | hash[offset + 1];
-            var h = (((hh * al + hl * ah) & 0xffff) << 16) | ((hl * al) & 0xffff);
+            var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
 
-            newObjects[h >>> hashBitsToShift].push(object);
+            newStore[h >>> hashBitsToShift].push(object);
         }
     }
-    objects = Store._objects = newObjects;
+    objectStore = Store._objects = newStore;
 };
 
-while (objects.length < 4) {
+while (objectStore.length < 4) {
     resizeObjects();
 }
 
 Store.save = function (object) {
     var hash = object.hash;
     var offset = object.hashOffset;
-    var hl = (hash[offset + 2] << 8) | hash[offset + 3];
-    var hh = (hash[offset] << 8) | hash[offset + 1];
-    var h = (((hh * al + hl * ah) & 0xffff) << 16) | ((hl * al) & 0xffff);
-    var list = objects[h >>> hashBitsToShift];
+    var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = objectStore[h >>> hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -54,7 +49,7 @@ Store.save = function (object) {
 
     load++;
     list.push(object);
-    if (load > 0.75 * objects.length) {
+    if (load > 0.75 * objectStore.length) {
         resizeObjects();
     }
 
@@ -62,10 +57,8 @@ Store.save = function (object) {
 };
 
 Store.get = function (hash, offset) {
-    var hl = (hash[offset + 2] << 8) | hash[offset + 3];
-    var hh = (hash[offset] << 8) | hash[offset + 1];
-    var h = (((hh * al + hl * ah) & 0xffff) << 16) | ((hl * al) & 0xffff);
-    var list = objects[h >>> hashBitsToShift];
+    var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = objectStore[h >>> hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -83,6 +76,51 @@ Store.createBlobObject = function (data, file, hash, hashOffset) {
         hash: hash,
         hashOffset: hashOffset,
     };
+};
+
+var clamp = function (d, length) {
+    if (d.length > length) {
+        return d.slice(0, length - 2) + '..';
+    } else {
+        return d;
+    }
+};
+
+var ignoreKeys = ['file', 'hash', 'hashOffset'];
+
+var prettyPrintObject = function (object) {
+    var data;
+    if (object.hasOwnProperty('data')) {
+        data = '' + object.data;
+    } else {
+        var keys = Object.keys(object);
+        keys = keys.filter(function (key) {
+            return ignoreKeys.indexOf(key) === -1;
+        });
+        data = keys.map(function (key) {
+            var d = '' + object[key];
+            return clamp(key, 6) + '=' + clamp(d, 6);
+        }).join(' ');
+    }
+    var hash = GitFile.hashToString(object.hash, object.hashOffset);
+    return '#<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>';
+};
+
+Store.prettyPrint = function () {
+    var pretty = [];
+    var i, j;
+    for (i = 0; i < objectStore.length; i++) {
+        var list = objectStore[i];
+        if (list.length) {
+            var entries = [];
+            for (j = 0; j < list.length; j++) {
+                entries.push(prettyPrintObject(list[j]));
+            }
+            pretty.push(i, ': ', entries.join(', '), '\n');
+        }
+    }
+
+    return pretty.join('');
 };
 
 })();

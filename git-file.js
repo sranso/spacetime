@@ -12,10 +12,10 @@ var stringToArray = function (string) {
     return array;
 };
 
-GitFile.hexArrayToString = function (array) {
+GitFile.hashToString = function (hash, offset) {
     var str = [];
-    for (var i = 0; i < array.length; i++) {
-        var hex = '00' + array[i].toString(16);
+    for (var i = 0; i < 20; i++) {
+        var hex = '00' + hash[offset + i].toString(16);
         str.push(hex.slice(-2));
     }
     return str.join('');
@@ -112,7 +112,7 @@ GitFile.catFile = function (file) {
             var filename = String.fromCharCode.apply(null, file.slice(j, filenameEnd));
 
             j = filenameEnd + 1;
-            var hash = GitFile.hexArrayToString(file.slice(j, j + 20));
+            var hash = GitFile.hashToString(file, j);
             pretty.push([mode, subType, hash, '  ', filename].join(' '));
 
             j += 20;

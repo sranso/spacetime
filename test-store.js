@@ -27,12 +27,15 @@ var countBlobObject = Store.createBlobObject(object.count, countBlob, object.fil
 Store.save(countBlobObject);
 
 var got = Store.get(object.file, offsets.count);
-console.log(Object.keys(got));
+console.log('got keys', Object.keys(got));
 console.log(got.data);
 
 Sha1.hash(object.file, object.hash, object.hashOffset);
 got = Store.save(object);
-console.log(Object.keys(got));
+console.log('saved keys', Object.keys(got));
 
 got = Store.get(object.hash, object.hashOffset);
-console.log(Object.keys(got));
+console.log('got keys', Object.keys(got));
+
+console.log('\npretty print:');
+console.log(Store.prettyPrint());
