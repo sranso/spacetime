@@ -9,6 +9,11 @@ var objectStore = Store._objects = [[]];
 var load = 0;
 var a = Math.floor(Math.random() * Math.pow(2, 32)) | 1;
 
+var fillStoreWithBase = function () {
+    Store.save(Store.createBlobObject('', GitFile.emptyBlob, GitFile.emptyBlobHash, 0));
+    Store.save(Store.createBlobObject(null, GitFile.emptyTree, GitFile.emptyTreeHash, 0));
+};
+
 var resizeObjects = function () {
     hashBitsToShift -= 1;
     var newStore = new Array(objectStore.length * 2);
@@ -122,5 +127,7 @@ Store.prettyPrint = function () {
 
     return pretty.join('');
 };
+
+fillStoreWithBase();
 
 })();
