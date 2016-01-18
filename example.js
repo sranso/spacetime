@@ -1,6 +1,7 @@
 var Store = require('./store');
 var GitFile = require('./git-file');
 var Sha1 = require('./sha1');
+var HighLevelApi = require('./high-level-api');
 
 var Grid = {};
 Grid.offsets = {};
@@ -36,6 +37,8 @@ Grid.none.file = GitFile.createSkeleton(Grid.offsets, {
     cell2: 'tree',
     cell3: 'tree',
 });
+
+HighLevelApi.setup(Grid);
 
 var zeroBlob = GitFile.blobFromString('0');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
@@ -78,6 +81,8 @@ Cell.none.file = GitFile.createSkeleton(Cell.offsets, {
     color: 'blob',
 });
 
+HighLevelApi.setup(Cell);
+
 var colorBlob = GitFile.blobFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 Store.save(Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
@@ -93,6 +98,7 @@ console.log(Store.prettyPrint());
 
 console.log('###');
 
+// low-level
 var grid1 = Grid.clone(Grid.none);
 
 var cell1 = Cell.clone(Cell.none);
@@ -109,4 +115,10 @@ grid1.cell1 = Store.save(cell1);
 grid1.hash = new Uint8Array(20);
 Sha1.hash(grid1.file, grid1.hash, grid1.hashOffset);
 Store.save(grid1);
+
+// high-level
+var cell2 = Cell.set(cell1, 'color', 'red');
+var cell3 = Cell.set(cell2, 'text', 'bar');
+var grid2 = Grid.setAll(grid1, {cell2: cell2, cell3: cell3});
+
 console.log(Store.prettyPrint());
