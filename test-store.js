@@ -24,13 +24,12 @@ var countBlob = GitFile.blobFromString('' + object.count);
 Sha1.hash(countBlob, object.file, offsets.count);
 console.log(GitFile.catFile(object.file));
 var countBlobObject = Store.createBlobObject(object.count, countBlob, object.file, offsets.count);
-Store.save(countBlobObject);
+Store.savePreHashed(countBlobObject);
 
 var got = Store.get(object.file, offsets.count);
 console.log('got keys', Object.keys(got));
 console.log(got.data);
 
-Sha1.hash(object.file, object.hash, object.hashOffset);
 got = Store.save(object);
 console.log('saved keys', Object.keys(got));
 

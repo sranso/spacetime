@@ -2,6 +2,7 @@
 var Store = {};
 module.exports = Store;
 var GitFile = require('./git-file');
+var Sha1 = require('./sha1');
 (function () {
 
 var hashBitsToShift = 32;
@@ -40,6 +41,11 @@ while (objectStore.length < 4) {
 }
 
 Store.save = function (object) {
+    Sha1.hash(object.file, object.hash, object.hashOffset);
+    return Store.savePreHashed(object);
+};
+
+Store.savePreHashed = function (object) {
     var hash = object.hash;
     var offset = object.hashOffset;
     var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
@@ -81,6 +87,12 @@ Store.createBlobObject = function (data, file, hash, hashOffset) {
         hash: hash,
         hashOffset: hashOffset,
     };
+};
+
+Store.saveBlob = function (data, hash, hashOffset) {
+    var file = GitFile.blobFromString('' + data);
+    Sha1.hash(file, hash, hashOffset);
+    Store.save(Store.createBlobObject(data, file, hash, hashOffset));
 };
 
 var clamp = function (d, length) {
