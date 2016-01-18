@@ -12,8 +12,8 @@ Grid.clone = function (original) {
         cell1: original.cell1,
         cell2: original.cell2,
         cell3: original.cell3,
-        file: original.file,
-        hash: original.hash,
+        file: original.file.slice(),
+        hash: null,
         hashOffset: original.hashOffset,
     };
 };
@@ -42,6 +42,7 @@ Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 Store.save(Store.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
+Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
 Store.save(Grid.none);
 
@@ -56,8 +57,8 @@ Cell.clone = function (original) {
         grid: original.grid,
         text: original.text,
         color: original.color,
-        file: original.file,
-        hash: original.hash,
+        file: original.file.slice(),
+        hash: null,
         hashOffset: original.hashOffset,
     };
 };
@@ -77,14 +78,35 @@ Cell.none.file = GitFile.createSkeleton(Cell.offsets, {
     color: 'blob',
 });
 
-var colorBlob = GitFile.blobFromString('' + Cell.none.color);
+var colorBlob = GitFile.blobFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 Store.save(Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
+Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
 Store.save(Cell.none);
 
 console.log('###');
 console.log(GitFile.catFile(Cell.none.file));
 console.log('');
+console.log(Store.prettyPrint());
+
+console.log('###');
+
+var grid1 = Grid.clone(Grid.none);
+
+var cell1 = Cell.clone(Cell.none);
+cell1.text = 'foo';
+var blob = GitFile.blobFromString(cell1.text);
+Sha1.hash(blob, cell1.file, Cell.offsets.text);
+Store.save(Store.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
+
+cell1.hash = grid1.file;
+cell1.hashOffset = Grid.offsets.cell1;
+Sha1.hash(cell1.file, cell1.hash, cell1.hashOffset);
+grid1.cell1 = Store.save(cell1);
+
+grid1.hash = new Uint8Array(20);
+Sha1.hash(grid1.file, grid1.hash, grid1.hashOffset);
+Store.save(grid1);
 console.log(Store.prettyPrint());

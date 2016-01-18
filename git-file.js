@@ -85,10 +85,10 @@ var treeMode = stringToArray('40000');
 var blobMode = stringToArray('100644');
 
 GitFile.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.slice(0, file.indexOf(0x20)));
+    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20)));
 
     if (type === 'blob') {
-        return String.fromCharCode.apply(null, file.slice(file.indexOf(0)));
+        return String.fromCharCode.apply(null, file.subarray(file.indexOf(0)));
 
     } else if (type === 'tree') {
         var pretty = [];
@@ -98,7 +98,7 @@ GitFile.catFile = function (file) {
             var modeEnd = file.indexOf(0x20, j + 5);
             var filenameEnd = file.indexOf(0, modeEnd + 2);
 
-            var mode = String.fromCharCode.apply(null, file.slice(j, modeEnd));
+            var mode = String.fromCharCode.apply(null, file.subarray(j, modeEnd));
             if (mode === '100644') {
                 var subType = 'blob';
             } else if (mode === '40000') {
@@ -109,7 +109,7 @@ GitFile.catFile = function (file) {
             }
 
             j = modeEnd + 1;
-            var filename = String.fromCharCode.apply(null, file.slice(j, filenameEnd));
+            var filename = String.fromCharCode.apply(null, file.subarray(j, filenameEnd));
 
             j = filenameEnd + 1;
             var hash = GitFile.hashToString(file, j);
@@ -200,7 +200,7 @@ GitFile.addProperty = function (oldFile, offsets, insertName, type) {
         var modeEnd = oldFile.indexOf(0x20, j + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
 
-        var name = String.fromCharCode.apply(null, oldFile.slice(modeEnd + 1, filenameEnd));
+        var name = String.fromCharCode.apply(null, oldFile.subarray(modeEnd + 1, filenameEnd));
 
         if (insertName < name) {
             break;
@@ -237,7 +237,7 @@ GitFile.addProperty = function (oldFile, offsets, insertName, type) {
         var modeEnd = oldFile.indexOf(0x20, j + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
 
-        var name = String.fromCharCode.apply(null, oldFile.slice(modeEnd + 1, filenameEnd));
+        var name = String.fromCharCode.apply(null, oldFile.subarray(modeEnd + 1, filenameEnd));
 
         copyEnd = filenameEnd + 21;
         for (i = j; i < copyEnd; i++) {

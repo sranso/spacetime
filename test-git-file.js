@@ -72,4 +72,4 @@ file = GitFile.createSkeleton(offsets, {
     bazzle: 'blob',
 });
 console.log(GitFile.catFile(file));
-console.log(hashAt(offsets.food));
+console.log('hashAt offsets.food', hashAt(offsets.food));
