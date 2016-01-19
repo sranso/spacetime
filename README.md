@@ -1,10 +1,10 @@
 # Spacetime
 
-Spacetime is a programming environment for 2D graphics with a different approach to time. Programs are a two dimensional grid of cells with time as the x dimension. See [spacetime.me](https://spacetime.me) for an introduction and demo.
+Spacetime is a programming environment for 2D graphics with a different approach to time. Programs are a two dimensional grid of cells with time as the x dimension. See [spacetime.me](https://www.spacetime.me) for an introduction and demo.
 
 ## Try it out
 
-* On the web: Go to [spacetime.me/b13/new](https://spacetime.me/b13/new) to try Spacetime. The usage is on the [home page](https://spacetime.me) (demo and text).
+* On the web: Go to [spacetime.me/b13/new](https://www.spacetime.me/b13/new) to try Spacetime. The usage is on the [home page](https://www.spacetime.me) (demo and text).
 * Locally:
 
 ``` bash
