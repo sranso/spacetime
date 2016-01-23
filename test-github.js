@@ -41,6 +41,8 @@ var main = function (accessToken) {
         console.log(this.responseText);
     });
 
-    xhr.open('GET', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
+    //xhr.open('GET', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
+    xhr.open('POST', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
+    xhr.setRequestHeader('Content-Type', 'application/x-git-receive-pack-request');
     xhr.send();
 };

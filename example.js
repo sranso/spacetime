@@ -1,7 +1,4 @@
-var Store = require('./store');
-var GitFile = require('./git-file');
-var Sha1 = require('./sha1');
-var HighLevelApi = require('./high-level-api');
+require('./test-helper');
 
 var Grid = {};
 Grid.offsets = {};
@@ -30,7 +27,7 @@ Grid.none = Grid.clone({
     hashOffset: 0,
 });
 
-Grid.none.file = GitFile.createSkeleton(Grid.offsets, {
+Grid.none.file = GitTree.createSkeleton(Grid.offsets, {
     rows: 'blob',
     columns: 'blob',
     cell1: 'tree',
@@ -40,7 +37,7 @@ Grid.none.file = GitFile.createSkeleton(Grid.offsets, {
 
 HighLevelApi.setup(Grid);
 
-var zeroBlob = GitFile.blobFromString('0');
+var zeroBlob = GitBlob.fromString('0');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 Store.save(Store.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
@@ -75,7 +72,7 @@ Cell.none = Cell.clone({
     hashOffset: 0,
 });
 
-Cell.none.file = GitFile.createSkeleton(Cell.offsets, {
+Cell.none.file = GitTree.createSkeleton(Cell.offsets, {
     grid: 'tree',
     text: 'blob',
     color: 'blob',
@@ -83,7 +80,7 @@ Cell.none.file = GitFile.createSkeleton(Cell.offsets, {
 
 HighLevelApi.setup(Cell);
 
-var colorBlob = GitFile.blobFromString(Cell.none.color);
+var colorBlob = GitBlob.fromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 Store.save(Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
@@ -103,7 +100,7 @@ var grid1 = Grid.clone(Grid.none);
 
 var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
-var blob = GitFile.blobFromString(cell1.text);
+var blob = GitBlob.fromString(cell1.text);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
 Store.save(Store.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 

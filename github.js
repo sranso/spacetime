@@ -1,5 +1,5 @@
 'use strict';
-var Github = {};
+global.GitHub = {};
 (function () {
 
 })();

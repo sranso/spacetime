@@ -1,9 +1,7 @@
-var Store = require('./store');
-var GitFile = require('./git-file');
-var Sha1 = require('./sha1');
+require('./test-helper');
 
 var offsets = {};
-var file = GitFile.createSkeleton(offsets, {
+var file = Tree.createSkeleton(offsets, {
     text: 'blob',
     count: 'blob',
     child: 'tree',
@@ -20,7 +18,7 @@ var object = {
     hashOffset: 0,
 };
 
-var countBlob = GitFile.blobFromString('' + object.count);
+var countBlob = Blob.fromString('' + object.count);
 Sha1.hash(countBlob, object.file, offsets.count);
 console.log(GitFile.catFile(object.file));
 var countBlobObject = Store.createBlobObject(object.count, countBlob, object.file, offsets.count);

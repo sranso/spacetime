@@ -1,7 +1,5 @@
 'use strict';
-var Store = {};
-module.exports = Store;
-var GitFile = require('./git-file');
+global.Store = {};
 (function () {
 
 var hashBitsToShift = 32;
@@ -10,8 +8,8 @@ var load = 0;
 var a = Math.floor(Math.random() * Math.pow(2, 32)) | 1;
 
 var fillStoreWithBase = function () {
-    Store.save(Store.createBlobObject('', GitFile.emptyBlob, GitFile.emptyBlobHash, 0));
-    Store.save(Store.createBlobObject(null, GitFile.emptyTree, GitFile.emptyTreeHash, 0));
+    Store.save(Store.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
+    Store.save(Store.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
 };
 
 var resizeObjects = function () {

@@ -1,9 +1,5 @@
 'use strict';
-var HighLevelApi = {};
-module.exports = HighLevelApi;
-var GitFile = require('./git-file');
-var Store = require('./store');
-var Sha1 = require('./sha1');
+global.HighLevelApi = {};
 (function () {
 
 HighLevelApi.setup = function (Thing) {
@@ -14,7 +10,7 @@ HighLevelApi.setup = function (Thing) {
             GitFile.setHash(thing.file, Thing.offsets[prop], value.hash, value.hashOffset);
             thing[prop] = value;
         } else {
-            var blob = GitFile.blobFromString('' + value);
+            var blob = Blob.fromString('' + value);
             var hashOffset = Thing.offsets[prop];
             Sha1.hash(blob, thing.file, hashOffset);
             var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
@@ -36,7 +32,7 @@ HighLevelApi.setup = function (Thing) {
                 GitFile.setHash(thing.file, Thing.offsets[prop], value.hash, value.hashOffset);
                 thing[prop] = value;
             } else {
-                var blob = GitFile.blobFromString('' + value);
+                var blob = Blob.fromString('' + value);
                 var hashOffset = Thing.offsets[prop];
                 Sha1.hash(blob, thing.file, hashOffset);
                 var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);

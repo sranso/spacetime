@@ -1,6 +1,5 @@
 'use strict';
-var Sha1 = {};
-module.exports = Sha1;
+global.Sha1 = {};
 (function () {
 
 // 512 / 8  = 64
