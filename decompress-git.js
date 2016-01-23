@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 var fs = require('fs');
 var zlib = require('zlib');
 
@@ -8,7 +9,7 @@ var pretty = [];
 var i, c;
 for (i = 0; i < raw.length; i++) {
     c = raw[i];
-    if (32 <= c && c <= 122) {
+    if (c == 10 || 32 <= c && c <= 122) {
         pretty.push(String.fromCharCode(c));
     } else {
         pretty.push('\\x' + ('00' + c.toString(16)).slice(-2));
