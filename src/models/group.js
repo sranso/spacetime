@@ -1,5 +1,5 @@
 'use strict';
-var Group = {};
+global.Group = {};
 (function () {
 
 Group.create = function () {

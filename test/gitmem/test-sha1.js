@@ -1,7 +1,7 @@
-var Veness = require('./sha1-help/veness');
-var Rusha = require('./sha1-help/rusha');
+var Veness = require('../../doc/example-sha1-implementations/veness');
+var Rusha = require('../../doc/example-sha1-implementations/rusha');
 var crypto = require('crypto');
-require('./test-helper');
+require('../test-helper');
 
 var stringToArray = function (string) {
     var array = new Uint8Array(string.length);

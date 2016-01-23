@@ -1,5 +1,5 @@
 'use strict';
-var FullScreen = {};
+global.FullScreen = {};
 (function () {
 
 FullScreen.draw = function () {

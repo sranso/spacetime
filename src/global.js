@@ -1,7 +1,7 @@
 'use strict';
-var $Project = Project.none;
+global.$Project = Project.none;
 
-var Global = {};
+global.Global = {};
 
 Global.currentInput = Input.create();
 Global.capturedInput = Global.currentInput;
@@ -25,7 +25,7 @@ Global.drawTick = 0;
 
 Global.mouseDownOnPlayBar = false;
 
-var __stats = {
+global.__stats = {
     transform_numCells: 0,
     transform_time: 0,
 

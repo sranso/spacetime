@@ -1,5 +1,5 @@
 'use strict';
-var Autocomplete = {};
+global.Autocomplete = {};
 (function () {
 
 Autocomplete.updateFromText = function (grid, original, c, r) {

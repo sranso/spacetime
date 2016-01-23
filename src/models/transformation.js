@@ -1,5 +1,5 @@
 'use strict';
-var Transformation = {};
+global.Transformation = {};
 (function () {
 
 Transformation.create = function (text, transform) {

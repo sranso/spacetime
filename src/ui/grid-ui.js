@@ -1,5 +1,5 @@
 'use strict';
-var GridUi = {};
+global.GridUi = {};
 (function () {
 
 GridUi.drawTick = 0;

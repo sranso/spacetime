@@ -1,5 +1,5 @@
 'use strict';
-var Keyboard = {};
+global.Keyboard = {};
 (function () {
 
 Keyboard.keyForEvent = function () {

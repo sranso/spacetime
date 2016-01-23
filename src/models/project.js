@@ -1,5 +1,5 @@
 'use strict';
-var Project = {};
+global.Project = {};
 (function () {
 
 Project.create = function () {

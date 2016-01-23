@@ -1,5 +1,5 @@
 'use strict';
-var Execute = {};
+global.Execute = {};
 (function () {
 
 Execute.transform = function () {

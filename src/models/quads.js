@@ -1,5 +1,5 @@
 'use strict';
-var Quads = {};
+global.Quads = {};
 (function () {
 
 Quads.create = function () {

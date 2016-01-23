@@ -1,5 +1,5 @@
 'use strict';
-var Library = {};
+global.Library = {};
 (function () {
 
 var literalNumber = Operation.create('literalNumber', function (cell) {

@@ -1,5 +1,5 @@
 'use strict';
-var PlayUi = {};
+global.PlayUi = {};
 (function () {
 
 PlayUi.setup = function () {

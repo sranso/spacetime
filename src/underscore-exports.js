@@ -1,4 +1,10 @@
 'use strict';
-_ = {
-    random: _.random,
-};
+if (typeof exports === 'undefined') {
+    global._ = {
+        random: global._.random,
+    };
+} else {
+    // TODO: implement a seedable PRNG, and replace _.random
+    // with something else.
+    global._ = {random: require('../vendor/underscore.js').random};
+}

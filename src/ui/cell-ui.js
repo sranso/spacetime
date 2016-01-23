@@ -1,5 +1,5 @@
 'use strict';
-var CellUi = {};
+global.CellUi = {};
 (function () {
 
 CellUi.draw = function (info) {

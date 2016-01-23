@@ -1,5 +1,5 @@
 'use strict';
-var Operation = {};
+global.Operation = {};
 (function () {
 
 Operation.create = function (text, execute) {

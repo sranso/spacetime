@@ -1,4 +1,4 @@
-require('./test-helper');
+require('../test-helper');
 
 var offsets = {};
 var file = Tree.createSkeleton(offsets, {

@@ -1,5 +1,5 @@
 'use strict';
-var MathLibrary = {};
+global.MathLibrary = {};
 (function () {
 
 var plusOne = Operation.create('plusOne', function (cell, a) {

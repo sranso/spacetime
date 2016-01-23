@@ -1,5 +1,5 @@
 'use strict';
-var LevelUi = {};
+global.LevelUi = {};
 (function () {
 
 LevelUi.draw = function () {

@@ -1,5 +1,5 @@
 'use strict';
-var QuadsLibrary = {};
+global.QuadsLibrary = {};
 (function () {
 
 var inverseMatrix = mat2d.create();

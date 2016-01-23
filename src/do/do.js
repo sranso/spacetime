@@ -1,5 +1,5 @@
 'use strict';
-var Do = {};
+global.Do = {};
 (function () {
 
 Do.selectCell = function (d) {
@@ -243,7 +243,5 @@ var boxInSight = function (top, left) {
         bottomR: bottomR,
     };
 };
-
-Global.boxInSight = boxInSight(0, 0);
 
 })();

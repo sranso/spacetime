@@ -1,5 +1,5 @@
 'use strict';
-var Main = {};
+global.Main = {};
 (function () {
 
 Main.update = function () {
@@ -32,6 +32,8 @@ var logStats = function () {
 Main.setup = function () {
     // $Project = buildFilledProject();
     $Project = buildEmptyProject();
+
+    Global.boxInSight = boxInSight(0, 0);
 
     Ui.setup();
 
@@ -116,6 +118,8 @@ Main.tick = function (time) {
     window.requestAnimationFrame(Main.tick);
 };
 
-Main.setup();
+if (typeof exports === 'undefined') {
+    Main.setup();
+}
 
 })();

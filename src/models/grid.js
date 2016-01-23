@@ -1,5 +1,5 @@
 'use strict';
-var Grid = {};
+global.Grid = {};
 (function () {
 
 Grid.create = function () {

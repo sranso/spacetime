@@ -1,5 +1,5 @@
 'use strict';
-var Ui = {};
+global.Ui = {};
 (function () {
 
 Ui.setup = function () {

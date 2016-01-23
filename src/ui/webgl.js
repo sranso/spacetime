@@ -1,5 +1,5 @@
 'use strict';
-var Webgl = {};
+global.Webgl = {};
 (function () {
 
 var createWebgl = function () {

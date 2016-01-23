@@ -1,5 +1,5 @@
 'use strict';
-var Input = {};
+global.Input = {};
 (function () {
 
 Input.create = function () {

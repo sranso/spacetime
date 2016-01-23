@@ -1,5 +1,5 @@
 'use strict';
-var Cell = {};
+global.Cell = {};
 (function () {
 
 Cell.create = function () {

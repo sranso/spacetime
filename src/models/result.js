@@ -1,5 +1,5 @@
 'use strict';
-var Result = {};
+global.Result = {};
 (function () {
 
 Result.create = function (type, value) {

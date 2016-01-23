@@ -1,5 +1,5 @@
 'use strict';
-var AreaUi = {};
+global.AreaUi = {};
 (function () {
 
 AreaUi.draw = function (info) {

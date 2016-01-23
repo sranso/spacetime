@@ -1,4 +1,4 @@
-require('./test-helper');
+require('../test-helper');
 
 var emptyHash = new Uint8Array(20);
 var emptyBlob = Blob.fromString('');

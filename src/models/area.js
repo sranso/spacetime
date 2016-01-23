@@ -1,5 +1,5 @@
 'use strict';
-var Area = {};
+global.Area = {};
 (function () {
 
 Area.create = function () {
