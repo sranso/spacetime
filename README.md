@@ -28,7 +28,7 @@ $ brew install fcgiwrap
 $ cp dev/nginx.example.conf dev/nginx.conf
 ```
 
-Edit the `dev/nginx.conf` for paths to `gitmem` and client secret. Start nginx and fcgiwrap:
+Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the client secret. Start nginx and fcgiwrap:
 
 ```
 $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock

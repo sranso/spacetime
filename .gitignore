@@ -1,3 +1,2 @@
-*.log
-nginx.conf
-git/
+dev/nginx.conf
+dev/fcgiwrap.sock

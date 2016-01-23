@@ -6,7 +6,7 @@ paramPairs.forEach(function (pair) {
 });
 
 var clientId = '82510b72e144fe5a727b';
-var redirectUri = encodeURIComponent('http://localhost:8080/test-github.html');
+var redirectUri = encodeURIComponent('http://localhost:8080/test/gitmem/test-github.html');
 var code = params.code;
 
 if (params.error) {
@@ -26,7 +26,7 @@ if (params.error) {
         });
         main(params.access_token);
     });
-    xhr.open('POST', 'http://localhost:8080/github_oauth/login/oauth/access_token');
+    xhr.open('POST', 'http://localhost:8080/github-oauth/login/oauth/access_token');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.send(body);
 } else {
@@ -41,8 +41,8 @@ var main = function (accessToken) {
         console.log(this.responseText);
     });
 
-    //xhr.open('GET', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
-    xhr.open('POST', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
-    xhr.setRequestHeader('Content-Type', 'application/x-git-receive-pack-request');
+    xhr.open('GET', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
+    //xhr.open('POST', 'http://' + accessToken + '@localhost:8080/github/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack');
+    //xhr.setRequestHeader('Content-Type', 'application/x-git-receive-pack-request');
     xhr.send();
 };
