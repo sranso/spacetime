@@ -19,6 +19,22 @@ Spacetime is extremely early stage software. It's currently in the "research" ph
 
 If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/spacetime-talk) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you're interested in contributing, let me know there.
 
+### Running local git server
+
+Install nginx and fcgiwrap
+```
+$ brew install nginx
+$ brew install fcgiwrap
+$ cp dev/nginx.example.conf dev/nginx.conf
+```
+
+Edit the `dev/nginx.conf` for paths to `gitmem` and client secret. Start nginx and fcgiwrap:
+
+```
+$ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
+$ nginx -c /Users/jakesandlund/spacetimecode/spacetime/dev/nginx.conf
+```
+
 ## License and Copyright
 
 The license is available at [LICENSE.txt](https://github.com/spacetimecode/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimecode/spacetime/tree/master/LICENSES).
