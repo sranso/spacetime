@@ -51,7 +51,6 @@ var arrayEqual = function (array1, array2) {
 
 Tree.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20)));
-    console.log(type);
 
     if (type !== 'tree') {
         throw new Error('Unexpected type: ' + type);

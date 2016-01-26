@@ -10,7 +10,7 @@ Blob.catFile = function (file) {
     if (type !== 'blob') {
         throw new Error('Unexpected type: ' + type);
     }
-    return String.fromCharCode.apply(null, file.subarray(file.indexOf(0)));
+    return String.fromCharCode.apply(null, file.subarray(file.indexOf(0) + 1));
 };
 
 Blob.fromString = function (string) {

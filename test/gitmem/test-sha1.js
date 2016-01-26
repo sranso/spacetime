@@ -1,7 +1,7 @@
 var Veness = require('../../doc/example-sha1-implementations/veness');
 var Rusha = require('../../doc/example-sha1-implementations/rusha');
 var crypto = require('crypto');
-require('../test-helper');
+var helper = require('../helper');
 
 var stringToArray = function (string) {
     var array = new Uint8Array(string.length);
@@ -243,15 +243,18 @@ var rusha = new Rusha();
 var abc = 'abc';
 var abcArray = stringToArray(abc);
 Sha1.hash(abcArray, hash, 0);
-console.log(hexArrayToString(hash));
+log(hexArrayToString(hash));
+//=> a9993e364706816aba3e25717850c26c9cd0d89d
 
 var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
 var blahArray = stringToArray(blah);
 Sha1.hash(blahArray, hash, 0);
-console.log(hexArrayToString(hash));
+log(hexArrayToString(hash));
+//=> 84983e441c3bd26ebaae4aa1f95129e5e54670f1
 
 rushaRawDigest8(blahArray, hash, 0);
-console.log(hexArrayToString(hash));
+log(hexArrayToString(hash));
+//=> 84983e441c3bd26ebaae4aa1f95129e5e54670f1
 
 Sha1.hash(smallArray, hash, 0);
 if (hexArrayToString(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
@@ -320,41 +323,44 @@ if (hexArrayToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 // large: 737.357ms   /  10000      = 73.7 us   12.1 us/kB
 
 
-console.time('small');
-for (var i = 0; i < 100000; i++) {
-    Sha1.hash(smallArray, hash, 0);
-    //Veness.hash(smallTest);
-    //rusha.digestFromString(smallTest);
-    //rusha.digestFromArrayBuffer(smallArray);
-    //rushaRawDigest8(smallArray, hash, 0);
-    //shasum = crypto.createHash('sha1');
-    //shasum.update(smallTest);
-    //shasum.digest('hex');
-}
-console.timeEnd('small');
+if (helper.runBenchmarks) {
 
-console.time('medium');
-for (var i = 0; i < 50000; i++) {
-    Sha1.hash(mediumArray, hash, 0);
-    //Veness.hash(mediumTest);
-    //rusha.digestFromString(mediumTest);
-    //rusha.digestFromArrayBuffer(mediumArray);
-    //rushaRawDigest8(mediumArray, hash, 0);
-    //shasum = crypto.createHash('sha1');
-    //shasum.update(mediumArray);
-    //shasum.digest('hex');
-}
-console.timeEnd('medium');
+    console.time('small');
+    for (var i = 0; i < 100000; i++) {
+        Sha1.hash(smallArray, hash, 0);
+        //Veness.hash(smallTest);
+        //rusha.digestFromString(smallTest);
+        //rusha.digestFromArrayBuffer(smallArray);
+        //rushaRawDigest8(smallArray, hash, 0);
+        //shasum = crypto.createHash('sha1');
+        //shasum.update(smallTest);
+        //shasum.digest('hex');
+    }
+    console.timeEnd('small');
 
-console.time('large');
-for (var i = 0; i < 10000; i++) {
-    Sha1.hash(largeArray, hash, 0);
-    //Veness.hash(largeTest);
-    //rusha.digestFromString(largeTest);
-    //rusha.digestFromArrayBuffer(largeArray);
-    //rushaRawDigest8(largeArray, hash, 0);
-    //shasum = crypto.createHash('sha1');
-    //shasum.update(largeTest);
-    //shasum.digest('hex');
+    console.time('medium');
+    for (var i = 0; i < 50000; i++) {
+        Sha1.hash(mediumArray, hash, 0);
+        //Veness.hash(mediumTest);
+        //rusha.digestFromString(mediumTest);
+        //rusha.digestFromArrayBuffer(mediumArray);
+        //rushaRawDigest8(mediumArray, hash, 0);
+        //shasum = crypto.createHash('sha1');
+        //shasum.update(mediumArray);
+        //shasum.digest('hex');
+    }
+    console.timeEnd('medium');
+
+    console.time('large');
+    for (var i = 0; i < 10000; i++) {
+        Sha1.hash(largeArray, hash, 0);
+        //Veness.hash(largeTest);
+        //rusha.digestFromString(largeTest);
+        //rusha.digestFromArrayBuffer(largeArray);
+        //rushaRawDigest8(largeArray, hash, 0);
+        //shasum = crypto.createHash('sha1');
+        //shasum.update(largeTest);
+        //shasum.digest('hex');
+    }
+    console.timeEnd('large');
 }
-console.timeEnd('large');
