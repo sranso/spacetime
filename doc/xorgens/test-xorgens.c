@@ -33,17 +33,27 @@
 const int bins=64;
 const int trials=10000000;
 const int seed0=1;
+const UINT mult=1751468273; /* random odd number */
 
 int main() {
-  UINT i, n=trials, seed=seed0, h[bins];
-  double x, sum, e, xerr;
+  UINT i, x, n=trials, seed=seed0, h[bins];
+  double sum, e, xerr;
   printf("sizeof(UINT)  = %d (should be 4 or 8)\n", (int)sizeof(UINT));
-  printf("sizeof(UREAL) = %d (should be 4 or 8)\n", (int)sizeof(UREAL));
   printf("%d trials and %d bins with seed %ld\n",(int)n,(int)bins,(long)seed);
   for (i=0; i<bins; i++) h[i]=0;
-  x = (double)xor4096r(seed);
-  printf("First random number %8g\n",x);
-  for (i=0; i<n; i++) h[(unsigned int)(bins*(double)xor4096r(0))]++;
+  x = xor4096i(seed);
+  printf("1st random number %x\n",x);
+  x = xor4096i(0);
+  printf("2nd random number %x\n",x);
+  x = xor4096i(0);
+  printf("3rd random number %x\n",x);
+  x = xor4096i(0);
+  printf("4th random number %x\n",x);
+  x = xor4096i(0);
+  printf("5th random number %x\n",x);
+  for (i=0; i<n; i++) {
+    h[(mult * xor4096i(0)) >> 26]++;  /* 26 == 32 - 6; 6 bits in 64 */
+  }
   for (i=0; i<bins; i++) printf("%3d %d\n",(int)i,(int)h[i]);
   e = (double)n/(double)bins;     /* Expected number per bin */
   for (i=0, sum=0; i<bins; i++)   /* Compute chi-squared statistic */
