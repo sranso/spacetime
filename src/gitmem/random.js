@@ -2,36 +2,66 @@
 global.Random = {};
 (function () {
 
-// Note: s0uis the upper 32 bits, s0_ is the lower 32 bits
-var s0u = 0 | 0;
-var s0_ = 0 | 0;
-var s1u = 0 | 0;
-var s1_ = 0 | 0;
+var x = [];
+var ix = 0;
+var w;
 
-Random.seed = function (x0, x0_, x1, x1_) {
-    s0u = x0u | 0;
-    s0_ = x0_ | 0;
-    s1u = x1u | 0;
-    s1_ = x1_ | 0;
+// 128 * 32 = 4096
+// 0x61c88647 (weyl) = odd approximation to 2**32 * (3-sqrt(5)) / 2.
+
+Random.seed = function (seed) {
+    if (!seed) {
+        throw new Error('Seed must be nonzero');
+    }
+
+    // Avoid correlations for close seeds.
+    // Recurrence has a period of 2**32 - 1.
+    var v = seed;
+    var j;
+    for (j = 0; j < 32; j++) {
+        v ^= v << 10;
+        v ^= v >>> 15;
+        v ^= v << 4;
+        v ^= v >>> 13;
+    }
+
+    // Initialize circular array
+    w = v;
+    for (ix = 0; ix < 128; ix++) {
+        v ^= v << 10;
+        v ^= v >>> 15;
+        v ^= v << 4;
+        v ^= v >>> 13;
+        w = (w + 0x61c88647) | 0;
+        x[ix] = (v + w) | 0;
+    }
+
+    // Discard first 512 (128 * 4) results
+    var t;
+    ix--;
+    for (j = 0; j < 512; j++) {
+        ix = (ix + 1) & 127;
+        t = x[ix];
+        t ^= t << 17;
+        t ^= t >>> 12;
+        v = x[(ix + 33) & 127];  // ix - 95 mod 128
+        v ^= v << 13;
+        v ^= v >>> 15;
+        x[ix] = t ^ v;
+    }
 };
 
-// The magic numbers are 23, 18, and 5.
-// Derived from these are (64 - x): 41, 46, 59
 Random.rand = function () {
-    var x1u = s0;
-    var x1_ = s0_;
-    var x0u = s1;
-    var x0_ = s1_;
-    s0u = x0;
-    s0_ = x0_;
-
-    x1u ^= (x1u<< 23) | (x1_ >>> 41);
-    x1_ ^= x1_ << 23;
-
-    s1u = x1u ^ x0u ^ (x1u >>> 18) ^ (x0u>>> 5);
-    s1_ = x1_ ^ x0_ ^ (x1u<< 46) ^ (x1_ >>> 18) ^ (x1u<< 59) ^ (x0_ >>> 5);
-
-    return (s1_ + x0_) >>> 0;
+    ix = (ix + 1) & 127;
+    var t = x[ix];
+    t ^= t << 17;
+    t ^= t >>> 12;
+    var v = x[(ix + 33) & 127];  // ix - 95 mod 128
+    v ^= v << 13;
+    v ^= v >>> 15;
+    x[ix] = v ^= t
+    w = (w + 0x61c88647) | 0;
+    return (v + (w ^ (w >>> 16))) >>> 0;
 };
 
 })();

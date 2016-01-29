@@ -9,6 +9,8 @@ helper.runBenchmarks = false;
 exec('find ' + __dirname + ' -type f | grep "/test-.*\\.js$"', function (err, stdout) {
     var files = stdout.replace(/\n$/, '').split('\n');
     files.forEach(function (file) {
+        //if (file.split('/').pop() !== 'test-random.js') {
         require(file);
+        //}
     });
 });

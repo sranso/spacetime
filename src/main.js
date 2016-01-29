@@ -30,6 +30,8 @@ var logStats = function () {
 };
 
 Main.setup = function () {
+    Store.setup();
+
     // $Project = buildFilledProject();
     $Project = buildEmptyProject();
 

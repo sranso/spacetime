@@ -5,9 +5,11 @@ global.Store = {};
 var hashBitsToShift = 32;
 var objectStore = Store._objects = [[]];
 var load = 0;
-var a = Math.floor(Math.random() * Math.pow(2, 32)) | 1;
+var a;
 
-var fillStoreWithBase = function () {
+Store.setup = function () {
+    a = Random.rand() | 1;
+
     Store.save(Store.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
     Store.save(Store.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
 };
@@ -125,7 +127,5 @@ Store.prettyPrint = function () {
 
     return pretty.join('');
 };
-
-fillStoreWithBase();
 
 })();

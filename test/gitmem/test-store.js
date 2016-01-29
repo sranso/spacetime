@@ -1,5 +1,8 @@
 require('../helper');
 
+Random.seed(1);
+Store.setup();
+
 var offsets = {};
 var file = Tree.createSkeleton(offsets, {
     text: 'blob',
@@ -45,8 +48,8 @@ log('got keys', Object.keys(got));
 //=> got keys [ 'text', 'count', 'child', 'helper', 'file', 'hash', 'hashOffset' ]
 
 log(Store.prettyPrint());
-//=> 1: #<0f621c text= count=0 child=null helper=null>
+//=> 0: #<0f621c text= count=0 child=null helper=null>
+//=> 1: #<70bfe9 null>
 //=> 4: #<c22708 0>
-//=> 5: #<70bfe9 null>
-//=> 6: #<e69de2 >
+//=> 5: #<e69de2 >
 //=>
