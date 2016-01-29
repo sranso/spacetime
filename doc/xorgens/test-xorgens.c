@@ -33,7 +33,7 @@
 const int bins=64;
 const int trials=10000000;
 const int seed0=1;
-const UINT mult=1751468273; /* random odd number */
+const UINT mult=1751468273; /* arbitrary odd number */
 
 int main() {
   UINT i, x, n=trials, seed=seed0, h[bins];
