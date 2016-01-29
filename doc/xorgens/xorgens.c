@@ -1,4 +1,5 @@
 /* xorgens.c version 3.05, R. P. Brent, 20080920.
+See http://maths-people.anu.edu.au/~brent/random.html
 
 ==========================================================================
 |                                                                        |
