@@ -35,7 +35,7 @@ Main.setup = function () {
     // $Project = buildFilledProject();
     $Project = buildEmptyProject();
 
-    Global.boxInSight = boxInSight(0, 0);
+    Global.boxInSight = Do.boxInSight(0, 0);
 
     Ui.setup();
 

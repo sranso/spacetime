@@ -207,7 +207,7 @@ Do.goToBeginning = function () {
 };
 
 Do.maybeRedrawAfterScroll = function (scrollTop, scrollLeft) {
-    var box = boxInSight(scrollTop, scrollLeft);
+    var box = Do.boxInSight(scrollTop, scrollLeft);
     var lastBox = Global.boxInSight;
     if (
         box.leftC !== lastBox.leftC ||
@@ -222,7 +222,7 @@ Do.maybeRedrawAfterScroll = function (scrollTop, scrollLeft) {
     }
 };
 
-var boxInSight = function (top, left) {
+Do.boxInSight = function (top, left) {
     top -= 74;
     left -= 54;
     var bottom = top + window.innerHeight;
