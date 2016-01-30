@@ -35,6 +35,27 @@ $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
 $ nginx -c /Users/jakesandlund/spacetimecode/spacetime/dev/nginx.conf
 ```
 
+### Testing
+
+Testing is done by logging values with `log`. The values are written to the test file below the log line (in addition to the terminal). Any changes to the logged values will create a diff. This means logged values must be deterministic. An example (from [test-blob.js](https://github.com/spacetimecode/spacetime/blob/master/test/gitmem/test-blob.js)):
+
+``` js
+var blob = Blob.fromString('foo');
+log(helper.prettyArray(blob));
+//=> blob 3\x00foo
+```
+
+All lines starting with `//=> ` are added automatically when the file runs (e.g. `node test-blob.js`). To run all tests, use `make`. Broken tests will result in a `git diff`. If the changed output is desired, simply `git add` the diff.
+
+This testing by logging method is new to me, but so far I like it. The test files are not as clean as they could be with a more structured testing framework, but the advantage is that making automated tests is easy and similar to printf debugging (or manual testing via printing).
+
+If you are using Vim, the following adds a keyboard shortcut (`<leader>r`) to run the test file and reload any changed logs lines.
+
+``` vim
+nnoremap <leader>r :w<CR>:Test<CR>:e<CR>
+command -nargs=0 Test execute 'silent !node % quiet' | redraw!
+```
+
 ## License and Copyright
 
 The license is available at [LICENSE.txt](https://github.com/spacetimecode/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimecode/spacetime/tree/master/LICENSES).
