@@ -2,13 +2,20 @@
 global.Store = {};
 (function () {
 
-var hashBitsToShift = 32;
-var objectStore = Store._objects = [[]];
-var load = 0;
+var hashBitsToShift;
+var objectStore = Store._objects = null;
+var load;
 var a;
 
 Store.setup = function () {
+    hashBitsToShift = 32;
+    objectStore = Store._objects = [[]];
+    load = 0;
     a = Random.rand() | 1;
+
+    while (objectStore.length < 4) {
+        resizeObjects();
+    }
 
     Store.save(Store.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
     Store.save(Store.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
@@ -34,10 +41,6 @@ var resizeObjects = function () {
     }
     objectStore = Store._objects = newStore;
 };
-
-while (objectStore.length < 4) {
-    resizeObjects();
-}
 
 Store.save = function (object) {
     var hash = object.hash;
