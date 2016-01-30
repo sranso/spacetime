@@ -15,7 +15,7 @@ var buildAll = function (buildCallback) {
         async.apply(fs.mkdir, 'dist/vendor'),
         function (callback) {
             fs.readdir('spacetime/vendor', function (err, vendorFiles) {
-                if (err) return callback(err);
+                if (err) throw err;
                 async.eachLimit(vendorFiles, 8, buildVendor, callback);
             });
         },
@@ -29,7 +29,7 @@ var minifiedVendors = {};
 
 var buildVendor = function (vendor, callback) {
     minifyScripts(['spacetime/vendor/' + vendor], function (err, result) {
-        if (err) return callback(err);
+        if (err) throw err;
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
         minifiedVendors['./vendor/' + vendor] = name;
@@ -96,7 +96,7 @@ var buildAllHtml = function (buildCallback) {
 // http://stackoverflow.com/questions/5827612/node-js-fs-readdir-recursive-directory-search
 var findAllHtml = function (dir, htmlFiles, findCallback) {
     fs.readdir(dir, function (err, files) {
-        if (err) return findCallback(err);
+        if (err) throw err;
         files = files.map(function (file) {
             return path.join(dir, file);
         });
@@ -120,7 +120,7 @@ var findAllHtml = function (dir, htmlFiles, findCallback) {
                 }
             });
         }, function (err) {
-            if (err) return findCallback(err);
+            if (err) throw err;
             findCallback(null, htmlFiles);
         });
     });
@@ -141,7 +141,7 @@ var maybeMakeHtmlDir = function (htmlFile, callback) {
     if (htmlDirs[dir]) return callback(null);
 
     maybeMakeHtmlDir(dir, function (err) {
-        if (err) return callback(err);
+        if (err) throw err;
         htmlDirs[dir] = true;
         fs.mkdir('dist/' + path.relative('spacetime', dir), callback);
     });
@@ -178,7 +178,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
             minifyScripts(scripts, callback);
         },
     }, function (err, result) {
-        if (err) return htmlCallback(err);
+        if (err) throw err;
 
         var saveFiles = [];
 
