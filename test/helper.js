@@ -9,8 +9,22 @@ loader.loadNode(html);
 
 var allFileLines = {};
 
-exports.logToTerminal = true;
-exports.runBenchmarks = true;
+var quietMode = process.argv[2] === 'quiet';
+exports.logToTerminal = !quietMode;
+exports.runBenchmarks = !quietMode;
+
+exports.prettyArray = function (array) {
+    var pretty = [];
+    var i;
+    for (i = 0; i < array.length; i++) {
+        if (array[i] === 0x0a || array[i] === 0x20 || (48 <= array[i] && array[i] <= 57) || (65 <= array[i] && array[i] <= 90) || (97 <= array[i] && array[i] <= 122)) {
+            pretty.push(String.fromCharCode(array[i]));
+        } else {
+            pretty.push('\\x' + ('00' + array[i].toString(16)).slice(-2));
+        }
+    }
+    return pretty.join('');
+};
 
 global.log = function () {
     try {

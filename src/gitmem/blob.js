@@ -5,7 +5,7 @@ global.Blob = {};
 var blobPrefix = GitFile.stringToArray('blob ');
 
 Blob.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20)));
+    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
 
     if (type !== 'blob') {
         throw new Error('Unexpected type: ' + type);
@@ -15,7 +15,7 @@ Blob.catFile = function (file) {
 
 Blob.fromString = function (string) {
     var lengthString = '' + string.length;
-    var blob = new Uint8Array(6 + lengthString.length + string.length);
+    var blob = new Uint8Array(blobPrefix.length + lengthString.length + 1 + string.length);
 
     var i;
     for (i = 0; i < blobPrefix.length; i++) {

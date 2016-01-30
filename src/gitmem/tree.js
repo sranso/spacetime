@@ -50,7 +50,7 @@ var arrayEqual = function (array1, array2) {
 };
 
 Tree.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20)));
+    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
 
     if (type !== 'tree') {
         throw new Error('Unexpected type: ' + type);
@@ -58,7 +58,7 @@ Tree.catFile = function (file) {
 
     var pretty = [];
     var j;
-    j = file.indexOf(0) + 1;
+    j = file.indexOf(0, 6) + 1;
     while (j < file.length) {
         var modeEnd = file.indexOf(0x20, j + 5);
         var filenameEnd = file.indexOf(0, modeEnd + 2);

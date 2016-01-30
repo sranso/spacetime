@@ -20,12 +20,14 @@ GitFile.hashToString = function (hash, offset) {
 };
 
 GitFile.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20)));
+    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
 
     if (type === 'blob') {
         return Blob.catFile(file);
     } else if (type === 'tree') {
         return Tree.catFile(file);
+    } else if (type === 'commit') {
+        return Commit.catFile(file);
     } else {
         throw new Error('Unknown type: ' + type);
     }

@@ -1,17 +1,4 @@
-require('../helper');
-
-var prettyPrint = function (array) {
-    var pretty = [];
-    var i;
-    for (i = 0; i < array.length; i++) {
-        if (array[i] === 0x20 || (48 <= array[i] && array[i] <= 57) || (65 <= array[i] && array[i] <= 90) || (97 <= array[i] && array[i] <= 122)) {
-            pretty.push(String.fromCharCode(array[i]));
-        } else {
-            pretty.push('\\x' + ('00' + array[i].toString(16)).slice(-2));
-        }
-    }
-    return pretty.join('');
-};
+var helper = require('../helper');
 
 var actuallyEmptyHash = new Uint8Array(20);
 Sha1.hash(Tree._actuallyEmptyTree, actuallyEmptyHash, 0);
@@ -39,7 +26,7 @@ file = Tree.createSkeleton(offsets, {
 
 file = Tree.addProperty(file, offsets, 'bar', 'tree');
 file = Tree.addProperty(file, offsets, 'www', 'blob');
-log(prettyPrint(file));
+log(helper.prettyArray(file));
 //=> tree 92\x0040000 bar\x00p\xbf\xe9y\x3f\x3f\xc4\x3d\x2a\x23\x06\xa5\x81\x86\xfe\x0c\x88\xb8i\x99100644 foo\x00\xe6\x9d\xe2\x9b\xb2\xd1\xd6CK\x8b\x29\xaewZ\xd8\xc2\xe4\x8cS\x91100644 www\x00\xe6\x9d\xe2\x9b\xb2\xd1\xd6CK\x8b\x29\xaewZ\xd8\xc2\xe4\x8cS\x91
 log(GitFile.catFile(file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    bar

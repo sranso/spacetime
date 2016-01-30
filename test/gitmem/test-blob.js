@@ -1,4 +1,8 @@
-require('../helper');
+var helper = require('../helper');
+
+var blob = Blob.fromString('foo');
+log(helper.prettyArray(blob));
+//=> blob 3\x00foo
 
 var emptyHash = new Uint8Array(20);
 var emptyBlob = Blob.fromString('');
