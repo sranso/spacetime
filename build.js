@@ -142,6 +142,7 @@ var maybeMakeHtmlDir = function (htmlFile, callback) {
 
     maybeMakeHtmlDir(dir, function (err) {
         if (err) throw err;
+        if (htmlDirs[dir]) return callback(null);
         htmlDirs[dir] = true;
         fs.mkdir('dist/' + path.relative('spacetime', dir), callback);
     });
