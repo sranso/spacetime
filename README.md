@@ -4,7 +4,7 @@ Spacetime is a programming environment for interactive 2D graphics with a differ
 
 ## Try it out
 
-* On the web: Go to [spacetime.me/b13/new](https://www.spacetime.me/b13/new) to try Spacetime. The usage is on the [home page](https://www.spacetime.me) (demo and text).
+* On the web: Go to [spacetime.me/b3/new](https://www.spacetime.me/b3/new) to try Spacetime. The usage is on the [home page](https://www.spacetime.me) (demo and text).
 * Locally:
 
 ``` bash
