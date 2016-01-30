@@ -19,6 +19,7 @@ fi
 ./init.sh
 
 cd workspace
+rm -rf dist
 
 cd spacetime
 git fetch --tags
