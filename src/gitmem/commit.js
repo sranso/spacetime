@@ -106,13 +106,13 @@ Commit.createFromObject = function (commit) {
     }
 
     file[j + i] = 0x20;
-    file[j + i + 1] = '<'.charCodeAt(0);
+    file[j + i + 1] = 0x3c; // '<'
     j += i + 2;
     for (i = 0; i < authorEmail.length; i++) {
         file[j + i] = authorEmail.charCodeAt(i);
     }
 
-    file[j + i] = '>'.charCodeAt(0);
+    file[j + i] = 0x3e; // '>'
     file[j + i + 1] = 0x20;
     j += i + 2;
     for (i = 0; i < dateAuthored.length; i++) {
@@ -131,13 +131,13 @@ Commit.createFromObject = function (commit) {
     }
 
     file[j + i] = 0x20;
-    file[j + i + 1] = '<'.charCodeAt(0);
+    file[j + i + 1] = 0x3c; // '<'
     j += i + 2;
     for (i = 0; i < committerEmail.length; i++) {
         file[j + i] = committerEmail.charCodeAt(i);
     }
 
-    file[j + i] = '>'.charCodeAt(0);
+    file[j + i] = 0x3e; // '>'
     file[j + i + 1] = 0x20;
     j += i + 2;
     for (i = 0; i < dateCommited.length; i++) {
@@ -154,7 +154,7 @@ Commit.createFromObject = function (commit) {
 };
 
 var gitDate = function (date) {
-    var tzOffset = date.getTimezoneOffset();
+    var tzOffset = -date.getTimezoneOffset();
     var absOffset = Math.abs(tzOffset);
     var tzHours = Math.floor(absOffset / 60);
     var tzMinutes = absOffset - 60 * tzHours;
