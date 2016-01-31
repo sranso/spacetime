@@ -84,7 +84,16 @@ var minifyStyles = function (styles, callback) {
     callback(null, {text: text, sha: sha});
 };
 
-var ignoreDirectories = ['spacetime/.git', 'spacetime/src', 'spacetime/vendor'];
+var ignoreDirectories = [
+    'spacetime/.git',
+    'spacetime/LICENSES',
+    'spacetime/dev',
+    'spacetime/log',
+    'spacetime/node_modules',
+    'spacetime/src',
+    'spacetime/test',
+    'spacetime/vendor',
+];
 
 var buildAllHtml = function (buildCallback) {
     findAllHtml('spacetime', [], function (err, htmlFiles) {
