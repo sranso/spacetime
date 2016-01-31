@@ -26,6 +26,15 @@ exports.prettyArray = function (array) {
     return pretty.join('');
 };
 
+exports.hexArray = function (array) {
+    var hex = [];
+    var i;
+    for (i = 0; i < array.length; i++) {
+        hex.push(('00' + array[i].toString(16)).slice(-2));
+    }
+    return hex.join('');
+};
+
 global.log = function () {
     try {
         throw new Error('intentional error');
