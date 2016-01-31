@@ -53,29 +53,29 @@ Sha1.hash = function (M, H, H_offset) {
 
     // Write hash to output array
     H[H_offset] = H0 >>> 24;
-    H[H_offset + 1] = H0 >>> 16;
-    H[H_offset + 2] = H0 >>> 8;
-    H[H_offset + 3] = H0;
+    H[H_offset + 1] = (H0 >>> 16) & 0xff;
+    H[H_offset + 2] = (H0 >>> 8) & 0xff;
+    H[H_offset + 3] = H0 & 0xff;
 
     H[H_offset + 4] = H1 >>> 24;
-    H[H_offset + 5] = H1 >>> 16;
-    H[H_offset + 6] = H1 >>> 8;
-    H[H_offset + 7] = H1;
+    H[H_offset + 5] = (H1 >>> 16) & 0xff;
+    H[H_offset + 6] = (H1 >>> 8) & 0xff;
+    H[H_offset + 7] = H1 & 0xff;
 
     H[H_offset + 8] = H2 >>> 24;
-    H[H_offset + 9] = H2 >>> 16;
-    H[H_offset + 10] = H2 >>> 8;
-    H[H_offset + 11] = H2;
+    H[H_offset + 9] = (H2 >>> 16) & 0xff;
+    H[H_offset + 10] = (H2 >>> 8) & 0xff;
+    H[H_offset + 11] = H2 & 0xff;
 
     H[H_offset + 12] = H3 >>> 24;
-    H[H_offset + 13] = H3 >>> 16;
-    H[H_offset + 14] = H3 >>> 8;
-    H[H_offset + 15] = H3;
+    H[H_offset + 13] = (H3 >>> 16) & 0xff;
+    H[H_offset + 14] = (H3 >>> 8) & 0xff;
+    H[H_offset + 15] = H3 & 0xff;
 
     H[H_offset + 16] = H4 >>> 24;
-    H[H_offset + 17] = H4 >>> 16;
-    H[H_offset + 18] = H4 >>> 8;
-    H[H_offset + 19] = H4;
+    H[H_offset + 17] = (H4 >>> 16) & 0xff;
+    H[H_offset + 18] = (H4 >>> 8) & 0xff;
+    H[H_offset + 19] = H4 & 0xff;
 };
 
 // Hash computation [6.1.2]

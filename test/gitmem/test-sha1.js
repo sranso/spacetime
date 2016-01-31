@@ -2,6 +2,7 @@ var Veness = require('../../doc/sha-1/veness');
 var Rusha = require('../../doc/sha-1/rusha');
 var crypto = require('crypto');
 var helper = require('../helper');
+var hex = helper.hex;
 
 var stringToArray = function (string) {
     var array = new Uint8Array(string.length);
@@ -9,15 +10,6 @@ var stringToArray = function (string) {
         array[i] = string.charCodeAt(i);
     }
     return array;
-};
-
-var hexArrayToString = function (array) {
-    var str = [];
-    for (var i = 0; i < array.length; i++) {
-        var hex = '00' + array[i].toString(16);
-        str.push(hex.slice(-2));
-    }
-    return str.join('');
 };
 
 // contents of git tree
@@ -243,33 +235,33 @@ var rusha = new Rusha();
 var abc = 'abc';
 var abcArray = stringToArray(abc);
 Sha1.hash(abcArray, hash, 0);
-log(hexArrayToString(hash));
+log(hex(hash));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
 var blah = 'abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq';
 var blahArray = stringToArray(blah);
 Sha1.hash(blahArray, hash, 0);
-log(hexArrayToString(hash));
+log(hex(hash));
 //=> 84983e441c3bd26ebaae4aa1f95129e5e54670f1
 
 rushaRawDigest8(blahArray, hash, 0);
-log(hexArrayToString(hash));
+log(hex(hash));
 //=> 84983e441c3bd26ebaae4aa1f95129e5e54670f1
 
 Sha1.hash(smallArray, hash, 0);
-if (hexArrayToString(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
+if (hex(hash) !== 'f7140234c2c748676e0bd6470aaab773a6a4a59e') {
     console.log('wrong small digest');
     process.exit(1);
 }
 
 Sha1.hash(mediumArray, hash, 0);
-if (hexArrayToString(hash) !== 'ed7306fdc97d37b3376e818adff5102abfb7ad7f') {
+if (hex(hash) !== 'ed7306fdc97d37b3376e818adff5102abfb7ad7f') {
     console.log('wrong medium digest');
     process.exit(1);
 }
 
 Sha1.hash(largeArray, hash, 0);
-if (hexArrayToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
+if (hex(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
     console.log('wrong large digest');
     process.exit(1);
 }
@@ -317,7 +309,7 @@ if (hexArrayToString(hash) !== 'ef0de1c88ca010d9b73f4cd1cd49d8421f93b26a') {
 // small: 645.849ms   / 100000      = 6.46 us   22.4 us/kB
 // large: 772.093ms   /  10000      = 77.2 us   12.7 us/kB
 
-// Sha1.hash with raw digest
+// Sha1.hash optimized
 // small: 385.685ms   / 100000      = 3.86 us   13.4 us/kB
 // medium: 342.762ms  /  50000      = 6.86 us   12.1 us/kB
 // large: 737.357ms   /  10000      = 73.7 us   12.1 us/kB

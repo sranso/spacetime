@@ -1,4 +1,7 @@
 var helper = require('../helper');
+var hex = helper.hex;
+
+// Recreate a real commit.
 
 var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
 Date.prototype.getTimezoneOffset = function () {
