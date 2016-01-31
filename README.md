@@ -22,7 +22,7 @@ If you are interested in Spacetime, there's a [Google group](https://groups.goog
 ### Running local git server
 
 Install nginx and fcgiwrap
-```
+``` bash
 $ brew install nginx
 $ brew install fcgiwrap
 $ cp dev/nginx.example.conf dev/nginx.conf
@@ -30,9 +30,20 @@ $ cp dev/nginx.example.conf dev/nginx.conf
 
 Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the client secret. Start nginx and fcgiwrap:
 
-```
+``` bash
 $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
 $ nginx -c /Users/jakesandlund/spacetimecode/spacetime/dev/nginx.conf
+```
+
+Add a bare repository to `dev/local-git` and test pushing to it:
+
+``` bash
+$ cd dev/local-git
+$ git init --bare testrepo.git
+$ cd testrepo.git
+$ git config http.receivepack true  # allow unauthenticated pushes
+$ cd ~/path/to/testrepo
+$ git push http://localhost:8080/local-git/testrepo.git master
 ```
 
 ### Testing
