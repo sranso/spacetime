@@ -15,30 +15,14 @@ Commit.catFile = function (file) {
         throw new Error('Unexpected type: ' + type);
     }
 
-    var pretty = [];
-    var j;
-    j = file.indexOf(0, 8) + 1;
-
-    j += treePrefix.length;
-    var tree = GitFile.hashToString(file, j);
-    pretty.push('tree ' + tree);
-
-    j += 20;
-    while (file[j + 1] === 'p'.charCodeAt(0)) {
-        j += parentPrefix.length;
-        var parentHash = GitFile.hashToString(file, j);
-        pretty.push('parent ' + parentHash);
-        j += 20;
-    }
-
-    var rest = file.subarray(j + 1);
-    pretty.push(String.fromCharCode.apply(null, rest));
-
-    return pretty.join('\n')
+    var j = file.indexOf(0, 8) + 1;
+    var rest = file.subarray(j);
+    return String.fromCharCode.apply(null, rest);
 };
 
-var constantLength = 'tree 12345678901234567890\nauthor  <> \ncommitter  <> \n\n'.length;
-var perParentLength = parentPrefix.length + 20;
+var constantLength = 'tree \nauthor  <> \ncommitter  <> \n\n'.length;
+constantLength += 40;
+var perParentLength = parentPrefix.length + 40;
 Commit.createFromObject = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
     var authorEmail = commit.author.email;
@@ -75,27 +59,21 @@ Commit.createFromObject = function (commit) {
     }
 
     j += i;
-    for (i = 0; i < 20; i++) {
-        file[j + i] = commit.tree[i];
-    }
+    GitFile.hashToHex(commit.tree, 0, file, j);
 
     var p, parentCommit;
     for (p = 0; p < commit.parents.length; p++) {
-        parentCommit = commit.parents[p];
-
-        j += i;
+        j += 40;
         for (i = 0; i < parentPrefix.length; i++) {
             file[j + i] = parentPrefix[i];
         }
 
         j += i;
-        for (i = 0; i < 20; i++) {
-            file[j + i] = parentCommit[i];
-        }
+        GitFile.hashToHex(commit.parents[p], 0, file, j);
     }
 
     // author
-    j += i;
+    j += 40;
     for (i = 0; i < authorPrefix.length; i++) {
         file[j + i] = authorPrefix[i];
     }

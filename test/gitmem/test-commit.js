@@ -5,13 +5,20 @@ var hex = helper.hex;
 
 var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
 Date.prototype.getTimezoneOffset = function () {
-    return 480;
+    return 360;
 };
 
+var blob = Blob.fromString('foo\n');
+var offsets = {};
+var tree = Tree.createSkeleton(offsets, {
+    foo: 'blob',
+});
+Sha1.hash(blob, tree, offsets.foo);
+
 var treeHash = new Uint8Array(20);
-Sha1.hash(GitFile.stringToArray('foo hash'), treeHash, 0);
-var parentHash = new Uint8Array(20);
-Sha1.hash(GitFile.stringToArray('parentHash'), parentHash, 0);
+Sha1.hash(tree, treeHash, 0);
+
+var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
 
 var commitObject = {
     tree: treeHash,
@@ -19,26 +26,31 @@ var commitObject = {
     committer: {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
-        date: new Date(2016, 1, 30, 12, 4, 14),
+        date: new Date(1454274859000),
     },
     author: {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
-        date: new Date(2016, 1, 29, 21, 27, 53),
+        date: new Date(1454274859000),
     },
-    message: 'Add foo.txt\n',
+    message: 'Foo commit\n',
 };
 
 var commit = Commit.createFromObject(commitObject);
 
-log(helper.prettyArray(commit));
-//=> commit 194\x00tree \x93\xafI\xe3\xb9\xd7\xff\x0e\x86\x22\x7f\xc6\x0f\x1f\x8ct\xfc\x7e\x81a
-//=> parent \x5c\xf6\x1e\x7f\xd87\x7e\xb4\x2e\xb0\xf5\x81\x23\x2b\xdfV\x99\xe0\xac\xf0
-//=> author Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1456802873 \x2d0800
-//=> committer Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1456855454 \x2d0800
+log(helper.pretty(commit));
+//=> commit 233\x00tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
+//=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
+//=> author Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1454274859 \x2d0600
+//=> committer Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1454274859 \x2d0600
 //=>
-//=> Add foo\x2etxt
+//=> Foo commit
 //=>
+
+var commitHash = new Uint8Array(20);
+Sha1.hash(commit, commitHash, 0);
+log(hex(commitHash));
+//=> dbcb62b19db062d928144514502df45e86d91eac
 
 var secondParent = new Uint8Array(20);
 Sha1.hash(GitFile.stringToArray('secondParent'), secondParent, 0);
@@ -46,13 +58,13 @@ commitObject.parents.push(secondParent);
 var mergeCommit = Commit.createFromObject(commitObject);
 
 log(GitFile.catFile(mergeCommit));
-//=> tree 93af49e3b9d7ff0e86227fc60f1f8c74fc7e8161
-//=> parent 5cf61e7fd8377eb42eb0f581232bdf5699e0acf0
+//=> tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
+//=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
 //=> parent 06d3749d842b0a2f56f5368932fd616f89f7cf58
-//=> author Jake Sandlund <jake@jakesandlund.com> 1456802873 -0800
-//=> committer Jake Sandlund <jake@jakesandlund.com> 1456855454 -0800
+//=> author Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
 //=>
-//=> Add foo.txt
+//=> Foo commit
 //=>
 
 Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;
