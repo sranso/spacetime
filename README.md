@@ -17,7 +17,7 @@ $ open new.html
 
 Spacetime is extremely early stage software. It's currently in the "research" phase, which means that the goal is to explore ideas and not to make a polished product. Essential functionality will be missing, and I may throw all the code away and start over (as I've done twice already).
 
-If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/spacetime-talk) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you'd like to contribute, introduce yourself there or email me at <a class="email" href="mailto:%6a%61%6b%65@%6a%61%6b%65%73%61%6e%64%6c%75%6e%64.%63%6f%6d">jake@jakesandlund.com</a>.
+If you are interested in Spacetime, there's a [Google group](https://groups.google.com/forum/#!forum/spacetime-talk) where we'll discuss the direction of the project, upcoming releases, and any other feedback you have. If you'd like to contribute, introduce yourself there or email me at [jake@jakesandlund.com](mailto:%6a%61%6b%65@%6a%61%6b%65%73%61%6e%64%6c%75%6e%64.%63%6f%6d).
 
 ### Running local git server
 
