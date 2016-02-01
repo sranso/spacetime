@@ -17,7 +17,7 @@ exports.pretty = function (array) {
     var pretty = [];
     var i;
     for (i = 0; i < array.length; i++) {
-        if (array[i] === 0x0a || array[i] === 0x20 || (48 <= array[i] && array[i] <= 57) || (65 <= array[i] && array[i] <= 90) || (97 <= array[i] && array[i] <= 122)) {
+        if (array[i] === 0x0a || array[i] === 0x20 || (0x2b <= array[i] && array[i] <= 0x7a)) {
             pretty.push(String.fromCharCode(array[i]));
         } else {
             pretty.push('\\x' + ('00' + array[i].toString(16)).slice(-2));

@@ -20,6 +20,7 @@ GitFile.hashToString = function (hash, offset) {
 };
 
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
+
 GitFile.hashToHex = function (hash, hashOffset, hex, hexOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {

@@ -41,8 +41,8 @@ var commit = Commit.createFromObject(commitObject);
 log(helper.pretty(commit));
 //=> commit 233\x00tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
 //=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
-//=> author Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1454274859 \x2d0600
-//=> committer Jake Sandlund \x3cjake\x40jakesandlund\x2ecom\x3e 1454274859 \x2d0600
+//=> author Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
 //=>
 //=> Foo commit
 //=>

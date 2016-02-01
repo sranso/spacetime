@@ -6,7 +6,8 @@ var emptyTree = Tree.empty = null;
 var emptyTreeHash = Tree.emptyHash = new Uint8Array(20);
 
 var actuallyEmptyTree = GitFile.stringToArray('tree 0\0');
-Tree._actuallyEmptyTree = actuallyEmptyTree;
+Tree._actuallyEmpty = actuallyEmptyTree;
+Tree._actuallyEmptyHash = new Uint8Array(20);
 
 var buildEmpty = function () {
     var emptyTreeFileInfo = GitFile.stringToArray('100644 .empty\0');
@@ -30,6 +31,7 @@ var buildEmpty = function () {
     }
 
     Sha1.hash(emptyTree, emptyTreeHash, 0);
+    Sha1.hash(Tree._actuallyEmpty, Tree._actuallyEmptyHash, 0);
 };
 
 var treePrefix = GitFile.stringToArray('tree ');
