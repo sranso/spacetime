@@ -120,8 +120,4 @@ Main.tick = function (time) {
     window.requestAnimationFrame(Main.tick);
 };
 
-if (typeof exports === 'undefined') {
-    Main.setup();
-}
-
 })();

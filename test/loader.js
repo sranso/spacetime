@@ -4,7 +4,8 @@ var Loader = typeof exports === 'object' ? exports : {};
 
 var tagRegex = /<script[^>]*\ssrc=['"]([^\s'">]+)['"][\s>]/;
 
-var load = function (html, callback) {
+var parseSources = function (html) {
+    var sources = [];
     var i = html.indexOf('<script');
     while (i !== -1 && i < html.length) {
         var j = html.indexOf('</script>', i + 7);
@@ -13,16 +14,40 @@ var load = function (html, callback) {
         }
         var match = tagRegex.exec(html.slice(i, j));
         if (match) {
-            callback(match[1]);
+            sources.push(match[1]);
         }
         i = html.indexOf('<script', j + 9);
     }
+    return sources;
 };
 
 Loader.loadNode = function (html) {
-    load(html, function (src) {
-        require('../' + src);
+    var sources = parseSources(html);
+    sources.forEach(function (source) {
+        require('../' + source);
     });
+};
+
+Loader.loadWeb = function (path, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        var sources = parseSources(this.responseText);
+        sources.forEach(function (source, i) {
+            var script = document.createElement('script');
+            script.setAttribute('src', path + '/' + source);
+            script.async = false;
+            if (i === sources.length - 1) {
+                script.onload = callback;
+            }
+            document.body.appendChild(script);
+        });
+    });
+    xhr.addEventListener('error', function () {
+        throw new Error('could not load new.html');
+    });
+
+    xhr.open('GET', 'http://localhost:8080/new.html');
+    xhr.send();
 };
 
 })();

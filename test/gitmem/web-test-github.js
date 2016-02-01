@@ -1,3 +1,5 @@
+Loader.loadWeb('../..', function () {
+
 var paramPairs = window.location.search.slice(1).split('&');
 var params = {};
 paramPairs.forEach(function (pair) {
@@ -6,7 +8,7 @@ paramPairs.forEach(function (pair) {
 });
 
 var clientId = '82510b72e144fe5a727b';
-var redirectUri = encodeURIComponent('http://localhost:8080/test/gitmem/test-github.html');
+var redirectUri = encodeURIComponent('http://localhost:8080/test/gitmem/web-test-github.html');
 var code = params.code;
 
 if (params.error) {
@@ -35,7 +37,7 @@ if (params.error) {
 }
 
 var main = function (accessToken) {
-    window.history.replaceState({}, '', 'test-github.html');
+    window.history.replaceState({}, '', 'web-test-github.html');
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         console.log(this.responseText);
@@ -46,3 +48,5 @@ var main = function (accessToken) {
     //xhr.setRequestHeader('Content-Type', 'application/x-git-receive-pack-request');
     xhr.send();
 };
+
+});
