@@ -115,4 +115,28 @@ var deflateOnEnd = function (status) {
     if (status !== 0) throw new error(this.strm.msg);
 }
 
+Pack.valid = function (pack) {
+    var packContent = pack.subarray(0, pack.length - 20);
+    var packHashComputed = new Uint8Array(20);
+    Sha1.hash(packContent, packHashComputed, 0);
+
+    if (!GitFile.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
+        return false;
+    }
+
+    if (
+        pack[0] !== 0x50 || // P
+        pack[1] !== 0x41 || // A
+        pack[2] !== 0x43 || // C
+        pack[3] !== 0x4b    // K
+    ) {
+        return false;
+    }
+
+    if (pack[7] !== 2) {
+        return false;
+    }
+    return true;
+};
+
 })();

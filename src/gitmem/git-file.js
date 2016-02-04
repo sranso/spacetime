@@ -87,9 +87,6 @@ GitFile.catFile = function (file) {
 };
 
 GitFile.hashEqual = function (hash1, offset1, hash2, offset2) {
-    if (hash1 === hash2 && offset1 === offset2) {
-        return true;
-    }
     var i;
     for (i = 0; i < 20; i++) {
         if (hash1[offset1 + i] !== hash2[offset2 + i]) {
