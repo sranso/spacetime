@@ -6,13 +6,24 @@ var blob = Blob.fromString('foo bar\n');
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
 log(hex(deflated));
 //=> 78014bcac94f52b06048cbcf57484a2ce20200268c049b
+log(deflated.length);
+//=> 23
+
+var inflate = new pako.Inflate({chunkSize: 4096});
+inflate.push(deflated);
+log(helper.pretty(inflate.result));
+//=> blob 8\x00foo bar
+//=>
+log(inflate.strm.next_in);
+//=> 23
+
 
 var pack = new Uint8Array(15);
-var n = Pack._packFile(pack, 0, blob);
-log(n, pack[0].toString(16));
+var j = Pack._packFile(pack, 0, blob);
+log(j, pack[0].toString(16));
 //=> 17 '38'
 
-log(hex(pack.subarray(0, n)));
+log(hex(pack.subarray(0, j)));
 //=> 38789c4bcbcf57484a2ce202000d14
 
 pack = Pack.create([blob]);
@@ -78,3 +89,10 @@ log(Pack.valid(pack));
 pack[pack.length - 1] = 0;
 log(Pack.valid(pack));
 //=> false
+
+var file = new Uint8Array(50);
+var j = Pack.extractFile(pack, 138, file, 0);
+log(j);
+//=> 46
+log(helper.pretty(file));
+//=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2\x00\x00\x00\x00

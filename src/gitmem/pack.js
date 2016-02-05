@@ -34,7 +34,7 @@ Pack.create = function (files) {
             }
             pack = newPack;
         }
-        j += Pack._packFile(pack, j, files[f]);
+        j = Pack._packFile(pack, j, files[f]);
     }
 
     var remaining = pack.length - j;
@@ -52,10 +52,12 @@ Pack.create = function (files) {
     return pack.subarray(0, j + 20);
 }
 
+var blobPrefix = GitFile.stringToArray('blob ');
+var treePrefix = GitFile.stringToArray('tree ');
+var commitPrefix = GitFile.stringToArray('commit ');
+
 Pack._packFile = function (pack, packOffset, file) {
-    var i = file.indexOf(0x20, 4);
-    var type = String.fromCharCode.apply(null, file.subarray(0, i));
-    i = file.indexOf(0, j) + 1;
+    var i = file.indexOf(0, j) + 1;
     var length = file.length - i;
 
     if (length < 32768) {
@@ -67,14 +69,14 @@ Pack._packFile = function (pack, packOffset, file) {
     }
 
     var typeBits;
-    if (type === 'blob') {
+    if (file[0] === blobPrefix[0]) {
         typeBits = 0x30;
-    } else if (type === 'tree') {
+    } else if (file[1] === treePrefix[1]) {
         typeBits = 0x20;
-    } else if (type === 'commit') {
+    } else if (file[0] === commitPrefix[0]) {
         typeBits = 0x10;
     } else {
-        throw new Error('Unknown type: ' + type);
+        throw new Error('Unknown type: ' + file.slice(0, 4).join(','));
     }
 
     var c = typeBits | (length & 0xf);
@@ -88,30 +90,89 @@ Pack._packFile = function (pack, packOffset, file) {
         j++;
     }
     pack[j] = c;
-
     j++;
+
     var deflate = new pako.Deflate({level: 6, chunkSize: chunkSize});
-    deflate.onData = deflateOnData;
-    deflate.j = j;
-    deflate.pack = pack;
-    deflate.onEnd = deflateOnEnd;
+    deflate.onData = onData;
+    deflate.onEnd = onEnd;
+    deflate.dataOffset = j;
+    deflate.dataArray = pack;
 
     deflate.push(file.subarray(i), true);
 
-    return deflate.j - packOffset;
+    return deflate.dataOffset;
 };
 
-var deflateOnData = function (chunk) {
-    var j = this.j;
-    var pack = this.pack;
+var packOffsetAfterInflation = 0;
+
+Pack.extractFile = function (pack, packOffset, file, fileOffset) {
+    var k = packOffset;
+    var typeBits = pack[k] & 0x70;
+    var prefix;
+    if (typeBits === 0x30) {
+        prefix = blobPrefix;
+    } else if (typeBits === 0x20) {
+        prefix = treePrefix;
+    } else if (typeBits === 0x10) {
+        prefix = commitPrefix;
+    } else {
+        throw new Error('Unknown type: 0x' + typeBits.toString(16));
+    }
+
+    var length = pack[k] & 0xf;
+    var shift = 4;
+    while (pack[k] & 0x80) {
+        k++;
+        length |= (pack[k] & 0x7f) << shift;
+        shift += 7;
+    }
+    k++;
+
+    if (length < 32768) {
+        // Try to only need one chunk.
+        var chunkSize = 4096 * ((length >>> 13) + 1);
+    } else {
+        // Shoot for 1/4 of the inflated size to reduce overhead.
+        var chunkSize = 8192 * (((length / 4) >>> 13) + 1);
+    }
+
+    var lengthString = '' + length;
+
+    var j = fileOffset;
+    var i;
+    for (i = 0; i < prefix.length; i++) {
+        file[j + i] = prefix[i];
+    }
+
+    j += i;
+    for (i = 0; i < lengthString.length; i++) {
+        file[j + i] = lengthString.charCodeAt(i);
+    }
+
+    j += i + 1;
+    var inflate = new pako.Inflate({chunkSize: chunkSize});
+    inflate.onData = onData;
+    inflate.onEnd = onEnd;
+    inflate.dataOffset = j;
+    inflate.dataArray = file;
+
+    inflate.push(pack.subarray(k), true);
+    packOffsetAfterInflation = k + inflate.strm.next_in;
+
+    return inflate.dataOffset;
+};
+
+var onData = function (chunk) {
+    var j = this.dataOffset;
+    var array = this.dataArray;
     var i;
     for (i = 0; i < chunk.length; i++) {
-        pack[j + i] = chunk[i];
+        array[j + i] = chunk[i];
     }
-    this.j += i;
+    this.dataOffset += i;
 };
 
-var deflateOnEnd = function (status) {
+var onEnd = function (status) {
     if (status !== 0) throw new error(this.strm.msg);
 }
 
