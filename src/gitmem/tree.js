@@ -59,8 +59,7 @@ Tree.catFile = function (file) {
     }
 
     var pretty = [];
-    var j;
-    j = file.indexOf(0, 6) + 1;
+    var j = file.indexOf(0, 6) + 1;
     while (j < file.length) {
         var modeEnd = file.indexOf(0x20, j + 5);
         var filenameEnd = file.indexOf(0, modeEnd + 2);
@@ -130,12 +129,11 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
         file[j + i] = lengthString.charCodeAt(i);
     }
 
-    var j = oldHeaderLength;
-    var k;
+    var k = oldHeaderLength;
     var copyEnd;
     var offset = headerLength - oldHeaderLength;
-    while (j < oldFile.length) {
-        var modeEnd = oldFile.indexOf(0x20, j + 5);
+    while (k < oldFile.length) {
+        var modeEnd = oldFile.indexOf(0x20, k + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
 
         var name = String.fromCharCode.apply(null, oldFile.subarray(modeEnd + 1, filenameEnd));
@@ -145,44 +143,44 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
         }
 
         copyEnd = filenameEnd + 21;
-        for (i = j; i < copyEnd; i++) {
+        for (i = k; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
         offsets[name] = offset + filenameEnd + 1;
-        j = filenameEnd + 21;
+        k = filenameEnd + 21;
     }
 
-    k = j + offset;
+    j = k + offset;
     for (i = 0; i < mode.length; i++) {
-        file[k + i] = mode[i];
+        file[j + i] = mode[i];
     }
-    file[k + i] = 0x20;
-    k += i + 1;
+    file[j + i] = 0x20;
 
+    j += i + 1;
     for (i = 0; i < insertName.length; i++) {
-        file[k + i] = insertName.charCodeAt(i);
+        file[j + i] = insertName.charCodeAt(i);
     }
-    k += i + 1;
 
-    offsets[insertName] = k;
+    j += i + 1;
+    offsets[insertName] = j;
     for (i = 0; i < hash.length; i++) {
-        file[k + i] = hash[i];
+        file[j + i] = hash[i];
     }
-    k += i;
 
-    offset = k - j;
-    while (j < oldFile.length) {
-        var modeEnd = oldFile.indexOf(0x20, j + 5);
+    j += i;
+    offset = j - k;
+    while (k < oldFile.length) {
+        var modeEnd = oldFile.indexOf(0x20, k + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
 
         var name = String.fromCharCode.apply(null, oldFile.subarray(modeEnd + 1, filenameEnd));
 
         copyEnd = filenameEnd + 21;
-        for (i = j; i < copyEnd; i++) {
+        for (i = k; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
         offsets[name] = offset + filenameEnd + 1;
-        j = filenameEnd + 21;
+        k = filenameEnd + 21;
     }
 
     return file;

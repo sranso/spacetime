@@ -18,14 +18,16 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     var j = 4;
     var i;
     GitFile.hashToHex(previousHash, 0, body, j);
-    j += 40;
 
+    j += 40;
     body[j] = 0x20;
+
     j += 1;
     GitFile.hashToHex(currentHash, 0, body, j);
-    j += 40;
 
+    j += 40;
     body[j] = 0x20;
+
     j += 1;
     for (i = 0; i < branch.length; i++) {
         body[j + i] = branch.charCodeAt(i);

@@ -82,16 +82,16 @@ Commit.createFromObject = function (commit) {
     for (i = 0; i < authorName.length; i++) {
         file[j + i] = authorName.charCodeAt(i);
     }
-
     file[j + i] = 0x20;
     file[j + i + 1] = 0x3c; // '<'
+
     j += i + 2;
     for (i = 0; i < authorEmail.length; i++) {
         file[j + i] = authorEmail.charCodeAt(i);
     }
-
     file[j + i] = 0x3e; // '>'
     file[j + i + 1] = 0x20;
+
     j += i + 2;
     for (i = 0; i < dateAuthored.length; i++) {
         file[j + i] = dateAuthored.charCodeAt(i);
@@ -107,22 +107,23 @@ Commit.createFromObject = function (commit) {
     for (i = 0; i < committerName.length; i++) {
         file[j + i] = committerName.charCodeAt(i);
     }
-
     file[j + i] = 0x20;
     file[j + i + 1] = 0x3c; // '<'
+
     j += i + 2;
     for (i = 0; i < committerEmail.length; i++) {
         file[j + i] = committerEmail.charCodeAt(i);
     }
-
     file[j + i] = 0x3e; // '>'
     file[j + i + 1] = 0x20;
+
     j += i + 2;
     for (i = 0; i < dateCommited.length; i++) {
         file[j + i] = dateCommited.charCodeAt(i);
     }
+    file[j + i] = 0x0a;
+    file[j + i + 1] = 0x0a;
 
-    file[j + i] = file[j + i + 1] = 0x0a;
     j += i + 2;
     for (i = 0; i < message.length; i++) {
         file[j + i] = message.charCodeAt(i);
