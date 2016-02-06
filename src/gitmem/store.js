@@ -2,51 +2,47 @@
 global.Store = {};
 (function () {
 
-var hashBitsToShift;
-var objectStore = Store._objects = null;
-var load;
-var a;
+Store.create = function () {
+    var store = {
+        hashBitsToShift: 32,
+        objects: [[]],
+        load: 0,
+        a: Random.rand() | 1,
+    };
 
-Store.setup = function () {
-    hashBitsToShift = 32;
-    objectStore = Store._objects = [[]];
-    load = 0;
-    a = Random.rand() | 1;
-
-    while (objectStore.length < 4) {
-        resizeObjects();
+    while (store.objects.length < 4) {
+        resizeObjects(store);
     }
 
-    Store.save(Store.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
-    Store.save(Store.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
+    return store;
 };
 
-var resizeObjects = function () {
-    hashBitsToShift -= 1;
-    var newStore = new Array(objectStore.length * 2);
+var resizeObjects = function (store) {
+    store.hashBitsToShift -= 1;
+    var newStore = new Array(store.objects.length * 2);
 
     var i, j;
     for (i = 0; i < newStore.length; i += 2) {
         newStore[i] = [];
         newStore[i + 1] = [];
-        var oldList = objectStore[i >> 1];
+        var oldList = store.objects[i >> 1];
         for (j = 0; j < oldList.length; j++) {
             var object = oldList[j];
             var hash = object.hash;
             var offset = object.hashOffset;
-            var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+            var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
 
-            newStore[h >>> hashBitsToShift].push(object);
+            newStore[h >>> store.hashBitsToShift].push(object);
         }
     }
-    objectStore = Store._objects = newStore;
+    store.objects = newStore;
 };
 
-Store.save = function (object) {
+Store.save = function (store, object) {
     var hash = object.hash;
     var offset = object.hashOffset;
-    var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = objectStore[h >>> hashBitsToShift];
+    var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = store.objects[h >>> store.hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -55,18 +51,18 @@ Store.save = function (object) {
         }
     }
 
-    load++;
+    store.load++;
     list.push(object);
-    if (load > 0.75 * objectStore.length) {
-        resizeObjects();
+    if (store.load > 0.75 * store.objects.length) {
+        resizeObjects(store);
     }
 
     return object;
 };
 
-Store.get = function (hash, offset) {
-    var h = Math.imul(a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = objectStore[h >>> hashBitsToShift];
+Store.get = function (store, hash, offset) {
+    var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = store.objects[h >>> store.hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -114,11 +110,11 @@ var prettyPrintObject = function (object) {
     return '#<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>';
 };
 
-Store.prettyPrint = function () {
+Store.prettyPrint = function (store) {
     var pretty = [];
     var i, j;
-    for (i = 0; i < objectStore.length; i++) {
-        var list = objectStore[i];
+    for (i = 0; i < store.objects.length; i++) {
+        var list = store.objects[i];
         if (list.length) {
             var entries = [];
             for (j = 0; j < list.length; j++) {

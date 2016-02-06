@@ -1,7 +1,10 @@
 require('../helper');
 
 Random.seed(1);
-Store.setup();
+var store = Store.create();
+
+Store.save(store, Store.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
+Store.save(store, Store.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
 
 var Grid = {};
 Grid.offsets = {};
@@ -43,11 +46,11 @@ HighLevelApi.setup(Grid);
 var zeroBlob = Blob.fromString('0');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
-Store.save(Store.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
+Store.save(store, Store.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
-Store.save(Grid.none);
+Store.save(store, Grid.none);
 
 log(GitFile.catFile(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
@@ -90,17 +93,17 @@ HighLevelApi.setup(Cell);
 
 var colorBlob = Blob.fromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
-Store.save(Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
+Store.save(store, Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
 Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
-Store.save(Cell.none);
+Store.save(store, Cell.none);
 
 log(GitFile.catFile(Cell.none.file));
 //=> 100644 blob 65c27486fa8046fd08f63f78cce1abc3932f97ce    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
-log(Store.prettyPrint());
+log(Store.prettyPrint(store));
 //=> 0: #<65c274 white>
 //=> 1: #<70bfe9 null>
 //=> 4: #<c22708 0>
@@ -114,23 +117,24 @@ var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
 var blob = Blob.fromString(cell1.text);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
-Store.save(Store.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
+Store.save(store, Store.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
 cell1.hash = grid1.file;
 cell1.hashOffset = Grid.offsets.cell1;
 Sha1.hash(cell1.file, cell1.hash, cell1.hashOffset);
-grid1.cell1 = Store.save(cell1);
+grid1.cell1 = Store.save(store, cell1);
 
 grid1.hash = new Uint8Array(20);
 Sha1.hash(grid1.file, grid1.hash, grid1.hashOffset);
-Store.save(grid1);
+Store.save(store, grid1);
 
 // high-level
+Global.store = store;
 var cell2 = Cell.set(cell1, 'color', 'red');
 var cell3 = Cell.set(cell2, 'text', 'bar');
 var grid2 = Grid.setAll(grid1, {cell2: cell2, cell3: cell3});
 
-log(Store.prettyPrint());
+log(Store.prettyPrint(Global.store));
 //=> 1: #<65c274 white>
 //=> 5: #<70bfe9 null>
 //=> 7: #<129cb5 grid=null text=bar color=red>

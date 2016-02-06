@@ -1,7 +1,7 @@
 require('../helper');
 
 Random.seed(1);
-Store.setup();
+var store = Store.create();
 
 var offsets = {};
 var file = Tree.createSkeleton(offsets, {
@@ -30,26 +30,24 @@ log(GitFile.catFile(object.file));
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
 
 var countBlobObject = Store.createBlobObject(object.count, countBlob, object.file, offsets.count);
-Store.save(countBlobObject);
+Store.save(store, countBlobObject);
 
-var got = Store.get(object.file, offsets.count);
+var got = Store.get(store, object.file, offsets.count);
 log('got keys', Object.keys(got));
 //=> got keys [ 'data', 'file', 'hash', 'hashOffset' ]
 log(got.data);
 //=> 0
 
 Sha1.hash(object.file, object.hash, object.hashOffset);
-got = Store.save(object);
+got = Store.save(store, object);
 log('saved keys', Object.keys(got));
 //=> saved keys [ 'text', 'count', 'child', 'helper', 'file', 'hash', 'hashOffset' ]
 
-got = Store.get(object.hash, object.hashOffset);
+got = Store.get(store, object.hash, object.hashOffset);
 log('got keys', Object.keys(got));
 //=> got keys [ 'text', 'count', 'child', 'helper', 'file', 'hash', 'hashOffset' ]
 
-log(Store.prettyPrint());
+log(Store.prettyPrint(store));
 //=> 0: #<0f621c text= count=0 child=null helper=null>
-//=> 1: #<70bfe9 null>
-//=> 4: #<c22708 0>
-//=> 5: #<e69de2 >
+//=> 2: #<c22708 0>
 //=>

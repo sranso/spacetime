@@ -14,13 +14,13 @@ HighLevelApi.setup = function (Thing) {
             var hashOffset = Thing.offsets[prop];
             Sha1.hash(blob, thing.file, hashOffset);
             var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
-            thing[prop] = Store.save(blobObject).data;
+            thing[prop] = Store.save(Global.store, blobObject).data;
         }
 
         thing.hash = new Uint8Array(20);
         thing.hashOffset = 0;
         Sha1.hash(thing.file, thing.hash, thing.hashOffset);
-        return Store.save(thing);
+        return Store.save(Global.store, thing);
     };
 
     Thing.setAll = function (original, modifications) {
@@ -36,14 +36,14 @@ HighLevelApi.setup = function (Thing) {
                 var hashOffset = Thing.offsets[prop];
                 Sha1.hash(blob, thing.file, hashOffset);
                 var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
-                thing[prop] = Store.save(blobObject).data;
+                thing[prop] = Store.save(Global.store, blobObject).data;
             }
         }
 
         thing.hash = new Uint8Array(20);
         thing.hashOffset = 0;
         Sha1.hash(thing.file, thing.hash, thing.hashOffset);
-        return Store.save(thing);
+        return Store.save(Global.store, thing);
     };
 };
 
