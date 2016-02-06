@@ -103,8 +103,6 @@ Pack._packFile = function (pack, packOffset, file) {
     return deflate.dataOffset;
 };
 
-var packOffsetAfterInflation = 0;
-
 Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     var k = packOffset;
     var typeBits = pack[k] & 0x70;
@@ -128,15 +126,11 @@ Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     }
     k++;
 
-    if (length < 32768) {
-        // Try to only need one chunk.
-        var chunkSize = 4096 * ((length >>> 13) + 1);
-    } else {
-        // Shoot for 1/4 of the inflated size to reduce overhead.
-        var chunkSize = 8192 * (((length / 4) >>> 13) + 1);
-    }
-
     var lengthString = '' + length;
+    var fileLength = prefix.length + lengthString.length + 1 + length;
+    if (file.length - fileOffset < fileLength) {
+        return [0, fileLength];
+    }
 
     var j = fileOffset;
     var i;
@@ -150,6 +144,15 @@ Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     }
 
     j += i + 1;
+
+    if (length < 32768) {
+        // Try to only need one chunk.
+        var chunkSize = 4096 * ((length >>> 13) + 1);
+    } else {
+        // Shoot for 1/4 of the inflated size to reduce overhead.
+        var chunkSize = 8192 * (((length / 4) >>> 13) + 1);
+    }
+
     var inflate = new pako.Inflate({chunkSize: chunkSize});
     inflate.onData = onData;
     inflate.onEnd = onEnd;
@@ -157,9 +160,8 @@ Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     inflate.dataArray = file;
 
     inflate.push(pack.subarray(k), true);
-    packOffsetAfterInflation = k + inflate.strm.next_in;
 
-    return inflate.dataOffset;
+    return [k + inflate.strm.next_in, inflate.dataOffset];
 };
 
 var onData = function (chunk) {

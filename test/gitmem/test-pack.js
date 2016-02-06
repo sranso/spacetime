@@ -17,7 +17,6 @@ log(helper.pretty(inflate.result));
 log(inflate.strm.next_in);
 //=> 23
 
-
 var pack = new Uint8Array(15);
 var j = Pack._packFile(pack, 0, blob);
 log(j, pack[0].toString(16));
@@ -90,9 +89,15 @@ pack[pack.length - 1] = 0;
 log(Pack.valid(pack));
 //=> false
 
-var file = new Uint8Array(50);
-var j = Pack.extractFile(pack, 138, file, 0);
-log(j);
-//=> 46
+var file = new Uint8Array(0);
+var packOffset = 138;
+var ex = Pack.extractFile(pack, packOffset, file, 0);
+log(ex);
+//=> [ 0, 46 ]
+
+file = new Uint8Array(ex[1]);
+ex = Pack.extractFile(pack, packOffset, file, 0);
+log(ex);
+//=> [ 187, 46 ]
 log(helper.pretty(file));
-//=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2\x00\x00\x00\x00
+//=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2
