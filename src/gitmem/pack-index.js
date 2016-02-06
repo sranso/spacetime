@@ -63,7 +63,60 @@ PackIndex.create = function (pack) {
         sortedOffsets[i] = offsets[target];
     }
 
-    return sortedHashes;
+    var fanout = new Uint32Array(256);
+
+    var j = 0;
+    var count = 0;
+    for (i = 0; i < 256; i++) {
+        while (sortedHashes[j] === i) {
+            count++;
+            j += 20;
+        }
+        fanout[i] = count;
+    }
+
+    return {
+        pack: pack,
+        fanout: fanout,
+        hashes: sortedHashes,
+        offsets: sortedOffsets,
+    };
+};
+
+var nullFile = new Uint8Array(0);
+
+PackIndex.lookupFile = function (index, hash, hashOffset) {
+    var firstByte = hash[hashOffset];
+    if (firstByte === 0) {
+        var low = 0;
+    } else {
+        var low = index.fanout[firstByte - 1];
+    }
+    var high = index.fanout[firstByte] - 1;
+
+    search:
+    while (low <= high) {
+        var mid = (low + high) >>> 1;
+        var mid20 = mid * 20;
+        var i;
+        for (i = 1; i < 20; i++) {
+            if (hash[hashOffset + i] > index.hashes[mid20 + i]) {
+                low = mid + 1;
+                continue search;
+            } else if (hash[hashOffset + i] < index.hashes[mid20 + i]) {
+                high = mid - 1;
+                continue search;
+            }
+        }
+
+        var offset = index.offsets[mid];
+        var file = nullFile;
+        var ex = Pack.extractFile(index.pack, offset, file, 0);
+        file = new Uint8Array(ex[1]);
+        Pack.extractFile(index.pack, offset, file, 0);
+        return file;
+    }
+    return null;
 };
 
 })();

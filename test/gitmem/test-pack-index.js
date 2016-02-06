@@ -47,12 +47,27 @@ log(Pack.valid(pack));
 //=> true
 var index = PackIndex.create(pack);
 
-log(hex(index.subarray(0, 20)));
+log(hex(index.hashes.subarray(0, 20)));
 //=> 7c0ac9607b0f31f1e3848f17bbdeb34e83f1ed45
-log(hex(index.subarray(20, 40)));
+log(hex(index.hashes.subarray(20, 40)));
 //=> 9558898baf2149c64e80b4be726f179da4321a6f
-log(hex(index.subarray(40, 60)));
+log(hex(index.hashes.subarray(40, 60)));
 //=> db2742030e36174ce5aa569ef2e97840c4cd47f5
+
+var f = index.fanout;
+log(f[0x00], f[0x7b], f[0x7c], f[0x94], f[0x95], f[0xda], f[0xdb], f[0xff]);
+//=> 0 0 1 1 2 2 3 3
+
+var file = PackIndex.lookupFile(index, index.hashes, 20);
+log(helper.pretty(file));
+//=> blob 8\x00FOO bar
+//=>
+
+var missingHash = index.hashes.slice(20, 40);
+missingHash[19] = 0;
+file = PackIndex.lookupFile(index, missingHash, 0);
+log(file);
+//=> null
 
 
 
