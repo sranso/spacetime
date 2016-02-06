@@ -2,7 +2,8 @@
 global.PackIndex = {};
 (function () {
 
-var fileForCreate = new Uint8Array(65536);
+var fileForCreate = new Uint8Array(1048576); // 1 MiB
+var fileForCreateOffset = 0;
 
 PackIndex.create = function (pack) {
     var packContentsEnd = pack.length - 20;
@@ -14,7 +15,7 @@ PackIndex.create = function (pack) {
 
     var j = 12;
     var hashOffset = 0;
-    var k = 0;
+    var k = fileForCreateOffset;
     var i;
     for (i = 0; i < numFiles; i++) {
         var ex = Pack.extractFile(pack, j, fileForCreate, k);
@@ -34,6 +35,13 @@ PackIndex.create = function (pack) {
         j = ex[0];
         k = ex[1];
         hashOffset += 20;
+    }
+
+    if (fileForCreate.length > 1048576) {
+        fileForCreate = new Uint8Array(1048576);
+        fileForCreateOffset = 0;
+    } else {
+        fileForCreateOffset = k;
     }
 
     sortTargets.sort(function (a, b) {
@@ -83,7 +91,8 @@ PackIndex.create = function (pack) {
     };
 };
 
-var nullFile = new Uint8Array(0);
+var fileForLookup = new Uint8Array(1048576);  // 1 MiB
+var fileForLookupOffset = 0;
 
 PackIndex.lookupFile = function (index, hash, hashOffset) {
     var firstByte = hash[hashOffset];
@@ -110,12 +119,18 @@ PackIndex.lookupFile = function (index, hash, hashOffset) {
         }
 
         var offset = index.offsets[mid];
-        var file = nullFile;
-        var ex = Pack.extractFile(index.pack, offset, file, 0);
-        file = new Uint8Array(ex[1]);
-        Pack.extractFile(index.pack, offset, file, 0);
+        var ex = Pack.extractFile(index.pack, offset, fileForLookup, fileForLookupOffset);
+        if (!ex[0]) {
+            fileForLookup = new Uint8Array(Math.max(ex[1], 1048576));
+            fileForLookupOffset = 0;
+            ex = Pack.extractFile(index.pack, offset, fileForLookup, fileForLookupOffset);
+        }
+
+        var file = fileForLookup.subarray(fileForLookupOffset, ex[1]);
+        fileForLookupOffset = ex[1];
         return file;
     }
+
     return null;
 };
 

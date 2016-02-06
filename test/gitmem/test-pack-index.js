@@ -40,17 +40,10 @@ log(hex(commitHash));
 //=> db2742030e36174ce5aa569ef2e97840c4cd47f5
 
 pack = Pack.create([commit, tree, blob]);
-log(hex(pack.subarray(pack.length - 20)));
-//=> 19275a76895c14d26fefbeb91cb9787c2d23011d
-
-log(Pack.valid(pack));
-//=> true
 var index = PackIndex.create(pack);
 
 log(hex(index.hashes.subarray(0, 20)));
 //=> 7c0ac9607b0f31f1e3848f17bbdeb34e83f1ed45
-log(hex(index.hashes.subarray(20, 40)));
-//=> 9558898baf2149c64e80b4be726f179da4321a6f
 log(hex(index.hashes.subarray(40, 60)));
 //=> db2742030e36174ce5aa569ef2e97840c4cd47f5
 
