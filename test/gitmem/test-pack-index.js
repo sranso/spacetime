@@ -1,6 +1,11 @@
 var helper = require('../helper');
 var hex = helper.hex;
 
+var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
+Date.prototype.getTimezoneOffset = function () {
+    return 360;
+};
+
 var blob = Blob.fromString('FOO bar\n');
 
 var offsets = {};
@@ -13,11 +18,6 @@ var treeHash = new Uint8Array(20);
 Sha1.hash(tree, treeHash, 0);
 log(hex(treeHash));
 //=> 7c0ac9607b0f31f1e3848f17bbdeb34e83f1ed45
-
-var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-Date.prototype.getTimezoneOffset = function () {
-    return 360;
-};
 
 var author = {
     name: 'Jake Sandlund',
@@ -40,6 +40,8 @@ log(hex(commitHash));
 //=> db2742030e36174ce5aa569ef2e97840c4cd47f5
 
 pack = Pack.create([commit, tree, blob]);
+
+
 var index = PackIndex.create(pack);
 
 log(hex(index.hashes.subarray(0, 20)));
@@ -63,5 +65,19 @@ log(file);
 //=> null
 
 
+commitObject.tree = Tree._actuallyEmptyHash;
+var secondPack = Pack.create([commit, Tree._actuallyEmpty]);
+var secondIndex = PackIndex.create(secondPack);
+
+file = PackIndex.requireFileMultiple([secondIndex, index], index.hashes, 0);
+log(helper.pretty(file));
+//=> tree 31\x00100644 foo\x00\x95X\x89\x8b\xaf\x21I\xc6N\x80\xb4\xbero\x17\x9d\xa42\x1ao
+
+try {
+    PackIndex.requireFileMultiple([secondIndex, index], missingHash, 0);
+} catch (e) {
+    log(e.message);
+    //=> File not found for hash: 9558898baf2149c64e80b4be726f179da4321a00
+}
 
 Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;

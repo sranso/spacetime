@@ -1,6 +1,11 @@
 var helper = require('../helper');
 var hex = helper.hex;
 
+var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
+Date.prototype.getTimezoneOffset = function () {
+    return 360;
+};
+
 var blob = Blob.fromString('foo bar\n');
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
@@ -46,11 +51,6 @@ Sha1.hash(tree, treeHash, 0);
 log(hex(treeHash));
 //=> 792e608d5b9141ebced75e4c7d91f2fc4f9da8b3
 
-var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-Date.prototype.getTimezoneOffset = function () {
-    return 360;
-};
-
 var author = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
@@ -74,8 +74,6 @@ log(hex(commitHash));
 pack = Pack.create([commit, tree, blob]);
 log(hex(pack));
 //=> 5041434b00000002000000039d0b789c9d8c4b0ac2301400f739c5bb80927f1a90e256b79ee025ef05a36d0a35bdbf153d819b8199c5f4951942d4ece5402e456515a7cc141cdb1c28aaa24bb625120ec908dcfa7d59e18a4f861b369ab646707aec7afee0f54bc7bccc2328ebac56267a0307e9a5147b9d6beffcf7405c5aed1527f89ec41b30b73b78a602789c3334303033315148cbcf4f4a2cd22ba92861b856facbe5291bdba9e5ac87bff43ed0f9a879fce722000f8b111338789c4bcbcf57484a2ce202000d1402a48eaa2ed0693571e022227e5d5ae5f5d4df1ac88d
-
-Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;
 
 
 
@@ -101,3 +99,5 @@ log(ex);
 //=> [ 187, 46 ]
 log(helper.pretty(file));
 //=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2
+
+Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;

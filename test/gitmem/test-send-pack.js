@@ -2,6 +2,11 @@ var helper = require('../helper');
 var hex = helper.hex;
 var pretty = helper.pretty;
 
+var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
+Date.prototype.getTimezoneOffset = function () {
+    return 360;
+};
+
 var author = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
@@ -42,3 +47,5 @@ log(SendPack.postUrl);
 //=> /git-receive-pack
 log(SendPack.postContentType);
 //=> application/x-git-receive-pack-request
+
+Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;
