@@ -23,6 +23,7 @@ Commit.catFile = function (file) {
 var constantLength = 'tree \nauthor  <> \ncommitter  <> \n\n'.length;
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40;
+
 Commit.createFromObject = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
     var authorEmail = commit.author.email;

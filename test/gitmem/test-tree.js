@@ -47,7 +47,7 @@ file = Tree.createSkeleton(offsets, {
 file = Tree.addProperty(file, offsets, 'food', 'blob');
 file = Tree.addProperty(file, offsets, 'fo', 'tree');
 var helloHash = new Uint8Array(20);
-var helloWorldBlob = Blob.fromString('Hello, World!');
+var helloWorldBlob = Blob.createFromString('Hello, World!');
 Sha1.hash(helloWorldBlob, helloHash, 0);
 log(hex(helloHash));
 //=> b45ef6fec89518d314f546fd6c3025367b721684

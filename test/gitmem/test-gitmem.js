@@ -43,7 +43,7 @@ Grid.none.file = Tree.createSkeleton(Grid.offsets, {
 
 HighLevelApi.setup(Grid);
 
-var zeroBlob = Blob.fromString('0');
+var zeroBlob = Blob.createFromString('0');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 Store.save(store, Store.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
@@ -91,7 +91,7 @@ Cell.none.file = Tree.createSkeleton(Cell.offsets, {
 
 HighLevelApi.setup(Cell);
 
-var colorBlob = Blob.fromString(Cell.none.color);
+var colorBlob = Blob.createFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 Store.save(store, Store.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
@@ -115,7 +115,7 @@ var grid1 = Grid.clone(Grid.none);
 
 var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
-var blob = Blob.fromString(cell1.text);
+var blob = Blob.createFromString(cell1.text);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
 Store.save(store, Store.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 

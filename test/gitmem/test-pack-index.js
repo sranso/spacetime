@@ -6,7 +6,7 @@ Date.prototype.getTimezoneOffset = function () {
     return 360;
 };
 
-var blob = Blob.fromString('FOO bar\n');
+var blob = Blob.createFromString('FOO bar\n');
 
 var offsets = {};
 var tree = Tree.createSkeleton(offsets, {

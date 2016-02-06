@@ -13,7 +13,7 @@ Blob.catFile = function (file) {
     return String.fromCharCode.apply(null, file.subarray(file.indexOf(0) + 1));
 };
 
-Blob.fromString = function (string) {
+Blob.createFromString = function (string) {
     var lengthString = '' + string.length;
     var blob = new Uint8Array(blobPrefix.length + lengthString.length + 1 + string.length);
 
@@ -34,7 +34,7 @@ Blob.fromString = function (string) {
     return blob;
 };
 
-Blob.empty = Blob.fromString('');
+Blob.empty = Blob.createFromString('');
 Blob.emptyHash = new Uint8Array(20);
 Sha1.hash(Blob.empty, Blob.emptyHash, 0);
 

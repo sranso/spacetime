@@ -8,7 +8,7 @@ Date.prototype.getTimezoneOffset = function () {
 
 // Recreate a real commit.
 
-var blob = Blob.fromString('foo\n');
+var blob = Blob.createFromString('foo\n');
 var offsets = {};
 var tree = Tree.createSkeleton(offsets, {
     foo: 'blob',

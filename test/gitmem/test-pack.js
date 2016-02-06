@@ -6,7 +6,7 @@ Date.prototype.getTimezoneOffset = function () {
     return 360;
 };
 
-var blob = Blob.fromString('foo bar\n');
+var blob = Blob.createFromString('foo bar\n');
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
 log(hex(deflated));

@@ -21,7 +21,7 @@ var object = {
     hashOffset: 0,
 };
 
-var countBlob = Blob.fromString('' + object.count);
+var countBlob = Blob.createFromString('' + object.count);
 Sha1.hash(countBlob, object.file, offsets.count);
 log(GitFile.catFile(object.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    child

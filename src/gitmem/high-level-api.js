@@ -10,7 +10,7 @@ HighLevelApi.setup = function (Thing) {
             GitFile.setHash(thing.file, Thing.offsets[prop], value.hash, value.hashOffset);
             thing[prop] = value;
         } else {
-            var blob = Blob.fromString('' + value);
+            var blob = Blob.createFromString('' + value);
             var hashOffset = Thing.offsets[prop];
             Sha1.hash(blob, thing.file, hashOffset);
             var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
@@ -32,7 +32,7 @@ HighLevelApi.setup = function (Thing) {
                 GitFile.setHash(thing.file, Thing.offsets[prop], value.hash, value.hashOffset);
                 thing[prop] = value;
             } else {
-                var blob = Blob.fromString('' + value);
+                var blob = Blob.createFromString('' + value);
                 var hashOffset = Thing.offsets[prop];
                 Sha1.hash(blob, thing.file, hashOffset);
                 var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
