@@ -1,4 +1,4 @@
-require('../helper');
+var helper = require('../helper');
 
 Random.seed(1);
 var store = Store.create();
@@ -41,7 +41,13 @@ Grid.none.file = Tree.createSkeleton(Grid.offsets, {
     cell3: 'tree',
 });
 
-HighLevelApi.setup(Grid);
+Grid.set = function (original, prop, value) {
+    return HighLevelStore.set(Grid, original, prop, value);
+};
+
+Grid.setAll = function (original, modifications) {
+    return HighLevelStore.setAll(Grid, original, modifications);
+};
 
 var zeroBlob = Blob.createFromString('0');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
@@ -89,7 +95,14 @@ Cell.none.file = Tree.createSkeleton(Cell.offsets, {
     color: 'blob',
 });
 
-HighLevelApi.setup(Cell);
+Cell.set = function (original, prop, value) {
+    return HighLevelStore.set(Cell, original, prop, value);
+};
+
+Cell.setAll = function (original, modifications) {
+    return HighLevelStore.setAll(Cell, original, modifications);
+};
+
 
 var colorBlob = Blob.createFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
@@ -108,7 +121,6 @@ log(Store.prettyPrint(store));
 //=> 1: #<70bfe9 null>
 //=> 4: #<c22708 0>
 //=> 5: #<e69de2 >, #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>, #<4ac8a1 grid=null text= color=white>
-//=>
 
 // low-level
 var grid1 = Grid.clone(Grid.none);
@@ -147,4 +159,3 @@ log(Store.prettyPrint(Global.store));
 //=> 22: #<db2700 rows=0 colu..=0 cell1=[obj.. cell2..>
 //=> 25: #<ba0e16 bar>
 //=> 28: #<2270d3 grid=null text=foo color=white>, #<46f29e red>
-//=>

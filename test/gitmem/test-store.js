@@ -1,4 +1,4 @@
-require('../helper');
+var helper = require('../helper');
 
 Random.seed(1);
 var store = Store.create();
@@ -50,4 +50,3 @@ log('got keys', Object.keys(got));
 log(Store.prettyPrint(store));
 //=> 0: #<0f621c text= count=0 child=null helper=null>
 //=> 2: #<c22708 0>
-//=>

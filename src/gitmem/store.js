@@ -111,11 +111,11 @@ Store.prettyPrint = function (store) {
             for (j = 0; j < list.length; j++) {
                 entries.push(prettyPrintObject(list[j]));
             }
-            pretty.push(i, ': ', entries.join(', '), '\n');
+            pretty.push(i + ': ' + entries.join(', '));
         }
     }
 
-    return pretty.join('');
+    return pretty.join('\n');
 };
 
 })();
