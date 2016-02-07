@@ -49,6 +49,43 @@ Grid.types = {
     cell3: 'object',
 };
 
+Grid.checkout = function (packIndices, store, hash, hashOffset) {
+    var grid = Store.get(store, hash, hashOffset);
+    if (grid) {
+        return grid;
+    }
+
+    var packs = packIndices;
+    var file = PackIndex.requireFileMultiple(packs, hash, hashOffset);
+
+    var ofs = Grid.offsets;
+    grid = Grid.clone(Grid.none);
+    grid.rows = Value.checkoutNumber(packs, store, file, ofs.rows);
+    grid.columns = Value.checkoutNumber(packs, store, file, ofs.columns);
+
+    // TODO: these will be cleaner once array types work.
+    if (GitFile.hashEqual(file, ofs.cell1, Value.none.hash, 0)) {
+        grid.cell1 = null;
+    } else {
+        grid.cell1 = Cell.checkout(packs, store, file, ofs.cell1);
+    }
+    if (GitFile.hashEqual(file, ofs.cell2, Value.none.hash, 0)) {
+        grid.cell2 = null;
+    } else {
+        grid.cell2 = Cell.checkout(packs, store, file, ofs.cell2);
+    }
+    if (GitFile.hashEqual(file, ofs.cell3, Value.none.hash, 0)) {
+        grid.cell3 = null;
+    } else {
+        grid.cell3 = Cell.checkout(packs, store, file, ofs.cell3);
+    }
+    grid.file = file;
+    grid.hash = hash;
+    grid.hashOffset = hashOffset;
+
+    return Store.save(store, grid);
+};
+
 Grid.set = function (original, prop, value) {
     return HighLevelStore.set(Grid, original, prop, value);
 };
@@ -109,6 +146,32 @@ Cell.types = {
     color: 'string',
 };
 
+Cell.checkout = function (packIndices, store, hash, hashOffset) {
+    var cell = Store.get(store, hash, hashOffset);
+    if (cell) {
+        return cell;
+    }
+
+    var packs = packIndices;
+    var file = PackIndex.requireFileMultiple(packs, hash, hashOffset);
+
+    var ofs = Cell.offsets;
+    cell = Cell.clone(Cell.none);
+    cell.text = Value.checkoutString(packs, store, file, ofs.text);
+    cell.color = Value.checkoutString(packs, store, file, ofs.color);
+
+    if (GitFile.hashEqual(file, ofs.grid, Value.none.hash, 0)) {
+        cell.grid = null;
+    } else {
+        cell.grid = Cell.checkout(packs, store, file, ofs.grid);
+    }
+    cell.file = file;
+    cell.hash = hash;
+    cell.hashOffset = hashOffset;
+
+    return Store.save(store, cell);
+};
+
 Cell.set = function (original, prop, value) {
     return HighLevelStore.set(Cell, original, prop, value);
 };
@@ -158,18 +221,56 @@ Store.save(store, grid1);
 Global.store = store;
 var cell2 = Cell.set(cell1, 'color', 'red');
 var cell3 = Cell.set(cell2, 'text', 'bar');
-var grid2 = Grid.setAll(grid1, {cell2: cell2, cell3: cell3});
+var grid2 = Grid.setAll(grid1, {
+    rows: 3,
+    columns: 1,
+    cell2: cell2,
+    cell3: cell3,
+});
 
-log(Store.prettyPrint(Global.store));
+log(helper.hex(grid2.hash));
+//=> d813135d887ac6bd27b5cc97e4170a85a54b9d5b
+
+log(Store.prettyPrint(store));
 //=> 1: #<65c274 white>
-//=> 5: #<70bfe9 null>
+//=> 5: #<70bfe9 null>, #<56a605 1>
 //=> 7: #<129cb5 grid=null text=bar color=red>
 //=> 10: #<a078d7 grid=null text=foo color=red>
 //=> 11: #<9c319a rows=0 colu..=0 cell1=[obj.. cell2..>
+//=> 13: #<d81313 rows=3 colu..=1 cell1=[obj.. cell2..>
 //=> 16: #<191028 foo>
 //=> 19: #<c22708 0>
 //=> 20: #<e69de2 >
 //=> 21: #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>, #<4ac8a1 grid=null text= color=white>
-//=> 22: #<db2700 rows=0 colu..=0 cell1=[obj.. cell2..>
 //=> 25: #<ba0e16 bar>
+//=> 27: #<e440e5 3>
 //=> 28: #<2270d3 grid=null text=foo color=white>, #<46f29e red>
+
+var objects = store.objects.reduce(function (a, b) {
+    return a.concat(b);
+}, []);
+var files = objects.map(function (a) {
+    return a.file;
+});
+var pack = Pack.create(files);
+var index = PackIndex.create(pack);
+var newStore = Store.create();
+
+var gotGrid = Grid.checkout([index], newStore, grid2.hash, grid2.hashOffset);
+log(helper.hex(gotGrid.hash));
+//=> d813135d887ac6bd27b5cc97e4170a85a54b9d5b
+
+log(gotGrid.rows, gotGrid.columns, gotGrid.cell1.text);
+//=> 3 1 'foo'
+log(gotGrid.cell2.color, gotGrid.cell3.text);
+//=> red bar
+
+log(Store.prettyPrint(newStore));
+//=> 1: #<46f29e red>
+//=> 3: #<191028 foo>
+//=> 4: #<129cb5 grid=null text=bar color=red>, #<d81313 rows=3 colu..=1 cell1=[obj.. cell2..>
+//=> 6: #<ba0e16 bar>
+//=> 7: #<e440e5 3>, #<2270d3 grid=null text=foo color=white>
+//=> 9: #<56a605 1>
+//=> 11: #<a078d7 grid=null text=foo color=red>
+//=> 14: #<65c274 white>
