@@ -73,15 +73,6 @@ Store.get = function (store, hash, offset) {
     return null;
 };
 
-Store.createBlobObject = function (data, file, hash, hashOffset) {
-    return {
-        data: data,
-        file: file,
-        hash: hash,
-        hashOffset: hashOffset,
-    };
-};
-
 var clamp = function (d, length) {
     if (d.length > length) {
         return d.slice(0, length - 2) + '..';

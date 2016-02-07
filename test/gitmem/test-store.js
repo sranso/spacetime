@@ -29,7 +29,7 @@ log(GitFile.catFile(object.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    helper
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
 
-var countBlobObject = Store.createBlobObject(object.count, countBlob, object.file, offsets.count);
+var countBlobObject = Value.createBlobObject(object.count, countBlob, object.file, offsets.count);
 Store.save(store, countBlobObject);
 
 var got = Store.get(store, object.file, offsets.count);

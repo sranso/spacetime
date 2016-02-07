@@ -2,6 +2,15 @@
 global.Value = {};
 (function () {
 
+Value.createBlobObject = function (data, file, hash, hashOffset) {
+    return {
+        data: data,
+        file: file,
+        hash: hash,
+        hashOffset: hashOffset,
+    };
+};
+
 Value.blobFromString = Blob.createFromString;
 
 Value.blobFromNumber = function (number) {
@@ -21,5 +30,6 @@ Value.getNumber = function (blob) {
 Value.getBoolean = function (blob) {
     return Boolean(Blob.getString(blob));
 };
+
 
 })();

@@ -13,7 +13,7 @@ HighLevelApi.setup = function (Thing) {
             var blob = Blob.createFromString('' + value);
             var hashOffset = Thing.offsets[prop];
             Sha1.hash(blob, thing.file, hashOffset);
-            var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
+            var blobObject = Value.createBlobObject(value, blob, thing.file, hashOffset);
             thing[prop] = Store.save(Global.store, blobObject).data;
         }
 
@@ -35,7 +35,7 @@ HighLevelApi.setup = function (Thing) {
                 var blob = Blob.createFromString('' + value);
                 var hashOffset = Thing.offsets[prop];
                 Sha1.hash(blob, thing.file, hashOffset);
-                var blobObject = Store.createBlobObject(value, blob, thing.file, hashOffset);
+                var blobObject = Value.createBlobObject(value, blob, thing.file, hashOffset);
                 thing[prop] = Store.save(Global.store, blobObject).data;
             }
         }
