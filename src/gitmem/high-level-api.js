@@ -1,5 +1,5 @@
 'use strict';
-global.HighLevelStore = {};
+global.HighLevelApi = {};
 (function () {
 
 var set = function (Thing, thing, prop, value) {
@@ -25,7 +25,7 @@ var set = function (Thing, thing, prop, value) {
     }
 };
 
-HighLevelStore.set = function (Thing, original, prop, value) {
+HighLevelApi.set = function (Thing, original, prop, value) {
     var thing = Thing.clone(original);
 
     set(Thing, thing, prop, value);
@@ -37,7 +37,7 @@ HighLevelStore.set = function (Thing, original, prop, value) {
     return Store.save(Global.store, thing);
 };
 
-HighLevelStore.setAll = function (Thing, original, modifications) {
+HighLevelApi.setAll = function (Thing, original, modifications) {
     var thing = Thing.clone(original);
 
     for (var prop in modifications) {

@@ -87,11 +87,11 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
 };
 
 Grid.set = function (original, prop, value) {
-    return HighLevelStore.set(Grid, original, prop, value);
+    return HighLevelApi.set(Grid, original, prop, value);
 };
 
 Grid.setAll = function (original, modifications) {
-    return HighLevelStore.setAll(Grid, original, modifications);
+    return HighLevelApi.setAll(Grid, original, modifications);
 };
 
 var zeroBlob = Blob.createFromString('0');
@@ -173,11 +173,11 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
 };
 
 Cell.set = function (original, prop, value) {
-    return HighLevelStore.set(Cell, original, prop, value);
+    return HighLevelApi.set(Cell, original, prop, value);
 };
 
 Cell.setAll = function (original, modifications) {
-    return HighLevelStore.setAll(Cell, original, modifications);
+    return HighLevelApi.setAll(Cell, original, modifications);
 };
 
 

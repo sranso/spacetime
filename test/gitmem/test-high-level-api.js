@@ -43,11 +43,11 @@ Thing.types = {
 };
 
 Thing.set = function (original, prop, value) {
-    return HighLevelStore.set(Thing, original, prop, value);
+    return HighLevelApi.set(Thing, original, prop, value);
 };
 
 Thing.setAll = function (original, modifications) {
-    return HighLevelStore.setAll(Thing, original, modifications);
+    return HighLevelApi.setAll(Thing, original, modifications);
 };
 
 var object1 = {
