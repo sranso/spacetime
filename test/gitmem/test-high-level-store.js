@@ -35,6 +35,13 @@ Thing.none.file = Tree.createSkeleton(Thing.offsets, {
     object: 'tree',
 });
 
+Thing.types = {
+    string: 'string',
+    number: 'number',
+    bool: 'boolean',
+    object: 'object',
+};
+
 Thing.set = function (original, prop, value) {
     return HighLevelStore.set(Thing, original, prop, value);
 };
@@ -49,6 +56,8 @@ var object1 = {
     hash: new Uint8Array(20),
     hashOffset: 0,
 };
+Sha1.hash(object1.file, object1.hash, 0);
+Store.save(store, object1);
 
 var thing1 = Thing.setAll(Thing.none, {
     string: 'foo',
@@ -64,8 +73,8 @@ log(GitFile.hashToString(thing1.file, Thing.offsets.string));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
 var gotString = Store.get(store, thing1.file, Thing.offsets.string).data;
-log(gotString);
-//=> foo
+log(gotString, typeof gotString);
+//=> foo string
 
 var thing2 = Thing.set(thing1, 'number', 42);
 log(thing2.number);
@@ -75,5 +84,13 @@ var numberBlob = Value.blobFromNumber(42);
 var numberHash = new Uint8Array(20);
 Sha1.hash(numberBlob, numberHash, 0);
 var gotNumber = Store.get(store, numberHash, 0).data;
-log(gotNumber);
-//=> 42
+log(gotNumber, typeof gotNumber);
+//=> 42 'number'
+
+var gotBool = Store.get(store, thing1.file, Thing.offsets.bool).data;
+log(gotBool, typeof gotBool);
+//=> true 'boolean'
+
+var gotObject = Store.get(store, thing1.file, Thing.offsets.object);
+log(gotObject.bar);
+//=> bar

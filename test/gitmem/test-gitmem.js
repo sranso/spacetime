@@ -41,6 +41,14 @@ Grid.none.file = Tree.createSkeleton(Grid.offsets, {
     cell3: 'tree',
 });
 
+Grid.types = {
+    rows: 'number',
+    columns: 'number',
+    cell1: 'object',
+    cell2: 'object',
+    cell3: 'object',
+};
+
 Grid.set = function (original, prop, value) {
     return HighLevelStore.set(Grid, original, prop, value);
 };
@@ -94,6 +102,12 @@ Cell.none.file = Tree.createSkeleton(Cell.offsets, {
     text: 'blob',
     color: 'blob',
 });
+
+Cell.types = {
+    grid: 'object',
+    text: 'string',
+    color: 'string',
+};
 
 Cell.set = function (original, prop, value) {
     return HighLevelStore.set(Cell, original, prop, value);

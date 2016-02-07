@@ -3,7 +3,7 @@ global.HighLevelStore = {};
 (function () {
 
 var set = function (Thing, thing, prop, value) {
-    var type = typeof value;
+    var type = Thing.types[prop];
 
     if (type === 'object') {
         GitFile.setHash(thing.file, Thing.offsets[prop], value.hash, value.hashOffset);
