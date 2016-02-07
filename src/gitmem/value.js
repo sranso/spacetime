@@ -21,14 +21,14 @@ Value.blobFromBoolean = function (bool) {
     return Blob.createFromString('' + Boolean(bool));
 };
 
-Value.getString = Blob.getString;
+Value.parseString = Blob.parseString;
 
-Value.getNumber = function (blob) {
-    return Number(Blob.getString(blob));
+Value.parseNumber = function (blob) {
+    return Number(Blob.parseString(blob));
 };
 
-Value.getBoolean = function (blob) {
-    return Boolean(Blob.getString(blob));
+Value.parseBoolean = function (blob) {
+    return Boolean(Blob.parseString(blob));
 };
 
 

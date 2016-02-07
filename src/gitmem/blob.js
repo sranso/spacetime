@@ -10,7 +10,7 @@ Blob.catFile = function (file) {
     if (type !== 'blob') {
         throw new Error('Unexpected type: ' + type);
     }
-    return Blob.getString(file);
+    return Blob.parseString(file);
 };
 
 Blob.createFromString = function (string) {
@@ -55,12 +55,12 @@ Blob.createFromArray = function (array) {
     return blob;
 };
 
-Blob.getArray = function (blob) {
+Blob.parseArray = function (blob) {
     return blob.subarray(blob.indexOf(0) + 1);
 };
 
-Blob.getString = function (blob) {
-    return String.fromCharCode.apply(null, Blob.getArray(blob));
+Blob.parseString = function (blob) {
+    return String.fromCharCode.apply(null, Blob.parseArray(blob));
 };
 
 Blob.empty = Blob.createFromString('');

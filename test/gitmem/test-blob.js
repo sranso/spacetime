@@ -4,13 +4,13 @@ var hex = helper.hex;
 var blob = Blob.createFromString('foo');
 log(helper.pretty(blob));
 //=> blob 3\x00foo
-log(Blob.getString(blob));
+log(Blob.parseString(blob));
 //=> foo
 
 blob = Blob.createFromArray(new Uint8Array([0xff, 1, 2, 3]));
 log(helper.pretty(blob));
 //=> blob 4\x00\xff\x01\x02\x03
-log(hex(Blob.getArray(blob)));
+log(hex(Blob.parseArray(blob)));
 //=> ff010203
 
 
