@@ -31,5 +31,40 @@ Value.parseBoolean = function (blob) {
     return Boolean(Blob.parseString(blob));
 };
 
+Value.checkoutString = function (packIndices, store, hash, hashOffset) {
+    var string = Store.get(store, hash, hashOffset);
+    if (string != null) {
+        return string;
+    }
+
+    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    string = Value.parseString(file);
+    Store.save(store, Value.createBlobObject(string, file, hash, hashOffset));
+    return string;
+};
+
+Value.checkoutNumber = function (packIndices, store, hash, hashOffset) {
+    var number = Store.get(store, hash, hashOffset);
+    if (number != null) {
+        return number;
+    }
+
+    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    number = Value.parseNumber(file);
+    Store.save(store, Value.createBlobObject(number, file, hash, hashOffset));
+    return number;
+};
+
+Value.checkoutBoolean = function (packIndices, store, hash, hashOffset) {
+    var bool = Store.get(store, hash, hashOffset);
+    if (bool != null) {
+        return bool;
+    }
+
+    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    bool = Value.parseBoolean(file);
+    Store.save(store, Value.createBlobObject(bool, file, hash, hashOffset));
+    return bool;
+};
 
 })();
