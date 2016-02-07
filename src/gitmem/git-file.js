@@ -80,7 +80,7 @@ GitFile.catFile = function (file) {
     } else if (type === 'tree') {
         return Tree.catFile(file);
     } else if (type === 'commit') {
-        return Commit.catFile(file);
+        return CommitFile.catFile(file);
     } else {
         throw new Error('Unknown type: ' + type);
     }

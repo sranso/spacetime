@@ -36,7 +36,7 @@ var commitObject = {
     message: 'Foo commit\n',
 };
 
-var commit = Commit.createFromObject(commitObject);
+var commit = CommitFile.createFromObject(commitObject);
 
 log(helper.pretty(commit));
 //=> commit 233\x00tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
@@ -55,7 +55,7 @@ log(hex(commitHash));
 var secondParent = new Uint8Array(20);
 Sha1.hash(GitFile.stringToArray('secondParent'), secondParent, 0);
 commitObject.parents.push(secondParent);
-var mergeCommit = Commit.createFromObject(commitObject);
+var mergeCommit = CommitFile.createFromObject(commitObject);
 
 log(GitFile.catFile(mergeCommit));
 //=> tree 205f6b799e7d5c2524468ca006a0131aa57ecce7

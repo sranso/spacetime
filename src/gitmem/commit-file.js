@@ -1,5 +1,5 @@
 'use strict';
-global.Commit = {};
+global.CommitFile = {};
 (function () {
 
 var commitPrefix = GitFile.stringToArray('commit ');
@@ -8,7 +8,7 @@ var parentPrefix = GitFile.stringToArray('\nparent ');
 var authorPrefix = GitFile.stringToArray('\nauthor ');
 var committerPrefix = GitFile.stringToArray('\ncommitter ');
 
-Commit.catFile = function (file) {
+CommitFile.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
 
     if (type !== 'commit') {
@@ -24,7 +24,7 @@ var constantLength = 'tree \nauthor  <> \ncommitter  <> \n\n'.length;
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40;
 
-Commit.createFromObject = function (commit) {
+CommitFile.createFromObject = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
     var authorEmail = commit.author.email;
     var dateAuthored = gitDate(commit.author.date);
