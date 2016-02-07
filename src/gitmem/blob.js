@@ -26,6 +26,7 @@ Blob.createFromString = function (string) {
     for (i = 0; i < lengthString.length; i++) {
         blob[j + i] = lengthString.charCodeAt(i);
     }
+    blob[j + i] = 0;
 
     j += i + 1;
     for (i = 0; i < string.length; i++) {
@@ -56,15 +57,15 @@ Blob.createFromArray = function (array) {
 };
 
 Blob.parseArray = function (blob) {
-    return blob.subarray(blob.indexOf(0) + 1);
+    return blob.subarray(blob.indexOf(0, 6) + 1);
 };
 
 Blob.parseString = function (blob) {
-    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0) + 1));
+    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0, 6) + 1));
 };
 
 Blob.parseStringOffset = function (blob, offset) {
-    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0) + 1 + offset));
+    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0, 6) + 1 + offset));
 };
 
 Blob.emptyBlob = Blob.createFromString('');

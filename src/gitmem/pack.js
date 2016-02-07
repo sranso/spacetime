@@ -9,6 +9,9 @@ Pack.create = function (files) {
     pack[2] = 0x43; // C
     pack[3] = 0x4b; // K
 
+    pack[4] = 0;
+    pack[5] = 0;
+    pack[6] = 0;
     pack[7] = 2;
 
     pack[8] = files.length >>> 24;

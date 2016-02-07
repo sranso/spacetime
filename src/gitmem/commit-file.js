@@ -4,9 +4,9 @@ global.CommitFile = {};
 
 var commitPrefix = GitFile.stringToArray('commit ');
 var treePrefix = GitFile.stringToArray('tree ');
-var parentPrefix = GitFile.stringToArray('\nparent ');
-var authorPrefix = GitFile.stringToArray('\nauthor ');
-var committerPrefix = GitFile.stringToArray('\ncommitter ');
+var parentPrefix = GitFile.stringToArray('parent ');
+var authorPrefix = GitFile.stringToArray('author ');
+var committerPrefix = GitFile.stringToArray('committer ');
 
 CommitFile.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
@@ -22,7 +22,7 @@ CommitFile.catFile = function (file) {
 
 var constantLength = 'tree \nauthor  <> \ncommitter  <> \n\n'.length;
 constantLength += 40;
-var perParentLength = parentPrefix.length + 40;
+var perParentLength = parentPrefix.length + 40 + 1;
 
 CommitFile.createFromObject = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
@@ -53,6 +53,7 @@ CommitFile.createFromObject = function (commit) {
     for (i = 0; i < lengthString.length; i++) {
         file[j + i] = lengthString.charCodeAt(i);
     }
+    file[j + i] = 0;
 
     j += i + 1;
     for (i = 0; i < treePrefix.length; i++) {
@@ -61,10 +62,11 @@ CommitFile.createFromObject = function (commit) {
 
     j += i;
     GitFile.hashToHex(commit.tree.hash, commit.tree.hashOffset, file, j);
+    file[j + 40] = 0x0a;
 
     var p, parentCommit;
     for (p = 0; p < commit.parents.length; p++) {
-        j += 40;
+        j += 40 + 1;
         for (i = 0; i < parentPrefix.length; i++) {
             file[j + i] = parentPrefix[i];
         }
@@ -72,10 +74,11 @@ CommitFile.createFromObject = function (commit) {
         j += i;
         parentCommit = commit.parents[p];
         GitFile.hashToHex(parentCommit.hash, parentCommit.hashOffset, file, j);
+        file[j + 40] = 0x0a;
     }
 
     // author
-    j += 40;
+    j += 40 + 1;
     for (i = 0; i < authorPrefix.length; i++) {
         file[j + i] = authorPrefix[i];
     }
@@ -98,9 +101,10 @@ CommitFile.createFromObject = function (commit) {
     for (i = 0; i < dateAuthored.length; i++) {
         file[j + i] = dateAuthored.charCodeAt(i);
     }
+    file[j + i] = 0x0a;
 
     // committer
-    j += i;
+    j += i + 1;
     for (i = 0; i < committerPrefix.length; i++) {
         file[j + i] = committerPrefix[i];
     }

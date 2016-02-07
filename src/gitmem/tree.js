@@ -128,6 +128,7 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
     for (i = 0; i < lengthString.length; i++) {
         file[j + i] = lengthString.charCodeAt(i);
     }
+    file[j + i] = 0;
 
     var k = oldHeaderLength;
     var copyEnd;
@@ -135,6 +136,7 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
     while (k < oldFile.length) {
         var modeEnd = oldFile.indexOf(0x20, k + 5);
         var filenameEnd = oldFile.indexOf(0, modeEnd + 2);
+        var hashStart = filenameEnd + 1;
 
         var name = String.fromCharCode.apply(null, oldFile.subarray(modeEnd + 1, filenameEnd));
 
@@ -142,12 +144,12 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
             break;
         }
 
-        copyEnd = filenameEnd + 21;
+        copyEnd = hashStart + 20;
         for (i = k; i < copyEnd; i++) {
             file[offset + i] = oldFile[i];
         }
-        offsets[name] = offset + filenameEnd + 1;
-        k = filenameEnd + 21;
+        offsets[name] = offset + hashStart;
+        k = hashStart + 20;
     }
 
     j = k + offset;
@@ -160,6 +162,7 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
     for (i = 0; i < insertName.length; i++) {
         file[j + i] = insertName.charCodeAt(i);
     }
+    file[j + i] = 0;
 
     j += i + 1;
     offsets[insertName] = j;
