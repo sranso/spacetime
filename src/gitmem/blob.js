@@ -10,7 +10,7 @@ Blob.catFile = function (file) {
     if (type !== 'blob') {
         throw new Error('Unexpected type: ' + type);
     }
-    return String.fromCharCode.apply(null, file.subarray(file.indexOf(0) + 1));
+    return Blob.getString(file);
 };
 
 Blob.createFromString = function (string) {
@@ -32,6 +32,35 @@ Blob.createFromString = function (string) {
         blob[j + i] = string.charCodeAt(i);
     }
     return blob;
+};
+
+Blob.createFromArray = function (array) {
+    var lengthString = '' + array.length;
+    var blob = new Uint8Array(blobPrefix.length + lengthString.length + 1 + array.length);
+
+    var i;
+    for (i = 0; i < blobPrefix.length; i++) {
+        blob[i] = blobPrefix[i];
+    }
+
+    var j = i;
+    for (i = 0; i < lengthString.length; i++) {
+        blob[j + i] = lengthString.charCodeAt(i);
+    }
+
+    j += i + 1;
+    for (i = 0; i < array.length; i++) {
+        blob[j + i] = array[i];
+    }
+    return blob;
+};
+
+Blob.getArray = function (blob) {
+    return blob.subarray(blob.indexOf(0) + 1);
+};
+
+Blob.getString = function (blob) {
+    return String.fromCharCode.apply(null, Blob.getArray(blob));
 };
 
 Blob.empty = Blob.createFromString('');
