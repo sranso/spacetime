@@ -22,7 +22,7 @@ log(hex(treeHash));
 var author = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
-    date: new Date(1454213963000),
+    date: new Date(2016, 2, 6, 0, 4, 43),
 };
 
 var commitObject = {
@@ -37,7 +37,7 @@ var commit = Commit.createFromObject(commitObject);
 var commitHash = new Uint8Array(20);
 Sha1.hash(commit, commitHash, 0);
 log(hex(commitHash));
-//=> db2742030e36174ce5aa569ef2e97840c4cd47f5
+//=> e2b6255bbe6e031c7053c7c846d74e4926bc48bc
 
 pack = Pack.create([commit, tree, blob]);
 
@@ -47,10 +47,10 @@ var index = PackIndex.create(pack);
 log(hex(index.hashes.subarray(0, 20)));
 //=> 7c0ac9607b0f31f1e3848f17bbdeb34e83f1ed45
 log(hex(index.hashes.subarray(40, 60)));
-//=> db2742030e36174ce5aa569ef2e97840c4cd47f5
+//=> e2b6255bbe6e031c7053c7c846d74e4926bc48bc
 
 var f = index.fanout;
-log(f[0x00], f[0x7b], f[0x7c], f[0x94], f[0x95], f[0xda], f[0xdb], f[0xff]);
+log(f[0x00], f[0x7b], f[0x7c], f[0x94], f[0x95], f[0xe1], f[0xe2], f[0xff]);
 //=> 0 0 1 1 2 2 3 3
 
 var file = PackIndex.lookupFile(index, index.hashes, 20);
