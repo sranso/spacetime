@@ -21,8 +21,8 @@ Sha1.hash(tree, treeHash, 0);
 var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
 
 var commitObject = {
-    tree: treeHash,
-    parents: [parentHash],
+    tree: {hash: treeHash, hashOffset: 0},
+    parents: [{hash: parentHash, hashOffset: 0}],
     committer: {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
@@ -54,7 +54,7 @@ log(hex(commitHash));
 
 var secondParent = new Uint8Array(20);
 Sha1.hash(GitFile.stringToArray('secondParent'), secondParent, 0);
-commitObject.parents.push(secondParent);
+commitObject.parents.push({hash: secondParent, hashOffset: 0});
 var mergeCommit = CommitFile.createFromObject(commitObject);
 
 log(GitFile.catFile(mergeCommit));

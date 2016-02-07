@@ -26,7 +26,7 @@ var author = {
 };
 
 var commitObject = {
-    tree: treeHash,
+    tree: {hash: treeHash, hashOffset: 0},
     parents: [],
     committer: author,
     author: author,

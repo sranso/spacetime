@@ -60,7 +60,7 @@ CommitFile.createFromObject = function (commit) {
     }
 
     j += i;
-    GitFile.hashToHex(commit.tree, 0, file, j);
+    GitFile.hashToHex(commit.tree.hash, commit.tree.hashOffset, file, j);
 
     var p, parentCommit;
     for (p = 0; p < commit.parents.length; p++) {
@@ -70,7 +70,8 @@ CommitFile.createFromObject = function (commit) {
         }
 
         j += i;
-        GitFile.hashToHex(commit.parents[p], 0, file, j);
+        parentCommit = commit.parents[p];
+        GitFile.hashToHex(parentCommit.hash, parentCommit.hashOffset, file, j);
     }
 
     // author
