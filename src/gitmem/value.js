@@ -41,7 +41,7 @@ Value.parseBoolean = function (blob) {
 Value.checkoutString = function (packIndices, store, hash, hashOffset) {
     var string = Store.get(store, hash, hashOffset);
     if (string != null) {
-        return string;
+        return string.data;
     }
 
     var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
@@ -53,7 +53,7 @@ Value.checkoutString = function (packIndices, store, hash, hashOffset) {
 Value.checkoutNumber = function (packIndices, store, hash, hashOffset) {
     var number = Store.get(store, hash, hashOffset);
     if (number != null) {
-        return number;
+        return number.data;
     }
 
     var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
@@ -65,7 +65,7 @@ Value.checkoutNumber = function (packIndices, store, hash, hashOffset) {
 Value.checkoutBoolean = function (packIndices, store, hash, hashOffset) {
     var bool = Store.get(store, hash, hashOffset);
     if (bool != null) {
-        return bool;
+        return bool.data;
     }
 
     var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);

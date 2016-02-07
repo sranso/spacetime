@@ -71,6 +71,10 @@ var gotString = Value.checkoutString([index], store, tree, offsets.string);
 log(gotString);
 //=> foo
 
+var gotStringAgain = Value.checkoutString([index], store, tree, offsets.string);
+log(gotStringAgain);
+//=> foo
+
 var savedString = Store.get(store, tree, offsets.string).data;
 log(savedString);
 //=> foo
@@ -80,7 +84,7 @@ var barHash = new Uint8Array(20);
 Sha1.hash(bar, barHash, 0);
 Store.save(store, Value.createBlobObject('bar', bar, barHash, 0));
 
-var gotBar = Value.checkoutString([index], store, barHash, 0).data;
+var gotBar = Value.checkoutString([index], store, barHash, 0);
 log(gotBar);
 //=> bar
 
