@@ -65,8 +65,8 @@ log(file);
 //=> null
 
 
-commitObject.tree = Tree._actuallyEmptyHash;
-var secondPack = Pack.create([commit, Tree._actuallyEmpty]);
+commitObject.tree = Tree._actuallyEmptyTreeHash;
+var secondPack = Pack.create([commit, Tree._actuallyEmptyTree]);
 var secondIndex = PackIndex.create(secondPack);
 
 file = PackIndex.requireFileMultiple([secondIndex, index], index.hashes, 0);

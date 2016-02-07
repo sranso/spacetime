@@ -2,16 +2,16 @@ var helper = require('../helper');
 var hex = helper.hex;
 
 var actuallyEmptyHash = new Uint8Array(20);
-Sha1.hash(Tree._actuallyEmpty, actuallyEmptyHash, 0);
-log(hex(Tree._actuallyEmptyHash));
+Sha1.hash(Tree._actuallyEmptyTree, actuallyEmptyHash, 0);
+log(hex(Tree._actuallyEmptyTreeHash));
 //=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 
-log(GitFile.hashEqual(actuallyEmptyHash, 0, Tree._actuallyEmptyHash, 0));
+log(GitFile.hashEqual(actuallyEmptyHash, 0, Tree._actuallyEmptyTreeHash, 0));
 //=> true
 
-log(GitFile.catFile(Tree.empty));
+log(GitFile.catFile(Tree.emptyTree));
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    .empty
-log(hex(Tree.emptyHash));
+log(hex(Tree.emptyTreeHash));
 //=> 70bfe9793f3fc43d2a2306a58186fe0c88b86999
 
 var offsets = {};

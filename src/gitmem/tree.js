@@ -2,18 +2,18 @@
 global.Tree = {};
 (function () {
 
-var emptyTree = Tree.empty = null;
-var emptyTreeHash = Tree.emptyHash = new Uint8Array(20);
+var emptyTree = Tree.emptyTree = null;
+var emptyTreeHash = Tree.emptyTreeHash = new Uint8Array(20);
 
 var actuallyEmptyTree = GitFile.stringToArray('tree 0\0');
-Tree._actuallyEmpty = actuallyEmptyTree;
-Tree._actuallyEmptyHash = new Uint8Array(20);
+Tree._actuallyEmptyTree = actuallyEmptyTree;
+Tree._actuallyEmptyTreeHash = new Uint8Array(20);
 
 var buildEmpty = function () {
     var emptyTreeFileInfo = GitFile.stringToArray('100644 .empty\0');
     var emptyTreeLength = emptyTreeFileInfo.length + 20;
     var emptyTreePrefix = GitFile.stringToArray('tree ' + emptyTreeLength + '\0');
-    Tree.empty = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
+    Tree.emptyTree = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
 
     var i, j;
     for (i = 0; i < emptyTreePrefix.length; i++) {
@@ -26,12 +26,12 @@ var buildEmpty = function () {
     }
 
     j += i;
-    for (i = 0; i < Blob.emptyHash.length; i++) {
-        emptyTree[j + i] = Blob.emptyHash[i];
+    for (i = 0; i < Blob.emptyBlobHash.length; i++) {
+        emptyTree[j + i] = Blob.emptyBlobHash[i];
     }
 
     Sha1.hash(emptyTree, emptyTreeHash, 0);
-    Sha1.hash(Tree._actuallyEmpty, Tree._actuallyEmptyHash, 0);
+    Sha1.hash(Tree._actuallyEmptyTree, Tree._actuallyEmptyTreeHash, 0);
 };
 
 var treePrefix = GitFile.stringToArray('tree ');
@@ -111,7 +111,7 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
         hash = emptyTreeHash;
     } else {
         mode = blobMode;
-        hash = Blob.emptyHash;
+        hash = Blob.emptyBlobHash;
     }
     var length = oldLength + mode.length + 1 + insertName.length + 1 + 20;
     var lengthString = '' + length;

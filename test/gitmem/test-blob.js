@@ -20,10 +20,10 @@ log('empty blob is "' + GitFile.catFile(emptyBlob) + '"');
 //=> empty blob is ""
 
 Sha1.hash(emptyBlob, emptyHash, 0);
-log(hex(Blob.emptyHash));
+log(hex(Blob.emptyBlobHash));
 //=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 
-log(GitFile.hashEqual(emptyHash, 0, Blob.emptyHash, 0));
+log(GitFile.hashEqual(emptyHash, 0, Blob.emptyBlobHash, 0));
 //=> true
 
 var helloHash = new Uint8Array(20);

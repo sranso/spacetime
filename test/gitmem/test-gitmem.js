@@ -3,8 +3,8 @@ var helper = require('../helper');
 Random.seed(1);
 var store = Store.create();
 
-Store.save(store, Value.createBlobObject('', Blob.empty, Blob.emptyHash, 0));
-Store.save(store, Value.createBlobObject(null, Tree.empty, Tree.emptyHash, 0));
+Store.save(store, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
+Store.save(store, Value.createBlobObject(null, Tree.emptyTree, Tree.emptyTreeHash, 0));
 
 var Grid = {};
 Grid.offsets = {};

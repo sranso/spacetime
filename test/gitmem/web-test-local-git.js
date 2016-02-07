@@ -7,7 +7,7 @@ var author = {
 };
 
 var commitObject = {
-    tree: Tree._actuallyEmptyHash,
+    tree: Tree._actuallyEmptyTreeHash,
     parents: [],
     committer: author,
     author: author,
@@ -22,7 +22,7 @@ var previousHash = new Uint8Array(20);
 
 var branch = 'refs/heads/master';
 
-var pack = Pack.create([commit, Tree._actuallyEmpty]);
+var pack = Pack.create([commit, Tree._actuallyEmptyTree]);
 
 var body = SendPack.postBody(branch, previousHash, commitHash, pack);
 

@@ -14,7 +14,7 @@ var author = {
 };
 
 var commitObject = {
-    tree: Tree._actuallyEmptyHash,
+    tree: Tree._actuallyEmptyTreeHash,
     parents: [],
     committer: author,
     author: author,
@@ -33,7 +33,7 @@ log(hex(previousHash));
 
 var branch = 'refs/heads/master';
 
-var pack = Pack.create([commit, Tree._actuallyEmpty]);
+var pack = Pack.create([commit, Tree._actuallyEmptyTree]);
 log(hex(pack));
 //=> 5041434b0000000200000002930c789c9dcc3b0ec2301045d1deab980d808c195b6309a1b4d0b2027f26c2103b284c0a768f11ac80e649ef16471666c048c6e6e4d0a4e838faa09d668b71a4ecbc211a23337a8d2aac729d1738873bc325b43cad2dc3e1d6eff099e72f6dd35c8fb0438b86d0d11e361dd4aad75a44f86f409d5a911226e0fa90177c3df50669053d7020789c030000000001e7cc6aed1b4b407fb5c1245e4606f2e3458130fa
 

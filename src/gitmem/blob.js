@@ -63,8 +63,8 @@ Blob.parseString = function (blob) {
     return String.fromCharCode.apply(null, Blob.parseArray(blob));
 };
 
-Blob.empty = Blob.createFromString('');
-Blob.emptyHash = new Uint8Array(20);
-Sha1.hash(Blob.empty, Blob.emptyHash, 0);
+Blob.emptyBlob = Blob.createFromString('');
+Blob.emptyBlobHash = new Uint8Array(20);
+Sha1.hash(Blob.emptyBlob, Blob.emptyBlobHash, 0);
 
 })();
