@@ -3,16 +3,16 @@ var hex = helper.hex;
 
 var actuallyEmptyHash = new Uint8Array(20);
 Sha1.hash(Tree._actuallyEmpty, actuallyEmptyHash, 0);
-log('actually empty tree hash: ' + hex(Tree._actuallyEmptyHash));
-//=> actually empty tree hash: 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+log(hex(Tree._actuallyEmptyHash));
+//=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 
 log(GitFile.hashEqual(actuallyEmptyHash, 0, Tree._actuallyEmptyHash, 0));
 //=> true
 
-log('empty tree', GitFile.catFile(Tree.empty));
-//=> empty tree 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    .empty
-log('empty tree hash', hex(Tree.emptyHash));
-//=> empty tree hash 70bfe9793f3fc43d2a2306a58186fe0c88b86999
+log(GitFile.catFile(Tree.empty));
+//=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    .empty
+log(hex(Tree.emptyHash));
+//=> 70bfe9793f3fc43d2a2306a58186fe0c88b86999
 
 var offsets = {};
 var file = Tree.createSkeleton(offsets, {});
@@ -67,5 +67,5 @@ log(GitFile.catFile(file));
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    bazzle
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    food
 
-log('hashAt offsets.food', hashAt(offsets.food));
-//=> hashAt offsets.food e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+log(hashAt(offsets.food));
+//=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
