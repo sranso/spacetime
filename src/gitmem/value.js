@@ -11,6 +11,13 @@ Value.createBlobObject = function (data, file, hash, hashOffset) {
     };
 };
 
+Value.none = {
+    data: null,
+    file: Tree.emptyTree,
+    hash: Tree.emptyTreeHash,
+    hashOffset: 0,
+};
+
 Value.blobFromString = Blob.createFromString;
 
 Value.blobFromNumber = function (number) {

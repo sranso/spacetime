@@ -4,7 +4,7 @@ Random.seed(1);
 var store = Store.create();
 
 Store.save(store, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
-Store.save(store, Value.createBlobObject(null, Tree.emptyTree, Tree.emptyTreeHash, 0));
+Store.save(store, Value.none);
 
 var Grid = {};
 Grid.offsets = {};
