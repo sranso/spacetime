@@ -70,7 +70,7 @@ log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
 log(GitFile.hashToString(thing1.file, Thing.offsets.string));
-//=> 19102815663d23f8b75a47e7a01965dcdc96468c
+//=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
 var gotString = Store.get(store, thing1.file, Thing.offsets.string).data;
 log(gotString, typeof gotString);

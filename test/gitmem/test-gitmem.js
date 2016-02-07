@@ -94,7 +94,7 @@ Grid.setAll = function (original, modifications) {
     return HighLevelApi.setAll(Grid, original, modifications);
 };
 
-var zeroBlob = Blob.createFromString('0');
+var zeroBlob = Value.blobFromNumber(0);
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 Store.save(store, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
@@ -181,7 +181,7 @@ Cell.setAll = function (original, modifications) {
 };
 
 
-var colorBlob = Blob.createFromString(Cell.none.color);
+var colorBlob = Value.blobFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 Store.save(store, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
@@ -190,21 +190,21 @@ Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
 Store.save(store, Cell.none);
 
 log(GitFile.catFile(Cell.none.file));
-//=> 100644 blob 65c27486fa8046fd08f63f78cce1abc3932f97ce    color
+//=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
 log(Store.prettyPrint(store));
-//=> 0: #<65c274 white>
 //=> 1: #<70bfe9 null>
+//=> 2: #<03c754 white>, #<4b14dc grid=null text= color=white>
 //=> 4: #<c22708 0>
-//=> 5: #<e69de2 >, #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>, #<4ac8a1 grid=null text= color=white>
+//=> 5: #<e69de2 >, #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>
 
 // low-level
 var grid1 = Grid.clone(Grid.none);
 
 var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
-var blob = Blob.createFromString(cell1.text);
+var blob = Value.blobFromString(cell1.text);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
 Store.save(store, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
@@ -229,22 +229,23 @@ var grid2 = Grid.setAll(grid1, {
 });
 
 log(helper.hex(grid2.hash));
-//=> d813135d887ac6bd27b5cc97e4170a85a54b9d5b
+//=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
 log(Store.prettyPrint(store));
-//=> 1: #<65c274 white>
 //=> 5: #<70bfe9 null>, #<56a605 1>
-//=> 7: #<129cb5 grid=null text=bar color=red>
-//=> 10: #<a078d7 grid=null text=foo color=red>
-//=> 11: #<9c319a rows=0 colu..=0 cell1=[obj.. cell2..>
-//=> 13: #<d81313 rows=3 colu..=1 cell1=[obj.. cell2..>
-//=> 16: #<191028 foo>
+//=> 9: #<4b14dc grid=null text= color=white>, #<05dafb rows=0 colu..=0 cell1=[obj.. cell2..>
+//=> 10: #<03c754 white>
+//=> 14: #<89ced6 grid=null text=foo color=red>
+//=> 16: #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>
 //=> 19: #<c22708 0>
 //=> 20: #<e69de2 >
-//=> 21: #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>, #<4ac8a1 grid=null text= color=white>
-//=> 25: #<ba0e16 bar>
+//=> 21: #<dbf0d8 rows=0 colu..=0 cell1=null cell2=n..>
+//=> 22: #<daf773 grid=null text=bar color=red>
+//=> 25: #<b5a955 bar>
+//=> 26: #<6f1e0d grid=null text=foo color=white>
 //=> 27: #<e440e5 3>
-//=> 28: #<2270d3 grid=null text=foo color=white>, #<46f29e red>
+//=> 29: #<d45772 foo>
+//=> 31: #<0af810 red>
 
 var objects = store.objects.reduce(function (a, b) {
     return a.concat(b);
@@ -258,7 +259,7 @@ var newStore = Store.create();
 
 var gotGrid = Grid.checkout([index], newStore, grid2.hash, grid2.hashOffset);
 log(helper.hex(gotGrid.hash));
-//=> d813135d887ac6bd27b5cc97e4170a85a54b9d5b
+//=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
 log(gotGrid.rows, gotGrid.columns, gotGrid.cell1.text);
 //=> 3 1 'foo'
@@ -266,11 +267,9 @@ log(gotGrid.cell2.color, gotGrid.cell3.text);
 //=> red bar
 
 log(Store.prettyPrint(newStore));
-//=> 1: #<46f29e red>
-//=> 3: #<191028 foo>
-//=> 4: #<129cb5 grid=null text=bar color=red>, #<d81313 rows=3 colu..=1 cell1=[obj.. cell2..>
-//=> 6: #<ba0e16 bar>
-//=> 7: #<e440e5 3>, #<2270d3 grid=null text=foo color=white>
-//=> 9: #<56a605 1>
-//=> 11: #<a078d7 grid=null text=foo color=red>
-//=> 14: #<65c274 white>
+//=> 0: #<6f1e0d grid=null text=foo color=white>, #<89ced6 grid=null text=foo color=red>
+//=> 3: #<0af810 red>
+//=> 7: #<e440e5 3>, #<daf773 grid=null text=bar color=red>
+//=> 8: #<03c754 white>
+//=> 9: #<56a605 1>, #<d45772 foo>, #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>
+//=> 15: #<b5a955 bar>

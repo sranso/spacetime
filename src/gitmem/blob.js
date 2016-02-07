@@ -60,7 +60,11 @@ Blob.parseArray = function (blob) {
 };
 
 Blob.parseString = function (blob) {
-    return String.fromCharCode.apply(null, Blob.parseArray(blob));
+    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0) + 1));
+};
+
+Blob.parseStringOffset = function (blob, offset) {
+    return String.fromCharCode.apply(null, blob.subarray(blob.indexOf(0) + 1 + offset));
 };
 
 Blob.emptyBlob = Blob.createFromString('');

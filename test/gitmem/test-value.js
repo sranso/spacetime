@@ -8,7 +8,7 @@ Date.prototype.getTimezoneOffset = function () {
 
 var stringBlob = Value.blobFromString('foo');
 log(helper.pretty(stringBlob));
-//=> blob 3\x00foo
+//=> blob 4\x00\x22foo
 var string = Value.parseString(stringBlob);
 log(string, typeof string);
 //=> foo string
@@ -20,12 +20,19 @@ var number = Value.parseNumber(numberBlob);
 log(number, typeof number);
 //=> 375.2 'number'
 
-var boolBlob = Value.blobFromBoolean(true);
-log(helper.pretty(boolBlob));
+var trueBlob = Value.blobFromBoolean(true);
+log(helper.pretty(trueBlob));
 //=> blob 4\x00true
-var bool = Value.parseBoolean(boolBlob);
+var bool = Value.parseBoolean(trueBlob);
 log(bool, typeof bool);
 //=> true 'boolean'
+
+var falseBlob = Value.blobFromBoolean(false);
+log(helper.pretty(falseBlob));
+//=> blob 5\x00false
+bool = Value.parseBoolean(falseBlob);
+log(bool, typeof bool);
+//=> false 'boolean'
 
 var offsets = {};
 var tree = Tree.createSkeleton(offsets, {
@@ -36,12 +43,12 @@ var tree = Tree.createSkeleton(offsets, {
 
 Sha1.hash(stringBlob, tree, offsets.string);
 Sha1.hash(numberBlob, tree, offsets.number);
-Sha1.hash(boolBlob, tree, offsets.bool);
+Sha1.hash(trueBlob, tree, offsets.bool);
 
 var treeHash = new Uint8Array(20);
 Sha1.hash(tree, treeHash, 0);
 log(hex(treeHash));
-//=> 70258ec52d7cc3bbe55c7323dadf61209fe1bed8
+//=> 0051e89e36359217a9cb5e27fcaf8f40b36407f5
 
 var author = {
     name: 'Jake Sandlund',
@@ -61,9 +68,9 @@ var commit = CommitFile.createFromObject(commitObject);
 var commitHash = new Uint8Array(20);
 Sha1.hash(commit, commitHash, 0);
 log(hex(commitHash));
-//=> 7abcad475bcc28d14173be19bd20d923f3401b15
+//=> 22aec7a136ebc09a4ab8ab7de0779e1910553732
 
-var pack = Pack.create([commit, tree, stringBlob, numberBlob, boolBlob]);
+var pack = Pack.create([commit, tree, stringBlob, numberBlob, trueBlob]);
 var index = PackIndex.create(pack);
 var store = Store.create();
 

@@ -18,7 +18,9 @@ Value.none = {
     hashOffset: 0,
 };
 
-Value.blobFromString = Blob.createFromString;
+Value.blobFromString = function (string) {
+    return Blob.createFromString('"' + string);
+};
 
 Value.blobFromNumber = function (number) {
     return Blob.createFromString('' + Number(number));
@@ -28,14 +30,16 @@ Value.blobFromBoolean = function (bool) {
     return Blob.createFromString('' + Boolean(bool));
 };
 
-Value.parseString = Blob.parseString;
+Value.parseString = function (blob) {
+    return Blob.parseStringOffset(blob, 1);
+};
 
 Value.parseNumber = function (blob) {
     return Number(Blob.parseString(blob));
 };
 
 Value.parseBoolean = function (blob) {
-    return Boolean(Blob.parseString(blob));
+    return Blob.parseArray(blob)[0] === 0x74;  // 't' for true
 };
 
 Value.checkoutString = function (packIndices, store, hash, hashOffset) {
