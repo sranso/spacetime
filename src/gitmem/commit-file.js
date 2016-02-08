@@ -162,4 +162,85 @@ CommitFile.createFromObject = function (commit) {
     return file;
 };
 
+CommitFile.parseTree = function (file) {
+    var hash = new Uint8Array(20);
+    var hexOffset = file.indexOf(0, 7) + 1 + treePrefix.length;
+    GitFile.hexToHash(file, hexOffset, hash, 0);
+    return hash;
+};
+
+CommitFile.parseParents = function (file) {
+    var hashes = [];
+    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
+    while (file[j] === parentPrefix[0]) {
+        var hash = new Uint8Array(20);
+
+        j += parentPrefix.length;
+        GitFile.hexToHash(file, j, hash, 0);
+        hashes.push(hash);
+        j += 40 + 1;
+    }
+
+    return hashes;
+};
+
+CommitFile.parseAuthor = function (file) {
+    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
+    while (file[j] === parentPrefix[0]) {
+        j += parentPrefix.length + 40 + 1;
+    }
+
+    j += authorPrefix.length;
+    return parseAuthorOrCommitter(file, j);
+};
+
+CommitFile.parseCommitter = function (file) {
+    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
+    while (file[j] === parentPrefix[0]) {
+        j += parentPrefix.length + 40 + 1;
+    }
+
+    j = file.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
+    j += 1 + committerPrefix.length;
+    return parseAuthorOrCommitter(file, j);
+};
+
+var parseAuthorOrCommitter = function (file, nameStart) {
+    var lessThanOffset = file.indexOf(0x3c, nameStart); // '<'
+    var nameArray = file.subarray(nameStart, lessThanOffset - 1);
+    var name = String.fromCharCode.apply(null, nameArray);
+
+    var greaterThanOffset = file.indexOf(0x3e, lessThanOffset); // '>'
+    var emailArray = file.subarray(lessThanOffset + 1, greaterThanOffset);
+    var email = String.fromCharCode.apply(null, emailArray);
+
+    var spaceOffset = file.indexOf(0x20, greaterThanOffset + 10);
+    var secondsArray = file.subarray(greaterThanOffset + 2, spaceOffset);
+    var seconds = String.fromCharCode.apply(null, secondsArray);
+    var timezoneArray = file.subarray(spaceOffset + 1, spaceOffset + 6);
+    var timezone = String.fromCharCode.apply(null, timezoneArray);
+
+    var sign = timezone[0] === '+' ? -1 : +1;
+    var hours = Number(timezone.slice(1, 3));
+    var minutes = Number(timezone.slice(3));
+
+    return {
+        name: name,
+        email: email,
+        time: Number(seconds) * 1000,
+        timezoneOffset: sign * (60 * hours + minutes),
+    };
+};
+
+CommitFile.parseMessage = function (file) {
+    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
+    while (file[j] === parentPrefix[0]) {
+        j += parentPrefix.length + 40 + 1;
+    }
+
+    j = file.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
+    j = file.indexOf(0x0a, j + 29);  // 29 is < min bytes for committer
+    return String.fromCharCode.apply(null, file.subarray(j + 2));
+};
+
 })();
