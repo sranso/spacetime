@@ -1,11 +1,6 @@
 var helper = require('../helper');
 var hex = helper.hex;
 
-var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-Date.prototype.getTimezoneOffset = function () {
-    return 360;
-};
-
 var blob = Blob.createFromString('foo bar\n');
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
@@ -54,7 +49,8 @@ log(hex(treeHash));
 var author = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
-    date: new Date(1454213963000),
+    time: 1454213963000,
+    timezoneOffset: 360,
 };
 
 var commitObject = {
@@ -99,5 +95,3 @@ log(ex);
 //=> [ 187, 46 ]
 log(helper.pretty(file));
 //=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2
-
-Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;

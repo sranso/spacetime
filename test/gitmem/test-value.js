@@ -1,11 +1,6 @@
 var helper = require('../helper');
 var hex = helper.hex;
 
-var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-Date.prototype.getTimezoneOffset = function () {
-    return 360;
-};
-
 var stringBlob = Value.blobFromString('foo');
 log(helper.pretty(stringBlob));
 //=> blob 4\x00\x22foo
@@ -53,7 +48,8 @@ log(hex(treeHash));
 var author = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
-    date: new Date(2016, 2, 6, 20, 57, 39),
+    time: 1454813859000,
+    timezoneOffset: 360,
 };
 
 var commitObject = {
@@ -68,7 +64,7 @@ var commit = CommitFile.createFromObject(commitObject);
 var commitHash = new Uint8Array(20);
 Sha1.hash(commit, commitHash, 0);
 log(hex(commitHash));
-//=> 22aec7a136ebc09a4ab8ab7de0779e1910553732
+//=> ffc685cb3147dd133609ed36fc9c5ec2886964f1
 
 var pack = Pack.create([commit, tree, stringBlob, numberBlob, trueBlob]);
 var index = PackIndex.create(pack);
@@ -110,5 +106,3 @@ log(gotBool, typeof gotBool);
 var savedBool = Store.get(store, tree, offsets.bool).data;
 log(savedBool, typeof savedBool);
 //=> true 'boolean'
-
-Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;

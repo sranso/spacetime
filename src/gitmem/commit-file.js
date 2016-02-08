@@ -20,25 +20,37 @@ CommitFile.catFile = function (file) {
     return String.fromCharCode.apply(null, rest);
 };
 
-var constantLength = 'tree \nauthor  <> \ncommitter  <> \n\n'.length;
+CommitFile.timezoneString = function (timezoneOffset) {
+    var absOffset = Math.abs(timezoneOffset);
+    var hoursNumber = Math.floor(absOffset / 60);
+    var minutesNumber = absOffset - 60 * hoursNumber;
+    var sign = -timezoneOffset >= 0 ? '+' : '-';
+    var hours = hoursNumber > 9 ? hoursNumber : '0' + hoursNumber;
+    var minutes = minutesNumber > 9 ? minutesNumber : '0' + minutesNumber;
+    return sign + hours + minutes;
+};
+
+var constantLength = 'tree \nauthor  <>  -0600\ncommitter  <>  -0600\n\n'.length;
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40 + 1;
 
 CommitFile.createFromObject = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
     var authorEmail = commit.author.email;
-    var dateAuthored = gitDate(commit.author.date);
+    var timeAuthored = '' + Math.floor(commit.author.time / 1000);
+    var timezoneAuthored = CommitFile.timezoneString(commit.author.timezoneOffset);
 
     var committerName = commit.committer.name; // TODO: make this safe
     var committerEmail = commit.committer.email;
-    var dateCommited = gitDate(commit.committer.date);
+    var timeCommited = '' + Math.floor(commit.committer.time / 1000);
+    var timezoneCommited = CommitFile.timezoneString(commit.committer.timezoneOffset);
 
     var message = commit.message;
 
     var length = constantLength;
     length += commit.parents.length * perParentLength;
-    length += authorName.length + authorEmail.length + dateAuthored.length;
-    length += committerName.length + committerEmail.length + dateCommited.length;
+    length += authorName.length + authorEmail.length + timeAuthored.length;
+    length += committerName.length + committerEmail.length + timeCommited.length;
     length += message.length;
 
     var lengthString = '' + length;
@@ -98,8 +110,14 @@ CommitFile.createFromObject = function (commit) {
     file[j + i + 1] = 0x20;
 
     j += i + 2;
-    for (i = 0; i < dateAuthored.length; i++) {
-        file[j + i] = dateAuthored.charCodeAt(i);
+    for (i = 0; i < timeAuthored.length; i++) {
+        file[j + i] = timeAuthored.charCodeAt(i);
+    }
+    file[j + i] = 0x20;
+
+    j += i + 1;
+    for (i = 0; i < timezoneAuthored.length; i++) {
+        file[j + i] = timezoneAuthored.charCodeAt(i);
     }
     file[j + i] = 0x0a;
 
@@ -124,8 +142,14 @@ CommitFile.createFromObject = function (commit) {
     file[j + i + 1] = 0x20;
 
     j += i + 2;
-    for (i = 0; i < dateCommited.length; i++) {
-        file[j + i] = dateCommited.charCodeAt(i);
+    for (i = 0; i < timeCommited.length; i++) {
+        file[j + i] = timeCommited.charCodeAt(i);
+    }
+    file[j + i] = 0x20;
+
+    j += i + 1;
+    for (i = 0; i < timezoneCommited.length; i++) {
+        file[j + i] = timezoneCommited.charCodeAt(i);
     }
     file[j + i] = 0x0a;
     file[j + i + 1] = 0x0a;
@@ -136,18 +160,6 @@ CommitFile.createFromObject = function (commit) {
     }
 
     return file;
-};
-
-var gitDate = function (date) {
-    var tzOffset = -date.getTimezoneOffset();
-    var absOffset = Math.abs(tzOffset);
-    var tzHours = Math.floor(absOffset / 60);
-    var tzMinutes = absOffset - 60 * tzHours;
-    var sign = tzOffset >= 0 ? '+' : '-';
-    var hours = tzHours > 9 ? tzHours : '0' + tzHours;
-    var minutes = tzMinutes > 9 ? tzMinutes : '0' + tzMinutes;
-    var seconds = Math.floor(+date / 1000);
-    return seconds + ' ' + sign + hours + minutes;
 };
 
 })();

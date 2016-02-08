@@ -1,10 +1,11 @@
 var helper = require('../helper');
 var hex = helper.hex;
 
-var oldGetTimezoneOffset = Date.prototype.getTimezoneOffset;
-Date.prototype.getTimezoneOffset = function () {
-    return 360;
-};
+log(CommitFile.timezoneString(360));
+//=> -0600
+
+log(CommitFile.timezoneString(-90));
+//=> +0130
 
 // Recreate a real commit.
 
@@ -26,12 +27,14 @@ var commitObject = {
     committer: {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
-        date: new Date(1454274859000),
+        time: 1454274859000,
+        timezoneOffset: 360,
     },
     author: {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
-        date: new Date(1454274859000),
+        time: 1454274859000,
+        timezoneOffset: 360,
     },
     message: 'Foo commit\n',
 };
@@ -66,5 +69,3 @@ log(GitFile.catFile(mergeCommit));
 //=>
 //=> Foo commit
 //=>
-
-Date.prototype.getTimezoneOffset = oldGetTimezoneOffset;
