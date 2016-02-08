@@ -1,8 +1,7 @@
-var helper = require('../helper');
-var hex = helper.hex;
+require('../helper');
 
 var blob = Blob.createFromString('foo');
-log(helper.pretty(blob));
+log(pretty(blob));
 //=> blob 3\x00foo
 log(Blob.parseString(blob));
 //=> foo
@@ -10,7 +9,7 @@ log(Blob.parseStringOffset(blob, 1));
 //=> oo
 
 blob = Blob.createFromArray(new Uint8Array([0xff, 1, 2, 3]));
-log(helper.pretty(blob));
+log(pretty(blob));
 //=> blob 4\x00\xff\x01\x02\x03
 log(hex(Blob.parseArray(blob)));
 //=> ff010203

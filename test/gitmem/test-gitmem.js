@@ -1,4 +1,4 @@
-var helper = require('../helper');
+require('../helper');
 
 Random.seed(1);
 var store = Store.create();
@@ -228,7 +228,7 @@ var grid2 = Grid.setAll(grid1, {
     cell3: cell3,
 });
 
-log(helper.hex(grid2.hash));
+log(hex(grid2.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
 log(Store.prettyPrint(store));
@@ -258,7 +258,7 @@ var index = PackIndex.create(pack);
 var newStore = Store.create();
 
 var gotGrid = Grid.checkout([index], newStore, grid2.hash, grid2.hashOffset);
-log(helper.hex(gotGrid.hash));
+log(hex(gotGrid.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
 log(gotGrid.rows, gotGrid.columns, gotGrid.cell1.text);

@@ -13,7 +13,7 @@ var quietMode = process.argv[2] === 'quiet';
 exports.logToTerminal = !quietMode;
 exports.runBenchmarks = !quietMode;
 
-exports.pretty = function (array) {
+global.pretty = function (array) {
     var pretty = [];
     var i;
     for (i = 0; i < array.length; i++) {
@@ -26,7 +26,7 @@ exports.pretty = function (array) {
     return pretty.join('');
 };
 
-exports.hex = function (array) {
+global.hex = function (array) {
     var hex = [];
     var i;
     for (i = 0; i < array.length; i++) {

@@ -1,4 +1,4 @@
-var helper = require('../helper');
+require('../helper');
 
 Random.seed(1);
 var store = Store.create();

@@ -1,4 +1,4 @@
-var helper = require('../helper');
+require('../helper');
 
 log(GitFile.stringToArray('Foo'));
 //=> Uint8Array { '0': 70, '1': 111, '2': 111 }
@@ -10,7 +10,7 @@ log(GitFile.hashToString(hash, 0));
 
 var hex = new Uint8Array(40);
 GitFile.hashToHex(hash, 0, hex, 0);
-log(helper.pretty(hex));
+log(pretty(hex));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
 var hashBack = new Uint8Array(20);

@@ -1,5 +1,4 @@
-var helper = require('../helper');
-var hex = helper.hex;
+require('../helper');
 
 var blob = Blob.createFromString('FOO bar\n');
 
@@ -50,7 +49,7 @@ log(f[0x00], f[0x7b], f[0x7c], f[0x94], f[0x95], f[0xe0], f[0xe1], f[0xff]);
 //=> 0 0 1 1 2 2 3 3
 
 var file = PackIndex.lookupFile(index, index.hashes, 20);
-log(helper.pretty(file));
+log(pretty(file));
 //=> blob 8\x00FOO bar
 //=>
 
@@ -66,7 +65,7 @@ var secondPack = Pack.create([commit, Tree._actuallyEmptyTree]);
 var secondIndex = PackIndex.create(secondPack);
 
 file = PackIndex.requireFileMultiple([secondIndex, index], index.hashes, 0);
-log(helper.pretty(file));
+log(pretty(file));
 //=> tree 31\x00100644 foo\x00\x95X\x89\x8b\xaf\x21I\xc6N\x80\xb4\xbero\x17\x9d\xa42\x1ao
 
 try {

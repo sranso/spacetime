@@ -1,29 +1,28 @@
-var helper = require('../helper');
-var hex = helper.hex;
+require('../helper');
 
 var stringBlob = Value.blobFromString('foo');
-log(helper.pretty(stringBlob));
+log(pretty(stringBlob));
 //=> blob 4\x00\x22foo
 var string = Value.parseString(stringBlob);
 log(string, typeof string);
 //=> foo string
 
 var numberBlob = Value.blobFromNumber(375.2);
-log(helper.pretty(numberBlob));
+log(pretty(numberBlob));
 //=> blob 5\x00375.2
 var number = Value.parseNumber(numberBlob);
 log(number, typeof number);
 //=> 375.2 'number'
 
 var trueBlob = Value.blobFromBoolean(true);
-log(helper.pretty(trueBlob));
+log(pretty(trueBlob));
 //=> blob 4\x00true
 var bool = Value.parseBoolean(trueBlob);
 log(bool, typeof bool);
 //=> true 'boolean'
 
 var falseBlob = Value.blobFromBoolean(false);
-log(helper.pretty(falseBlob));
+log(pretty(falseBlob));
 //=> blob 5\x00false
 bool = Value.parseBoolean(falseBlob);
 log(bool, typeof bool);

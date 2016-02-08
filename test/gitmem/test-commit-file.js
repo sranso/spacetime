@@ -1,5 +1,4 @@
-var helper = require('../helper');
-var hex = helper.hex;
+require('../helper');
 
 log(CommitFile.timezoneString(360));
 //=> -0600
@@ -43,7 +42,7 @@ var commitObject = {
 
 var commit = CommitFile.createFromObject(commitObject);
 
-log(helper.pretty(commit));
+log(pretty(commit));
 //=> commit 233\x00tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
 //=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
 //=> author Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600

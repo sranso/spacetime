@@ -1,5 +1,4 @@
-var helper = require('../helper');
-var hex = helper.hex;
+require('../helper');
 
 var blob = Blob.createFromString('foo bar\n');
 
@@ -11,7 +10,7 @@ log(deflated.length);
 
 var inflate = new pako.Inflate({chunkSize: 4096});
 inflate.push(deflated);
-log(helper.pretty(inflate.result));
+log(pretty(inflate.result));
 //=> blob 8\x00foo bar
 //=>
 log(inflate.strm.next_in);
@@ -93,5 +92,5 @@ file = new Uint8Array(ex[1]);
 ex = Pack.extractFile(pack, packOffset, file, 0);
 log(ex);
 //=> [ 187, 46 ]
-log(helper.pretty(file));
+log(pretty(file));
 //=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2

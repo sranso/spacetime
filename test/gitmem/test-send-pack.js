@@ -1,6 +1,4 @@
-var helper = require('../helper');
-var hex = helper.hex;
-var pretty = helper.pretty;
+require('../helper');
 
 var author = {
     name: 'Jake Sandlund',

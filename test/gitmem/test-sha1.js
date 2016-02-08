@@ -2,7 +2,6 @@ var Veness = require('../../docs/sha-1/veness');
 var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');
 var helper = require('../helper');
-var hex = helper.hex;
 
 var stringToArray = function (string) {
     var array = new Uint8Array(string.length);

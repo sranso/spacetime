@@ -52,7 +52,7 @@ Testing is done by logging values with `log`. The values are written to the test
 
 ``` js
 var blob = Blob.createFromString('foo');
-log(helper.pretty(blob));
+log(pretty(blob));
 //=> blob 3\x00foo
 ```
 
