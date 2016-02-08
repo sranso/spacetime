@@ -75,6 +75,7 @@ var secondParent = new Uint8Array(20);
 Sha1.hash(GitFile.stringToArray('secondParent'), secondParent, 0);
 commitObject.parents.push({hash: secondParent, hashOffset: 0});
 commitObject.committer.time = 1454897681000;
+commitObject.committer.name = 'snakes';
 var mergeCommit = CommitFile.createFromObject(commitObject);
 
 log(GitFile.catFile(mergeCommit));
@@ -82,7 +83,7 @@ log(GitFile.catFile(mergeCommit));
 //=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
 //=> parent 06d3749d842b0a2f56f5368932fd616f89f7cf58
 //=> author Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
-//=> committer Jake Sandlund <jake@jakesandlund.com> 1454897681 -0600
+//=> committer snakes <jake@jakesandlund.com> 1454897681 -0600
 //=>
 //=> Foo commit
 //=>
@@ -93,7 +94,7 @@ log(gotParents.length, hex(gotParents[1]));
 
 var gotCommitter = CommitFile.parseCommitter(mergeCommit);
 log(gotCommitter);
-//=> { name: 'Jake Sandlund',
+//=> { name: 'snakes',
 //=>   email: 'jake@jakesandlund.com',
 //=>   time: 1454897681000,
 //=>   timezoneOffset: 360 }
