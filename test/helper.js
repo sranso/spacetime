@@ -35,12 +35,16 @@ global.hex = function (array) {
     return hex.join('');
 };
 
-global.log = function () {
+var getStackLine = function () {
     try {
         throw new Error('intentional error');
     } catch (e) {
-        var stackLine = e.stack.split('\n', 4)[2];
+        return e.stack.split('\n', 5)[3];
     }
+}
+
+global.log = function () {
+    var stackLine = getStackLine();
     var match = / \(([^(]+):(\d+):(\d+)\)$/.exec(stackLine);
     if (!match) {
         throw new Error('Could not find source of `log` call');

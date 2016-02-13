@@ -33,9 +33,7 @@ Webgl.setup = function () {
     webgl.canvas = d3.select('#canvas').node();
     updateCanvasSize(webgl.canvas);
 
-    try {
-        webgl.gl = webgl.canvas.getContext('webgl') || webgl.canvas.getContext('experimental-webgl');
-    } catch(e) {}
+    webgl.gl = webgl.canvas.getContext('webgl') || webgl.canvas.getContext('experimental-webgl');
 
     var gl = webgl.gl;
     if (!gl) {
