@@ -134,21 +134,16 @@ PackIndex.lookupFile = function (index, hash, hashOffset) {
     return null;
 };
 
-PackIndex.requireFileMultiple = function (packIndices, hash, hashOffset) {
+PackIndex.lookupFileMultiple = function (packIndices, hash, hashOffset) {
     var i;
-    var file = null;
     for (i = 0; i < packIndices.length; i++) {
         var file = PackIndex.lookupFile(packIndices[i], hash, hashOffset);
         if (file) {
-            break;
+            return file;
         }
     }
 
-    if (!file) {
-        throw new Error('File not found for hash: ' + GitFile.hashToString(hash, hashOffset));
-    }
-
-    return file;
+    return null;
 };
 
 })();

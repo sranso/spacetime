@@ -41,7 +41,7 @@ CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
     }
 
     var packs = packIndices;
-    var file = PackIndex.requireFileMultiple(packs, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
     commit = CommitObject.clone(CommitObject.none);
 

@@ -64,13 +64,9 @@ commitObject.tree = Tree._actuallyEmptyTreeHash;
 var secondPack = Pack.create([commit, Tree._actuallyEmptyTree]);
 var secondIndex = PackIndex.create(secondPack);
 
-file = PackIndex.requireFileMultiple([secondIndex, index], index.hashes, 0);
+file = PackIndex.lookupFileMultiple([secondIndex, index], index.hashes, 0);
 log(pretty(file));
 //=> tree 31\x00100644 foo\x00\x95X\x89\x8b\xaf\x21I\xc6N\x80\xb4\xbero\x17\x9d\xa42\x1ao
 
-try {
-    PackIndex.requireFileMultiple([secondIndex, index], missingHash, 0);
-} catch (e) {
-    log(e.message);
-    //=> File not found for hash: 9558898baf2149c64e80b4be726f179da4321a00
-}
+log(PackIndex.lookupFileMultiple([secondIndex, index], missingHash, 0));
+//=> null

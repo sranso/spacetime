@@ -56,7 +56,7 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
     }
 
     var packs = packIndices;
-    var file = PackIndex.requireFileMultiple(packs, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
     var ofs = Grid.offsets;
     grid = Grid.clone(Grid.none);
@@ -153,7 +153,7 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
     }
 
     var packs = packIndices;
-    var file = PackIndex.requireFileMultiple(packs, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
     var ofs = Cell.offsets;
     cell = Cell.clone(Cell.none);

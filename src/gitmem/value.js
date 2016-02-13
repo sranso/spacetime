@@ -48,7 +48,7 @@ Value.checkoutString = function (packIndices, store, hash, hashOffset) {
         return string.data;
     }
 
-    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
     string = Value.parseString(file);
     Store.save(store, Value.createBlobObject(string, file, hash, hashOffset));
     return string;
@@ -60,7 +60,7 @@ Value.checkoutNumber = function (packIndices, store, hash, hashOffset) {
         return number.data;
     }
 
-    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
     number = Value.parseNumber(file);
     Store.save(store, Value.createBlobObject(number, file, hash, hashOffset));
     return number;
@@ -72,7 +72,7 @@ Value.checkoutBoolean = function (packIndices, store, hash, hashOffset) {
         return bool.data;
     }
 
-    var file = PackIndex.requireFileMultiple(packIndices, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
     bool = Value.parseBoolean(file);
     Store.save(store, Value.createBlobObject(bool, file, hash, hashOffset));
     return bool;
