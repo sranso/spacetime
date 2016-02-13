@@ -27,3 +27,7 @@ var file = new Uint8Array(30);
 GitFile.setHash(file, 10, hash, 0);
 log(GitFile.hashToString(file.subarray(10), 0));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
+
+var packetLength = GitFile.stringToArray('1ed8');
+log(GitFile.packetLength(packetLength, 0));
+//=> 7896
