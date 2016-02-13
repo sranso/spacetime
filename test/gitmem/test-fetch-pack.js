@@ -19,3 +19,12 @@ log(FetchPack.validateGetResponse(getResponse));
 getResponse = GitFile.stringToArray(getResponseString.replace('side-band-64k', 'side-band-00x'));
 log(FetchPack.validateGetResponse(getResponse));
 //=> missing fetch-pack capability: side-band-64k
+getResponse = GitFile.stringToArray(getResponseString);
+
+var refHash = FetchPack.findRefInGetResponse(getResponse, 'refs/heads/master');
+log(hex(refHash));
+//=> c24691ec29fc2bde96ecbbe73ec0625cc3199966
+
+refHash = FetchPack.findRefInGetResponse(getResponse, 'HEAD');
+log(hex(refHash));
+//=> 00d1c24691ec29fc2bde96ecbbe73ec0625cc319
