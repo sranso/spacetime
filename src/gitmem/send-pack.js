@@ -2,6 +2,9 @@
 global.SendPack = {};
 (function () {
 
+SendPack.postPath = '/git-receive-pack';
+SendPack.postContentType = 'application/x-git-receive-pack-request';
+
 var capabilities = GitFile.stringToArray(' report-status side-band-64k agent=gitmem/0.0.0');
 var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 1 + capabilities.length;
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
@@ -50,8 +53,5 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     }
     return body;
 };
-
-SendPack.postUrl = '/git-receive-pack';
-SendPack.postContentType = 'application/x-git-receive-pack-request';
 
 })();

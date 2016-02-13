@@ -37,7 +37,7 @@ log(pretty(body.subarray(0, 175)));
 log(hex(body.subarray(300)));
 //=> 789c030000000001e7cc6aed1b4b407fb5c1245e4606f2e3458130fa
 
-log(SendPack.postUrl);
+log(SendPack.postPath);
 //=> /git-receive-pack
 log(SendPack.postContentType);
 //=> application/x-git-receive-pack-request
