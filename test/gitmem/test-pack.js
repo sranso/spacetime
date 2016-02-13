@@ -74,13 +74,25 @@ log(hex(pack));
 
 
 
+log(Pack.validate(pack));
+//=> null
 
-log(Pack.valid(pack));
-//=> true
+log(Pack.validate(new Uint8Array(21)));
+//=> pack length is too short
+
+pack[0] = 'N'.charCodeAt(0);
+log(Pack.validate(pack));
+//=> incorrect pack prefix
+pack[0] = 'P'.charCodeAt(0);
+
+pack[7] = 5;
+log(Pack.validate(pack));
+//=> unsupported pack version number (not 2)
+pack[7] = 2;
 
 pack[pack.length - 1] = 0;
-log(Pack.valid(pack));
-//=> false
+log(Pack.validate(pack));
+//=> incorrect pack hash
 
 var file = new Uint8Array(0);
 var packOffset = 138;

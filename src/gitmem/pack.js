@@ -181,13 +181,9 @@ var onEnd = function (status) {
     if (status !== 0) throw new error(this.strm.msg);
 }
 
-Pack.valid = function (pack) {
-    var packContent = pack.subarray(0, pack.length - 20);
-    var packHashComputed = new Uint8Array(20);
-    Sha1.hash(packContent, packHashComputed, 0);
-
-    if (!GitFile.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
-        return false;
+Pack.validate = function (pack) {
+    if (pack.length < 22) {
+        return 'pack length is too short';
     }
 
     if (
@@ -196,13 +192,22 @@ Pack.valid = function (pack) {
         pack[2] !== 0x43 || // C
         pack[3] !== 0x4b    // K
     ) {
-        return false;
+        return 'incorrect pack prefix';
     }
 
     if (pack[7] !== 2) {
-        return false;
+        return 'unsupported pack version number (not 2)';
     }
-    return true;
+
+    var packContent = pack.subarray(0, pack.length - 20);
+    var packHashComputed = new Uint8Array(20);
+    Sha1.hash(packContent, packHashComputed, 0);
+
+    if (!GitFile.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
+        return 'incorrect pack hash';
+    }
+
+    return null;
 };
 
 })();
