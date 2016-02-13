@@ -16,9 +16,9 @@ getResponse[4] = 'x';
 log(FetchPack.validateGetResponse(getResponse));
 //=> incorrect start of get response
 
-getResponse = GitFile.stringToArray(getResponseString.replace('side-band-64k', 'side-band-00x'));
+getResponse = GitFile.stringToArray(getResponseString.replace('ofs-delta', 'xxx-xxxxx'));
 log(FetchPack.validateGetResponse(getResponse));
-//=> missing fetch-pack capability: side-band-64k
+//=> missing fetch-pack capability: ofs-delta
 getResponse = GitFile.stringToArray(getResponseString);
 
 var refHash = FetchPack.findRefInGetResponse(getResponse, 'refs/heads/master');

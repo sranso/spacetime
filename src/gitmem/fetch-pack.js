@@ -6,7 +6,7 @@ FetchPack.getPath = '/info/refs?service=git-upload-pack';
 
 var getResponseStart = GitFile.stringToArray('001e# service=git-upload-pack\n0000');
 
-var requiredCapabilites = ['multi_ack_detailed', 'side-band-64k', 'ofs-delta', 'shallow', 'no-progress', 'no-done'];
+var requiredCapabilites = ['multi_ack_detailed', 'ofs-delta', 'shallow', 'no-done'];
 
 FetchPack.validateGetResponse = function (body) {
     var i;
