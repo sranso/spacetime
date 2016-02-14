@@ -33,9 +33,10 @@ log(hex(pack));
 
 var body = SendPack.postBody(branch, previousHash, commitHash, pack);
 log(pretty(body.subarray(0, 175)));
-//=> 008f0000000000000000000000000000000000000000 c24691ec29fc2bde96ecbbe73ec0625cc3199966 refs/heads/master\x00 report-status quiet agent=gitmem/0.0.00000PACK\x00\x00\x00\x02\x00\x00\x00\x02\x93\x0cx\x9c\x9d\xcc;\x0e\xc20\x10E\xd1\xde\xab\x98
+//=> 00900000000000000000000000000000000000000000 c24691ec29fc2bde96ecbbe73ec0625cc3199966 refs/heads/master\x00 report-status quiet agent=gitmem/0.0.0
+//=> 0000PACK\x00\x00\x00\x02\x00\x00\x00\x02\x93\x0cx\x9c\x9d\xcc;\x0e\xc20\x10E\xd1\xde\xab
 log(hex(body.subarray(290)));
-//=> 7020789c030000000001e7cc6aed1b4b407fb5c1245e4606f2e3458130fa
+//=> 3d7020789c030000000001e7cc6aed1b4b407fb5c1245e4606f2e3458130fa
 
 log(SendPack.postPath);
 //=> /git-receive-pack

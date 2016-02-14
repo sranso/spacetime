@@ -6,7 +6,7 @@ SendPack.postPath = '/git-receive-pack';
 SendPack.postContentType = 'application/x-git-receive-pack-request';
 
 var capabilities = GitFile.stringToArray('report-status quiet agent=gitmem/0.0.0');
-var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length;
+var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length + 1;
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
 
 SendPack.postBody = function (branch, previousHash, currentHash, pack) {
@@ -42,8 +42,9 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     for (i = 0; i < capabilities.length; i++) {
         body[j + i] = capabilities[i];
     }
+    body[j + i] = 0x0a;
 
-    j += i;
+    j += i + 1;
     body[j] = 0x30; // '0'
     body[j + 1] = 0x30; // '0'
     body[j + 2] = 0x30; // '0'
@@ -53,6 +54,7 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     for (i = 0; i < pack.length; i++) {
         body[j + i] = pack[i];
     }
+
     return body;
 };
 
