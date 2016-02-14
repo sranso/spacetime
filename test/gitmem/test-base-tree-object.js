@@ -27,15 +27,15 @@ Thing.none = Thing.clone({
     hashOffset: 0,
 });
 
-Thing.offsets = {};
-Thing.none.file = Tree.createSkeleton(Thing.offsets, {
+var offsets = {};
+Thing.none.file = Tree.createSkeleton(offsets, {
     string: 'blob',
     number: 'blob',
     bool: 'blob',
     object: 'tree',
 });
 
-Thing.types = {
+var types = {
     string: 'string',
     number: 'number',
     bool: 'boolean',
@@ -43,11 +43,25 @@ Thing.types = {
 };
 
 Thing.set = function (original, prop, value) {
-    return HighLevelApi.set(Thing, original, prop, value);
+    var thing = Thing.clone(original);
+    BaseTreeObject.set(thing, prop, value, offsets[prop], types[prop]);
+    thing.hash = new Uint8Array(20);
+    Sha1.hash(thing.file, thing.hash, 0);
+
+    return Store.save(Global.store, thing);
 };
 
 Thing.setAll = function (original, modifications) {
-    return HighLevelApi.setAll(Thing, original, modifications);
+    var thing = Thing.clone(original);
+
+    for (var prop in modifications) {
+        var value = modifications[prop];
+        BaseTreeObject.set(thing, prop, value, offsets[prop], types[prop]);
+    }
+    thing.hash = new Uint8Array(20);
+    Sha1.hash(thing.file, thing.hash, 0);
+
+    return Store.save(Global.store, thing);
 };
 
 var object1 = {
@@ -69,10 +83,10 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
-log(GitFile.hashToString(thing1.file, Thing.offsets.string));
+log(GitFile.hashToString(thing1.file, offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-var gotString = Store.get(store, thing1.file, Thing.offsets.string).data;
+var gotString = Store.get(store, thing1.file, offsets.string).data;
 log(gotString, typeof gotString);
 //=> foo string
 
@@ -87,10 +101,10 @@ var gotNumber = Store.get(store, numberHash, 0).data;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
-var gotBool = Store.get(store, thing1.file, Thing.offsets.bool).data;
+var gotBool = Store.get(store, thing1.file, offsets.bool).data;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'
 
-var gotObject = Store.get(store, thing1.file, Thing.offsets.object);
+var gotObject = Store.get(store, thing1.file, offsets.object);
 log(gotObject.bar);
 //=> bar
