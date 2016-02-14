@@ -4,6 +4,7 @@ var getResponseString = (
     '001e# service=git-upload-pack\n' +
     '000000d1c24691ec29fc2bde96ecbbe73ec0625cc3199966 HEAD\0' +
     'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done symref=HEAD:refs/heads/master agent=git/2.6.2\n' +
+    '003cf058e064dc438ca61341d2ca56d0cbda04cac2a3 refs/heads/foo\n' +
     '003fc24691ec29fc2bde96ecbbe73ec0625cc3199966 refs/heads/master\n' +
     '0000'
 );
@@ -23,10 +24,94 @@ getResponse = GitFile.stringToArray(getResponseString);
 
 var refs = FetchPack.parseRefsInGetResponse(getResponse);
 log(refs.length);
-//=> 2
+//=> 3
 var ref = refs[0];
 log(ref[0], hex(ref[1]));
 //=> HEAD 00d1c24691ec29fc2bde96ecbbe73ec0625cc319
 ref = refs[1];
 log(ref[0], hex(ref[1]));
+//=> refs/heads/foo f058e064dc438ca61341d2ca56d0cbda04cac2a3
+ref = refs[2];
+log(ref[0], hex(ref[1]));
 //=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
+
+
+
+
+
+var commit1 = CommitObject.clone(CommitObject.none);
+commit1.author = commit1.committer = {
+    name: 'Jake Sandlund',
+    email: 'jake@jakesandlund.com',
+    time: 1454907687000,
+    timezoneOffset: 360,
+};
+commit1.tree = {hash: Tree._actuallyEmptyTreeHash, hashOffset: 0};
+commit1.parents = [];
+commit1.message = 'Initial commit\n';
+commit1.file = CommitFile.createFromObject(commit1);
+commit1.hash = new Uint8Array(20);
+Sha1.hash(commit1.file, commit1.hash, 0);
+log(hex(commit1.hash));
+//=> b11da54dece45e24d1bfefdba6b5e5ce38ec126b
+
+var commit2 = CommitObject.clone(commit1);
+commit2.author = commit2.committer = {
+    name: 'snakes',
+    email: commit1.author.email,
+    time: 1454907943000,
+    timezoneOffset: commit1.author.timezoneOffset,
+};
+commit2.parents = [commit1];
+commit2.file = CommitFile.createFromObject(commit2);
+commit2.hash = new Uint8Array(20);
+Sha1.hash(commit2.file, commit2.hash, 0);
+log(hex(commit2.hash));
+//=> d278c413b49559191bd25b4f7bac2712b1eb325c
+
+var commit3 = CommitObject.clone(commit2);
+commit3.author = commit3.committer = {
+    name: commit1.author.name,
+    email: commit1.author.email,
+    time: 1455421909026,
+    timezoneOffset: commit1.author.timezoneOffset,
+};
+commit3.parents = [
+    commit2,
+    commit1,
+];
+commit3.file = CommitFile.createFromObject(commit3);
+commit3.hash = new Uint8Array(20);
+Sha1.hash(commit3.file, commit3.hash, 0);
+log(hex(commit3.hash));
+//=> b99282bfec6709ff37988fef2a3f7add47448343
+
+var pack = Pack.create([commit3.file, commit2.file, commit1.file, Tree._actuallyEmptyTree]);
+var index = PackIndex.create(pack);
+var store = Store.create();
+
+log(FetchPack.postPath);
+//=> /git-upload-pack
+log(FetchPack.postContentType);
+//=> application/x-git-upload-pack-request
+
+var wants = [refs[1][1]];
+var have = null;
+var body = FetchPack.postBody([index], store, wants, have);
+log(pretty(body));
+//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
+//=> 0009done
+
+wants = [refs[1][1], refs[2][1]];
+have = commit3;
+commit2.parents = null;
+body = FetchPack.postBody([index], store, wants, have);
+log(commit2.parents.length);
+//=> 1
+log(pretty(body));
+//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
+//=> 0032want c24691ec29fc2bde96ecbbe73ec0625cc3199966
+//=> 0032have b99282bfec6709ff37988fef2a3f7add47448343
+//=> 0032have d278c413b49559191bd25b4f7bac2712b1eb325c
+//=> 0032have b11da54dece45e24d1bfefdba6b5e5ce38ec126b
+//=> 0009done

@@ -38,7 +38,7 @@ secondCommit.author = {
     time: 1454907943000,
     timezoneOffset: commit.author.timezoneOffset,
 };
-secondCommit.parents = [{hash: commit.hash, hashOffset: 0}];
+secondCommit.parents = [commit];
 
 secondCommit.file = CommitFile.createFromObject(secondCommit);
 secondCommit.hash = new Uint8Array(20);
