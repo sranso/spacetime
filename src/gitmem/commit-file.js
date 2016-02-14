@@ -100,13 +100,13 @@ CommitFile.createFromObject = function (commit) {
         file[j + i] = authorName.charCodeAt(i);
     }
     file[j + i] = 0x20;
-    file[j + i + 1] = 0x3c; // '<'
+    file[j + i + 1] = '<'.charCodeAt(0);
 
     j += i + 2;
     for (i = 0; i < authorEmail.length; i++) {
         file[j + i] = authorEmail.charCodeAt(i);
     }
-    file[j + i] = 0x3e; // '>'
+    file[j + i] = '>'.charCodeAt(0);
     file[j + i + 1] = 0x20;
 
     j += i + 2;
@@ -132,13 +132,13 @@ CommitFile.createFromObject = function (commit) {
         file[j + i] = committerName.charCodeAt(i);
     }
     file[j + i] = 0x20;
-    file[j + i + 1] = 0x3c; // '<'
+    file[j + i + 1] = '<'.charCodeAt(0);
 
     j += i + 2;
     for (i = 0; i < committerEmail.length; i++) {
         file[j + i] = committerEmail.charCodeAt(i);
     }
-    file[j + i] = 0x3e; // '>'
+    file[j + i] = '>'.charCodeAt(0);
     file[j + i + 1] = 0x20;
 
     j += i + 2;
@@ -206,11 +206,11 @@ CommitFile.parseCommitter = function (file) {
 };
 
 var parseAuthorOrCommitter = function (file, nameStart) {
-    var lessThanOffset = file.indexOf(0x3c, nameStart); // '<'
+    var lessThanOffset = file.indexOf('<'.charCodeAt(0), nameStart);
     var nameArray = file.subarray(nameStart, lessThanOffset - 1);
     var name = String.fromCharCode.apply(null, nameArray);
 
-    var greaterThanOffset = file.indexOf(0x3e, lessThanOffset); // '>'
+    var greaterThanOffset = file.indexOf('>'.charCodeAt(0), lessThanOffset);
     var emailArray = file.subarray(lessThanOffset + 1, greaterThanOffset);
     var email = String.fromCharCode.apply(null, emailArray);
 
