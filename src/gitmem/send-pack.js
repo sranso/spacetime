@@ -5,8 +5,8 @@ global.SendPack = {};
 SendPack.postPath = '/git-receive-pack';
 SendPack.postContentType = 'application/x-git-receive-pack-request';
 
-var capabilities = GitFile.stringToArray(' report-status side-band-64k agent=gitmem/0.0.0');
-var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 1 + capabilities.length;
+var capabilities = GitFile.stringToArray('report-status side-band-64k agent=gitmem/0.0.0');
+var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length;
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
 
 SendPack.postBody = function (branch, previousHash, currentHash, pack) {
@@ -35,8 +35,10 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     for (i = 0; i < branch.length; i++) {
         body[j + i] = branch.charCodeAt(i);
     }
+    body[j + i] = 0;
+    body[j + i + 1] = 0x20;
 
-    j += i + 1;
+    j += i + 2;
     for (i = 0; i < capabilities.length; i++) {
         body[j + i] = capabilities[i];
     }
