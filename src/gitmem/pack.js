@@ -4,10 +4,10 @@ global.Pack = {};
 
 Pack.create = function (files) {
     var pack = new Uint8Array(512);
-    pack[0] = 0x50; // P
-    pack[1] = 0x41; // A
-    pack[2] = 0x43; // C
-    pack[3] = 0x4b; // K
+    pack[0] = 'P'.charCodeAt(0);
+    pack[1] = 'A'.charCodeAt(0);
+    pack[2] = 'C'.charCodeAt(0);
+    pack[3] = 'K'.charCodeAt(0);
 
     pack[4] = 0;
     pack[5] = 0;
@@ -187,10 +187,10 @@ Pack.validate = function (pack) {
     }
 
     if (
-        pack[0] !== 0x50 || // P
-        pack[1] !== 0x41 || // A
-        pack[2] !== 0x43 || // C
-        pack[3] !== 0x4b    // K
+        pack[0] !== 'P'.charCodeAt(0) ||
+        pack[1] !== 'A'.charCodeAt(0) ||
+        pack[2] !== 'C'.charCodeAt(0) ||
+        pack[3] !== 'K'.charCodeAt(0)
     ) {
         return 'incorrect pack prefix';
     }
