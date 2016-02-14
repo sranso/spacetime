@@ -30,7 +30,7 @@ CommitObject.none = CommitObject.clone({
     },
     message: 'Initial commit\n',
     file: new Uint8Array(0),
-    hash: new Uint8Array(20),
+    hash: new Uint8Array(0),
     hashOffset: 0,
 });
 

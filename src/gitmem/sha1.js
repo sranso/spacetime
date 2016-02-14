@@ -11,6 +11,9 @@ var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 var H0, H1, H2, H3, H4;
 
 Sha1.hash = function (M, H, H_offset) {
+    if (!(M instanceof Uint8Array)) {
+        throw new Error('type is not Uint8Array');
+    }
     var l_bytes = M.length;
     var startByte;
 
