@@ -45,10 +45,10 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     body[j + i] = 0x0a;
 
     j += i + 1;
-    body[j] = 0x30; // '0'
-    body[j + 1] = 0x30; // '0'
-    body[j + 2] = 0x30; // '0'
-    body[j + 3] = 0x30; // '0'
+    body[j] = '0'.charCodeAt(0);
+    body[j + 1] = '0'.charCodeAt(0);
+    body[j + 2] = '0'.charCodeAt(0);
+    body[j + 3] = '0'.charCodeAt(0);
 
     j += 4;
     for (i = 0; i < pack.length; i++) {

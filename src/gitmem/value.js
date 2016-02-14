@@ -39,7 +39,7 @@ Value.parseNumber = function (blob) {
 };
 
 Value.parseBoolean = function (blob) {
-    return Blob.parseArray(blob)[0] === 0x74;  // 't' for true
+    return Blob.parseArray(blob)[0] === 't'.charCodeAt(0);
 };
 
 Value.checkoutString = function (packIndices, store, hash, hashOffset) {
