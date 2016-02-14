@@ -35,6 +35,13 @@ ref = refs[2];
 log(ref[0], hex(ref[1]));
 //=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
 
+var getResponseString = '001e# service=git-upload-pack\n00000000';
+var getResponse = GitFile.stringToArray(getResponseString);
+var emptyRefs = FetchPack.parseRefsInGetResponse(getResponse);
+log(emptyRefs.length);
+//=> 0
+
+
 
 
 

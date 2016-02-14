@@ -36,6 +36,11 @@ FetchPack.validateGetResponse = function (body) {
 };
 
 FetchPack.parseRefsInGetResponse = function (body) {
+    var j = GitFile.packetLength(body, getResponseStart.length) + getResponseStart.length;
+    if (j + 4 >= body.length) {
+        return [];
+    }
+
     var firstRefStart = getResponseStart.length + 4 + 40 + 1;
     var firstRefEnd = body.indexOf(0, firstRefStart);
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
@@ -44,8 +49,6 @@ FetchPack.parseRefsInGetResponse = function (body) {
     GitFile.hexToHash(body, getResponseStart.length, firstHash, 0);
 
     var refs = [[firstRefName, firstHash]];
-
-    var j = GitFile.packetLength(body, getResponseStart.length) + getResponseStart.length;
 
     while (j + 4 < body.length) {
         var packetLength = GitFile.packetLength(body, j);
