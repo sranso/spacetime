@@ -5,6 +5,9 @@ global.SendPack = {};
 SendPack.postPath = '/git-receive-pack';
 SendPack.postContentType = 'application/x-git-receive-pack-request';
 
+SendPack.zeroHash = new Uint8Array(20);
+SendPack.nonePack = new Uint8Array(0);
+
 var capabilities = GitFile.stringToArray('report-status quiet agent=gitmem/0.0.0');
 var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length + 1;
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
