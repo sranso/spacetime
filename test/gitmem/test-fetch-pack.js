@@ -22,7 +22,7 @@ log(FetchPack.validateGetResponse(getResponse));
 //=> missing fetch-pack capability: ofs-delta
 getResponse = GitFile.stringToArray(getResponseString);
 
-var refs = FetchPack.parseRefsInGetResponse(getResponse);
+var refs = FetchPack.refsFromGetResponse(getResponse);
 log(refs.length);
 //=> 3
 var ref = refs[0];
@@ -37,9 +37,10 @@ log(ref[0], hex(ref[1]));
 
 var getResponseString = '001e# service=git-upload-pack\n00000000';
 var getResponse = GitFile.stringToArray(getResponseString);
-var emptyRefs = FetchPack.parseRefsInGetResponse(getResponse);
+var emptyRefs = FetchPack.refsFromGetResponse(getResponse);
 log(emptyRefs.length);
 //=> 0
+
 
 
 
@@ -107,7 +108,8 @@ var have = null;
 var body = FetchPack.postBody([index], store, wants, have);
 log(pretty(body));
 //=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
-//=> 0009done
+//=> 00000009done
+//=>
 
 wants = [refs[1][1], refs[2][1]];
 have = commit3;
@@ -118,7 +120,8 @@ log(commit2.parents.length);
 log(pretty(body));
 //=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
 //=> 0032want c24691ec29fc2bde96ecbbe73ec0625cc3199966
-//=> 0032have b99282bfec6709ff37988fef2a3f7add47448343
+//=> 00000032have b99282bfec6709ff37988fef2a3f7add47448343
 //=> 0032have d278c413b49559191bd25b4f7bac2712b1eb325c
 //=> 0032have b11da54dece45e24d1bfefdba6b5e5ce38ec126b
 //=> 0009done
+//=>

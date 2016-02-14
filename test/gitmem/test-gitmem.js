@@ -18,7 +18,7 @@ Grid.clone = function (original) {
         cell3: original.cell3,
         file: original.file.slice(),
         hash: null,
-        hashOffset: original.hashOffset,
+        hashOffset: 0,
     };
 };
 
@@ -121,7 +121,7 @@ Cell.clone = function (original) {
         color: original.color,
         file: original.file.slice(),
         hash: null,
-        hashOffset: original.hashOffset,
+        hashOffset: 0,
     };
 };
 

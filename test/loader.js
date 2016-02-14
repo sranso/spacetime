@@ -32,6 +32,7 @@ Loader.loadWeb = function (path, callback) {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         var sources = parseSources(this.responseText);
+        sources.push('./test/common-helper.js');
         sources.forEach(function (source, i) {
             var script = document.createElement('script');
             script.setAttribute('src', path + '/' + source);

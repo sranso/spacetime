@@ -35,7 +35,7 @@ FetchPack.validateGetResponse = function (body) {
     return null;
 };
 
-FetchPack.parseRefsInGetResponse = function (body) {
+FetchPack.refsFromGetResponse = function (body) {
     var j = GitFile.packetLength(body, getResponseStart.length) + getResponseStart.length;
     if (j + 4 >= body.length) {
         return [];
@@ -69,7 +69,7 @@ var capabilities = GitFile.stringToArray('ofs-delta agent=gitmem/0.0.0');
 
 var wantPrefix = GitFile.stringToArray('want ');
 var havePrefix = GitFile.stringToArray('have ');
-var doneLine = GitFile.stringToArray('0009done');
+var doneLine = GitFile.stringToArray('0009done\n');
 var firstLineLength = 4 + wantPrefix.length + 40 + 2 + capabilities.length + 1;
 var hexCharacters = GitFile.stringToArray('0123456789abcdef');
 var lineLength = 4 + wantPrefix.length + 40 + 1;
@@ -87,7 +87,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     }
 
     var normalLinesLength = (wants.length - 1 + numHaves) * lineLength;
-    var body = new Uint8Array(firstLineLength + normalLinesLength + doneLine.length);
+    var body = new Uint8Array(firstLineLength + normalLinesLength + 4 + doneLine.length);
     body[0] = hexCharacters[firstLineLength >>> 12];
     body[1] = hexCharacters[(firstLineLength >>> 8) & 0xf];
     body[2] = hexCharacters[(firstLineLength >>> 4) & 0xf];
@@ -132,6 +132,12 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         j += 40 + 1;
     }
 
+    body[j] = '0'.charCodeAt(0);
+    body[j + 1] = '0'.charCodeAt(0);
+    body[j + 2] = '0'.charCodeAt(0);
+    body[j + 3] = '0'.charCodeAt(0);
+
+    j += 4;
     var have = firstHave;
     for (k = 0; k < numHaves; k++) {
         body[j] = hexCharacters[lineLength >>> 12];

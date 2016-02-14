@@ -1,6 +1,6 @@
 Loader.loadWeb('../..', function (event) {
 
-var push = function () {
+var pushFirst = function () {
     var author = {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
@@ -33,12 +33,66 @@ var push = function () {
         console.log(this.responseText);
     });
     xhr.addEventListener('error', function () {
-        console.log(this.statusText);
+        console.log('error', this.statusText);
     });
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
     xhr.setRequestHeader('Content-Type', SendPack.postContentType);
-    console.log('pushing ' + body.length + ' bytes');
+    console.log('[push] post ' + body.length + ' bytes');
+    xhr.send(body);
+};
+
+var cloneGet = function () {
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        var response = new Uint8Array(this.response);
+        console.log('[clone] get received ' + response.length + ' bytes');
+        console.log(pretty(response));
+        var refs = FetchPack.refsFromGetResponse(response);
+        if (refs.length) {
+            clonePost(refs);
+        } else {
+            pushFirst();
+        }
+    });
+    xhr.addEventListener('error', function () {
+        console.log('error', this.statusText);
+    });
+    xhr.responseType = 'arraybuffer';
+
+    xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
+    console.log('[clone] get');
+    xhr.send();
+};
+
+var clonePost = function (refs) {
+    var refHash;
+    var i;
+    for (i = 0; i < refs.length; i++) {
+        if (refs[i][0] === 'refs/heads/master') {
+            refHash = refs[i][1];
+        }
+    }
+    if (!refHash) {
+        throw new Error('refs/heads/master not found in refs');
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        var response = new Uint8Array(this.response);
+        console.log('[clone] post received ' + response.length + ' bytes');
+        console.log(pretty(response));
+    });
+    xhr.addEventListener('error', function () {
+        console.log('error', this.statusText);
+    });
+    xhr.responseType = 'arraybuffer';
+
+    var body = FetchPack.postBody([], null, [refHash], null);
+
+    xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.postPath);
+    xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
+    console.log('[clone] post ' + body.length + ' bytes');
     xhr.send(body);
 };
 
@@ -48,14 +102,14 @@ var fetch = function () {
         console.log(this.responseText);
     });
     xhr.addEventListener('error', function () {
-        console.log(this.statusText);
+        console.log('error', this.statusText);
     });
 
     xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
     xhr.send();
 };
 
-// push();
-fetch();
+// fetch();
+cloneGet();
 
 });
