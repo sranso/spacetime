@@ -81,7 +81,12 @@ var clonePost = function (refs) {
     xhr.addEventListener('load', function () {
         var response = new Uint8Array(this.response);
         console.log('[clone] post received ' + response.length + ' bytes');
-        console.log(pretty(response));
+        var pack = FetchPack.packFromPostResponse(response);
+        var index = PackIndex.create(pack);
+        var store = Store.create();
+        var commit = CommitObject.checkout([index], store, refHash, 0);
+        console.log('[clone] commit message: ' + commit.message);
+        console.log('[clone] commit time: ' + new Date(commit.committer.time));
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);

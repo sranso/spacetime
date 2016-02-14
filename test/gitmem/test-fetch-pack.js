@@ -125,3 +125,18 @@ log(pretty(body));
 //=> 0032have b11da54dece45e24d1bfefdba6b5e5ce38ec126b
 //=> 0009done
 //=>
+
+
+
+
+
+
+
+var postResponse = GitFile.stringToArray('0008NAK\nPACK 1');
+var pack = FetchPack.packFromPostResponse(postResponse);
+log(pretty(pack));
+//=> PACK 1
+postResponse = GitFile.stringToArray('0031ACK 1c78104e0c37f9204618a6fc8a860af3a9e7cd36\nPACK 2');
+pack = FetchPack.packFromPostResponse(postResponse);
+log(pretty(pack));
+//=> PACK 2

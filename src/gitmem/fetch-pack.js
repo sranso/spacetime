@@ -165,4 +165,13 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     return body;
 };
 
+FetchPack.packFromPostResponse = function (body) {
+    var j = 0;
+    while (body[j] !== 'P'.charCodeAt(0)) {
+        j += GitFile.packetLength(body, j);
+    }
+
+    return body.subarray(j);
+};
+
 })();
