@@ -32,32 +32,30 @@ FetchPack.validateGetResponse = function (body) {
     return null;
 };
 
-FetchPack.findRefInGetResponse = function (body, searchRef) {
+FetchPack.parseRefsInGetResponse = function (body) {
     var firstRefStart = getResponseStart.length + 4 + 40 + 1;
     var firstRefEnd = body.indexOf(0, firstRefStart);
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
-    var firstRef = String.fromCharCode.apply(null, firstRefArray);
-    if (firstRef === searchRef) {
-        var hash = new Uint8Array(20);
-        GitFile.hexToHash(body, getResponseStart.length, hash, 0);
-        return hash;
-    }
+    var firstRefName = String.fromCharCode.apply(null, firstRefArray);
+    var firstHash = new Uint8Array(20);
+    GitFile.hexToHash(body, getResponseStart.length, firstHash, 0);
+
+    var refs = [[firstRefName, firstHash]];
 
     var j = GitFile.packetLength(body, getResponseStart.length) + getResponseStart.length;
 
     while (j + 4 < body.length) {
         var packetLength = GitFile.packetLength(body, j);
         var refArray = body.subarray(j + 4 + 40 + 1, j + packetLength - 1);
-        var ref = String.fromCharCode.apply(null, refArray);
-        if (ref === searchRef) {
-            var hash = new Uint8Array(20);
-            GitFile.hexToHash(body, j + 4, hash, 0);
-            return hash;
-        }
+        var refName = String.fromCharCode.apply(null, refArray);
+        var hash = new Uint8Array(20);
+        GitFile.hexToHash(body, j + 4, hash, 0);
+        refs.push([refName, hash]);
+
         j = j + packetLength;
     }
 
-    return null;
+    return refs;
 };
 
 })();

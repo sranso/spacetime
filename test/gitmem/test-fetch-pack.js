@@ -21,10 +21,12 @@ log(FetchPack.validateGetResponse(getResponse));
 //=> missing fetch-pack capability: ofs-delta
 getResponse = GitFile.stringToArray(getResponseString);
 
-var refHash = FetchPack.findRefInGetResponse(getResponse, 'refs/heads/master');
-log(hex(refHash));
-//=> c24691ec29fc2bde96ecbbe73ec0625cc3199966
-
-refHash = FetchPack.findRefInGetResponse(getResponse, 'HEAD');
-log(hex(refHash));
-//=> 00d1c24691ec29fc2bde96ecbbe73ec0625cc319
+var refs = FetchPack.parseRefsInGetResponse(getResponse);
+log(refs.length);
+//=> 2
+var ref = refs[0];
+log(ref[0], hex(ref[1]));
+//=> HEAD 00d1c24691ec29fc2bde96ecbbe73ec0625cc319
+ref = refs[1];
+log(ref[0], hex(ref[1]));
+//=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
