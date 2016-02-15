@@ -27,7 +27,7 @@ log(refs.length);
 //=> 3
 var ref = refs[0];
 log(ref[0], hex(ref[1]));
-//=> HEAD 00d1c24691ec29fc2bde96ecbbe73ec0625cc319
+//=> HEAD c24691ec29fc2bde96ecbbe73ec0625cc3199966
 ref = refs[1];
 log(ref[0], hex(ref[1]));
 //=> refs/heads/foo f058e064dc438ca61341d2ca56d0cbda04cac2a3

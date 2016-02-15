@@ -45,7 +45,7 @@ FetchPack.refsFromGetResponse = function (body) {
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
     var firstRefName = String.fromCharCode.apply(null, firstRefArray);
     var firstHash = new Uint8Array(20);
-    GitFile.hexToHash(body, getResponseStart.length, firstHash, 0);
+    GitFile.hexToHash(body, getResponseStart.length + 4, firstHash, 0);
 
     var refs = [[firstRefName, firstHash]];
 
