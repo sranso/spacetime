@@ -2,7 +2,7 @@ require('../helper');
 
 var stringBlob = Value.blobFromString('foo');
 log(pretty(stringBlob));
-//=> blob 4\x00\x22foo
+//=> blob 4\x00"foo
 var string = Value.parseString(stringBlob);
 log(string, typeof string);
 //=> foo string

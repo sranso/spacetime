@@ -114,7 +114,69 @@ Project.checkout = function (packIndices, store, hash, hashOffset) {
 };
 
 
-var pushFirst = function () {
+
+
+
+
+
+
+
+
+
+var initGet = function () {
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        var response = new Uint8Array(this.response);
+        console.log('[initGet] get received ' + response.length + ' bytes');
+        console.log(pretty(response));
+        var refs = FetchPack.refsFromGetResponse(response);
+        if (refs.length) {
+            initDelete(refs);
+        } else {
+            firstPush();
+        }
+    });
+    xhr.addEventListener('error', function () {
+        console.log('error', this.statusText);
+    });
+    xhr.responseType = 'arraybuffer';
+
+    // TODO: make this use SendPack.getPath
+    xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
+    console.log('[initGet] get');
+    xhr.send();
+};
+
+var initDelete = function (refs) {
+    var refHash;
+    var i;
+    for (i = 0; i < refs.length; i++) {
+        if (refs[i][0] === 'refs/heads/test-branch') {
+            refHash = refs[i][1];
+        }
+    }
+    if (!refHash) {
+        throw new Error('refs/heads/test-branch not found in refs');
+    }
+
+    var body = SendPack.postBody('refs/heads/test-branch', refHash, SendPack.zeroHash, SendPack.nonePack);
+
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        console.log(this.responseText);
+        firstPush();
+    });
+    xhr.addEventListener('error', function () {
+        console.log('error', this.statusText);
+    });
+
+    xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
+    xhr.setRequestHeader('Content-Type', SendPack.postContentType);
+    console.log('[initDelete] post ' + body.length + ' bytes');
+    xhr.send(body);
+};
+
+var firstPush = function () {
     var commit = CommitObject.clone(CommitObject.none);
     commit.author = commit.committer = {
         name: 'Jake Sandlund',
@@ -130,11 +192,9 @@ var pushFirst = function () {
     commit.hash = new Uint8Array(20);
     Sha1.hash(commit.file, commit.hash, 0);
     Store.save(pushStore, commit);
-    console.log('[pushFirst] created commit with hash', hex(commit.hash));
+    console.log('[firstPush] created commit with hash', hex(commit.hash));
 
-    var previousHash = new Uint8Array(20);
-
-    var branch = 'refs/heads/master';
+    var branch = 'refs/heads/test-branch';
 
     var files = [];
     var i;
@@ -147,13 +207,14 @@ var pushFirst = function () {
     }
 
     var pack = Pack.create(files);
-    console.log('[pushFirst] created pack with hash', hex(pack.subarray(pack.length - 20)));
+    console.log('[firstPush] created pack with hash', hex(pack.subarray(pack.length - 20)));
 
-    var body = SendPack.postBody(branch, previousHash, commit.hash, pack);
+    var body = SendPack.postBody(branch, SendPack.zeroHash, commit.hash, pack);
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         console.log(this.responseText);
+        cloneGet();
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -161,7 +222,7 @@ var pushFirst = function () {
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
     xhr.setRequestHeader('Content-Type', SendPack.postContentType);
-    console.log('[pushFirst] post ' + body.length + ' bytes');
+    console.log('[firstPush] post ' + body.length + ' bytes');
     xhr.send(body);
 };
 
@@ -169,14 +230,15 @@ var cloneGet = function () {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         var response = new Uint8Array(this.response);
-        console.log('[clone] get received ' + response.length + ' bytes');
+        console.log('[cloneGet] received ' + response.length + ' bytes');
         console.log(pretty(response));
-        var refs = FetchPack.refsFromGetResponse(response);
-        if (refs.length) {
-            clonePost(refs);
-        } else {
-            pushFirst();
+        var errorMessage = FetchPack.validateGetResponse(response);
+        if (errorMessage) {
+            console.log(errorMessage);
+            return;
         }
+        var refs = FetchPack.refsFromGetResponse(response);
+        clonePost(refs);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -184,32 +246,40 @@ var cloneGet = function () {
     xhr.responseType = 'arraybuffer';
 
     xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
-    console.log('[clone] get');
+    console.log('[cloneGet] get');
     xhr.send();
 };
 
 var clonePost = function (refs) {
+    if (!refs.length) {
+        throw new Error('Expected refs for clone');
+    }
+
     var refHash;
     var i;
     for (i = 0; i < refs.length; i++) {
-        if (refs[i][0] === 'refs/heads/master') {
+        if (refs[i][0] === 'refs/heads/test-branch') {
             refHash = refs[i][1];
         }
     }
     if (!refHash) {
-        throw new Error('refs/heads/master not found in refs');
+        throw new Error('refs/heads/test-branch not found in refs');
     }
+    console.log('[clonePost] cloning commit', hex(refHash));
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         var response = new Uint8Array(this.response);
-        console.log('[clone] post received ' + response.length + ' bytes');
+        console.log('[clonePost] received ' + response.length + ' bytes');
         var pack = FetchPack.packFromPostResponse(response);
+        if (!pack) {
+            throw new Error('[clonePost] pack not received');
+        }
         var index = PackIndex.create(pack);
         var store = Store.create();
         var commit = CommitObject.checkout([index], store, refHash, 0);
-        console.log('[clone] commit message: ' + commit.message);
-        console.log('[clone] commit time: ' + new Date(commit.committer.time));
+        console.log('[clonePost] commit message: ' + commit.message);
+        console.log('[clonePost] commit time: ' + new Date(commit.committer.time));
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -220,7 +290,7 @@ var clonePost = function (refs) {
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.postPath);
     xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
-    console.log('[clone] post ' + body.length + ' bytes');
+    console.log('[clonePost] post ' + body.length + ' bytes');
     xhr.send(body);
 };
 
@@ -237,7 +307,6 @@ var fetch = function () {
     xhr.send();
 };
 
-// fetch();
-cloneGet();
+initGet();
 
 });

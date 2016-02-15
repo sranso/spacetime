@@ -1,4 +1,7 @@
 global.pretty = function (array) {
+    if (!(array instanceof Uint8Array)) {
+        throw new Error('type must be Uint8Array');
+    }
     var pretty = [];
     var i;
     for (i = 0; i < array.length; i++) {
@@ -12,6 +15,9 @@ global.pretty = function (array) {
 };
 
 global.hex = function (array) {
+    if (!(array instanceof Uint8Array)) {
+        throw new Error('type must be Uint8Array');
+    }
     var hex = [];
     var i;
     for (i = 0; i < array.length; i++) {
