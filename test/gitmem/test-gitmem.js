@@ -32,9 +32,9 @@ Grid.none = Grid.clone({
     hashOffset: 0,
 });
 
-var gOffsets = {};
+Grid.offsets = {};
 
-Grid.none.file = Tree.createSkeleton(gOffsets, {
+Grid.none.file = Tree.createSkeleton(Grid.offsets, {
     rows: 'blob',
     columns: 'blob',
     cell1: 'tree',
@@ -42,7 +42,7 @@ Grid.none.file = Tree.createSkeleton(gOffsets, {
     cell3: 'tree',
 });
 
-var gTypes = {
+Grid.types = {
     rows: 'number',
     columns: 'number',
     cell1: 'object',
@@ -59,7 +59,7 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
     var packs = packIndices;
     var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
-    var ofs = gOffsets;
+    var ofs = Grid.offsets;
     grid = Grid.clone(Grid.none);
     grid.rows = Value.checkoutNumber(packs, store, file, ofs.rows);
     grid.columns = Value.checkoutNumber(packs, store, file, ofs.columns);
@@ -89,7 +89,7 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
 
 Grid.set = function (original, prop, value) {
     var grid = Grid.clone(original);
-    BaseTreeObject.set(grid, prop, value, gOffsets[prop], gTypes[prop]);
+    BaseTreeObject.set(grid, prop, value, Grid.offsets[prop], Grid.types[prop]);
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
 
@@ -101,7 +101,7 @@ Grid.setAll = function (original, modifications) {
 
     for (var prop in modifications) {
         var value = modifications[prop];
-        BaseTreeObject.set(grid, prop, value, gOffsets[prop], gTypes[prop]);
+        BaseTreeObject.set(grid, prop, value, Grid.offsets[prop], Grid.types[prop]);
     }
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
@@ -110,9 +110,9 @@ Grid.setAll = function (original, modifications) {
 };
 
 var zeroBlob = Value.blobFromNumber(0);
-Sha1.hash(zeroBlob, Grid.none.file, gOffsets.rows);
-GitFile.setHash(Grid.none.file, gOffsets.columns, Grid.none.file, gOffsets.rows);
-Store.save(store, Value.createBlobObject(0, zeroBlob, Grid.none.file, gOffsets.rows));
+Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
+GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
+Store.save(store, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
@@ -148,15 +148,15 @@ Cell.none = Cell.clone({
     hashOffset: 0,
 });
 
-var cOffsets = {};
+Cell.offsets = {};
 
-Cell.none.file = Tree.createSkeleton(cOffsets, {
+Cell.none.file = Tree.createSkeleton(Cell.offsets, {
     grid: 'tree',
     text: 'blob',
     color: 'blob',
 });
 
-var cTypes = {
+Cell.types = {
     grid: 'object',
     text: 'string',
     color: 'string',
@@ -171,7 +171,7 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
     var packs = packIndices;
     var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
-    var ofs = cOffsets;
+    var ofs = Cell.offsets;
     cell = Cell.clone(Cell.none);
     cell.text = Value.checkoutString(packs, store, file, ofs.text);
     cell.color = Value.checkoutString(packs, store, file, ofs.color);
@@ -190,7 +190,7 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
 
 Cell.set = function (original, prop, value) {
     var cell = Cell.clone(original);
-    BaseTreeObject.set(cell, prop, value, cOffsets[prop], cTypes[prop]);
+    BaseTreeObject.set(cell, prop, value, Cell.offsets[prop], Cell.types[prop]);
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
 
@@ -202,7 +202,7 @@ Cell.setAll = function (original, modifications) {
 
     for (var prop in modifications) {
         var value = modifications[prop];
-        BaseTreeObject.set(cell, prop, value, cOffsets[prop], cTypes[prop]);
+        BaseTreeObject.set(cell, prop, value, Cell.offsets[prop], Cell.types[prop]);
     }
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
@@ -212,8 +212,8 @@ Cell.setAll = function (original, modifications) {
 
 
 var colorBlob = Value.blobFromString(Cell.none.color);
-Sha1.hash(colorBlob, Cell.none.file, cOffsets.color);
-Store.save(store, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, cOffsets.color));
+Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
+Store.save(store, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
 Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
@@ -235,11 +235,11 @@ var grid1 = Grid.clone(Grid.none);
 var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
 var blob = Value.blobFromString(cell1.text);
-Sha1.hash(blob, cell1.file, cOffsets.text);
-Store.save(store, Value.createBlobObject(cell1.text, blob, cell1.file, cOffsets.text));
+Sha1.hash(blob, cell1.file, Cell.offsets.text);
+Store.save(store, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
 cell1.hash = grid1.file;
-cell1.hashOffset = gOffsets.cell1;
+cell1.hashOffset = Grid.offsets.cell1;
 Sha1.hash(cell1.file, cell1.hash, cell1.hashOffset);
 grid1.cell1 = Store.save(store, cell1);
 

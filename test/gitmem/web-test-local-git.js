@@ -20,13 +20,13 @@ Thing.none = Thing.clone({
     hashOffset: 0,
 });
 
-var tOffsets = {};
+Thing.offsets = {};
 
-Thing.none.file = Tree.createSkeleton(tOffsets, {
+Thing.none.file = Tree.createSkeleton(Thing.offsets, {
     name: 'blob',
 });
 
-BaseTreeObject.set(Thing.none, 'name', Thing.none.name, tOffsets.name, 'string');
+BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
 Thing.none.hash = new Uint8Array(20);
 Sha1.hash(Thing.none.file, Thing.none.hash, 0);
 Store.save(pushStore, Thing.none);
@@ -40,7 +40,7 @@ Thing.checkout = function (packIndices, store, hash, hashOffset) {
     var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
 
     thing = Thing.clone(Thing.none);
-    thing.name = Value.checkoutString(packIndices, store, file, tOffsets.name);
+    thing.name = Value.checkoutString(packIndices, store, file, Thing.offsets.name);
     thing.file = file;
     thing.hash = hash;
     thing.hashOffset = hashOffset;
@@ -74,19 +74,19 @@ Project.none = Project.clone({
     hashOffset: 0,
 });
 
-var pOffsets = {};
+Project.offsets = {};
 
-Project.none.file = Tree.createSkeleton(pOffsets, {
+Project.none.file = Tree.createSkeleton(Project.offsets, {
     hasStuff: 'blob',
     thing: 'tree',
     text: 'blob',
     xPosition: 'blob',
 });
 
-BaseTreeObject.set(Project.none, 'thing', Project.none.thing, pOffsets.thing, 'object');
-BaseTreeObject.set(Project.none, 'text', Project.none.text, pOffsets.text, 'string');
-BaseTreeObject.set(Project.none, 'xPosition', Project.none.xPosition, pOffsets.xPosition, 'number');
-BaseTreeObject.set(Project.none, 'hasStuff', Project.none.hasStuff, pOffsets.hasStuff, 'boolean');
+BaseTreeObject.set(Project.none, 'thing', Project.none.thing, Project.offsets.thing, 'object');
+BaseTreeObject.set(Project.none, 'text', Project.none.text, Project.offsets.text, 'string');
+BaseTreeObject.set(Project.none, 'xPosition', Project.none.xPosition, Project.offsets.xPosition, 'number');
+BaseTreeObject.set(Project.none, 'hasStuff', Project.none.hasStuff, Project.offsets.hasStuff, 'boolean');
 Project.none.hash = new Uint8Array(20);
 Sha1.hash(Project.none.file, Project.none.hash, 0);
 Store.save(pushStore, Project.none);
@@ -100,7 +100,7 @@ Project.checkout = function (packIndices, store, hash, hashOffset) {
     var packs = packIndices;
     var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
-    var ofs = pOffsets;
+    var ofs = Project.offsets;
     project = Project.clone(Project.none);
     project.thing = Thing.checkout(packs, store, file, ofs.thing);
     project.text = Value.checkoutString(packs, store, file, ofs.text);
