@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 Random.seed(1);

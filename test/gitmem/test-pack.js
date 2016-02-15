@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 var blob = Blob.createFromString('foo bar\n');

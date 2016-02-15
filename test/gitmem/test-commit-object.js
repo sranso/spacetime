@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 var fooBlob = Value.blobFromString('foo');

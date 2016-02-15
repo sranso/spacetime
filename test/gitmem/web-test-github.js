@@ -1,3 +1,4 @@
+'use strict';
 Loader.loadWeb('../..', function () {
 
 var paramPairs = window.location.search.slice(1).split('&');

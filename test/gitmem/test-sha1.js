@@ -1,3 +1,4 @@
+'use strict';
 var Veness = require('../../docs/sha-1/veness');
 var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');

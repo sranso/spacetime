@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 log(GitFile.stringToArray('Foo'));

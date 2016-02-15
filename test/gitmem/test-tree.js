@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 var actuallyEmptyHash = new Uint8Array(20);

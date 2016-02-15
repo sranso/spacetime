@@ -1,3 +1,4 @@
+'use strict';
 require('../helper');
 
 var blob = Blob.createFromString('FOO bar\n');
@@ -34,7 +35,7 @@ Sha1.hash(commit, commitHash, 0);
 log(hex(commitHash));
 //=> e13ec39a3681e3a588ed8c4890fb446a8eebba27
 
-pack = Pack.create([commit, tree, blob]);
+var pack = Pack.create([commit, tree, blob]);
 
 
 var index = PackIndex.create(pack);

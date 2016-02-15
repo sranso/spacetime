@@ -1,3 +1,4 @@
+'use strict';
 Loader.loadWeb('../..', function (event) {
 
 var loadStore = Store.create();
