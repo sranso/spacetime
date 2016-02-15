@@ -153,3 +153,13 @@ postResponse = GitFile.stringToArray('0031ACK 1c78104e0c37f9204618a6fc8a860af3a9
 pack = FetchPack.packFromPostResponse(postResponse);
 log(pretty(pack));
 //=> PACK 2
+
+postResponse = GitFile.stringToArray('');
+pack = FetchPack.packFromPostResponse(postResponse);
+log(pack);
+//=> null
+
+postResponse = GitFile.stringToArray('0009oops!0000');
+pack = FetchPack.packFromPostResponse(postResponse);
+log(pack);
+//=> null

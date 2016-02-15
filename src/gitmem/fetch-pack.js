@@ -168,11 +168,14 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
 
 FetchPack.packFromPostResponse = function (body) {
     var j = 0;
-    while (body[j] !== 'P'.charCodeAt(0)) {
+    while (j + 4 < body.length) {
+        if (body[j] === 'P'.charCodeAt(0)) {
+            return body.subarray(j);
+        }
         j += GitFile.packetLength(body, j);
     }
 
-    return body.subarray(j);
+    return null;
 };
 
 })();
