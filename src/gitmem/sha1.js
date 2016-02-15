@@ -12,8 +12,15 @@ var H0, H1, H2, H3, H4;
 
 Sha1.hash = function (M, H, H_offset) {
     if (!(M instanceof Uint8Array)) {
-        throw new Error('type is not Uint8Array');
+        throw new Error('M is not Uint8Array');
     }
+    if (!(H instanceof Uint8Array)) {
+        throw new Error('H is not Uint8Array');
+    }
+    if (typeof H_offset !== 'number') {
+        throw new Error('H_offset is not a number');
+    }
+
     var l_bytes = M.length;
     var startByte;
 
