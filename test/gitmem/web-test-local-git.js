@@ -160,13 +160,19 @@ var initDelete = function (refs) {
         throw new Error('refs/heads/test-branch not found in refs');
     }
 
-    var body = SendPack.postBody('refs/heads/test-branch', refHash, SendPack.zeroHash, SendPack.nonePack);
+    push(refHash, SendPack.zeroHash, SendPack.nonePack, firstPush);
+};
+
+var push = function (previousHash, currentHash, pack, callback) {
+    var branch = 'refs/heads/test-branch';
+
+    var body = SendPack.postBody(branch, previousHash, currentHash, pack);
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
-        console.log('[initDelete] received ' + this.responseText.length + ' bytes');
+        console.log('[push] received ' + this.responseText.length + ' bytes');
         console.log(this.responseText);
-        firstPush();
+        callback();
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -174,7 +180,7 @@ var initDelete = function (refs) {
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
     xhr.setRequestHeader('Content-Type', SendPack.postContentType);
-    console.log('[initDelete] post ' + body.length + ' bytes');
+    console.log('[push] post ' + body.length + ' bytes');
     xhr.send(body);
 };
 
@@ -196,8 +202,6 @@ var firstPush = function () {
     Store.save(firstPushStore, commit);
     console.log('[firstPush] created commit with hash', hex(commit.hash));
 
-    var branch = 'refs/heads/test-branch';
-
     var files = [];
     var i;
     for (i = 0; i < firstPushStore.objects.length; i++) {
@@ -211,23 +215,10 @@ var firstPush = function () {
     var pack = Pack.create(files);
     console.log('[firstPush] created pack with hash', hex(pack.subarray(pack.length - 20)));
 
-    var body = SendPack.postBody(branch, SendPack.zeroHash, commit.hash, pack);
-
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        console.log('[firstPush] received ' + this.responseText.length + ' bytes');
-        console.log(this.responseText);
+    push(SendPack.zeroHash, commit.hash, pack, function () {
         var atCommit = null;
         fetchGet(atCommit, afterClone);
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
-    });
-
-    xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
-    xhr.setRequestHeader('Content-Type', SendPack.postContentType);
-    console.log('[firstPush] post ' + body.length + ' bytes');
-    xhr.send(body);
 };
 
 var fetchGet = function (atCommit, callback) {
@@ -364,24 +355,9 @@ var afterClone = function (refHash, pack) {
     var pack = Pack.create(files);
     console.log('[afterClone] created pack with hash', hex(pack.subarray(pack.length - 20)));
 
-    var branch = 'refs/heads/test-branch';
-
-    var body = SendPack.postBody(branch, commit.hash, commit2.hash, pack);
-
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        console.log('[afterClone] received ' + this.responseText.length + ' bytes');
-        console.log(this.responseText);
+    push(commit.hash, commit2.hash, pack, function () {
         fetchGet(commit, afterFetch);
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
-    });
-
-    xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
-    xhr.setRequestHeader('Content-Type', SendPack.postContentType);
-    console.log('[afterClone] SendPack post ' + body.length + ' bytes');
-    xhr.send(body);
 };
 
 var afterFetch = function (refHash, pack) {
