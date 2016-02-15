@@ -1,6 +1,7 @@
 Loader.loadWeb('../..', function (event) {
 
 var firstPushStore = Global.store = Store.create();
+var loadStore = Store.create();
 
 global.Thing = {};
 
@@ -163,6 +164,7 @@ var initDelete = function (refs) {
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        console.log('[initDelete] received ' + this.responseText.length + ' bytes');
         console.log(this.responseText);
         firstPush();
     });
@@ -213,8 +215,10 @@ var firstPush = function () {
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        console.log('[firstPush] received ' + this.responseText.length + ' bytes');
         console.log(this.responseText);
-        cloneGet();
+        var atCommit = null;
+        fetchGet(atCommit, afterClone);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -226,11 +230,11 @@ var firstPush = function () {
     xhr.send(body);
 };
 
-var cloneGet = function () {
+var fetchGet = function (atCommit, callback) {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         var response = new Uint8Array(this.response);
-        console.log('[cloneGet] received ' + response.length + ' bytes');
+        console.log('[fetchGet] received ' + response.length + ' bytes');
         console.log(pretty(response));
         var errorMessage = FetchPack.validateGetResponse(response);
         if (errorMessage) {
@@ -238,7 +242,7 @@ var cloneGet = function () {
             return;
         }
         var refs = FetchPack.refsFromGetResponse(response);
-        clonePost(refs);
+        fetchPost(atCommit, refs, callback);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -246,13 +250,13 @@ var cloneGet = function () {
     xhr.responseType = 'arraybuffer';
 
     xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
-    console.log('[cloneGet] get');
+    console.log('[fetchGet] get');
     xhr.send();
 };
 
-var clonePost = function (refs) {
+var fetchPost = function (atCommit, refs, callback) {
     if (!refs.length) {
-        throw new Error('Expected refs for clone');
+        throw new Error('Expected refs for fetch');
     }
 
     var refHash;
@@ -265,34 +269,33 @@ var clonePost = function (refs) {
     if (!refHash) {
         throw new Error('refs/heads/test-branch not found in refs');
     }
-    console.log('[clonePost] cloning commit', hex(refHash));
+    console.log('[fetchPost] fetching commit', hex(refHash));
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         var response = new Uint8Array(this.response);
-        console.log('[clonePost] received ' + response.length + ' bytes');
+        console.log('[fetchPost] received ' + response.length + ' bytes');
         var pack = FetchPack.packFromPostResponse(response);
         if (!pack) {
-            throw new Error('[clonePost] pack not received');
+            throw new Error('[fetchPost] pack not received');
         }
-        afterClone(refHash, pack);
+        callback(refHash, pack);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
     });
     xhr.responseType = 'arraybuffer';
 
-    var body = FetchPack.postBody([], null, [refHash], null);
+    var body = FetchPack.postBody([], null, [refHash], atCommit);
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.postPath);
     xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
-    console.log('[clonePost] post ' + body.length + ' bytes');
+    console.log('[fetchPost] post ' + body.length + ' bytes');
     xhr.send(body);
 };
 
 var afterClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var loadStore = Store.create();
     var commit = CommitObject.checkout([index], loadStore, refHash, 0);
     console.log('[afterClone] commit message: ' + commit.message);
     console.log('[afterClone] commit time: ' + new Date(commit.committer.time));
@@ -367,7 +370,9 @@ var afterClone = function (refHash, pack) {
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        console.log('[afterClone] received ' + this.responseText.length + ' bytes');
         console.log(this.responseText);
+        fetchGet(commit, afterFetch);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -379,17 +384,23 @@ var afterClone = function (refHash, pack) {
     xhr.send(body);
 };
 
-var fetch = function () {
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        console.log(this.responseText);
-    });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
-    });
+var afterFetch = function (refHash, pack) {
+    var index = PackIndex.create(pack);
+    var commit = CommitObject.checkout([index], loadStore, refHash, 0);
+    console.log('[afterFetch] commit message: ' + commit.message);
+    console.log('[afterFetch] commit time: ' + new Date(commit.committer.time));
 
-    xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
-    xhr.send();
+    CommitObject.checkoutTree(commit, [index], loadStore);
+
+    console.log('[afterFetch] loaded tree:', hex(commit.tree.hash));
+    console.log('[afterFetch] project x:', commit.tree.xPosition);
+    console.log('[afterFetch] project hasStuff:', commit.tree.hasStuff);
+    console.log('[afterFetch] thing hashOffset:', commit.tree.thing.hashOffset);
+    console.log('[afterFetch] thing name:', commit.tree.thing.name);
+
+    CommitObject.checkoutParents(commit, [index], loadStore);
+    console.log('[afterFetch] commit parent hash:', hex(commit.parents[0].hash));
+    console.log('[afterFetch] commit parent message:', commit.parents[0].message);
 };
 
 initGet();
