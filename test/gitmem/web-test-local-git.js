@@ -1,6 +1,6 @@
 Loader.loadWeb('../..', function (event) {
 
-var pushStore = Global.store = Store.create();
+var firstPushStore = Global.store = Store.create();
 
 global.Thing = {};
 
@@ -29,7 +29,7 @@ Thing.none.file = Tree.createSkeleton(Thing.offsets, {
 BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
 Thing.none.hash = new Uint8Array(20);
 Sha1.hash(Thing.none.file, Thing.none.hash, 0);
-Store.save(pushStore, Thing.none);
+Store.save(firstPushStore, Thing.none);
 
 Thing.checkout = function (packIndices, store, hash, hashOffset) {
     var thing = Store.get(store, hash, hashOffset);
@@ -89,7 +89,7 @@ BaseTreeObject.set(Project.none, 'xPosition', Project.none.xPosition, Project.of
 BaseTreeObject.set(Project.none, 'hasStuff', Project.none.hasStuff, Project.offsets.hasStuff, 'boolean');
 Project.none.hash = new Uint8Array(20);
 Sha1.hash(Project.none.file, Project.none.hash, 0);
-Store.save(pushStore, Project.none);
+Store.save(firstPushStore, Project.none);
 
 Project.checkout = function (packIndices, store, hash, hashOffset) {
     var project = Store.get(store, hash, hashOffset);
@@ -191,15 +191,15 @@ var firstPush = function () {
     commit.file = CommitFile.createFromObject(commit);
     commit.hash = new Uint8Array(20);
     Sha1.hash(commit.file, commit.hash, 0);
-    Store.save(pushStore, commit);
+    Store.save(firstPushStore, commit);
     console.log('[firstPush] created commit with hash', hex(commit.hash));
 
     var branch = 'refs/heads/test-branch';
 
     var files = [];
     var i;
-    for (i = 0; i < pushStore.objects.length; i++) {
-        var list = pushStore.objects[i];
+    for (i = 0; i < firstPushStore.objects.length; i++) {
+        var list = firstPushStore.objects[i];
         var j;
         for (j = 0; j < list.length; j++) {
             files.push(list[j].file);
@@ -304,6 +304,79 @@ var afterClone = function (refHash, pack) {
     console.log('[afterClone] project hasStuff:', commit.tree.hasStuff);
     console.log('[afterClone] thing hashOffset:', commit.tree.thing.hashOffset);
     console.log('[afterClone] thing name type:', typeof commit.tree.thing.name);
+
+    var project = Project.clone(commit.tree);
+
+    var thing = Thing.clone(commit.tree.thing);
+    thing.name = 'thingname';
+    var nameBlob = Value.blobFromString(thing.name);
+    Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
+
+    thing.hash = project.file;
+    thing.hashOffset = Project.offsets.thing;
+    Sha1.hash(thing.file, thing.hash, thing.hashOffset);
+
+    project.thing = thing;
+    project.text = 'blah blah text';
+    var textBlob = Value.blobFromString(project.text);
+    Sha1.hash(textBlob, project.file, Project.offsets.text);
+
+    project.xPosition = -2362.8589701;
+    var positionBlob = Value.blobFromNumber(project.xPosition);
+    Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
+
+    project.hasStuff = true;
+    var hasStuffBlob = Value.blobFromBoolean(project.hasStuff);
+    Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
+
+    project.hash = new Uint8Array(20);
+    Sha1.hash(project.file, project.hash, 0);
+
+    var commit2 = CommitObject.clone(CommitObject.none);
+    commit2.author = commit2.committer = {
+        name: 'Jake Sandlund',
+        email: 'jake@jakesandlund.com',
+        time: 1455501462000,
+        timezoneOffset: 360,
+    };
+    commit2.message = 'Commit with values filled in\n';
+    commit2.tree = project;
+    commit2.parents = [commit];
+
+    commit2.file = CommitFile.createFromObject(commit2);
+    commit2.hash = new Uint8Array(20);
+    Sha1.hash(commit2.file, commit2.hash, 0);
+    console.log('[afterClone] created commit2 with hash', hex(commit2.hash));
+
+    var files = [
+        commit2.file,
+        project.file,
+        thing.file,
+        nameBlob,
+        textBlob,
+        positionBlob,
+        hasStuffBlob,
+    ];
+
+    var pack = Pack.create(files);
+    console.log('[afterClone] created pack with hash', hex(pack.subarray(pack.length - 20)));
+
+    var branch = 'refs/heads/test-branch';
+
+    var body = SendPack.postBody(branch, commit.hash, commit2.hash, pack);
+
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        console.log(this.responseText);
+    });
+    xhr.addEventListener('error', function () {
+        console.log('error', this.statusText);
+    });
+
+    xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
+    xhr.setRequestHeader('Content-Type', SendPack.postContentType);
+    console.log('[afterClone] SendPack post ' + body.length + ' bytes');
+    xhr.send(body);
 };
 
 var fetch = function () {
