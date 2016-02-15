@@ -1,6 +1,5 @@
 Loader.loadWeb('../..', function (event) {
 
-var firstPushStore = Global.store = Store.create();
 var loadStore = Store.create();
 
 global.Thing = {};
@@ -27,10 +26,12 @@ Thing.none.file = Tree.createSkeleton(Thing.offsets, {
     name: 'blob',
 });
 
-BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
-Thing.none.hash = new Uint8Array(20);
-Sha1.hash(Thing.none.file, Thing.none.hash, 0);
-Store.save(firstPushStore, Thing.none);
+// Normally we would need to store the Thing.none properties
+// like so, but all the properties are overridden later.
+// BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
+// Thing.none.hash = new Uint8Array(20);
+// Sha1.hash(Thing.none.file, Thing.none.hash, 0);
+// Store.save(Global.store, Thing.none);
 
 Thing.checkout = function (packIndices, store, hash, hashOffset) {
     var thing = Store.get(store, hash, hashOffset);
@@ -83,14 +84,6 @@ Project.none.file = Tree.createSkeleton(Project.offsets, {
     text: 'blob',
     xPosition: 'blob',
 });
-
-BaseTreeObject.set(Project.none, 'thing', Project.none.thing, Project.offsets.thing, 'object');
-BaseTreeObject.set(Project.none, 'text', Project.none.text, Project.offsets.text, 'string');
-BaseTreeObject.set(Project.none, 'xPosition', Project.none.xPosition, Project.offsets.xPosition, 'number');
-BaseTreeObject.set(Project.none, 'hasStuff', Project.none.hasStuff, Project.offsets.hasStuff, 'boolean');
-Project.none.hash = new Uint8Array(20);
-Sha1.hash(Project.none.file, Project.none.hash, 0);
-Store.save(firstPushStore, Project.none);
 
 Project.checkout = function (packIndices, store, hash, hashOffset) {
     var project = Store.get(store, hash, hashOffset);
@@ -185,6 +178,39 @@ var push = function (previousHash, currentHash, pack, callback) {
 };
 
 var firstPush = function () {
+    var project = Project.clone(Project.none);
+
+    var thing = Thing.clone(Thing.none);
+    thing.name = 'name1';
+    var nameBlob = Value.blobFromString(thing.name);
+    Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
+
+    thing.hash = project.file;
+    thing.hashOffset = Project.offsets.thing;
+    Sha1.hash(thing.file, thing.hash, thing.hashOffset);
+
+    project.thing = thing;
+    project.text = (
+        'a bit of text\n' +
+        'that hopefully\n' +
+        'causes\n' +
+        'some delta compresssion\n' +
+        'when we change project.text below\n'
+    );
+    var textBlob = Value.blobFromString(project.text);
+    Sha1.hash(textBlob, project.file, Project.offsets.text);
+
+    project.xPosition = 0;
+    var positionBlob = Value.blobFromNumber(project.xPosition);
+    Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
+
+    project.hasStuff = false;
+    var hasStuffBlob = Value.blobFromBoolean(project.hasStuff);
+    Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
+
+    project.hash = new Uint8Array(20);
+    Sha1.hash(project.file, project.hash, 0);
+
     var commit = CommitObject.clone(CommitObject.none);
     commit.author = commit.committer = {
         name: 'Jake Sandlund',
@@ -192,25 +218,24 @@ var firstPush = function () {
         time: 1454284683000,
         timezoneOffset: 360,
     };
-    commit.message = 'Initial commit with "none" values\n';
-    commit.tree = Project.none;
+    commit.message = 'Initial commit with first values\n';
+    commit.tree = project;
     commit.parents = [];
 
     commit.file = CommitFile.createFromObject(commit);
     commit.hash = new Uint8Array(20);
     Sha1.hash(commit.file, commit.hash, 0);
-    Store.save(firstPushStore, commit);
     console.log('[firstPush] created commit with hash', hex(commit.hash));
 
-    var files = [];
-    var i;
-    for (i = 0; i < firstPushStore.objects.length; i++) {
-        var list = firstPushStore.objects[i];
-        var j;
-        for (j = 0; j < list.length; j++) {
-            files.push(list[j].file);
-        }
-    }
+    var files = [
+        commit.file,
+        project.file,
+        thing.file,
+        nameBlob,
+        textBlob,
+        positionBlob,
+        hasStuffBlob,
+    ];
 
     var pack = Pack.create(files);
     console.log('[firstPush] created pack with hash', hex(pack.subarray(pack.length - 20)));
@@ -294,6 +319,7 @@ var afterClone = function (refHash, pack) {
     CommitObject.checkoutTree(commit, [index], loadStore);
 
     console.log('[afterClone] loaded tree:', hex(commit.tree.hash));
+    console.log('[afterClone] project text:', commit.tree.text.slice(0, 12) + '...');
     console.log('[afterClone] project x:', commit.tree.xPosition);
     console.log('[afterClone] project hasStuff:', commit.tree.hasStuff);
     console.log('[afterClone] thing hashOffset:', commit.tree.thing.hashOffset);
@@ -311,7 +337,14 @@ var afterClone = function (refHash, pack) {
     Sha1.hash(thing.file, thing.hash, thing.hashOffset);
 
     project.thing = thing;
-    project.text = 'blah blah text';
+    project.text = (
+        'a bit of text\n' +
+        'that hopefully\n' +
+        'causes\n' +
+        'Nay, caused!\n' +
+        'some delta compresssion\n' +
+        'when we change project.text below\n'
+    );
     var textBlob = Value.blobFromString(project.text);
     Sha1.hash(textBlob, project.file, Project.offsets.text);
 
@@ -369,14 +402,43 @@ var afterFetch = function (refHash, pack) {
     CommitObject.checkoutTree(commit, [index], loadStore);
 
     console.log('[afterFetch] loaded tree:', hex(commit.tree.hash));
+    console.log('[afterFetch] project text:', commit.tree.text.slice(0, 12) + '...');
     console.log('[afterFetch] project x:', commit.tree.xPosition);
     console.log('[afterFetch] project hasStuff:', commit.tree.hasStuff);
     console.log('[afterFetch] thing hashOffset:', commit.tree.thing.hashOffset);
     console.log('[afterFetch] thing name:', commit.tree.thing.name);
 
     CommitObject.checkoutParents(commit, [index], loadStore);
-    console.log('[afterFetch] commit parent hash:', hex(commit.parents[0].hash));
-    console.log('[afterFetch] commit parent message:', commit.parents[0].message);
+    var parentCommit = commit.parents[0];
+    console.log('[afterFetch] commit parent hash:', hex(parentCommit.hash));
+    console.log('[afterFetch] commit parent message:', parentCommit.message);
+    console.log('[afterFetch] parent project text:', parentCommit.tree.text.slice(0, 12) + '...');
+
+    fetchGet(null, lastClone);
+};
+
+var lastClone = function (refHash, pack) {
+    var index = PackIndex.create(pack);
+    var store = Store.create();
+    var commit = CommitObject.checkout([index], store, refHash, 0);
+    console.log('[lastClone] commit message: ' + commit.message);
+    console.log('[lastClone] commit time: ' + new Date(commit.committer.time));
+
+    CommitObject.checkoutTree(commit, [index], store);
+
+    console.log('[lastClone] loaded tree:', hex(commit.tree.hash));
+    console.log('[lastClone] project text:', commit.tree.text.slice(0, 12) + '...');
+    console.log('[lastClone] thing name:', commit.tree.thing.name);
+
+    CommitObject.checkoutParents(commit, [index], store);
+    var parentCommit = commit.parents[0];
+    console.log('[lastClone] commit parent hash:', hex(commit1.hash));
+    console.log('[lastClone] commit parent message:', commit1.message);
+
+    CommitObject.checkoutTree(parentCommit, [index], store);
+
+    console.log('[lastClone] parent project text:', parentCommit.tree.text.slice(0, 12) + '...');
+    console.log('[lastClone] parent thing name:', parentCommit.tree.thing.name);
 };
 
 initGet();
