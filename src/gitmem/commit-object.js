@@ -57,7 +57,7 @@ CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
 
 CommitObject.checkoutTree = function (commit, packIndices, store) {
     var treeHash = CommitFile.parseTree(commit.file);
-    commit.tree = Project.checkout(packIndices, store, commit.file, treeHash);
+    commit.tree = Project.checkout(packIndices, store, treeHash, 0);
 };
 
 CommitObject.checkoutParents = function (commit, packIndices, store) {

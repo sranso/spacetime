@@ -40,7 +40,7 @@ Thing.checkout = function (packIndices, store, hash, hashOffset) {
     var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
 
     thing = Thing.clone(Thing.none);
-    thing.name = Thing.checkout(packIndices, store, file, tOffsets.name);
+    thing.name = Value.checkoutString(packIndices, store, file, tOffsets.name);
     thing.file = file;
     thing.hash = hash;
     thing.hashOffset = hashOffset;
@@ -104,8 +104,8 @@ Project.checkout = function (packIndices, store, hash, hashOffset) {
     project = Project.clone(Project.none);
     project.thing = Thing.checkout(packs, store, file, ofs.thing);
     project.text = Value.checkoutString(packs, store, file, ofs.text);
-    project.xPosition = Value.checkoutString(packs, store, file, ofs.xPosition);
-    project.hasStuff = Value.checkoutString(packs, store, file, ofs.hasStuff);
+    project.xPosition = Value.checkoutNumber(packs, store, file, ofs.xPosition);
+    project.hasStuff = Value.checkoutBoolean(packs, store, file, ofs.hasStuff);
     project.file = file;
     project.hash = hash;
     project.hashOffset = hashOffset;
@@ -275,11 +275,7 @@ var clonePost = function (refs) {
         if (!pack) {
             throw new Error('[clonePost] pack not received');
         }
-        var index = PackIndex.create(pack);
-        var store = Store.create();
-        var commit = CommitObject.checkout([index], store, refHash, 0);
-        console.log('[clonePost] commit message: ' + commit.message);
-        console.log('[clonePost] commit time: ' + new Date(commit.committer.time));
+        afterClone(refHash, pack);
     });
     xhr.addEventListener('error', function () {
         console.log('error', this.statusText);
@@ -292,6 +288,22 @@ var clonePost = function (refs) {
     xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
     console.log('[clonePost] post ' + body.length + ' bytes');
     xhr.send(body);
+};
+
+var afterClone = function (refHash, pack) {
+    var index = PackIndex.create(pack);
+    var loadStore = Store.create();
+    var commit = CommitObject.checkout([index], loadStore, refHash, 0);
+    console.log('[afterClone] commit message: ' + commit.message);
+    console.log('[afterClone] commit time: ' + new Date(commit.committer.time));
+
+    CommitObject.checkoutTree(commit, [index], loadStore);
+
+    console.log('[afterClone] loaded tree:', hex(commit.tree.hash));
+    console.log('[afterClone] project x:', commit.tree.xPosition);
+    console.log('[afterClone] project hasStuff:', commit.tree.hasStuff);
+    console.log('[afterClone] thing hashOffset:', commit.tree.thing.hashOffset);
+    console.log('[afterClone] thing name type:', typeof commit.tree.thing.name);
 };
 
 var fetch = function () {
