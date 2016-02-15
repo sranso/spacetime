@@ -121,6 +121,9 @@ Project.checkout = function (packIndices, store, hash, hashOffset) {
 var initGet = function () {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        if (this.status !== 200) {
+            throw new Error(this.statusText);
+        }
         var response = new Uint8Array(this.response);
         console.log('[initGet] get received ' + response.length + ' bytes');
         console.log(pretty(response));
@@ -131,8 +134,8 @@ var initGet = function () {
             firstPush();
         }
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
+    xhr.addEventListener('error', function (e) {
+        throw new Error('connection level error');
     });
     xhr.responseType = 'arraybuffer';
 
@@ -164,12 +167,15 @@ var push = function (previousHash, currentHash, pack, callback) {
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        if (this.status !== 200) {
+            throw new Error(this.statusText);
+        }
         console.log('[push] received ' + this.responseText.length + ' bytes');
         console.log(this.responseText);
         callback();
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
+    xhr.addEventListener('error', function (e) {
+        throw new Error('connection level error');
     });
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
@@ -250,6 +256,9 @@ var firstPush = function () {
 var fetchGet = function (atCommit, callback) {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        if (this.status !== 200) {
+            throw new Error(this.statusText);
+        }
         var response = new Uint8Array(this.response);
         console.log('[fetchGet] received ' + response.length + ' bytes');
         console.log(pretty(response));
@@ -261,8 +270,8 @@ var fetchGet = function (atCommit, callback) {
         var refs = FetchPack.refsFromGetResponse(response);
         fetchPost(atCommit, refs, callback);
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
+    xhr.addEventListener('error', function (e) {
+        throw new Error('connection level error');
     });
     xhr.responseType = 'arraybuffer';
 
@@ -290,6 +299,9 @@ var fetchPost = function (atCommit, refs, callback) {
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
+        if (this.status !== 200) {
+            throw new Error(this.statusText);
+        }
         var response = new Uint8Array(this.response);
         console.log('[fetchPost] received ' + response.length + ' bytes');
         var pack = FetchPack.packFromPostResponse(response);
@@ -298,8 +310,8 @@ var fetchPost = function (atCommit, refs, callback) {
         }
         callback(refHash, pack);
     });
-    xhr.addEventListener('error', function () {
-        console.log('error', this.statusText);
+    xhr.addEventListener('error', function (e) {
+        throw new Error('connection level error');
     });
     xhr.responseType = 'arraybuffer';
 
