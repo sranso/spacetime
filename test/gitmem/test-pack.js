@@ -17,17 +17,24 @@ log(pretty(inflate.result));
 log(inflate.strm.next_in);
 //=> 23
 
-var pack = new Uint8Array(15);
+var pack = new Uint8Array(25);
 var j = Pack._packFile(pack, 0, blob);
 log(j, pack[0].toString(16));
 //=> 17 '38'
 
 log(hex(pack.subarray(0, j)));
-//=> 38789c4bcbcf57484a2ce202000d14
+//=> 38789c4bcbcf57484a2ce202000d1402a4
 
 pack = Pack.create([blob]);
 log(hex(pack));
 //=> 5041434b000000020000000138789c4bcbcf57484a2ce202000d1402a4f6fdeefeaef7945dd30750fbcb3c45a6a163f183
+
+pack = new Uint8Array(15);
+j = Pack._packFile(pack, 0, blob);
+log('-neededSpace', j);
+//=> -neededSpace -2
+
+
 
 
 
@@ -70,6 +77,9 @@ log(hex(commitHash));
 pack = Pack.create([commit, tree, blob]);
 log(hex(pack));
 //=> 5041434b00000002000000039d0b789c9d8c4b0ac2301400f739c5bb80927f1a90e256b79ee025ef05a36d0a35bdbf153d819b8199c5f4951942d4ece5402e456515a7cc141cdb1c28aaa24bb625120ec908dcfa7d59e18a4f861b369ab646707aec7afee0f54bc7bccc2328ebac56267a0307e9a5147b9d6beffcf7405c5aed1527f89ec41b30b73b78a602789c3334303033315148cbcf4f4a2cd22ba92861b856facbe5291bdba9e5ac87bff43ed0f9a879fce722000f8b111338789c4bcbcf57484a2ce202000d1402a48eaa2ed0693571e022227e5d5ae5f5d4df1ac88d
+
+
+
 
 
 

@@ -22,22 +22,20 @@ Pack.create = function (files) {
 
     var f;
     for (f = 0; f < files.length; f++) {
-        // Assume deflated length + header is less than 100
+        // Guess that deflated length + header is less than 100
         // bytes over file length (inflated with type header).
-        while (pack.length - j < files[f].length + 100) {
-            if (pack.length < 32768) {
-                var newLength = pack.length * 2;
-            } else {
-                var newLength = 8192 * (((pack.length * 1.5) >>> 13) + 1);
-            }
-            var newPack = new Uint8Array(newLength);
-            var i;
-            for (i = 0; i < pack.length; i++) {
-                newPack[i] = pack[i];
-            }
-            pack = newPack;
+        var targetLength = j + files[f].length + 100;
+        if (pack.length < targetLength) {
+            pack = resizePack(pack, targetLength);
         }
-        j = Pack._packFile(pack, j, files[f]);
+
+        var jOrNegativeNeededSpace = Pack._packFile(pack, j, files[f]);
+        if (jOrNegativeNeededSpace < 0) {
+            pack = resizePack(pack, pack.length + -jOrNegativeNeededSpace);
+            j = Pack._packFile(pack, j, files[f]);
+        } else {
+            j = jOrNegativeNeededSpace;
+        }
     }
 
     var remaining = pack.length - j;
@@ -53,6 +51,25 @@ Pack.create = function (files) {
     Sha1.hash(pack.subarray(0, j), pack, j);
 
     return pack.subarray(0, j + 20);
+}
+
+var resizePack = function (pack, targetLength) {
+    var newLength = pack.length;
+    while (newLength < targetLength) {
+        if (newLength < 32768) {
+            var newLength = pack.length * 2;
+        } else {
+            var newLength = 8192 * (((pack.length * 1.5) >>> 13) + 1);
+        }
+    }
+
+    var newPack = new Uint8Array(newLength);
+    var i;
+    for (i = 0; i < pack.length; i++) {
+        newPack[i] = pack[i];
+    }
+
+    return newPack;
 }
 
 var blobPrefix = GitFile.stringToArray('blob ');
@@ -96,15 +113,42 @@ Pack._packFile = function (pack, packOffset, file) {
     j++;
 
     var deflate = new pako.Deflate({level: 6, chunkSize: chunkSize});
-    deflate.onData = onData;
+    deflate.onData = onDeflateData;
     deflate.onEnd = onEnd;
     deflate.dataOffset = j;
     deflate.dataArray = pack;
+    deflate.neededSpace = 0;
 
     deflate.push(file.subarray(i), true);
 
-    return deflate.dataOffset;
+    if (deflate.neededSpace) {
+        return -deflate.neededSpace;
+    } else {
+        return deflate.dataOffset;
+    }
 };
+
+var onDeflateData = function (chunk) {
+    var j = this.dataOffset;
+    var array = this.dataArray;
+    var capacity = array.length - j;
+    var neededSpace = chunk.length - capacity;
+    if (neededSpace > 0) {
+        this.neededSpace += neededSpace;
+        this.dataOffset = array.length;
+        return;
+    }
+
+    var i;
+    for (i = 0; i < chunk.length; i++) {
+        array[j + i] = chunk[i];
+    }
+    this.dataOffset += i;
+};
+
+var onEnd = function (status) {
+    if (status !== 0) throw new Error(this.strm.msg);
+}
 
 Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     var k = packOffset;
@@ -157,7 +201,7 @@ Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     }
 
     var inflate = new pako.Inflate({chunkSize: chunkSize});
-    inflate.onData = onData;
+    inflate.onData = onInflateData;
     inflate.onEnd = onEnd;
     inflate.dataOffset = j;
     inflate.dataArray = file;
@@ -167,7 +211,7 @@ Pack.extractFile = function (pack, packOffset, file, fileOffset) {
     return [k + inflate.strm.next_in, inflate.dataOffset];
 };
 
-var onData = function (chunk) {
+var onInflateData = function (chunk) {
     var j = this.dataOffset;
     var array = this.dataArray;
     var i;
@@ -176,10 +220,6 @@ var onData = function (chunk) {
     }
     this.dataOffset += i;
 };
-
-var onEnd = function (status) {
-    if (status !== 0) throw new Error(this.strm.msg);
-}
 
 Pack.validate = function (pack) {
     if (pack.length < 22) {
