@@ -2,8 +2,7 @@ require('../helper');
 
 var getResponseString = (
     '001e# service=git-upload-pack\n' +
-    '000000d1c24691ec29fc2bde96ecbbe73ec0625cc3199966 HEAD\0' +
-    'multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done symref=HEAD:refs/heads/master agent=git/2.6.2\n' +
+    '000000d1c24691ec29fc2bde96ecbbe73ec0625cc3199966 HEAD\0multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done symref=HEAD:refs/heads/master agent=git/2.6.2\n' +
     '003cf058e064dc438ca61341d2ca56d0cbda04cac2a3 refs/heads/foo\n' +
     '003fc24691ec29fc2bde96ecbbe73ec0625cc3199966 refs/heads/master\n' +
     '0000'
@@ -20,6 +19,7 @@ log(FetchPack.validateGetResponse(getResponse));
 getResponse = GitFile.stringToArray(getResponseString.replace('ofs-delta', 'xxx-xxxxx'));
 log(FetchPack.validateGetResponse(getResponse));
 //=> missing fetch-pack capability: ofs-delta
+
 getResponse = GitFile.stringToArray(getResponseString);
 
 var refs = FetchPack.refsFromGetResponse(getResponse);
@@ -35,11 +35,23 @@ ref = refs[2];
 log(ref[0], hex(ref[1]));
 //=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
 
-var getResponseString = '001e# service=git-upload-pack\n00000000';
-var getResponse = GitFile.stringToArray(getResponseString);
+getResponseString = '001e# service=git-upload-pack\n00000000';
+getResponse = GitFile.stringToArray(getResponseString);
 var emptyRefs = FetchPack.refsFromGetResponse(getResponse);
 log(emptyRefs.length);
 //=> 0
+
+getResponseString = (
+    '001e# service=git-upload-pack\n' +
+    '000000c59b2c1027ea7cd211885b32a8a954574a1da1fdb0 refs/heads/test-branch\0multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done agent=git/2.6.2' +
+    '0000'
+);
+getResponse = GitFile.stringToArray(getResponseString);
+var singleRef = FetchPack.refsFromGetResponse(getResponse);
+log(singleRef.length, singleRef[0][0]);
+//=> 1 'refs/heads/test-branch'
+
+
 
 
 
@@ -125,6 +137,7 @@ log(pretty(body));
 //=> 0032have b11da54dece45e24d1bfefdba6b5e5ce38ec126b
 //=> 0009done
 //=>
+
 
 
 
