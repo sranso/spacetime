@@ -1,3 +1,4 @@
+tmp/
 dev/nginx.conf
 dev/fcgiwrap.sock
 dev/*.log
