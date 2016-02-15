@@ -44,15 +44,16 @@ CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
     var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
     commit = CommitObject.clone(CommitObject.none);
+    commit.file = file;
+    commit.hash = hash;
+    commit.hashOffset = hashOffset;
+    Store.save(store, commit);
 
     commit.author = CommitFile.parseAuthor(file);
     commit.committer = CommitFile.parseAuthor(file);
     commit.message = CommitFile.parseMessage(file);
-    commit.file = file;
-    commit.hash = hash;
-    commit.hashOffset = hashOffset;
 
-    return Store.save(store, commit);
+    return commit;
 };
 
 CommitObject.checkoutTree = function (commit, packIndices, store) {

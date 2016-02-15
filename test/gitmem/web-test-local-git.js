@@ -43,12 +43,14 @@ Thing.checkout = function (packIndices, store, hash, hashOffset) {
     var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
 
     thing = Thing.clone(Thing.none);
-    thing.name = Value.checkoutString(packIndices, store, file, Thing.offsets.name);
     thing.file = file;
     thing.hash = hash;
     thing.hashOffset = hashOffset;
+    Store.save(store, thing);
 
-    return Store.save(store, thing);
+    thing.name = Value.checkoutString(packIndices, store, file, Thing.offsets.name);
+
+    return thing;
 };
 
 var oldProject = Project;
@@ -97,15 +99,17 @@ Project.checkout = function (packIndices, store, hash, hashOffset) {
 
     var ofs = Project.offsets;
     project = Project.clone(Project.none);
+    project.file = file;
+    project.hash = hash;
+    project.hashOffset = hashOffset;
+    Store.save(store, project);
+
     project.thing = Thing.checkout(packs, store, file, ofs.thing);
     project.text = Value.checkoutString(packs, store, file, ofs.text);
     project.xPosition = Value.checkoutNumber(packs, store, file, ofs.xPosition);
     project.hasStuff = Value.checkoutBoolean(packs, store, file, ofs.hasStuff);
-    project.file = file;
-    project.hash = hash;
-    project.hashOffset = hashOffset;
 
-    return Store.save(store, project);
+    return project;
 };
 
 

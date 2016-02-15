@@ -62,6 +62,11 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
 
     var ofs = Grid.offsets;
     grid = Grid.clone(Grid.none);
+    grid.file = file;
+    grid.hash = hash;
+    grid.hashOffset = hashOffset;
+    Store.save(store, grid);
+
     grid.rows = Value.checkoutNumber(packs, store, file, ofs.rows);
     grid.columns = Value.checkoutNumber(packs, store, file, ofs.columns);
 
@@ -81,11 +86,8 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
     } else {
         grid.cell3 = Cell.checkout(packs, store, file, ofs.cell3);
     }
-    grid.file = file;
-    grid.hash = hash;
-    grid.hashOffset = hashOffset;
 
-    return Store.save(store, grid);
+    return grid;
 };
 
 Grid.set = function (original, prop, value) {
@@ -174,6 +176,11 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
 
     var ofs = Cell.offsets;
     cell = Cell.clone(Cell.none);
+    cell.file = file;
+    cell.hash = hash;
+    cell.hashOffset = hashOffset;
+    Store.save(store, cell);
+
     cell.text = Value.checkoutString(packs, store, file, ofs.text);
     cell.color = Value.checkoutString(packs, store, file, ofs.color);
 
@@ -182,11 +189,8 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
     } else {
         cell.grid = Grid.checkout(packs, store, file, ofs.grid);
     }
-    cell.file = file;
-    cell.hash = hash;
-    cell.hashOffset = hashOffset;
 
-    return Store.save(store, cell);
+    return cell;
 };
 
 Cell.set = function (original, prop, value) {
@@ -302,5 +306,5 @@ log(Store.prettyPrint(newStore));
 //=> 3: #<0af810 red>
 //=> 7: #<e440e5 3>, #<daf773 grid=null text=bar color=red>
 //=> 8: #<03c754 white>
-//=> 9: #<56a605 1>, #<d45772 foo>, #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>
+//=> 9: #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>, #<56a605 1>, #<d45772 foo>
 //=> 15: #<b5a955 bar>
