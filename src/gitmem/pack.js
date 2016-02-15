@@ -178,7 +178,7 @@ var onData = function (chunk) {
 };
 
 var onEnd = function (status) {
-    if (status !== 0) throw new error(this.strm.msg);
+    if (status !== 0) throw new Error(this.strm.msg);
 }
 
 Pack.validate = function (pack) {
