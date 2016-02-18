@@ -4,6 +4,34 @@ var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');
 require('../helper');
 
+// tinyTest: 20 bytes
+// smallTest: 288 bytes
+// mediumTest: 566 bytes
+// largeTest: 6094 bytes
+
+// node (native) crypto
+// tiny: 998.099ms    / 500000      =  2.0  us     100.  ns/B
+// small: 253.933ms   / 100000      =  2.5  us       8.8 ns/B
+// medium: 165.308ms  /  50000      =  3.3  us       5.8 ns/B
+// large: 119.074ms   /  10000      = 12.   us       2.0 ns/B
+
+// Veness.hash() (pre-allocating is about the same)
+// small: 7468.827ms  / 100000    =   74.7  us     260.  ns/B
+// large: 13866.566ms /  10000    = 1387.   us     230.  ns/B
+
+// new Rusha().rawDigest() without "use asm"; (faster without)
+// tiny: 2034.044ms   / 500000      =  4.1  us     203.  ns/B
+// small: 602.909ms   / 100000      =  6.0  us      21.  ns/B
+// medium: 396.352ms  /  50000      =  7.9  us      14.  ns/B
+// large: 513.349ms   /  10000      = 51.   us       8.4 ns/B
+
+// Sha1.hash optimized (timed at the same time as node and rusha)
+// tiny: 395.984ms    / 500000      =  0.79 us      40.  ns/B
+// small: 391.985ms   / 100000      =  3.9  us      14.  ns/B
+// medium: 350.995ms  /  50000      =  7.0  us      12.  ns/B
+// large: 729.027ms   /  10000      = 73.   us      12.  ns/B
+
+
 var tinyTest = 'blob 12\0foo_function';
 
 // contents of git tree
@@ -221,34 +249,6 @@ var tinyArray = GitFile.stringToArray(tinyTest);
 var smallArray = GitFile.stringToArray(smallTest);
 var mediumArray = GitFile.stringToArray(mediumTest);
 var largeArray = GitFile.stringToArray(largeTest);
-
-// tinyTest: 20 bytes
-// smallTest: 288 bytes
-// mediumTest: 566 bytes
-// largeTest: 6094 bytes
-
-// node (native) crypto
-// tiny: 998.099ms    / 500000      =  2.0  us     100.  ns/B
-// small: 253.933ms   / 100000      =  2.5  us       8.8 ns/B
-// medium: 165.308ms  /  50000      =  3.3  us       5.8 ns/B
-// large: 119.074ms   /  10000      = 12.   us       2.0 ns/B
-
-// Veness.hash() (pre-allocating is about the same)
-// small: 7468.827ms  / 100000    =   74.7  us     260.  ns/B
-// large: 13866.566ms /  10000    = 1387.   us     230.  ns/B
-
-// new Rusha().rawDigest() without "use asm"; (faster without)
-// tiny: 2034.044ms   / 500000      =  4.1  us     203.  ns/B
-// small: 602.909ms   / 100000      =  6.0  us      21.  ns/B
-// medium: 396.352ms  /  50000      =  7.9  us      14.  ns/B
-// large: 513.349ms   /  10000      = 51.   us       8.4 ns/B
-
-// Sha1.hash optimized (timed at the same time as node and rusha)
-// tiny: 395.984ms    / 500000      =  0.79 us      40.  ns/B
-// small: 391.985ms   / 100000      =  3.9  us      14.  ns/B
-// medium: 350.995ms  /  50000      =  7.0  us      12.  ns/B
-// large: 729.027ms   /  10000      = 73.   us      12.  ns/B
-
 
 var i;
 var shasum;
