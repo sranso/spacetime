@@ -13,7 +13,6 @@ var allFileLines = {};
 
 var quietMode = process.argv[2] === 'quiet';
 exports.logToTerminal = !quietMode;
-exports.runBenchmarks = !quietMode;
 
 var getStackLine = function () {
     try {

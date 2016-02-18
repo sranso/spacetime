@@ -1,5 +1,5 @@
 'use strict';
-var helper = require('../helper');
+require('../helper');
 
 Random.seed(1);
 log('1st random number ' + Random.rand().toString(16));
@@ -93,18 +93,3 @@ log(lines.join('\n'));
 //=> 61 7863
 //=> 62 7847
 //=> 63 7847
-
-if (helper.runBenchmarks) {
-
-    console.time('Math.random');
-    for (i = 0; i < 10000000; i++) {
-        Math.random();
-    }
-    console.timeEnd('Math.random');
-
-    console.time('Random.rand');
-    for (i = 0; i < 10000000; i++) {
-        Random.rand();
-    }
-    console.timeEnd('Random.rand');
-}
