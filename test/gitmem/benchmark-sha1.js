@@ -2,7 +2,7 @@
 var Veness = require('../../docs/sha-1/veness');
 var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');
-var helper = require('../helper');
+require('../helper');
 
 var tinyTest = 'blob 12\0foo_function';
 
@@ -222,60 +222,64 @@ var smallArray = GitFile.stringToArray(smallTest);
 var mediumArray = GitFile.stringToArray(mediumTest);
 var largeArray = GitFile.stringToArray(largeTest);
 
-var hash = new Uint8Array(20);
-
-var rusha = new Rusha();
-//var shasum;
-
 // tinyTest: 20 bytes
 // smallTest: 288 bytes
-// smallTest: 566 bytes
+// mediumTest: 566 bytes
 // largeTest: 6094 bytes
 
 // node (native) crypto
-// small: 275.000ms   / 100000      = 2.75 us   9.55 us/kB
-// large: 124.976ms   /  10000      = 12.5 us   2.05 us/kB
+// tiny: 998.099ms    / 500000      =  2.0  us     100.  ns/B
+// small: 253.933ms   / 100000      =  2.5  us       8.8 ns/B
+// medium: 165.308ms  /  50000      =  3.3  us       5.8 ns/B
+// large: 119.074ms   /  10000      = 12.   us       2.0 ns/B
 
 // Veness.hash() (pre-allocating is about the same)
-// small: 7468.827ms  / 100000      = 74.7 us   259  us/kB
-// large: 13866.566ms /  10000      = 1387 us   228  us/kB
+// small: 7468.827ms  / 100000    =   74.7  us     260.  ns/B
+// large: 13866.566ms /  10000    = 1387.   us     230.  ns/B
 
 // new Rusha().rawDigest() without "use asm"; (faster without)
-// small: 610.518ms   / 100000      = 6.11 us   21.2 us/kB
-// medium: 406.437ms  /  50000      = 8.13 us   14.4 us/kB
-// large: 514.857ms   /  10000      = 51.5 us   8.45 us/kB
+// tiny: 2034.044ms   / 500000      =  4.1  us     203.  ns/B
+// small: 602.909ms   / 100000      =  6.0  us      21.  ns/B
+// medium: 396.352ms  /  50000      =  7.9  us      14.  ns/B
+// large: 513.349ms   /  10000      = 51.   us       8.4 ns/B
 
-// Sha1.hash optimized
-// tiny:  385.685ms   / 100000      = 3.86 us   13.4 us/kB
-// small: 385.685ms   / 100000      = 3.86 us   13.4 us/kB
-// medium: 342.762ms  /  50000      = 6.86 us   12.1 us/kB
-// large: 737.357ms   /  10000      = 73.7 us   12.1 us/kB
+// Sha1.hash optimized (timed at the same time as node and rusha)
+// tiny: 395.984ms    / 500000      =  0.79 us      40.  ns/B
+// small: 391.985ms   / 100000      =  3.9  us      14.  ns/B
+// medium: 350.995ms  /  50000      =  7.0  us      12.  ns/B
+// large: 729.027ms   /  10000      = 73.   us      12.  ns/B
+
+
+var i;
+var shasum;
+var hash = new Uint8Array(20);
+var rusha = new Rusha();
 
 console.time('tiny');
-for (var i = 0; i < 500000; i++) {
+for (i = 0; i < 500000; i++) {
     Sha1.hash(tinyArray, hash, 0);
-    //Veness.hash(smallTest);
-    //rushaRawDigest8(smallArray, hash, 0);
+    //Veness.hash(tinyTest);
+    //rushaRawDigest8(tinyArray, hash, 0);
     //shasum = crypto.createHash('sha1');
-    //shasum.update(smallTest);
+    //shasum.update(tinyArray);
     //shasum.digest('hex');
 }
 console.timeEnd('tiny');
 
 
 console.time('small');
-for (var i = 0; i < 100000; i++) {
+for (i = 0; i < 100000; i++) {
     Sha1.hash(smallArray, hash, 0);
     //Veness.hash(smallTest);
     //rushaRawDigest8(smallArray, hash, 0);
     //shasum = crypto.createHash('sha1');
-    //shasum.update(smallTest);
+    //shasum.update(smallArray);
     //shasum.digest('hex');
 }
 console.timeEnd('small');
 
 console.time('medium');
-for (var i = 0; i < 50000; i++) {
+for (i = 0; i < 50000; i++) {
     Sha1.hash(mediumArray, hash, 0);
     //Veness.hash(mediumTest);
     //rushaRawDigest8(mediumArray, hash, 0);
@@ -286,12 +290,12 @@ for (var i = 0; i < 50000; i++) {
 console.timeEnd('medium');
 
 console.time('large');
-for (var i = 0; i < 10000; i++) {
+for (i = 0; i < 10000; i++) {
     Sha1.hash(largeArray, hash, 0);
     //Veness.hash(largeTest);
     //rushaRawDigest8(largeArray, hash, 0);
     //shasum = crypto.createHash('sha1');
-    //shasum.update(largeTest);
+    //shasum.update(largeArray);
     //shasum.digest('hex');
 }
 console.timeEnd('large');
