@@ -1,9 +1,4 @@
-.PHONY: test build
-
-all: build test
-
-build:
-	@node ./src/gitmem/sha1-preprocessor.js
+.PHONY: test
 
 test:
 	@./test/run.sh
