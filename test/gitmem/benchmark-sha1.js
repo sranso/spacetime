@@ -4,7 +4,7 @@ var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');
 require('../helper');
 
-// tinyTest: 20 bytes
+// tinyTest: 20 bytes  (once tested at 55 bytes = max 1 block)
 // smallTest: 288 bytes
 // mediumTest: 566 bytes
 // largeTest: 6094 bytes
@@ -27,6 +27,8 @@ require('../helper');
 
 // Sha1.hash optimized (timed at the same time as node and rusha)
 // tiny: 395.984ms    / 500000      =  0.79 us      40.  ns/B
+// tiny (55 B = most for 1 block):
+//       404.699ms    / 500000      =  0.81 us      15.  ns/B
 // small: 391.985ms   / 100000      =  3.9  us      14.  ns/B
 // medium: 350.995ms  /  50000      =  7.0  us      12.  ns/B
 // large: 729.027ms   /  10000      = 73.   us      12.  ns/B
