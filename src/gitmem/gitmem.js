@@ -2,9 +2,16 @@
 global.GitMem = {};
 (function () {
 
-GitMem.setup = function () {
+GitMem.create = function () {
     Random.seed(GitMem._randomSeed());
-    global.$Store = Store.create();
+
+    return {
+        store: Store.create(),
+    };
+};
+
+GitMem.load = function (gitmem) {
+    global.$Store = gitmem.store;
 };
 
 GitMem._randomSeed = function () {

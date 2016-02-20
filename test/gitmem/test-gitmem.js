@@ -6,7 +6,8 @@ GitMem._randomSeed = function () {
     return 1;
 };
 
-GitMem.setup();
+var gitmem = GitMem.create();
+GitMem.load(gitmem);
 GitMem._randomSeed = oldSeedFunction;
 
 Store.save($Store, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
