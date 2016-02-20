@@ -3,7 +3,7 @@
 // copyWithin: 3375.065ms / 500000 = 6800 ns/loop
 // loop: 74.605ms         / 500000 =  150 ns/loop (2.2% of copyWithin)
 //
-// loopDirtyType was the same as loop
+// loopDirtyType and loopWithProperty were the same as loop
 
 var a;
 
@@ -43,15 +43,33 @@ console.timeEnd('loop');
 setupA();
 a.nextOffset = 300;
 
-//console.time('loopDirtyType');
-//var n;
-//for (n = 0; n < 500000; n++) {
-//    var j = 200;
-//    var k = 900;
-//    var len = 100;
-//    var i;
-//    for (i = 0; i < len; i++) {
-//        a[j + i] = a[k + i];
-//    }
-//}
-//console.timeEnd('loopDirtyType');
+console.time('loopDirtyType');
+var n;
+for (n = 0; n < 500000; n++) {
+    var j = 200;
+    var k = 900;
+    var len = 100;
+    var i;
+    for (i = 0; i < len; i++) {
+        a[j + i] = a[k + i];
+    }
+}
+console.timeEnd('loopDirtyType');
+
+setupA();
+
+var object = {a: a};
+
+console.time('loopWithProperty');
+var n;
+for (n = 0; n < 500000; n++) {
+    var j = 200;
+    var k = 900;
+    var len = 100;
+    var i;
+    for (i = 0; i < len; i++) {
+        object.a[j + i] = object.a[k + i];
+    }
+}
+console.timeEnd('loopWithProperty');
+
