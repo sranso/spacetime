@@ -19,8 +19,8 @@ FetchPack.validateGetResponse = function (body) {
         }
     }
 
-    var packetLength = GitConvert.packetLength(body, getResponseStart.length);
-    var capabilitiesEnd = packetLength + getResponseStart.length - 1;
+    var pktLineLength = GitConvert.pktLineLength(body, getResponseStart.length);
+    var capabilitiesEnd = pktLineLength + getResponseStart.length - 1;
     var capabilitiesStart = body.indexOf(0, getResponseStart.length + 4 + 40 + 1) + 1;
     var capabilitiesArray = body.subarray(capabilitiesStart, capabilitiesEnd);
     var capabilitiesString = String.fromCharCode.apply(null, capabilitiesArray);
@@ -49,17 +49,17 @@ FetchPack.refsFromGetResponse = function (body) {
 
     var refs = [[firstRefName, firstHash]];
 
-    var j = GitConvert.packetLength(body, getResponseStart.length) + getResponseStart.length;
+    var j = GitConvert.pktLineLength(body, getResponseStart.length) + getResponseStart.length;
 
     while (j + 4 < body.length) {
-        var packetLength = GitConvert.packetLength(body, j);
-        var refArray = body.subarray(j + 4 + 40 + 1, j + packetLength - 1);
+        var pktLineLength = GitConvert.pktLineLength(body, j);
+        var refArray = body.subarray(j + 4 + 40 + 1, j + pktLineLength - 1);
         var refName = String.fromCharCode.apply(null, refArray);
         var hash = new Uint8Array(20);
         GitConvert.hexToHash(body, j + 4, hash, 0);
         refs.push([refName, hash]);
 
-        j = j + packetLength;
+        j = j + pktLineLength;
     }
 
     return refs;
@@ -172,7 +172,7 @@ FetchPack.packFromPostResponse = function (body) {
         if (body[j] === 'P'.charCodeAt(0)) {
             return body.subarray(j);
         }
-        j += GitConvert.packetLength(body, j);
+        j += GitConvert.pktLineLength(body, j);
     }
 
     return null;
