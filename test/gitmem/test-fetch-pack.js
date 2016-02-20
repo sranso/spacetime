@@ -8,7 +8,7 @@ var getResponseString = (
     '003fc24691ec29fc2bde96ecbbe73ec0625cc3199966 refs/heads/master\n' +
     '0000'
 );
-var getResponse = GitFile.stringToArray(getResponseString);
+var getResponse = GitConvert.stringToArray(getResponseString);
 
 log(FetchPack.validateGetResponse(getResponse));
 //=> null
@@ -17,11 +17,11 @@ getResponse[4] = 'x';
 log(FetchPack.validateGetResponse(getResponse));
 //=> incorrect start of get response
 
-getResponse = GitFile.stringToArray(getResponseString.replace('ofs-delta', 'xxx-xxxxx'));
+getResponse = GitConvert.stringToArray(getResponseString.replace('ofs-delta', 'xxx-xxxxx'));
 log(FetchPack.validateGetResponse(getResponse));
 //=> missing fetch-pack capability: ofs-delta
 
-getResponse = GitFile.stringToArray(getResponseString);
+getResponse = GitConvert.stringToArray(getResponseString);
 
 var refs = FetchPack.refsFromGetResponse(getResponse);
 log(refs.length);
@@ -37,7 +37,7 @@ log(ref[0], hex(ref[1]));
 //=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
 
 getResponseString = '001e# service=git-upload-pack\n00000000';
-getResponse = GitFile.stringToArray(getResponseString);
+getResponse = GitConvert.stringToArray(getResponseString);
 var emptyRefs = FetchPack.refsFromGetResponse(getResponse);
 log(emptyRefs.length);
 //=> 0
@@ -47,7 +47,7 @@ getResponseString = (
     '000000c59b2c1027ea7cd211885b32a8a954574a1da1fdb0 refs/heads/test-branch\0multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done agent=git/2.6.2' +
     '0000'
 );
-getResponse = GitFile.stringToArray(getResponseString);
+getResponse = GitConvert.stringToArray(getResponseString);
 var singleRef = FetchPack.refsFromGetResponse(getResponse);
 log(singleRef.length, singleRef[0][0]);
 //=> 1 'refs/heads/test-branch'
@@ -146,21 +146,21 @@ log(pretty(body));
 
 
 
-var postResponse = GitFile.stringToArray('0008NAK\nPACK 1');
+var postResponse = GitConvert.stringToArray('0008NAK\nPACK 1');
 var pack = FetchPack.packFromPostResponse(postResponse);
 log(pretty(pack));
 //=> PACK 1
-postResponse = GitFile.stringToArray('0031ACK 1c78104e0c37f9204618a6fc8a860af3a9e7cd36\nPACK 2');
+postResponse = GitConvert.stringToArray('0031ACK 1c78104e0c37f9204618a6fc8a860af3a9e7cd36\nPACK 2');
 pack = FetchPack.packFromPostResponse(postResponse);
 log(pretty(pack));
 //=> PACK 2
 
-postResponse = GitFile.stringToArray('');
+postResponse = GitConvert.stringToArray('');
 pack = FetchPack.packFromPostResponse(postResponse);
 log(pack);
 //=> null
 
-postResponse = GitFile.stringToArray('0009oops!0000');
+postResponse = GitConvert.stringToArray('0009oops!0000');
 pack = FetchPack.packFromPostResponse(postResponse);
 log(pack);
 //=> null

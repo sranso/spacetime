@@ -72,9 +72,9 @@ var resizePack = function (pack, targetLength) {
     return newPack;
 }
 
-var blobPrefix = GitFile.stringToArray('blob ');
-var treePrefix = GitFile.stringToArray('tree ');
-var commitPrefix = GitFile.stringToArray('commit ');
+var blobPrefix = GitConvert.stringToArray('blob ');
+var treePrefix = GitConvert.stringToArray('tree ');
+var commitPrefix = GitConvert.stringToArray('commit ');
 
 Pack._packFile = function (pack, packOffset, file) {
     var i = file.indexOf(0, j) + 1;
@@ -243,7 +243,7 @@ Pack.validate = function (pack) {
     var packHashComputed = new Uint8Array(20);
     Sha1.hash(packContent, packHashComputed, 0);
 
-    if (!GitFile.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
+    if (!GitConvert.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
         return 'incorrect pack hash';
     }
 

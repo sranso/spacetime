@@ -46,7 +46,7 @@ Store.save = function (store, object) {
 
     var i;
     for (i = 0; i < list.length; i++) {
-        if (GitFile.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
+        if (GitConvert.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
             return list[i];
         }
     }
@@ -66,7 +66,7 @@ Store.get = function (store, hash, offset) {
 
     var i;
     for (i = 0; i < list.length; i++) {
-        if (GitFile.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
+        if (GitConvert.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
             return list[i];
         }
     }
@@ -97,7 +97,7 @@ var prettyPrintObject = function (object) {
             return clamp(key, 6) + '=' + clamp(d, 6);
         }).join(' ');
     }
-    var hash = GitFile.hashToString(object.hash, object.hashOffset);
+    var hash = GitConvert.hashToString(object.hash, object.hashOffset);
     return '#<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>';
 };
 

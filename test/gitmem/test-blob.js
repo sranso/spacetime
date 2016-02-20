@@ -18,23 +18,23 @@ log(hex(Blob.parseArray(blob)));
 
 var emptyHash = new Uint8Array(20);
 var emptyBlob = Blob.createFromString('');
-log('empty blob is "' + GitFile.catFile(emptyBlob) + '"');
+log('empty blob is "' + GitConvert.catFile(emptyBlob) + '"');
 //=> empty blob is ""
 
 Sha1.hash(emptyBlob, emptyHash, 0);
 log(hex(Blob.emptyBlobHash));
 //=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 
-log(GitFile.hashEqual(emptyHash, 0, Blob.emptyBlobHash, 0));
+log(GitConvert.hashEqual(emptyHash, 0, Blob.emptyBlobHash, 0));
 //=> true
 
 var helloHash = new Uint8Array(20);
 var helloWorldBlob = Blob.createFromString('Hello, World!');
-log(GitFile.catFile(helloWorldBlob));
+log(GitConvert.catFile(helloWorldBlob));
 //=> Hello, World!
 Sha1.hash(helloWorldBlob, helloHash, 0);
 log(hex(helloHash));
 //=> b45ef6fec89518d314f546fd6c3025367b721684
 
-log(GitFile.hashEqual(emptyHash, 0, helloHash, 0));
+log(GitConvert.hashEqual(emptyHash, 0, helloHash, 0));
 //=> false

@@ -2,7 +2,7 @@
 global.Blob = {};
 (function () {
 
-var blobPrefix = GitFile.stringToArray('blob ');
+var blobPrefix = GitConvert.stringToArray('blob ');
 
 Blob.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));

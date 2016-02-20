@@ -4,7 +4,7 @@ global.BaseTreeObject = {};
 
 BaseTreeObject.set = function (thing, prop, value, offset, type) {
     if (type === 'object') {
-        GitFile.setHash(thing.file, offset, value.hash, value.hashOffset);
+        GitConvert.setHash(thing.file, offset, value.hash, value.hashOffset);
         thing[prop] = value;
     } else {
         if (type === 'string') {

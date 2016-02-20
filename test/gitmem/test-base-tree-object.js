@@ -86,7 +86,7 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
-log(GitFile.hashToString(thing1.file, Thing.offsets.string));
+log(GitConvert.hashToString(thing1.file, Thing.offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
 var gotString = Store.get(store, thing1.file, Thing.offsets.string).data;

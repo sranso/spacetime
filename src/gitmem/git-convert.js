@@ -1,8 +1,8 @@
 'use strict';
-global.GitFile = {};
+global.GitConvert = {};
 (function () {
 
-GitFile.stringToArray = function (string) {
+GitConvert.stringToArray = function (string) {
     var array = new Uint8Array(string.length);
     for (var i = 0; i < string.length; i++) {
         array[i] = string.charCodeAt(i);
@@ -10,7 +10,7 @@ GitFile.stringToArray = function (string) {
     return array;
 };
 
-GitFile.hashToString = function (hash, offset) {
+GitConvert.hashToString = function (hash, offset) {
     var str = [];
     for (var i = 0; i < 20; i++) {
         var hex = '00' + hash[offset + i].toString(16);
@@ -19,9 +19,9 @@ GitFile.hashToString = function (hash, offset) {
     return str.join('');
 };
 
-var hexCharacters = GitFile.stringToArray('0123456789abcdef');
+var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
 
-GitFile.hashToHex = function (hash, hashOffset, hex, hexOffset) {
+GitConvert.hashToHex = function (hash, hashOffset, hex, hexOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
         var h = hash[hashOffset + i / 2];
@@ -65,14 +65,14 @@ var hexTable = new Uint8Array([
     -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0,  // f8-ff
 ]);
 
-GitFile.hexToHash = function (hex, hexOffset, hash, hashOffset) {
+GitConvert.hexToHash = function (hex, hexOffset, hash, hashOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
         hash[hashOffset + i / 2] = (hexTable[hex[hexOffset + i]] << 4) | hexTable[hex[hexOffset + i + 1]];
     }
 };
 
-GitFile.packetLength = function (packet, offset) {
+GitConvert.packetLength = function (packet, offset) {
     return (
         (hexTable[packet[offset]] << 12) |
         (hexTable[packet[offset + 1]] << 8) |
@@ -81,7 +81,7 @@ GitFile.packetLength = function (packet, offset) {
     );
 };
 
-GitFile.catFile = function (file) {
+GitConvert.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
 
     if (type === 'blob') {
@@ -95,7 +95,7 @@ GitFile.catFile = function (file) {
     }
 };
 
-GitFile.hashEqual = function (hash1, offset1, hash2, offset2) {
+GitConvert.hashEqual = function (hash1, offset1, hash2, offset2) {
     var i;
     for (i = 0; i < 20; i++) {
         if (hash1[offset1 + i] !== hash2[offset2 + i]) {
@@ -105,7 +105,7 @@ GitFile.hashEqual = function (hash1, offset1, hash2, offset2) {
     return true;
 };
 
-GitFile.setHash = function (file, offset, hash, hashOffset) {
+GitConvert.setHash = function (file, offset, hash, hashOffset) {
     var i;
     for (i = 0; i < 20; i++) {
         file[offset + i] = hash[hashOffset + i];

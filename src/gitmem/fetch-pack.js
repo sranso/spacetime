@@ -7,7 +7,7 @@ FetchPack.getPath = '/info/refs?service=git-upload-pack';
 FetchPack.postPath = '/git-upload-pack';
 FetchPack.postContentType = 'application/x-git-upload-pack-request';
 
-var getResponseStart = GitFile.stringToArray('001e# service=git-upload-pack\n0000');
+var getResponseStart = GitConvert.stringToArray('001e# service=git-upload-pack\n0000');
 
 var requiredCapabilites = ['multi_ack_detailed', 'ofs-delta', 'shallow', 'no-done'];
 
@@ -19,7 +19,7 @@ FetchPack.validateGetResponse = function (body) {
         }
     }
 
-    var packetLength = GitFile.packetLength(body, getResponseStart.length);
+    var packetLength = GitConvert.packetLength(body, getResponseStart.length);
     var capabilitiesEnd = packetLength + getResponseStart.length - 1;
     var capabilitiesStart = body.indexOf(0, getResponseStart.length + 4 + 40 + 1) + 1;
     var capabilitiesArray = body.subarray(capabilitiesStart, capabilitiesEnd);
@@ -45,18 +45,18 @@ FetchPack.refsFromGetResponse = function (body) {
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
     var firstRefName = String.fromCharCode.apply(null, firstRefArray);
     var firstHash = new Uint8Array(20);
-    GitFile.hexToHash(body, getResponseStart.length + 4, firstHash, 0);
+    GitConvert.hexToHash(body, getResponseStart.length + 4, firstHash, 0);
 
     var refs = [[firstRefName, firstHash]];
 
-    var j = GitFile.packetLength(body, getResponseStart.length) + getResponseStart.length;
+    var j = GitConvert.packetLength(body, getResponseStart.length) + getResponseStart.length;
 
     while (j + 4 < body.length) {
-        var packetLength = GitFile.packetLength(body, j);
+        var packetLength = GitConvert.packetLength(body, j);
         var refArray = body.subarray(j + 4 + 40 + 1, j + packetLength - 1);
         var refName = String.fromCharCode.apply(null, refArray);
         var hash = new Uint8Array(20);
-        GitFile.hexToHash(body, j + 4, hash, 0);
+        GitConvert.hexToHash(body, j + 4, hash, 0);
         refs.push([refName, hash]);
 
         j = j + packetLength;
@@ -66,13 +66,13 @@ FetchPack.refsFromGetResponse = function (body) {
 };
 
 var maxHaves = 10;
-var capabilities = GitFile.stringToArray('ofs-delta agent=gitmem/0.0.0');
+var capabilities = GitConvert.stringToArray('ofs-delta agent=gitmem/0.0.0');
 
-var wantPrefix = GitFile.stringToArray('want ');
-var havePrefix = GitFile.stringToArray('have ');
-var doneLine = GitFile.stringToArray('0009done\n');
+var wantPrefix = GitConvert.stringToArray('want ');
+var havePrefix = GitConvert.stringToArray('have ');
+var doneLine = GitConvert.stringToArray('0009done\n');
 var firstLineLength = 4 + wantPrefix.length + 40 + 2 + capabilities.length + 1;
-var hexCharacters = GitFile.stringToArray('0123456789abcdef');
+var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
 var lineLength = 4 + wantPrefix.length + 40 + 1;
 
 FetchPack.postBody = function (packIndices, store, wants, have) {
@@ -101,7 +101,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     }
 
     j += i;
-    GitFile.hashToHex(wants[0], 0, body, j);
+    GitConvert.hashToHex(wants[0], 0, body, j);
 
     j += 40;
     body[j] = 0;
@@ -127,7 +127,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         }
 
         j += i;
-        GitFile.hashToHex(wants[k], 0, body, j);
+        GitConvert.hashToHex(wants[k], 0, body, j);
         body[j + 40] = 0x0a;
 
         j += 40 + 1;
@@ -152,7 +152,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         }
 
         j += i;
-        GitFile.hashToHex(have.hash, have.hashOffset, body, j);
+        GitConvert.hashToHex(have.hash, have.hashOffset, body, j);
         body[j + 40] = 0x0a;
 
         j += 40 + 1;
@@ -172,7 +172,7 @@ FetchPack.packFromPostResponse = function (body) {
         if (body[j] === 'P'.charCodeAt(0)) {
             return body.subarray(j);
         }
-        j += GitFile.packetLength(body, j);
+        j += GitConvert.packetLength(body, j);
     }
 
     return null;

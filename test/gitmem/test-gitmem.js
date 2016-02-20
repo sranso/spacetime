@@ -71,17 +71,17 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
     grid.columns = Value.checkoutNumber(packs, store, file, ofs.columns);
 
     // TODO: these will be cleaner once array types work.
-    if (GitFile.hashEqual(file, ofs.cell1, Value.none.hash, 0)) {
+    if (GitConvert.hashEqual(file, ofs.cell1, Value.none.hash, 0)) {
         grid.cell1 = null;
     } else {
         grid.cell1 = Cell.checkout(packs, store, file, ofs.cell1);
     }
-    if (GitFile.hashEqual(file, ofs.cell2, Value.none.hash, 0)) {
+    if (GitConvert.hashEqual(file, ofs.cell2, Value.none.hash, 0)) {
         grid.cell2 = null;
     } else {
         grid.cell2 = Cell.checkout(packs, store, file, ofs.cell2);
     }
-    if (GitFile.hashEqual(file, ofs.cell3, Value.none.hash, 0)) {
+    if (GitConvert.hashEqual(file, ofs.cell3, Value.none.hash, 0)) {
         grid.cell3 = null;
     } else {
         grid.cell3 = Cell.checkout(packs, store, file, ofs.cell3);
@@ -114,14 +114,14 @@ Grid.setAll = function (original, modifications) {
 
 var zeroBlob = Value.blobFromNumber(0);
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
-GitFile.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
+GitConvert.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 Store.save(store, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
 Store.save(store, Grid.none);
 
-log(GitFile.catFile(Grid.none.file));
+log(GitConvert.catFile(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell2
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell3
@@ -184,7 +184,7 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
     cell.text = Value.checkoutString(packs, store, file, ofs.text);
     cell.color = Value.checkoutString(packs, store, file, ofs.color);
 
-    if (GitFile.hashEqual(file, ofs.grid, Value.none.hash, 0)) {
+    if (GitConvert.hashEqual(file, ofs.grid, Value.none.hash, 0)) {
         cell.grid = null;
     } else {
         cell.grid = Grid.checkout(packs, store, file, ofs.grid);
@@ -224,7 +224,7 @@ Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
 Store.save(store, Cell.none);
 
-log(GitFile.catFile(Cell.none.file));
+log(GitConvert.catFile(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text

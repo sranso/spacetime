@@ -5,14 +5,14 @@ global.Tree = {};
 var emptyTree = Tree.emptyTree = null;
 var emptyTreeHash = Tree.emptyTreeHash = new Uint8Array(20);
 
-var actuallyEmptyTree = GitFile.stringToArray('tree 0\0');
+var actuallyEmptyTree = GitConvert.stringToArray('tree 0\0');
 Tree._actuallyEmptyTree = actuallyEmptyTree;
 Tree._actuallyEmptyTreeHash = new Uint8Array(20);
 
 var buildEmpty = function () {
-    var emptyTreeFileInfo = GitFile.stringToArray('100644 .empty\0');
+    var emptyTreeFileInfo = GitConvert.stringToArray('100644 .empty\0');
     var emptyTreeLength = emptyTreeFileInfo.length + 20;
-    var emptyTreePrefix = GitFile.stringToArray('tree ' + emptyTreeLength + '\0');
+    var emptyTreePrefix = GitConvert.stringToArray('tree ' + emptyTreeLength + '\0');
     Tree.emptyTree = emptyTree = new Uint8Array(emptyTreePrefix.length + emptyTreeLength);
 
     var i, j;
@@ -34,9 +34,9 @@ var buildEmpty = function () {
     Sha1.hash(Tree._actuallyEmptyTree, Tree._actuallyEmptyTreeHash, 0);
 };
 
-var treePrefix = GitFile.stringToArray('tree ');
-var treeMode = GitFile.stringToArray('40000');
-var blobMode = GitFile.stringToArray('100644');
+var treePrefix = GitConvert.stringToArray('tree ');
+var treeMode = GitConvert.stringToArray('40000');
+var blobMode = GitConvert.stringToArray('100644');
 
 var arrayEqual = function (array1, array2) {
     if (array1.length !== array2.length) {
@@ -78,7 +78,7 @@ Tree.catFile = function (file) {
         var filename = String.fromCharCode.apply(null, file.subarray(j, filenameEnd));
 
         j = filenameEnd + 1;
-        var hash = GitFile.hashToString(file, j);
+        var hash = GitConvert.hashToString(file, j);
         pretty.push([mode, subType, hash, '  ', filename].join(' '));
 
         j += 20;

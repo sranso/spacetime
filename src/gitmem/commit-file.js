@@ -2,11 +2,11 @@
 global.CommitFile = {};
 (function () {
 
-var commitPrefix = GitFile.stringToArray('commit ');
-var treePrefix = GitFile.stringToArray('tree ');
-var parentPrefix = GitFile.stringToArray('parent ');
-var authorPrefix = GitFile.stringToArray('author ');
-var committerPrefix = GitFile.stringToArray('committer ');
+var commitPrefix = GitConvert.stringToArray('commit ');
+var treePrefix = GitConvert.stringToArray('tree ');
+var parentPrefix = GitConvert.stringToArray('parent ');
+var authorPrefix = GitConvert.stringToArray('author ');
+var committerPrefix = GitConvert.stringToArray('committer ');
 
 CommitFile.catFile = function (file) {
     var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
@@ -73,7 +73,7 @@ CommitFile.createFromObject = function (commit) {
     }
 
     j += i;
-    GitFile.hashToHex(commit.tree.hash, commit.tree.hashOffset, file, j);
+    GitConvert.hashToHex(commit.tree.hash, commit.tree.hashOffset, file, j);
     file[j + 40] = 0x0a;
 
     var p, parentCommit;
@@ -85,7 +85,7 @@ CommitFile.createFromObject = function (commit) {
 
         j += i;
         parentCommit = commit.parents[p];
-        GitFile.hashToHex(parentCommit.hash, parentCommit.hashOffset, file, j);
+        GitConvert.hashToHex(parentCommit.hash, parentCommit.hashOffset, file, j);
         file[j + 40] = 0x0a;
     }
 
@@ -165,7 +165,7 @@ CommitFile.createFromObject = function (commit) {
 CommitFile.parseTree = function (file) {
     var hash = new Uint8Array(20);
     var hexOffset = file.indexOf(0, 7) + 1 + treePrefix.length;
-    GitFile.hexToHash(file, hexOffset, hash, 0);
+    GitConvert.hexToHash(file, hexOffset, hash, 0);
     return hash;
 };
 
@@ -176,7 +176,7 @@ CommitFile.parseParents = function (file) {
         var hash = new Uint8Array(20);
 
         j += parentPrefix.length;
-        GitFile.hexToHash(file, j, hash, 0);
+        GitConvert.hexToHash(file, j, hash, 0);
         hashes.push(hash);
         j += 40 + 1;
     }
