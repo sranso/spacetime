@@ -3,8 +3,6 @@ global.$Project = Project.none;
 
 global.Global = {};
 
-Global.store = null;
-
 Global.currentInput = Input.create();
 Global.capturedInput = Global.currentInput;
 Global.play = false;

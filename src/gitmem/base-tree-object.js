@@ -19,7 +19,7 @@ BaseTreeObject.set = function (thing, prop, value, offset, type) {
 
         Sha1.hash(blob, thing.file, offset);
         var blobObject = Value.createBlobObject(value, blob, thing.file, offset);
-        thing[prop] = Store.save(Global.store, blobObject).data;
+        thing[prop] = Store.save($Store, blobObject).data;
     }
 };
 

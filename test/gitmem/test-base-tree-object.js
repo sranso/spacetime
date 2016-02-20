@@ -3,7 +3,7 @@ require('../helper');
 
 Random.seed(1);
 var store = Store.create();
-Global.store = store;
+global.$Store = store;
 
 var Thing = {};
 
@@ -51,7 +51,7 @@ Thing.set = function (original, prop, value) {
     thing.hash = new Uint8Array(20);
     Sha1.hash(thing.file, thing.hash, 0);
 
-    return Store.save(Global.store, thing);
+    return Store.save($Store, thing);
 };
 
 Thing.setAll = function (original, modifications) {
@@ -64,7 +64,7 @@ Thing.setAll = function (original, modifications) {
     thing.hash = new Uint8Array(20);
     Sha1.hash(thing.file, thing.hash, 0);
 
-    return Store.save(Global.store, thing);
+    return Store.save($Store, thing);
 };
 
 var object1 = {

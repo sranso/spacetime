@@ -30,7 +30,7 @@ var logStats = function () {
 };
 
 Main.setup = function () {
-    Store.setup();
+    GitMem.setup();
 
     // $Project = buildFilledProject();
     $Project = buildEmptyProject();
