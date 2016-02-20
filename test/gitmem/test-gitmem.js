@@ -121,7 +121,7 @@ Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
 Store.save(store, Grid.none);
 
-log(GitConvert.catFile(Grid.none.file));
+log(Tree.catFile(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell2
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell3
@@ -224,7 +224,7 @@ Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
 Store.save(store, Cell.none);
 
-log(GitConvert.catFile(Cell.none.file));
+log(Tree.catFile(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text

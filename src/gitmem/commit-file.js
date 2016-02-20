@@ -8,18 +8,6 @@ var parentPrefix = GitConvert.stringToArray('parent ');
 var authorPrefix = GitConvert.stringToArray('author ');
 var committerPrefix = GitConvert.stringToArray('committer ');
 
-CommitFile.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
-
-    if (type !== 'commit') {
-        throw new Error('Unexpected type: ' + type);
-    }
-
-    var j = file.indexOf(0, 8) + 1;
-    var rest = file.subarray(j);
-    return String.fromCharCode.apply(null, rest);
-};
-
 CommitFile.timezoneString = function (timezoneOffset) {
     var absOffset = Math.abs(timezoneOffset);
     var hoursNumber = Math.floor(absOffset / 60);

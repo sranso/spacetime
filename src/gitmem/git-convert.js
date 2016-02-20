@@ -81,20 +81,6 @@ GitConvert.pktLineLength = function (packet, offset) {
     );
 };
 
-GitConvert.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
-
-    if (type === 'blob') {
-        return Blob.catFile(file);
-    } else if (type === 'tree') {
-        return Tree.catFile(file);
-    } else if (type === 'commit') {
-        return CommitFile.catFile(file);
-    } else {
-        throw new Error('Unknown type: ' + type);
-    }
-};
-
 GitConvert.hashEqual = function (hash1, offset1, hash2, offset2) {
     var i;
     for (i = 0; i < 20; i++) {

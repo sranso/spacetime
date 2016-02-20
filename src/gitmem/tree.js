@@ -52,12 +52,6 @@ var arrayEqual = function (array1, array2) {
 };
 
 Tree.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
-
-    if (type !== 'tree') {
-        throw new Error('Unexpected type: ' + type);
-    }
-
     var pretty = [];
     var j = file.indexOf(0, 6) + 1;
     while (j < file.length) {
@@ -66,12 +60,12 @@ Tree.catFile = function (file) {
 
         var mode = String.fromCharCode.apply(null, file.subarray(j, modeEnd));
         if (mode === '100644') {
-            var subType = 'blob';
+            var type = 'blob';
         } else if (mode === '40000') {
             mode = '040000';
-            var subType = 'tree';
+            var type = 'tree';
         } else {
-            var subType = 'unknown';
+            var type = 'unknown';
         }
 
         j = modeEnd + 1;
@@ -79,7 +73,7 @@ Tree.catFile = function (file) {
 
         j = filenameEnd + 1;
         var hash = GitConvert.hashToString(file, j);
-        pretty.push([mode, subType, hash, '  ', filename].join(' '));
+        pretty.push([mode, type, hash, '  ', filename].join(' '));
 
         j += 20;
     }

@@ -4,15 +4,6 @@ global.Blob = {};
 
 var blobPrefix = GitConvert.stringToArray('blob ');
 
-Blob.catFile = function (file) {
-    var type = String.fromCharCode.apply(null, file.subarray(0, file.indexOf(0x20, 4)));
-
-    if (type !== 'blob') {
-        throw new Error('Unexpected type: ' + type);
-    }
-    return Blob.parseString(file);
-};
-
 Blob.createFromString = function (string) {
     var lengthString = '' + string.length;
     var blob = new Uint8Array(blobPrefix.length + lengthString.length + 1 + string.length);
