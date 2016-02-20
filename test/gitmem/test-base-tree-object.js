@@ -1,8 +1,8 @@
 'use strict';
 require('../helper');
 
-Random.seed(1);
-var store = Store.create();
+var random = Random.create(29923321);
+var store = Store.create(random);
 global.$Store = store;
 
 var Thing = {};

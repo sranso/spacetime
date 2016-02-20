@@ -1,8 +1,8 @@
 'use strict';
 var helper = require('../helper');
 
-// Math.random:  91.575ms   9 ns / call
-// Random.rand: 180.529ms  18 ns / call
+// Math.random:     91.575ms   9 ns / call
+// Random.uint32:   180.529ms  18 ns / call
 
 var i;
 
@@ -12,8 +12,9 @@ for (i = 0; i < 10000000; i++) {
 }
 console.timeEnd('Math.random');
 
-console.time('Random.rand');
+var random = Random.create(1);
+console.time('Random.uint32');
 for (i = 0; i < 10000000; i++) {
-    Random.rand();
+    Random.uint32(random);
 }
-console.timeEnd('Random.rand');
+console.timeEnd('Random.uint32');

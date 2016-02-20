@@ -49,7 +49,8 @@ log(hex(secondCommit.hash));
 
 var pack = Pack.create([secondCommit.file, commit.file, tree, fooBlob]);
 var index = PackIndex.create(pack);
-var store = Store.create();
+var random = Random.create(2524766);
+var store = Store.create(random);
 
 var gotSecondCommit = CommitObject.checkout([index], store, secondCommit.hash, 0);
 log(hex(gotSecondCommit.hash));

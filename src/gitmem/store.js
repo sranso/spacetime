@@ -2,12 +2,12 @@
 global.Store = {};
 (function () {
 
-Store.create = function () {
+Store.create = function (random) {
     var store = {
         hashBitsToShift: 32,
         objects: [[]],
         load: 0,
-        a: Random.rand() | 1,
+        a: Random.uint32(random) | 1,
     };
 
     while (store.objects.length < 4) {

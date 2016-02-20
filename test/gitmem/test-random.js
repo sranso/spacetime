@@ -1,17 +1,19 @@
 'use strict';
 require('../helper');
 
-Random.seed(1);
-log('1st random number ' + Random.rand().toString(16));
+var random = Random.create(1);
+log('1st random number ' + Random.uint32(random).toString(16));
 //=> 1st random number 26ec56eb
-log('2nd random number ' + Random.rand().toString(16));
+log('2nd random number ' + Random.uint32(random).toString(16));
 //=> 2nd random number a2624520
-log('3rd random number ' + Random.rand().toString(16));
+log('3rd random number ' + Random.uint32(random).toString(16));
 //=> 3rd random number 6bad88f1
-log('4th random number ' + Random.rand().toString(16));
+log('4th random number ' + Random.uint32(random).toString(16));
 //=> 4th random number 4e3e2450
-log('5th random number ' + Random.rand().toString(16));
-//=> 5th random number dcf2fc01
+
+var clone = Random.clone(random);
+log(Random.uint32(random).toString(16), '=', Random.uint32(clone).toString(16));
+//=> dcf2fc01 = dcf2fc01
 
 var mult = 1751468273; // arbitrary odd number
 var bins = [];
@@ -22,7 +24,7 @@ for (i = 0; i < 64; i++) {
 
 for (i = 0; i < 500000; i++) {
     // 26 == 32 - 6; 6 bits in 64
-    bins[Math.imul(mult, Random.rand()) >>> 26]++;
+    bins[Math.imul(mult, Random.uint32(random)) >>> 26]++;
 }
 var lines = [];
 for (i = 0; i < 64; i++) {

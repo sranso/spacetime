@@ -295,7 +295,8 @@ var files = objects.map(function (a) {
 });
 var pack = Pack.create(files);
 var index = PackIndex.create(pack);
-var newStore = Store.create();
+var random = Random.create(518917);
+var newStore = Store.create(random);
 
 var gotGrid = Grid.checkout([index], newStore, grid2.hash, grid2.hashOffset);
 log(hex(gotGrid.hash));
@@ -308,8 +309,11 @@ log(gotGrid.cell2.color, gotGrid.cell3.text);
 
 log(Store.prettyPrint(newStore));
 //=> 0: #<6f1e0d grid=null text=foo color=white>, #<89ced6 grid=null text=foo color=red>
-//=> 3: #<0af810 red>
-//=> 7: #<e440e5 3>, #<daf773 grid=null text=bar color=red>
-//=> 8: #<03c754 white>
-//=> 9: #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>, #<56a605 1>, #<d45772 foo>
-//=> 15: #<b5a955 bar>
+//=> 1: #<0af810 red>
+//=> 3: #<e440e5 3>
+//=> 5: #<daf773 grid=null text=bar color=red>
+//=> 8: #<b5a955 bar>
+//=> 9: #<56a605 1>
+//=> 12: #<b20786 rows=3 colu..=1 cell1=[obj.. cell2..>
+//=> 13: #<d45772 foo>
+//=> 14: #<03c754 white>

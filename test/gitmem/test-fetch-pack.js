@@ -109,7 +109,8 @@ log(hex(commit3.hash));
 
 var pack = Pack.create([commit3.file, commit2.file, commit1.file, Tree._actuallyEmptyTree]);
 var index = PackIndex.create(pack);
-var store = Store.create();
+var random = Random.create(1159769);
+var store = Store.create(random);
 
 log(FetchPack.postPath);
 //=> /git-upload-pack

@@ -68,7 +68,8 @@ log(hex(commitHash));
 
 var pack = Pack.create([commit, tree, stringBlob, numberBlob, trueBlob]);
 var index = PackIndex.create(pack);
-var store = Store.create();
+var random = Random.create(1777288)
+var store = Store.create(random);
 
 var gotString = Value.checkoutString([index], store, tree, offsets.string);
 log(gotString);

@@ -1,8 +1,8 @@
 'use strict';
 require('../helper');
 
-Random.seed(1);
-var store = Store.create();
+var random = Random.create(42);
+var store = Store.create(random);
 
 var offsets = {};
 var file = Tree.createSkeleton(offsets, {
@@ -49,5 +49,5 @@ log('got keys', Object.keys(got));
 //=> got keys [ 'text', 'count', 'child', 'thing', 'file', 'hash', 'hashOffset' ]
 
 log(Store.prettyPrint(store));
+//=> 0: #<c189b9 text= count=0 child=null thing=null>
 //=> 2: #<c22708 0>
-//=> 3: #<c189b9 text= count=0 child=null thing=null>
