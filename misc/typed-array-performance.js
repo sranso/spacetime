@@ -1,7 +1,7 @@
 // Results:
 //
-// copyWithin: 3375.065ms / 500000 = 6800 ns/loop
-// loop: 74.605ms         / 500000 =  150 ns/loop (2.2% of copyWithin)
+// copyWithin: 3375.065ms / 500000 = 68.  ns/B
+// loop: 74.605ms         / 500000 =  1.5 ns/B (2.2% of copyWithin)
 //
 // loopDirtyType and loopWithProperty were the same as loop
 
