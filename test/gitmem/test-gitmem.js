@@ -1,14 +1,14 @@
 'use strict';
 require('../helper');
 
-var oldSeedFunction = GitMem._randomSeed;
-GitMem._randomSeed = function () {
+var oldSeedFunction = Gitmem._randomSeed;
+Gitmem._randomSeed = function () {
     return 1;
 };
 
-var gitmem = GitMem.create();
-GitMem.load(gitmem);
-GitMem._randomSeed = oldSeedFunction;
+var gitmem = Gitmem.create();
+Gitmem.load(gitmem);
+Gitmem._randomSeed = oldSeedFunction;
 
 Store.save($Store, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
 Store.save($Store, Value.none);
