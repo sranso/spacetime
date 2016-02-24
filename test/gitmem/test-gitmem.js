@@ -10,8 +10,8 @@ var gitmem = Gitmem.create();
 Gitmem.load(gitmem);
 Gitmem._randomSeed = oldSeedFunction;
 
-Store.save($Store, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
-Store.save($Store, Value.none);
+HashTable.save($HashTable, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
+HashTable.save($HashTable, Value.none);
 
 var Grid = {};
 
@@ -57,8 +57,8 @@ Grid.types = {
     cell3: 'object',
 };
 
-Grid.checkout = function (packIndices, store, hash, hashOffset) {
-    var grid = Store.get(store, hash, hashOffset);
+Grid.checkout = function (packIndices, table, hash, hashOffset) {
+    var grid = HashTable.get(table, hash, hashOffset);
     if (grid) {
         return grid;
     }
@@ -71,26 +71,26 @@ Grid.checkout = function (packIndices, store, hash, hashOffset) {
     grid.file = file;
     grid.hash = hash;
     grid.hashOffset = hashOffset;
-    Store.save(store, grid);
+    HashTable.save(table, grid);
 
-    grid.rows = Value.checkoutNumber(packs, store, file, ofs.rows);
-    grid.columns = Value.checkoutNumber(packs, store, file, ofs.columns);
+    grid.rows = Value.checkoutNumber(packs, table, file, ofs.rows);
+    grid.columns = Value.checkoutNumber(packs, table, file, ofs.columns);
 
     // TODO: these will be cleaner once array types work.
     if (GitConvert.hashEqual(file, ofs.cell1, Value.none.hash, 0)) {
         grid.cell1 = null;
     } else {
-        grid.cell1 = Cell.checkout(packs, store, file, ofs.cell1);
+        grid.cell1 = Cell.checkout(packs, table, file, ofs.cell1);
     }
     if (GitConvert.hashEqual(file, ofs.cell2, Value.none.hash, 0)) {
         grid.cell2 = null;
     } else {
-        grid.cell2 = Cell.checkout(packs, store, file, ofs.cell2);
+        grid.cell2 = Cell.checkout(packs, table, file, ofs.cell2);
     }
     if (GitConvert.hashEqual(file, ofs.cell3, Value.none.hash, 0)) {
         grid.cell3 = null;
     } else {
-        grid.cell3 = Cell.checkout(packs, store, file, ofs.cell3);
+        grid.cell3 = Cell.checkout(packs, table, file, ofs.cell3);
     }
 
     return grid;
@@ -102,7 +102,7 @@ Grid.set = function (original, prop, value) {
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
 
-    return Store.save($Store, grid);
+    return HashTable.save($HashTable, grid);
 };
 
 Grid.setAll = function (original, modifications) {
@@ -115,17 +115,17 @@ Grid.setAll = function (original, modifications) {
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
 
-    return Store.save($Store, grid);
+    return HashTable.save($HashTable, grid);
 };
 
 var zeroBlob = Value.blobFromNumber(0);
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 GitConvert.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
-Store.save($Store, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
+HashTable.save($HashTable, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
-Store.save($Store, Grid.none);
+HashTable.save($HashTable, Grid.none);
 
 log(Tree.catFile(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
@@ -171,8 +171,8 @@ Cell.types = {
     color: 'string',
 };
 
-Cell.checkout = function (packIndices, store, hash, hashOffset) {
-    var cell = Store.get(store, hash, hashOffset);
+Cell.checkout = function (packIndices, table, hash, hashOffset) {
+    var cell = HashTable.get(table, hash, hashOffset);
     if (cell) {
         return cell;
     }
@@ -185,15 +185,15 @@ Cell.checkout = function (packIndices, store, hash, hashOffset) {
     cell.file = file;
     cell.hash = hash;
     cell.hashOffset = hashOffset;
-    Store.save(store, cell);
+    HashTable.save(table, cell);
 
-    cell.text = Value.checkoutString(packs, store, file, ofs.text);
-    cell.color = Value.checkoutString(packs, store, file, ofs.color);
+    cell.text = Value.checkoutString(packs, table, file, ofs.text);
+    cell.color = Value.checkoutString(packs, table, file, ofs.color);
 
     if (GitConvert.hashEqual(file, ofs.grid, Value.none.hash, 0)) {
         cell.grid = null;
     } else {
-        cell.grid = Grid.checkout(packs, store, file, ofs.grid);
+        cell.grid = Grid.checkout(packs, table, file, ofs.grid);
     }
 
     return cell;
@@ -205,7 +205,7 @@ Cell.set = function (original, prop, value) {
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
 
-    return Store.save($Store, cell);
+    return HashTable.save($HashTable, cell);
 };
 
 Cell.setAll = function (original, modifications) {
@@ -218,23 +218,23 @@ Cell.setAll = function (original, modifications) {
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
 
-    return Store.save($Store, cell);
+    return HashTable.save($HashTable, cell);
 };
 
 
 var colorBlob = Value.blobFromString(Cell.none.color);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
-Store.save($Store, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
+HashTable.save($HashTable, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
 Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
-Store.save($Store, Cell.none);
+HashTable.save($HashTable, Cell.none);
 
 log(Tree.catFile(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
-log(Store.prettyPrint($Store));
+log(HashTable.prettyPrint($HashTable));
 //=> 1: #<70bfe9 null>
 //=> 2: #<03c754 white>, #<4b14dc grid=null text= color=white>
 //=> 4: #<c22708 0>
@@ -247,16 +247,16 @@ var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
 var blob = Value.blobFromString(cell1.text);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
-Store.save($Store, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
+HashTable.save($HashTable, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
 cell1.hash = grid1.file;
 cell1.hashOffset = Grid.offsets.cell1;
 Sha1.hash(cell1.file, cell1.hash, cell1.hashOffset);
-grid1.cell1 = Store.save($Store, cell1);
+grid1.cell1 = HashTable.save($HashTable, cell1);
 
 grid1.hash = new Uint8Array(20);
 Sha1.hash(grid1.file, grid1.hash, grid1.hashOffset);
-Store.save($Store, grid1);
+HashTable.save($HashTable, grid1);
 
 // high-level
 var cell2 = Cell.set(cell1, 'color', 'red');
@@ -271,7 +271,7 @@ var grid2 = Grid.setAll(grid1, {
 log(hex(grid2.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
-log(Store.prettyPrint($Store));
+log(HashTable.prettyPrint($HashTable));
 //=> 5: #<70bfe9 null>, #<56a605 1>
 //=> 9: #<4b14dc grid=null text= color=white>, #<05dafb rows=0 colu..=0 cell1=[obj.. cell2..>
 //=> 10: #<03c754 white>
@@ -287,7 +287,7 @@ log(Store.prettyPrint($Store));
 //=> 29: #<d45772 foo>
 //=> 31: #<0af810 red>
 
-var objects = $Store.objects.reduce(function (a, b) {
+var objects = $HashTable.objects.reduce(function (a, b) {
     return a.concat(b);
 }, []);
 var files = objects.map(function (a) {
@@ -296,9 +296,9 @@ var files = objects.map(function (a) {
 var pack = Pack.create(files);
 var index = PackIndex.create(pack);
 var random = Random.create(518917);
-var newStore = Store.create(random);
+var newHashTable = HashTable.create(random);
 
-var gotGrid = Grid.checkout([index], newStore, grid2.hash, grid2.hashOffset);
+var gotGrid = Grid.checkout([index], newHashTable, grid2.hash, grid2.hashOffset);
 log(hex(gotGrid.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
@@ -307,7 +307,7 @@ log(gotGrid.rows, gotGrid.columns, gotGrid.cell1.text);
 log(gotGrid.cell2.color, gotGrid.cell3.text);
 //=> red bar
 
-log(Store.prettyPrint(newStore));
+log(HashTable.prettyPrint(newHashTable));
 //=> 0: #<6f1e0d grid=null text=foo color=white>, #<89ced6 grid=null text=foo color=red>
 //=> 1: #<0af810 red>
 //=> 3: #<e440e5 3>

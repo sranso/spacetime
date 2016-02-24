@@ -7,13 +7,13 @@ Gitmem.create = function () {
 
     return {
         random: random,
-        store: Store.create(random),
+        table: HashTable.create(random),
     };
 };
 
 Gitmem.load = function (gitmem) {
     global.$Random = gitmem.random;
-    global.$Store = gitmem.store;
+    global.$HashTable = gitmem.table;
 };
 
 Gitmem._randomSeed = function () {

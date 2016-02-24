@@ -1,48 +1,48 @@
 'use strict';
-global.Store = {};
+global.HashTable = {};
 (function () {
 
-Store.create = function (random) {
-    var store = {
+HashTable.create = function (random) {
+    var table = {
         hashBitsToShift: 32,
         objects: [[]],
         load: 0,
         a: Random.uint32(random) | 1,
     };
 
-    while (store.objects.length < 4) {
-        resizeObjects(store);
+    while (table.objects.length < 4) {
+        resizeObjects(table);
     }
 
-    return store;
+    return table;
 };
 
-var resizeObjects = function (store) {
-    store.hashBitsToShift -= 1;
-    var newStore = new Array(store.objects.length * 2);
+var resizeObjects = function (table) {
+    table.hashBitsToShift -= 1;
+    var newHashTable = new Array(table.objects.length * 2);
 
     var i, j;
-    for (i = 0; i < newStore.length; i += 2) {
-        newStore[i] = [];
-        newStore[i + 1] = [];
-        var oldList = store.objects[i >> 1];
+    for (i = 0; i < newHashTable.length; i += 2) {
+        newHashTable[i] = [];
+        newHashTable[i + 1] = [];
+        var oldList = table.objects[i >> 1];
         for (j = 0; j < oldList.length; j++) {
             var object = oldList[j];
             var hash = object.hash;
             var offset = object.hashOffset;
-            var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+            var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
 
-            newStore[h >>> store.hashBitsToShift].push(object);
+            newHashTable[h >>> table.hashBitsToShift].push(object);
         }
     }
-    store.objects = newStore;
+    table.objects = newHashTable;
 };
 
-Store.save = function (store, object) {
+HashTable.save = function (table, object) {
     var hash = object.hash;
     var offset = object.hashOffset;
-    var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = store.objects[h >>> store.hashBitsToShift];
+    var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = table.objects[h >>> table.hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -51,18 +51,18 @@ Store.save = function (store, object) {
         }
     }
 
-    store.load++;
+    table.load++;
     list.push(object);
-    if (store.load > 0.75 * store.objects.length) {
-        resizeObjects(store);
+    if (table.load > 0.75 * table.objects.length) {
+        resizeObjects(table);
     }
 
     return object;
 };
 
-Store.get = function (store, hash, offset) {
-    var h = Math.imul(store.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = store.objects[h >>> store.hashBitsToShift];
+HashTable.get = function (table, hash, offset) {
+    var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    var list = table.objects[h >>> table.hashBitsToShift];
 
     var i;
     for (i = 0; i < list.length; i++) {
@@ -101,11 +101,11 @@ var prettyPrintObject = function (object) {
     return '#<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>';
 };
 
-Store.prettyPrint = function (store) {
+HashTable.prettyPrint = function (table) {
     var pretty = [];
     var i, j;
-    for (i = 0; i < store.objects.length; i++) {
-        var list = store.objects[i];
+    for (i = 0; i < table.objects.length; i++) {
+        var list = table.objects[i];
         if (list.length) {
             var entries = [];
             for (j = 0; j < list.length; j++) {

@@ -110,7 +110,7 @@ log(hex(commit3.hash));
 var pack = Pack.create([commit3.file, commit2.file, commit1.file, Tree._actuallyEmptyTree]);
 var index = PackIndex.create(pack);
 var random = Random.create(1159769);
-var store = Store.create(random);
+var table = HashTable.create(random);
 
 log(FetchPack.postPath);
 //=> /git-upload-pack
@@ -119,7 +119,7 @@ log(FetchPack.postContentType);
 
 var wants = [refs[1][1]];
 var have = null;
-var body = FetchPack.postBody([index], store, wants, have);
+var body = FetchPack.postBody([index], table, wants, have);
 log(pretty(body));
 //=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
 //=> 00000009done
@@ -128,7 +128,7 @@ log(pretty(body));
 wants = [refs[1][1], refs[2][1]];
 have = commit3;
 commit2.parents = null;
-body = FetchPack.postBody([index], store, wants, have);
+body = FetchPack.postBody([index], table, wants, have);
 log(commit2.parents.length);
 //=> 1
 log(pretty(body));

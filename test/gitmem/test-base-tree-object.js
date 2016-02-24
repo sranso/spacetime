@@ -2,8 +2,8 @@
 require('../helper');
 
 var random = Random.create(29923321);
-var store = Store.create(random);
-global.$Store = store;
+var table = HashTable.create(random);
+global.$HashTable = table;
 
 var Thing = {};
 
@@ -51,7 +51,7 @@ Thing.set = function (original, prop, value) {
     thing.hash = new Uint8Array(20);
     Sha1.hash(thing.file, thing.hash, 0);
 
-    return Store.save($Store, thing);
+    return HashTable.save($HashTable, thing);
 };
 
 Thing.setAll = function (original, modifications) {
@@ -64,7 +64,7 @@ Thing.setAll = function (original, modifications) {
     thing.hash = new Uint8Array(20);
     Sha1.hash(thing.file, thing.hash, 0);
 
-    return Store.save($Store, thing);
+    return HashTable.save($HashTable, thing);
 };
 
 var object1 = {
@@ -74,7 +74,7 @@ var object1 = {
     hashOffset: 0,
 };
 Sha1.hash(object1.file, object1.hash, 0);
-Store.save(store, object1);
+HashTable.save(table, object1);
 
 var thing1 = Thing.setAll(Thing.none, {
     string: 'foo',
@@ -89,7 +89,7 @@ log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 log(GitConvert.hashToString(thing1.file, Thing.offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-var gotString = Store.get(store, thing1.file, Thing.offsets.string).data;
+var gotString = HashTable.get(table, thing1.file, Thing.offsets.string).data;
 log(gotString, typeof gotString);
 //=> foo string
 
@@ -100,14 +100,14 @@ log(thing2.number);
 var numberBlob = Value.blobFromNumber(42);
 var numberHash = new Uint8Array(20);
 Sha1.hash(numberBlob, numberHash, 0);
-var gotNumber = Store.get(store, numberHash, 0).data;
+var gotNumber = HashTable.get(table, numberHash, 0).data;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
-var gotBool = Store.get(store, thing1.file, Thing.offsets.bool).data;
+var gotBool = HashTable.get(table, thing1.file, Thing.offsets.bool).data;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'
 
-var gotObject = Store.get(store, thing1.file, Thing.offsets.object);
+var gotObject = HashTable.get(table, thing1.file, Thing.offsets.object);
 log(gotObject.bar);
 //=> bar

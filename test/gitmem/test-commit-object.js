@@ -50,15 +50,15 @@ log(hex(secondCommit.hash));
 var pack = Pack.create([secondCommit.file, commit.file, tree, fooBlob]);
 var index = PackIndex.create(pack);
 var random = Random.create(2524766);
-var store = Store.create(random);
+var table = HashTable.create(random);
 
-var gotSecondCommit = CommitObject.checkout([index], store, secondCommit.hash, 0);
+var gotSecondCommit = CommitObject.checkout([index], table, secondCommit.hash, 0);
 log(hex(gotSecondCommit.hash));
 //=> 0840832364159f7fac3419a336375ce0e54b1ec2
 log(gotSecondCommit.author.name, gotSecondCommit.committer.email);
 //=> snakes jake@jakesandlund.com
 
-CommitObject.checkoutParents(gotSecondCommit, [index], store);
+CommitObject.checkoutParents(gotSecondCommit, [index], table);
 var gotCommit = gotSecondCommit.parents[0];
 log(hex(gotCommit.hash));
 //=> b9b5c2bc0c5b434d250c282ca4178429354ddea5
@@ -67,6 +67,6 @@ log(gotCommit.author.name, gotCommit.committer.time);
 
 log(gotCommit.parents);
 //=> null
-CommitObject.checkoutParents(gotCommit, [index], store);
+CommitObject.checkoutParents(gotCommit, [index], table);
 log(gotCommit.parents);
 //=> []

@@ -69,41 +69,41 @@ log(hex(commitHash));
 var pack = Pack.create([commit, tree, stringBlob, numberBlob, trueBlob]);
 var index = PackIndex.create(pack);
 var random = Random.create(1777288)
-var store = Store.create(random);
+var table = HashTable.create(random);
 
-var gotString = Value.checkoutString([index], store, tree, offsets.string);
+var gotString = Value.checkoutString([index], table, tree, offsets.string);
 log(gotString);
 //=> foo
 
-var gotStringAgain = Value.checkoutString([index], store, tree, offsets.string);
+var gotStringAgain = Value.checkoutString([index], table, tree, offsets.string);
 log(gotStringAgain);
 //=> foo
 
-var savedString = Store.get(store, tree, offsets.string).data;
+var savedString = HashTable.get(table, tree, offsets.string).data;
 log(savedString);
 //=> foo
 
 var bar = Value.blobFromString('bar');
 var barHash = new Uint8Array(20);
 Sha1.hash(bar, barHash, 0);
-Store.save(store, Value.createBlobObject('bar', bar, barHash, 0));
+HashTable.save(table, Value.createBlobObject('bar', bar, barHash, 0));
 
-var gotBar = Value.checkoutString([index], store, barHash, 0);
+var gotBar = Value.checkoutString([index], table, barHash, 0);
 log(gotBar);
 //=> bar
 
-var gotNumber = Value.checkoutNumber([index], store, tree, offsets.number);
+var gotNumber = Value.checkoutNumber([index], table, tree, offsets.number);
 log(gotNumber, typeof gotNumber);
 //=> 375.2 'number'
 
-var savedNumber = Store.get(store, tree, offsets.number).data;
+var savedNumber = HashTable.get(table, tree, offsets.number).data;
 log(savedNumber, typeof savedNumber);
 //=> 375.2 'number'
 
-var gotBool = Value.checkoutBoolean([index], store, tree, offsets.bool);
+var gotBool = Value.checkoutBoolean([index], table, tree, offsets.bool);
 log(gotBool, typeof gotBool);
 //=> true 'boolean'
 
-var savedBool = Store.get(store, tree, offsets.bool).data;
+var savedBool = HashTable.get(table, tree, offsets.bool).data;
 log(savedBool, typeof savedBool);
 //=> true 'boolean'

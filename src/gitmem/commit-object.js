@@ -34,8 +34,8 @@ CommitObject.none = CommitObject.clone({
     hashOffset: 0,
 });
 
-CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
-    var commit = Store.get(store, hash, hashOffset);
+CommitObject.checkout = function (packIndices, table, hash, hashOffset) {
+    var commit = HashTable.get(table, hash, hashOffset);
     if (commit) {
         return commit;
     }
@@ -47,7 +47,7 @@ CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
     commit.file = file;
     commit.hash = hash;
     commit.hashOffset = hashOffset;
-    Store.save(store, commit);
+    HashTable.save(table, commit);
 
     commit.author = CommitFile.parseAuthor(file);
     commit.committer = CommitFile.parseAuthor(file);
@@ -56,18 +56,18 @@ CommitObject.checkout = function (packIndices, store, hash, hashOffset) {
     return commit;
 };
 
-CommitObject.checkoutTree = function (commit, packIndices, store) {
+CommitObject.checkoutTree = function (commit, packIndices, table) {
     var treeHash = CommitFile.parseTree(commit.file);
-    commit.tree = Project.checkout(packIndices, store, treeHash, 0);
+    commit.tree = Project.checkout(packIndices, table, treeHash, 0);
 };
 
-CommitObject.checkoutParents = function (commit, packIndices, store) {
+CommitObject.checkoutParents = function (commit, packIndices, table) {
     var parentHashes = CommitFile.parseParents(commit.file);
     commit.parents = [];
     var i;
 
     for (i = 0; i < parentHashes.length; i++) {
-        commit.parents[i] = CommitObject.checkout(packIndices, store, parentHashes[i], 0);
+        commit.parents[i] = CommitObject.checkout(packIndices, table, parentHashes[i], 0);
     }
 };
 
