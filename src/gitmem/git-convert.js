@@ -4,19 +4,18 @@ global.GitConvert = {};
 
 GitConvert.stringToArray = function (string) {
     var array = new Uint8Array(string.length);
-    for (var i = 0; i < string.length; i++) {
+    var i;
+    for (i = 0; i < string.length; i++) {
         array[i] = string.charCodeAt(i);
     }
     return array;
 };
 
-GitConvert.stringToHeap = function (heap, string) {
-    var offset = heap.nextOffset;
+GitConvert.stringToExistingArray = function (array, offset, string) {
     var i;
     for (i = 0; i < string.length; i++) {
-        heap.array[offset + i] = string.charCodeAt(i);
+        array[offset + i] = string.charCodeAt(i);
     }
-    heap.nextOffset += i;
     return offset;
 };
 
