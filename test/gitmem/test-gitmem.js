@@ -6,6 +6,7 @@ Gitmem._randomSeed = function () {
     return 1;
 };
 
+Gitmem.initialize();
 var gitmem = Gitmem.create();
 Gitmem.load(gitmem);
 Gitmem._randomSeed = oldSeedFunction;

@@ -2,6 +2,11 @@
 global.Gitmem = {};
 (function () {
 
+Gitmem.initialize = function () {
+    Blob.initialize();
+    Tree.initialize();
+};
+
 Gitmem.create = function () {
     var random = Random.create(Gitmem._randomSeed());
 

@@ -9,7 +9,7 @@ var actuallyEmptyTree = GitConvert.stringToArray('tree 0\0');
 Tree._actuallyEmptyTree = actuallyEmptyTree;
 Tree._actuallyEmptyTreeHash = new Uint8Array(20);
 
-var buildEmpty = function () {
+Tree.initialize = function () {
     var emptyTreeFileInfo = GitConvert.stringToArray('100644 .empty\0');
     var emptyTreeLength = emptyTreeFileInfo.length + 20;
     var emptyTreePrefix = GitConvert.stringToArray('tree ' + emptyTreeLength + '\0');
@@ -182,7 +182,5 @@ Tree.addProperty = function (oldFile, offsets, insertName, type) {
 
     return file;
 };
-
-buildEmpty();
 
 })();

@@ -2,6 +2,15 @@
 global.Blob = {};
 (function () {
 
+Blob.emptyBlob = null;
+Blob.emptyBlobHash = null;
+
+Blob.initialize = function () {
+    Blob.emptyBlob = Blob.createFromString('');
+    Blob.emptyBlobHash = new Uint8Array(20);
+    Sha1.hash(Blob.emptyBlob, Blob.emptyBlobHash, 0);
+};
+
 var blobPrefix = GitConvert.stringToArray('blob ');
 
 Blob.createFromString = function (string) {
