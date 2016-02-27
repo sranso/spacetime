@@ -10,10 +10,20 @@ GitConvert.stringToArray = function (string) {
     return array;
 };
 
-GitConvert.hashToString = function (hash, offset) {
+GitConvert.stringToHeap = function (heap, string) {
+    var offset = heap.nextOffset;
+    var i;
+    for (i = 0; i < string.length; i++) {
+        heap.array[offset + i] = string.charCodeAt(i);
+    }
+    heap.nextOffset += i;
+    return offset;
+};
+
+GitConvert.hashToString = function (hashArray, hashOffset) {
     var str = [];
     for (var i = 0; i < 20; i++) {
-        var hex = '00' + hash[offset + i].toString(16);
+        var hex = '00' + hashArray[hashOffset + i].toString(16);
         str.push(hex.slice(-2));
     }
     return str.join('');
@@ -21,12 +31,12 @@ GitConvert.hashToString = function (hash, offset) {
 
 var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
 
-GitConvert.hashToHex = function (hash, hashOffset, hex, hexOffset) {
+GitConvert.hashToHex = function (hashArray, hashOffset, hexArray, hexOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
-        var h = hash[hashOffset + i / 2];
-        hex[hexOffset + i] = hexCharacters[h >>> 4];
-        hex[hexOffset + i + 1] = hexCharacters[h & 0xf];
+        var h = hashArray[hashOffset + i / 2];
+        hexArray[hexOffset + i] = hexCharacters[h >>> 4];
+        hexArray[hexOffset + i + 1] = hexCharacters[h & 0xf];
     }
 };
 
@@ -65,36 +75,39 @@ var hexTable = new Uint8Array([
     -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0,  // f8-ff
 ]);
 
-GitConvert.hexToHash = function (hex, hexOffset, hash, hashOffset) {
+GitConvert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
-        hash[hashOffset + i / 2] = (hexTable[hex[hexOffset + i]] << 4) | hexTable[hex[hexOffset + i + 1]];
+        hashArray[hashOffset + i / 2] = (
+            (hexTable[hexArray[hexOffset + i]] << 4) |
+            hexTable[hexArray[hexOffset + i + 1]]
+        );
     }
 };
 
-GitConvert.pktLineLength = function (packet, offset) {
+GitConvert.pktLineLength = function (pktArray, pktOffset) {
     return (
-        (hexTable[packet[offset]] << 12) |
-        (hexTable[packet[offset + 1]] << 8) |
-        (hexTable[packet[offset + 2]] << 4) |
-        hexTable[packet[offset + 3]]
+        (hexTable[pktArray[pktOffset]] << 12) |
+        (hexTable[pktArray[pktOffset + 1]] << 8) |
+        (hexTable[pktArray[pktOffset + 2]] << 4) |
+        hexTable[pktArray[pktOffset + 3]]
     );
 };
 
-GitConvert.hashEqual = function (hash1, offset1, hash2, offset2) {
+GitConvert.hashEqual = function (array1, offset1, array2, offset2) {
     var i;
     for (i = 0; i < 20; i++) {
-        if (hash1[offset1 + i] !== hash2[offset2 + i]) {
+        if (array1[offset1 + i] !== array2[offset2 + i]) {
             return false;
         }
     }
     return true;
 };
 
-GitConvert.setHash = function (file, offset, hash, hashOffset) {
+GitConvert.setHash = function (targetArray, targetOffset, sourceArray, sourceOffset) {
     var i;
     for (i = 0; i < 20; i++) {
-        file[offset + i] = hash[hashOffset + i];
+        targetArray[targetOffset + i] = sourceArray[sourceOffset + i];
     }
 };
 
