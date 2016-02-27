@@ -2,11 +2,11 @@
 global.Ui = {};
 (function () {
 
-Ui.setup = function () {
-    Keyboard.setup();
-    Webgl.setup();
-    PlayUi.setup();
-    drawOverallSetup();
+Ui.initialize = function () {
+    Keyboard.initialize();
+    Webgl.initialize();
+    PlayUi.initialize();
+    initializeOverallUi();
 };
 
 Ui.draw = function () {
@@ -28,7 +28,7 @@ Ui.draw = function () {
     __stats.draw_time = performance.now() - __stats.draw_time;
 };
 
-var drawOverallSetup = function () {
+var initializeOverallUi = function () {
     d3.select(document)
         .on('keydown', function () { Keyboard.inputEvent(Keyboard.keyForEvent(), 'down') })
         .on('keyup', function () { Keyboard.inputEvent(Keyboard.keyForEvent(), 'up') })

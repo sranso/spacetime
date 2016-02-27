@@ -26,7 +26,7 @@ var resultPixelHeightRatio = 20 - 1;
 
 var webgl;
 
-Webgl.setup = function () {
+Webgl.initialize = function () {
     glMatrix.setMatrixArrayType = Float32Array;
 
     webgl = createWebgl();
@@ -40,7 +40,7 @@ Webgl.setup = function () {
         return;
     }
 
-    webgl.program = setupShaderProgram(gl, 'vertex-shader', 'fragment-shader');
+    webgl.program = initializeShaderProgram(gl, 'vertex-shader', 'fragment-shader');
     gl.useProgram(webgl.program);
 
     webgl.positionIndices = new Uint16Array(600000);
@@ -70,7 +70,7 @@ Webgl.setup = function () {
     gl.vertexAttribPointer(webgl.positionLocation, 2, gl.FLOAT, false, 0, 0);
 };
 
-var setupShaderProgram = function (gl, vertexId, fragmentId) {
+var initializeShaderProgram = function (gl, vertexId, fragmentId) {
     var vertexShader = createShader(gl, vertexId);
     var fragmentShader = createShader(gl, fragmentId);
 

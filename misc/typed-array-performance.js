@@ -7,7 +7,7 @@
 
 var a;
 
-var setupA = function () {
+var initializeA = function () {
     a = new Uint8Array(1200);
     var i;
     var j = 900;
@@ -16,7 +16,7 @@ var setupA = function () {
     }
 };
 
-setupA();
+initializeA();
 
 console.time('copyWithin');
 var n;
@@ -25,7 +25,7 @@ for (n = 0; n < 500000; n++) {
 }
 console.timeEnd('copyWithin');
 
-setupA();
+initializeA();
 
 console.time('loop');
 var n;
@@ -40,7 +40,7 @@ for (n = 0; n < 500000; n++) {
 }
 console.timeEnd('loop');
 
-setupA();
+initializeA();
 a.nextOffset = 300;
 
 console.time('loopDirtyType');
@@ -56,7 +56,7 @@ for (n = 0; n < 500000; n++) {
 }
 console.timeEnd('loopDirtyType');
 
-setupA();
+initializeA();
 
 var object = {a: a};
 

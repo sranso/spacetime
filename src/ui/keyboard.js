@@ -173,15 +173,15 @@ var keypressMap;
 
 Keyboard.dvorak = function () {
     localStorage.setItem('spacetime_keyboard_mode', 'dvorak');
-    Keyboard.setup();
+    Keyboard.initialize();
 };
 
 Keyboard.qwerty = function () {
     localStorage.setItem('spacetime_keyboard_mode', 'qwerty');
-    Keyboard.setup();
+    Keyboard.initialize();
 };
 
-Keyboard.setup = function () {
+Keyboard.initialize = function () {
     if (localStorage.getItem('spacetime_keyboard_mode') === 'dvorak') {
         keypressMap = dvorakKeypressMap;
     } else {

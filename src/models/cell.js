@@ -31,7 +31,7 @@ Cell.create = function () {
 
 Cell.noHistory = [];
 
-var setupAutoArgs = function () {
+var createAutoArgs = function () {
     var autoArgs = [];
     for (var numArgs = 0; numArgs < 20; numArgs++) {
         var args = [];
@@ -45,7 +45,7 @@ var setupAutoArgs = function () {
     return autoArgs;
 };
 
-Cell.autoArgs = setupAutoArgs();
+Cell.autoArgs = createAutoArgs();
 
 Cell.noArgs = Cell.autoArgs[0];
 
@@ -158,8 +158,8 @@ Cell.numFrames = function (cell) {
     return endFrame - cell.startFrame + 1;
 };
 
-// TODO: deepCopy is a bad replacement for `build` functions that setup
-// a cell of a certain transformation type properly.
+// TODO: deepCopy is a bad replacement for `build` functions that set
+// up a cell of a certain transformation type properly.
 Cell.deepCopy = function (original) {
     var cell = Cell.create();
     cell.group = original.group;

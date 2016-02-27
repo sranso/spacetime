@@ -29,7 +29,7 @@ var logStats = function () {
     );
 };
 
-Main.setup = function () {
+Main.initialize = function () {
     var gitmem = Gitmem.create();
     Gitmem.load(gitmem);
 
@@ -38,7 +38,7 @@ Main.setup = function () {
 
     Global.boxInSight = Do.boxInSight(0, 0);
 
-    Ui.setup();
+    Ui.initialize();
 
     console.log(
         'trans ' +

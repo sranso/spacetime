@@ -2,7 +2,7 @@
 global.PlayUi = {};
 (function () {
 
-PlayUi.setup = function () {
+PlayUi.initialize = function () {
     d3.select('#play-bar')
         .on('mousedown', function () {
             Global.mouseDownOnPlayBar = true;
