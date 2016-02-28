@@ -2,17 +2,17 @@
 global.Blob = {};
 (function () {
 
-Blob.emptyBegin = -1;
+Blob.emptyStart = -1;
 Blob.emptyEnd = -1;
 Blob.emptyHashOffset = -1;
 
 Blob.initialize = function () {
     var emptyBlobRange = Blob.createFromString('');
-    Blob.emptyBegin = emptyBlobRange[0];
+    Blob.emptyStart = emptyBlobRange[0];
     Blob.emptyEnd = emptyBlobRange[1];
     Blob.emptyHashOffset = $Heap.nextOffset;
     $Heap.nextOffset += 20;
-    Sha1.hash($, Blob.emptyBegin, Blob.emptyEnd, Blob.emptyHashOffset);
+    Sha1.hash($, Blob.emptyStart, Blob.emptyEnd, Blob.emptyHashOffset);
 };
 
 var blobPrefix = GitConvert.stringToArray('blob ');
@@ -23,10 +23,10 @@ Blob.createFromString = function (string) {
     if ($Heap.nextOffset + blobLength > $Heap.capacity) {
         FileSystem.resizeHeap($FileSystem, blobLength);
     }
-    var blobBegin = $Heap.nextOffset;
+    var blobStart = $Heap.nextOffset;
     $Heap.nextOffset += blobLength;
 
-    var blobj = blobBegin;
+    var blobj = blobStart;
     var i;
     for (i = 0; i < blobPrefix.length; i++) {
         $[blobj + i] = blobPrefix[i];
@@ -43,11 +43,11 @@ Blob.createFromString = function (string) {
         $[blobj + i] = string.charCodeAt(i);
     }
 
-    return [blobBegin, blobBegin + blobLength];
+    return [blobStart, blobStart + blobLength];
 };
 
-Blob.contentBegin = function (blobBegin) {
-    return $.indexOf(0, blobBegin + 6) + 1;
+Blob.contentStart = function (blobStart) {
+    return $.indexOf(0, blobStart + 6) + 1;
 };
 
 })();

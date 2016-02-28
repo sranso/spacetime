@@ -117,7 +117,7 @@ var clamp = function (d, length) {
     }
 };
 
-var ignoreKeys = ['fileBegin', 'fileEnd', 'hashOffset'];
+var ignoreKeys = ['fileStart', 'fileEnd', 'hashOffset'];
 
 var prettyPrintObject = function (object) {
     var data;

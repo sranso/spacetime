@@ -5,22 +5,22 @@ global.$Heap = Heap.create(512);
 global.$ = $Heap.array;
 
 var blobRange = Blob.createFromString('foo');
-var blobBegin = blobRange[0];
+var blobStart = blobRange[0];
 var blobEnd = blobRange[1];
-log(blobRange, blobBegin, blobEnd);
+log(blobRange, blobStart, blobEnd);
 //=> [ 0, 10 ] 0 10
-log(pretty(blobBegin, blobEnd));
+log(pretty(blobStart, blobEnd));
 //=> blob 3\x00foo
-var contentBegin = Blob.contentBegin(blobBegin);
+var contentStart = Blob.contentStart(blobStart);
 //=> 7
-log(GitConvert.arraySliceToString($, contentBegin, blobEnd));
+log(GitConvert.arraySliceToString($, contentStart, blobEnd));
 //=> foo
 
 
 Blob.initialize();
-log(Blob.emptyBegin, Blob.emptyEnd);
+log(Blob.emptyStart, Blob.emptyEnd);
 //=> 10 17
-log(pretty(Blob.emptyBegin, Blob.emptyEnd));
+log(pretty(Blob.emptyStart, Blob.emptyEnd));
 //=> blob 0\x00
 log(Blob.emptyHashOffset);
 //=> 17

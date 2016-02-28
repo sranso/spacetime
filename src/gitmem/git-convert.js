@@ -19,8 +19,8 @@ GitConvert.stringToExistingArray = function (array, offset, string) {
     return offset;
 };
 
-GitConvert.arraySliceToString = function (array, begin, end) {
-    var subarray = array.subarray(begin, end);
+GitConvert.arraySliceToString = function (array, start, end) {
+    var subarray = array.subarray(start, end);
     return String.fromCharCode.apply(null, subarray);
 };
 

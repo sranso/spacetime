@@ -10,12 +10,12 @@ var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 
 var H0, H1, H2, H3, H4;
 
-Sha1.hash = function (array, M_begin, M_end, H_offset) {
+Sha1.hash = function (array, M_start, M_end, H_offset) {
     if (!(array instanceof Uint8Array)) {
         throw new Error('array is not a Uint8Array');
     }
-    if (typeof M_begin !== 'number') {
-        throw new Error('M_begin is not a number');
+    if (typeof M_start !== 'number') {
+        throw new Error('M_start is not a number');
     }
     if (typeof M_end !== 'number') {
         throw new Error('M_end is not a number');
@@ -24,7 +24,7 @@ Sha1.hash = function (array, M_begin, M_end, H_offset) {
         throw new Error('H_offset is not a number');
     }
 
-    var beginByte;
+    var startByte;
 
     // Set initial hash value [5.3.1]
     H0 = 0x67452301 | 0;
@@ -33,12 +33,12 @@ Sha1.hash = function (array, M_begin, M_end, H_offset) {
     H3 = 0x10325476 | 0;
     H4 = 0xc3d2e1f0 | 0;
 
-    var M_length = M_end - M_begin;
+    var M_length = M_end - M_start;
     var lastBlockBytes = M_length % 64;
     var fullBlockEnd = M_end - lastBlockBytes;
     var i;
-    for (beginByte = M_begin; beginByte < fullBlockEnd; beginByte += 64) {
-        convertBuffer(array, W8, W, beginByte, 64);
+    for (startByte = M_start; startByte < fullBlockEnd; startByte += 64) {
+        convertBuffer(array, W8, W, startByte, 64);
         hashBlock(W);
     }
 
@@ -46,7 +46,7 @@ Sha1.hash = function (array, M_begin, M_end, H_offset) {
     for (i = 0; i < 16; i++) {
         W[i] = 0;
     }
-    convertBuffer(array, W8, W, beginByte, lastBlockBytes);
+    convertBuffer(array, W8, W, startByte, lastBlockBytes);
 
     // Pad the message with a "one" bit [5.1.1]
     var lastWordBytes = lastBlockBytes % 4;

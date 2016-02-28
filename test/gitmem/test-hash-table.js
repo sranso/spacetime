@@ -79,7 +79,7 @@ log(hash(103));
 var object = {
     foo: true,
     bar: 'buzz',
-    fileBegin: 100,
+    fileStart: 100,
     fileEnd: 103,
     hashOffset: searchHashOffset,
 };
