@@ -25,3 +25,16 @@ global.hex = function (array) {
     }
     return hex.join('');
 };
+
+global.hash = function ($, hashOffset) {
+    if (arguments.length === 1) {
+        hashOffset = $;
+        $ = global.$;
+    } else if (!($ instanceof Uint8Array)) {
+        throw new Error('type must be Uint8Array');
+    }
+    if (typeof hashOffset !== 'number') {
+        throw new Error('type must be number');
+    }
+    return hex($.subarray(hashOffset, hashOffset + 20));
+};
