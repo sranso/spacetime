@@ -42,170 +42,174 @@ CommitFile.createFromObject = function (commit) {
     length += message.length;
 
     var lengthString = '' + length;
-    var file = new Uint8Array(commitPrefix.length + lengthString.length + 1 + length);
+    var commitLength = commitPrefix.length + lengthString.length + 1 + length;
+    if ($Heap.nextOffset + commitLength > $Heap.capacity) {
+        FileSystem.resizeHeap($FileSystem, commitLength);
+    }
+    var commitStart = $Heap.nextOffset;
+    var commitEnd = commitStart + commitLength;
+    $Heap.nextOffset = commitEnd;
 
+    var commit_j = commitStart;
     var i;
     for (i = 0; i < commitPrefix.length; i++) {
-        file[i] = commitPrefix[i];
+        $[commit_j + i] = commitPrefix[i];
     }
 
-    var j = i;
+    commit_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        file[j + i] = lengthString.charCodeAt(i);
+        $[commit_j + i] = lengthString.charCodeAt(i);
     }
-    file[j + i] = 0;
+    $[commit_j + i] = 0;
 
-    j += i + 1;
+    commit_j += i + 1;
     for (i = 0; i < treePrefix.length; i++) {
-        file[j + i] = treePrefix[i];
+        $[commit_j + i] = treePrefix[i];
     }
 
-    j += i;
-    GitConvert.hashToHex(commit.tree.hash, commit.tree.hashOffset, file, j);
-    file[j + 40] = 0x0a;
+    commit_j += i;
+    GitConvert.hashToHex($, commit.tree.hashOffset, $, commit_j);
+    $[commit_j + 40] = 0x0a;
 
     var p, parentCommit;
     for (p = 0; p < commit.parents.length; p++) {
-        j += 40 + 1;
+        commit_j += 40 + 1;
         for (i = 0; i < parentPrefix.length; i++) {
-            file[j + i] = parentPrefix[i];
+            $[commit_j + i] = parentPrefix[i];
         }
 
-        j += i;
+        commit_j += i;
         parentCommit = commit.parents[p];
-        GitConvert.hashToHex(parentCommit.hash, parentCommit.hashOffset, file, j);
-        file[j + 40] = 0x0a;
+        GitConvert.hashToHex($, parentCommit.hashOffset, $, commit_j);
+        $[commit_j + 40] = 0x0a;
     }
 
     // author
-    j += 40 + 1;
+    commit_j += 40 + 1;
     for (i = 0; i < authorPrefix.length; i++) {
-        file[j + i] = authorPrefix[i];
+        $[commit_j + i] = authorPrefix[i];
     }
 
-    j += i;
+    commit_j += i;
     for (i = 0; i < authorName.length; i++) {
-        file[j + i] = authorName.charCodeAt(i);
+        $[commit_j + i] = authorName.charCodeAt(i);
     }
-    file[j + i] = 0x20;
-    file[j + i + 1] = '<'.charCodeAt(0);
+    $[commit_j + i] = 0x20;
+    $[commit_j + i + 1] = '<'.charCodeAt(0);
 
-    j += i + 2;
+    commit_j += i + 2;
     for (i = 0; i < authorEmail.length; i++) {
-        file[j + i] = authorEmail.charCodeAt(i);
+        $[commit_j + i] = authorEmail.charCodeAt(i);
     }
-    file[j + i] = '>'.charCodeAt(0);
-    file[j + i + 1] = 0x20;
+    $[commit_j + i] = '>'.charCodeAt(0);
+    $[commit_j + i + 1] = 0x20;
 
-    j += i + 2;
+    commit_j += i + 2;
     for (i = 0; i < timeAuthored.length; i++) {
-        file[j + i] = timeAuthored.charCodeAt(i);
+        $[commit_j + i] = timeAuthored.charCodeAt(i);
     }
-    file[j + i] = 0x20;
+    $[commit_j + i] = 0x20;
 
-    j += i + 1;
+    commit_j += i + 1;
     for (i = 0; i < timezoneAuthored.length; i++) {
-        file[j + i] = timezoneAuthored.charCodeAt(i);
+        $[commit_j + i] = timezoneAuthored.charCodeAt(i);
     }
-    file[j + i] = 0x0a;
+    $[commit_j + i] = 0x0a;
 
     // committer
-    j += i + 1;
+    commit_j += i + 1;
     for (i = 0; i < committerPrefix.length; i++) {
-        file[j + i] = committerPrefix[i];
+        $[commit_j + i] = committerPrefix[i];
     }
 
-    j += i;
+    commit_j += i;
     for (i = 0; i < committerName.length; i++) {
-        file[j + i] = committerName.charCodeAt(i);
+        $[commit_j + i] = committerName.charCodeAt(i);
     }
-    file[j + i] = 0x20;
-    file[j + i + 1] = '<'.charCodeAt(0);
+    $[commit_j + i] = 0x20;
+    $[commit_j + i + 1] = '<'.charCodeAt(0);
 
-    j += i + 2;
+    commit_j += i + 2;
     for (i = 0; i < committerEmail.length; i++) {
-        file[j + i] = committerEmail.charCodeAt(i);
+        $[commit_j + i] = committerEmail.charCodeAt(i);
     }
-    file[j + i] = '>'.charCodeAt(0);
-    file[j + i + 1] = 0x20;
+    $[commit_j + i] = '>'.charCodeAt(0);
+    $[commit_j + i + 1] = 0x20;
 
-    j += i + 2;
+    commit_j += i + 2;
     for (i = 0; i < timeCommited.length; i++) {
-        file[j + i] = timeCommited.charCodeAt(i);
+        $[commit_j + i] = timeCommited.charCodeAt(i);
     }
-    file[j + i] = 0x20;
+    $[commit_j + i] = 0x20;
 
-    j += i + 1;
+    commit_j += i + 1;
     for (i = 0; i < timezoneCommited.length; i++) {
-        file[j + i] = timezoneCommited.charCodeAt(i);
+        $[commit_j + i] = timezoneCommited.charCodeAt(i);
     }
-    file[j + i] = 0x0a;
-    file[j + i + 1] = 0x0a;
+    $[commit_j + i] = 0x0a;
+    $[commit_j + i + 1] = 0x0a;
 
-    j += i + 2;
+    commit_j += i + 2;
     for (i = 0; i < message.length; i++) {
-        file[j + i] = message.charCodeAt(i);
+        $[commit_j + i] = message.charCodeAt(i);
     }
 
-    return file;
+    return [commitStart, commitEnd];
 };
 
-CommitFile.parseTree = function (file) {
-    var hash = new Uint8Array(20);
-    var hexOffset = file.indexOf(0, 7) + 1 + treePrefix.length;
-    GitConvert.hexToHash(file, hexOffset, hash, 0);
-    return hash;
+CommitFile.parseTree = function (commitStart, commitEnd, hashOffset) {
+    var hexOffset = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
+    GitConvert.hexToHash($, hexOffset, $, hashOffset);
 };
 
-CommitFile.parseParents = function (file) {
-    var hashes = [];
-    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
-    while (file[j] === parentPrefix[0]) {
-        var hash = new Uint8Array(20);
-
+CommitFile.parseParents = function (commitStart, commitEnd, hashesOffset) {
+    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+    var n = 0;
+    while ($[j] === parentPrefix[0]) {
         j += parentPrefix.length;
-        GitConvert.hexToHash(file, j, hash, 0);
-        hashes.push(hash);
+        GitConvert.hexToHash($, j, $, hashesOffset);
         j += 40 + 1;
+        hashesOffset += 20;
+        n++;
     }
 
-    return hashes;
+    return n;
 };
 
-CommitFile.parseAuthor = function (file) {
-    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
-    while (file[j] === parentPrefix[0]) {
+CommitFile.parseAuthor = function (commitStart, commitEnd) {
+    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+    while ($[j] === parentPrefix[0]) {
         j += parentPrefix.length + 40 + 1;
     }
 
     j += authorPrefix.length;
-    return parseAuthorOrCommitter(file, j);
+    return parseAuthorOrCommitter(j);
 };
 
-CommitFile.parseCommitter = function (file) {
-    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
-    while (file[j] === parentPrefix[0]) {
+CommitFile.parseCommitter = function (commitStart, commitEnd) {
+    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+    while ($[j] === parentPrefix[0]) {
         j += parentPrefix.length + 40 + 1;
     }
 
-    j = file.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
+    j = $.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
     j += 1 + committerPrefix.length;
-    return parseAuthorOrCommitter(file, j);
+    return parseAuthorOrCommitter(j);
 };
 
-var parseAuthorOrCommitter = function (file, nameStart) {
-    var lessThanOffset = file.indexOf('<'.charCodeAt(0), nameStart);
-    var nameArray = file.subarray(nameStart, lessThanOffset - 1);
+var parseAuthorOrCommitter = function (nameStart) {
+    var lessThanOffset = $.indexOf('<'.charCodeAt(0), nameStart);
+    var nameArray = $.subarray(nameStart, lessThanOffset - 1);
     var name = String.fromCharCode.apply(null, nameArray);
 
-    var greaterThanOffset = file.indexOf('>'.charCodeAt(0), lessThanOffset);
-    var emailArray = file.subarray(lessThanOffset + 1, greaterThanOffset);
+    var greaterThanOffset = $.indexOf('>'.charCodeAt(0), lessThanOffset);
+    var emailArray = $.subarray(lessThanOffset + 1, greaterThanOffset);
     var email = String.fromCharCode.apply(null, emailArray);
 
-    var spaceOffset = file.indexOf(0x20, greaterThanOffset + 10);
-    var secondsArray = file.subarray(greaterThanOffset + 2, spaceOffset);
+    var spaceOffset = $.indexOf(0x20, greaterThanOffset + 10);
+    var secondsArray = $.subarray(greaterThanOffset + 2, spaceOffset);
     var seconds = String.fromCharCode.apply(null, secondsArray);
-    var timezoneArray = file.subarray(spaceOffset + 1, spaceOffset + 6);
+    var timezoneArray = $.subarray(spaceOffset + 1, spaceOffset + 6);
     var timezone = String.fromCharCode.apply(null, timezoneArray);
 
     var sign = timezone[0] === '+' ? -1 : +1;
@@ -220,15 +224,15 @@ var parseAuthorOrCommitter = function (file, nameStart) {
     };
 };
 
-CommitFile.parseMessage = function (file) {
-    var j = file.indexOf(0, 7) + 1 + treePrefix.length + 40 + 1;
-    while (file[j] === parentPrefix[0]) {
+CommitFile.parseMessage = function (commitStart, commitEnd) {
+    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+    while ($[j] === parentPrefix[0]) {
         j += parentPrefix.length + 40 + 1;
     }
 
-    j = file.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
-    j = file.indexOf(0x0a, j + 29);  // 29 is < min bytes for committer
-    return String.fromCharCode.apply(null, file.subarray(j + 2));
+    j = $.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
+    j = $.indexOf(0x0a, j + 29);  // 29 is < min bytes for committer
+    return String.fromCharCode.apply(null, $.subarray(j + 2, commitEnd));
 };
 
 })();
