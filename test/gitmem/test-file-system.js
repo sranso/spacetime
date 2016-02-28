@@ -20,7 +20,7 @@ log(system.heap.capacity, system.heap.array.length);
 
 GitConvert.stringToExistingArray(system.heap.array, 200, 'foo bar');
 system.heap.nextOffset = 203;
-FileSystem.resizeHeap(system, 600);
+FileSystem.resizeHeap(system, 1000);
 log(system.heap.capacity);
 //=> 2048
 log(pretty(system.heap.array.subarray(199, 207)));

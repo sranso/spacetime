@@ -25,9 +25,9 @@ FileSystem.create = function (hashTableN, filesCapacity, random) {
 
 // TODO: This should compact heap (remove old files), and maybe
 // resize the hashTable if it is close to needing it.
-FileSystem.resizeHeap = function (system, neededExtraCapacity) {
+FileSystem.resizeHeap = function (system, mallocSize) {
     var capacity = system.heap.capacity;
-    var minimumCapacity = capacity + neededExtraCapacity;
+    var minimumCapacity = system.heap.nextOffset + mallocSize;
     capacity *= 2;
     while (capacity < minimumCapacity) {
         capacity *= 2;
