@@ -2,75 +2,111 @@
 global.HashTable = {};
 (function () {
 
-HashTable.create = function (random) {
-    var table = {
-        hashBitsToShift: 32,
-        objects: [[]],
+HashTable.create = function (n, heap, random) {
+    var hashesSize = 64 * Math.ceil(n / 3);
+    var hashesOffset = 64 * Math.ceil(heap.nextOffset / 64);
+    heap.nextOffset = hashesOffset + hashesSize;
+
+    var objects = new Array(n);
+    var i;
+    for (i = 0; i < n; i++) {
+        objects[i] = null;
+    }
+
+    return {
+        hashesOffset: hashesOffset,
+        objects: objects,
+        n: n,
         load: 0,
+        hashBitsToShift: 32 - GitConvert.log2PowerOf2(n),
         a: Random.uint32(random) | 1,
     };
-
-    while (table.objects.length < 4) {
-        resizeObjects(table);
-    }
-
-    return table;
 };
 
-var resizeObjects = function (table) {
-    table.hashBitsToShift -= 1;
-    var newHashTable = new Array(table.objects.length * 2);
+HashTable.findHashOffset = function (table, searchHashOffset) {
+    var h1 = Math.imul(table.a,
+        ($[searchHashOffset] << 24) |
+        ($[searchHashOffset + 1] << 16) |
+        ($[searchHashOffset + 2] << 8) |
+        $[searchHashOffset + 3]
+    );
+    var h2 = 1 | (
+        ($[searchHashOffset] << 24) |
+        ($[searchHashOffset + 1] << 16) |
+        ($[searchHashOffset + 2] << 8) |
+        $[searchHashOffset + 3]
+    );
+    var i;
+    var j;
+    var k;
 
-    var i, j;
-    for (i = 0; i < newHashTable.length; i += 2) {
-        newHashTable[i] = [];
-        newHashTable[i + 1] = [];
-        var oldList = table.objects[i >> 1];
-        for (j = 0; j < oldList.length; j++) {
-            var object = oldList[j];
-            var hash = object.hash;
-            var offset = object.hashOffset;
-            var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
+    for (j = 0; j < 1000; j++) {
+        var h = (h1 + Math.imul(j, h2)) >>> table.hashBitsToShift;
+        var blockOffset = 64 * Math.floor(h / 3) + table.hashesOffset;
+        var setByte = $[blockOffset];
 
-            newHashTable[h >>> table.hashBitsToShift].push(object);
+        searchBlock:
+        for (k = 0; k < 3; k++) {
+            var offset = blockOffset + 4 + 20 * k;
+            if (setByte & (1 << k)) {
+                for (i = 0; i < 20; i++) {
+                    if ($[offset + i] !== $[searchHashOffset + i]) {
+                        continue searchBlock;
+                    }
+                }
+                return offset;
+            } else {
+                return ~offset;
+            }
         }
     }
-    table.objects = newHashTable;
+
+    throw new Error('Reached maximum iterations searching for hash');
+};
+
+HashTable.objectI = function (table, hashOffset) {
+    var offset = hashOffset - table.hashesOffset;
+    return 3 * (offset >>> 6) + ((offset >>> 4) & 3);
+};
+
+var blockMask = ~63;
+
+HashTable.flagsOffset = function (table, hashOffset) {
+    return (hashOffset & blockMask) + ((hashOffset >>> 4) & 3) + 1;
+};
+
+HashTable.isObject = 1;
+HashTable.isCachedFile = 2;
+
+HashTable.setHash = function (table, hashOffset, setHashOffset) {
+    var blockOffset = hashOffset & blockMask;
+    var setBit = 1 << ((hashOffset >>> 4) & 3);
+    $[blockOffset] |= setBit;
+
+    var i;
+    for (i = 0; i < 20; i++) {
+        $[hashOffset + i] = $[setHashOffset + i];
+    }
+    table.load++;
 };
 
 HashTable.save = function (table, object) {
-    var hash = object.hash;
-    var offset = object.hashOffset;
-    var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = table.objects[h >>> table.hashBitsToShift];
+    var hashOffset = HashTable.findHashOffset(table, object.hashOffset);
+    if (hashOffset < 0) {
+        hashOffset = ~hashOffset;
+        HashTable.setHash(table, hashOffset, object.hashOffset);
+        object.hashOffset = hashOffset;
 
-    var i;
-    for (i = 0; i < list.length; i++) {
-        if (GitConvert.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
-            return list[i];
-        }
+        var flagsOffset = HashTable.flagsOffset(table, hashOffset);
+        $[flagsOffset] |= HashTable.isObject;
+
+        var objectI = HashTable.objectI(table, hashOffset);
+        table.objects[objectI] = object;
+        return object;
+    } else {
+        var objectI = HashTable.objectI(table, hashOffset);
+        return table.objects[objectI];
     }
-
-    table.load++;
-    list.push(object);
-    if (table.load > 0.75 * table.objects.length) {
-        resizeObjects(table);
-    }
-
-    return object;
-};
-
-HashTable.get = function (table, hash, offset) {
-    var h = Math.imul(table.a, (hash[offset] << 24) | (hash[offset + 1] << 16) | (hash[offset + 2] << 8) | hash[offset + 3]);
-    var list = table.objects[h >>> table.hashBitsToShift];
-
-    var i;
-    for (i = 0; i < list.length; i++) {
-        if (GitConvert.hashEqual(hash, offset, list[i].hash, list[i].hashOffset)) {
-            return list[i];
-        }
-    }
-    return null;
 };
 
 var clamp = function (d, length) {
@@ -81,7 +117,7 @@ var clamp = function (d, length) {
     }
 };
 
-var ignoreKeys = ['file', 'hash', 'hashOffset'];
+var ignoreKeys = ['fileBegin', 'fileEnd', 'hashOffset'];
 
 var prettyPrintObject = function (object) {
     var data;
@@ -97,21 +133,16 @@ var prettyPrintObject = function (object) {
             return clamp(key, 6) + '=' + clamp(d, 6);
         }).join(' ');
     }
-    var hash = GitConvert.hashToString(object.hash, object.hashOffset);
+    var hash = GitConvert.hashToString($, object.hashOffset);
     return '#<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>';
 };
 
 HashTable.prettyPrint = function (table) {
     var pretty = [];
-    var i, j;
+    var i;
     for (i = 0; i < table.objects.length; i++) {
-        var list = table.objects[i];
-        if (list.length) {
-            var entries = [];
-            for (j = 0; j < list.length; j++) {
-                entries.push(prettyPrintObject(list[j]));
-            }
-            pretty.push(i + ': ' + entries.join(', '));
+        if (table.objects[i]) {
+            pretty.push(i + ': ' + prettyPrintObject(table.objects[i]));
         }
     }
 
