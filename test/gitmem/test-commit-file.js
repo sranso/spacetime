@@ -4,9 +4,6 @@ require('../helper');
 global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 
-Blob.initialize();
-Tree.initialize();
-
 log(CommitFile.timezoneString(360));
 //=> -0600
 
