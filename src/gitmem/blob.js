@@ -2,13 +2,17 @@
 global.Blob = {};
 (function () {
 
-Blob.emptyBlob = null;
-Blob.emptyBlobHash = null;
+Blob.emptyBegin = -1;
+Blob.emptyEnd = -1;
+Blob.emptyHashOffset = -1;
 
 Blob.initialize = function () {
-    Blob.emptyBlob = Blob.createFromString('');
-    Blob.emptyBlobHash = new Uint8Array(20);
-    Sha1.hash(Blob.emptyBlob, Blob.emptyBlobHash, 0);
+    var emptyBlobRange = Blob.createFromString('');
+    Blob.emptyBegin = emptyBlobRange[0];
+    Blob.emptyEnd = emptyBlobRange[1];
+    Blob.emptyHashOffset = $Heap.nextOffset;
+    $Heap.nextOffset += 20;
+    Sha1.hash($, Blob.emptyBlobBegin, Blob.emptyBlobEnd, Blob.emptyBlobHashOffset);
 };
 
 var blobPrefix = GitConvert.stringToArray('blob ');

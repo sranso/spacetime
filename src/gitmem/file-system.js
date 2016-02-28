@@ -2,7 +2,16 @@
 global.FileSystem = {};
 (function () {
 
-// FileSystem.tempHashOffset = Heap.staticAllocate(new Uint8Array(20))[0];
+FileSystem.bootSystem = null;
+FileSystem.tempHashOffset = -1;
+
+FileSystem.initialize = function () {
+    FileSystem.bootSystem = $FileSystem;
+
+    var offset64 = 64 * Math.ceil($Heap.nextOffset / 64);
+    FileSystem.tempHashOffset = offset64;
+    $Heap.nextOffset = offset64 + 64;
+};
 
 FileSystem.create = function (hashTableN, filesCapacity, random) {
     var heapCapacity = 64 * Math.ceil(hashTableN / 3) + filesCapacity;
