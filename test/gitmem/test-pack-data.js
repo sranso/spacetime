@@ -46,12 +46,12 @@ log(hex(packData.array, offset, packData.nextOffset));
 
 
 
-var file = PackData.extractFile(packData, offset);
-var fileBegin = file[0];
+var file = PackData.extractFile(packData, packData.array, offset);
+var fileStart = file[0];
 var fileEnd = file[1];
 var nextPackOffset = file[2];
-log(fileBegin, fileEnd, nextPackOffset);
+log(fileStart, fileEnd, nextPackOffset);
 //=> 15 30 34
-log(pretty($, fileBegin, fileEnd));
+log(pretty($, fileStart, fileEnd));
 //=> blob 8\x00foo bar
 //=>

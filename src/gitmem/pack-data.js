@@ -96,11 +96,9 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-var chunks = [];
-
-PackData.extractFile = function (packData, packOffset) {
-    var pack_j = packOffset;
-    var typeBits = packData.array[pack_j] & 0x70;
+PackData.extractFile = function (packData, packDataArray, packDataOffset) {
+    var pack_j = packDataOffset;
+    var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
     if (typeBits === 0x30) {
         prefix = blobPrefix;
@@ -112,11 +110,11 @@ PackData.extractFile = function (packData, packOffset) {
         throw new Error('Unknown type: 0x' + typeBits.toString(16));
     }
 
-    var length = packData.array[pack_j] & 0xf;
+    var length = packDataArray[pack_j] & 0xf;
     var shift = 4;
-    while (packData.array[pack_j] & 0x80) {
+    while (packDataArray[pack_j] & 0x80) {
         pack_j++;
-        length |= (packData.array[pack_j] & 0x7f) << shift;
+        length |= (packDataArray[pack_j] & 0x7f) << shift;
         shift += 7;
     }
     pack_j++;
@@ -155,9 +153,11 @@ PackData.extractFile = function (packData, packOffset) {
     inflate.onData = onInflateData;
     inflate.onEnd = onEnd;
 
-    inflate.push(packData.array.subarray(pack_j), true);
+    inflate.push(packDataArray.subarray(pack_j), true);
 
-    return [fileStart, fileEnd, pack_j + inflate.strm.next_in];
+    var nextPackDataOffset = pack_j + inflate.strm.next_in;
+
+    return [fileStart, fileEnd, nextPackDataOffset];
 };
 
 var onInflateData = function (chunk) {
