@@ -64,7 +64,7 @@ HashTable.findHashOffset = function (table, searchHashOffset) {
     throw new Error('Reached maximum iterations searching for hash');
 };
 
-HashTable.objectI = function (table, hashOffset) {
+HashTable.objectIndex = function (table, hashOffset) {
     var offset = hashOffset - table.hashesOffset;
     return 3 * (offset >>> 6) + ((offset >>> 4) & 3);
 };
@@ -100,12 +100,12 @@ HashTable.save = function (table, object) {
         var flagsOffset = HashTable.flagsOffset(table, hashOffset);
         $[flagsOffset] |= HashTable.isObject;
 
-        var objectI = HashTable.objectI(table, hashOffset);
-        table.objects[objectI] = object;
+        var objectIndex = HashTable.objectIndex(table, hashOffset);
+        table.objects[objectIndex] = object;
         return object;
     } else {
-        var objectI = HashTable.objectI(table, hashOffset);
-        return table.objects[objectI];
+        var objectIndex = HashTable.objectIndex(table, hashOffset);
+        return table.objects[objectIndex];
     }
 };
 

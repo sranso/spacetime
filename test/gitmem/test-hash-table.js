@@ -25,7 +25,7 @@ log(hashOffset, ~hashOffset);
 //=> -581 580
 hashOffset = ~hashOffset;
 
-log(HashTable.objectI(table, hashOffset));
+log(HashTable.objectIndex(table, hashOffset));
 //=> 3
 
 log(HashTable.flagsOffset(table, hashOffset));
@@ -52,15 +52,15 @@ GitConvert.setHash($, 60, hashInBlock3, 0);
 GitConvert.setHash($, 80, hashInNextBlock1, 0);
 
 hashOffset = HashTable.findHashOffset(table, 40);
-log(~hashOffset, HashTable.objectI(table, ~hashOffset));
+log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
 //=> 600 4
 HashTable.setHash(table, ~hashOffset, 40);
 hashOffset = HashTable.findHashOffset(table, 60);
-log(~hashOffset, HashTable.objectI(table, ~hashOffset));
+log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
 //=> 620 5
 HashTable.setHash(table, ~hashOffset, 60);
 hashOffset = HashTable.findHashOffset(table, 80);
-log(~hashOffset, HashTable.objectI(table, ~hashOffset));
+log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
 //=> 516 0
 HashTable.setHash(table, ~hashOffset, 80);
 
@@ -90,10 +90,10 @@ log(hashOffset);
 //=> 536
 log(hash($, hashOffset));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
-var objectI = HashTable.objectI(table, hashOffset);
-log(objectI);
+var objectIndex = HashTable.objectIndex(table, hashOffset);
+log(objectIndex);
 //=> 1
-var gotObject = table.objects[objectI];
+var gotObject = table.objects[objectIndex];
 log(gotObject.foo, gotObject.bar);
 //=> true 'buzz'
 
