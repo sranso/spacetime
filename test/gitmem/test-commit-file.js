@@ -16,11 +16,11 @@ var blobRange = Blob.createFromString('foo\n');
 var tree = Tree.create({
     foo: 'blob',
 });
-Sha1.hash($, blobRange[0], blobRange[1], tree.fileStart + tree.offsets.foo);
+Sha1.hash($, blobRange[0], blobRange[1], $, tree.fileStart + tree.offsets.foo);
 
 var treeHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, tree.fileStart, tree.fileEnd, treeHashOffset);
+Sha1.hash($, tree.fileStart, tree.fileEnd, $, treeHashOffset);
 log(hash(treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
@@ -62,7 +62,7 @@ log(pretty(commitStart, commitEnd));
 
 var commitHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, commitStart, commitEnd, commitHashOffset);
+Sha1.hash($, commitStart, commitEnd, $, commitHashOffset);
 log(hash(commitHashOffset));
 //=> dbcb62b19db062d928144514502df45e86d91eac
 
@@ -91,7 +91,7 @@ $Heap.nextOffset += secondParentString.length;
 GitConvert.stringToExistingArray($, secondParentOffset, secondParentString);
 var secondParentHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, secondParentOffset, secondParentHashOffset, secondParentHashOffset);
+Sha1.hash($, secondParentOffset, secondParentHashOffset, $, secondParentHashOffset);
 commitObject.parents.push({hashOffset: secondParentHashOffset});
 commitObject.committer.time = 1454897681000;
 commitObject.committer.name = 'snakes';

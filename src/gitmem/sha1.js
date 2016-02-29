@@ -10,15 +10,18 @@ var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 
 var H0, H1, H2, H3, H4;
 
-Sha1.hash = function (array, M_start, M_end, H_offset) {
-    if (!(array instanceof Uint8Array)) {
-        throw new Error('array is not a Uint8Array');
+Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
+    if (!(M_array instanceof Uint8Array)) {
+        throw new Error('M_array is not a Uint8Array');
     }
     if (typeof M_start !== 'number') {
         throw new Error('M_start is not a number');
     }
     if (typeof M_end !== 'number') {
         throw new Error('M_end is not a number');
+    }
+    if (!(H_array instanceof Uint8Array)) {
+        throw new Error('H_array is not a Uint8Array');
     }
     if (typeof H_offset !== 'number') {
         throw new Error('H_offset is not a number');
@@ -38,7 +41,7 @@ Sha1.hash = function (array, M_start, M_end, H_offset) {
     var fullBlockEnd = M_end - lastBlockBytes;
     var i;
     for (startByte = M_start; startByte < fullBlockEnd; startByte += 64) {
-        convertBuffer(array, W8, W, startByte, 64);
+        writeBigEndian(M_array, W8, W, startByte, 64);
         hashBlock(W);
     }
 
@@ -46,7 +49,7 @@ Sha1.hash = function (array, M_start, M_end, H_offset) {
     for (i = 0; i < 16; i++) {
         W[i] = 0;
     }
-    convertBuffer(array, W8, W, startByte, lastBlockBytes);
+    writeBigEndian(M_array, W8, W, startByte, lastBlockBytes);
 
     // Pad the message with a "one" bit [5.1.1]
     var lastWordBytes = lastBlockBytes % 4;
@@ -65,30 +68,30 @@ Sha1.hash = function (array, M_start, M_end, H_offset) {
     hashBlock(W);
 
     // Write hash to output array
-    array[H_offset] = H0 >>> 24;
-    array[H_offset + 1] = (H0 >>> 16) & 0xff;
-    array[H_offset + 2] = (H0 >>> 8) & 0xff;
-    array[H_offset + 3] = H0 & 0xff;
+    H_array[H_offset] = H0 >>> 24;
+    H_array[H_offset + 1] = (H0 >>> 16) & 0xff;
+    H_array[H_offset + 2] = (H0 >>> 8) & 0xff;
+    H_array[H_offset + 3] = H0 & 0xff;
 
-    array[H_offset + 4] = H1 >>> 24;
-    array[H_offset + 5] = (H1 >>> 16) & 0xff;
-    array[H_offset + 6] = (H1 >>> 8) & 0xff;
-    array[H_offset + 7] = H1 & 0xff;
+    H_array[H_offset + 4] = H1 >>> 24;
+    H_array[H_offset + 5] = (H1 >>> 16) & 0xff;
+    H_array[H_offset + 6] = (H1 >>> 8) & 0xff;
+    H_array[H_offset + 7] = H1 & 0xff;
 
-    array[H_offset + 8] = H2 >>> 24;
-    array[H_offset + 9] = (H2 >>> 16) & 0xff;
-    array[H_offset + 10] = (H2 >>> 8) & 0xff;
-    array[H_offset + 11] = H2 & 0xff;
+    H_array[H_offset + 8] = H2 >>> 24;
+    H_array[H_offset + 9] = (H2 >>> 16) & 0xff;
+    H_array[H_offset + 10] = (H2 >>> 8) & 0xff;
+    H_array[H_offset + 11] = H2 & 0xff;
 
-    array[H_offset + 12] = H3 >>> 24;
-    array[H_offset + 13] = (H3 >>> 16) & 0xff;
-    array[H_offset + 14] = (H3 >>> 8) & 0xff;
-    array[H_offset + 15] = H3 & 0xff;
+    H_array[H_offset + 12] = H3 >>> 24;
+    H_array[H_offset + 13] = (H3 >>> 16) & 0xff;
+    H_array[H_offset + 14] = (H3 >>> 8) & 0xff;
+    H_array[H_offset + 15] = H3 & 0xff;
 
-    array[H_offset + 16] = H4 >>> 24;
-    array[H_offset + 17] = (H4 >>> 16) & 0xff;
-    array[H_offset + 18] = (H4 >>> 8) & 0xff;
-    array[H_offset + 19] = H4 & 0xff;
+    H_array[H_offset + 16] = H4 >>> 24;
+    H_array[H_offset + 17] = (H4 >>> 16) & 0xff;
+    H_array[H_offset + 18] = (H4 >>> 8) & 0xff;
+    H_array[H_offset + 19] = H4 & 0xff;
 };
 
 // Hash computation [6.1.2]
@@ -179,23 +182,26 @@ var hashBlock = function (W) {
     H4 = (e + H4) | 0;
 };
 
-var convertBuffer = function (array, W8, W, offset, length) {
-    var i, lm = length % 4, j = length - lm;
+var writeBigEndian = function (M_array, W8, W, offset, length) {
+    var lengthExtra = length % 4;
+    var j = length - lengthExtra;
+    var i;
     for (i = 0; i < j; i += 4) {
         W[i >> 2] = (
-            (array[offset + i] << 24) |
-            (array[offset + i + 1] << 16) |
-            (array[offset + i + 2] << 8) |
-            array[offset + i + 3]
+            (M_array[offset + i] << 24) |
+            (M_array[offset + i + 1] << 16) |
+            (M_array[offset + i + 2] << 8) |
+            M_array[offset + i + 3]
         );
     }
-    switch (lm) {
+
+    switch (lengthExtra) {
     case 3:
-        W8[j + 1] = array[offset + j + 2];
+        W8[j + 1] = M_array[offset + j + 2];
     case 2:
-        W8[j + 2] = array[offset + j + 1];
+        W8[j + 2] = M_array[offset + j + 1];
     case 1:
-        W8[j + 3] = array[offset + j];
+        W8[j + 3] = M_array[offset + j];
     }
 };
 

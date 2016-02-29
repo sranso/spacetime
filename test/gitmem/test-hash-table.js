@@ -15,7 +15,7 @@ log(table.hashBitsToShift);
 //=> 29
 
 GitConvert.stringToExistingArray($, 0, 'abc');
-Sha1.hash($, 0, 3, 3);
+Sha1.hash($, 0, 3, $, 3);
 log(hash(3));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
@@ -71,7 +71,7 @@ HashTable.setHash(table, ~hashOffset, 80);
 
 
 GitConvert.stringToExistingArray($, 100, 'foo');
-Sha1.hash($, 100, 103, 103);
+Sha1.hash($, 100, 103, $, 103);
 searchHashOffset = 103;
 log(hash(103));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33

@@ -247,26 +247,19 @@ var rushaRawDigest8 = function (M, H, H_offset) {
     }
 };
 
-var tinyHeap = new Uint8Array(tinyTest.length + 20);
-var smallHeap = new Uint8Array(smallTest.length + 20);
-var mediumHeap = new Uint8Array(mediumTest.length + 20);
-var largeHeap = new Uint8Array(largeTest.length + 20);
-GitConvert.stringToExistingArray(tinyHeap, 20, tinyTest);
-GitConvert.stringToExistingArray(smallHeap, 20, smallTest);
-GitConvert.stringToExistingArray(mediumHeap, 20, mediumTest);
-GitConvert.stringToExistingArray(largeHeap, 20, largeTest);
-var tinyArray = tinyHeap.subarray(20);
-var smallArray = smallHeap.subarray(20);
-var mediumArray = mediumHeap.subarray(20);
-var largeArray = largeHeap.subarray(20);
+var tinyArray = GitConvert.stringToArray(tinyTest);
+var smallArray = GitConvert.stringToArray(smallTest);
+var mediumArray = GitConvert.stringToArray(mediumTest);
+var largeArray = GitConvert.stringToArray(largeTest);
 
 var i;
 var shasum;
 var rusha = new Rusha();
+var hashArray = new Uint8Array(20);
 
 console.time('tiny');
 for (i = 0; i < 500000; i++) {
-    Sha1.hash(tinyHeap, 20, tinyHeap.length, 0);
+    Sha1.hash(tinyArray, 0, tinyArray.length, hashArray, 0);
     //Veness.hash(tinyTest);
     //rushaRawDigest8(tinyArray, hash, 0);
     //shasum = crypto.createHash('sha1');
@@ -278,7 +271,7 @@ console.timeEnd('tiny');
 
 console.time('small');
 for (i = 0; i < 100000; i++) {
-    Sha1.hash(smallHeap, 20, smallHeap.length, 0);
+    Sha1.hash(smallArray, 0, smallArray.length, hashArray, 0);
     //Veness.hash(smallTest);
     //rushaRawDigest8(smallArray, hash, 0);
     //shasum = crypto.createHash('sha1');
@@ -289,7 +282,7 @@ console.timeEnd('small');
 
 console.time('medium');
 for (i = 0; i < 50000; i++) {
-    Sha1.hash(mediumHeap, 20, mediumHeap.length, 0);
+    Sha1.hash(mediumArray, 0, mediumArray.length, hashArray, 0);
     //Veness.hash(mediumTest);
     //rushaRawDigest8(mediumArray, hash, 0);
     //shasum = crypto.createHash('sha1');
@@ -300,7 +293,7 @@ console.timeEnd('medium');
 
 console.time('large');
 for (i = 0; i < 10000; i++) {
-    Sha1.hash(largeHeap, 20, largeHeap.length, 0);
+    Sha1.hash(largeArray, 0, largeArray.length, hashArray, 0);
     //Veness.hash(largeTest);
     //rushaRawDigest8(largeArray, hash, 0);
     //shasum = crypto.createHash('sha1');

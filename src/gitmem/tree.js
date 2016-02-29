@@ -21,12 +21,12 @@ Tree.initialize = function () {
     GitConvert.setHash($, hashOffset, $, Blob.emptyHashOffset);
     Tree.emptyStart = emptyTree.fileStart;
     Tree.emptyEnd = emptyTree.fileEnd;
-    Sha1.hash($, Tree.emptyStart, Tree.emptyEnd, Tree.emptyHashOffset);
+    Sha1.hash($, Tree.emptyStart, Tree.emptyEnd, $, Tree.emptyHashOffset);
 
     var actuallyEmptyTree = Tree.create({});
     Tree._actuallyEmptyStart = actuallyEmptyTree.fileStart;
     Tree._actuallyEmptyEnd = actuallyEmptyTree.fileEnd;
-    Sha1.hash($, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, Tree._actuallyEmptyHashOffset);
+    Sha1.hash($, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $, Tree._actuallyEmptyHashOffset);
 };
 
 Tree.catFile = function (treeStart, treeEnd) {

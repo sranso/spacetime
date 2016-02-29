@@ -13,7 +13,7 @@ Blob.initialize = function () {
     var emptyBlobRange = Blob.createFromString('');
     Blob.emptyStart = emptyBlobRange[0];
     Blob.emptyEnd = emptyBlobRange[1];
-    Sha1.hash($, Blob.emptyStart, Blob.emptyEnd, Blob.emptyHashOffset);
+    Sha1.hash($, Blob.emptyStart, Blob.emptyEnd, $, Blob.emptyHashOffset);
 };
 
 var blobPrefix = GitConvert.stringToArray('blob ');

@@ -45,7 +45,7 @@ var fooStart = $Heap.nextOffset;
 GitConvert.stringToExistingArray($, fooStart, 'foo');
 $Heap.nextOffset += 3;
 
-Sha1.hash($, fooStart, $Heap.nextOffset, treeStart + offsets.foo);
+Sha1.hash($, fooStart, $Heap.nextOffset, $, treeStart + offsets.foo);
 log(hash(treeStart + offsets.foo));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
