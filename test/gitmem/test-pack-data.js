@@ -52,6 +52,6 @@ var fileEnd = file[1];
 var nextPackOffset = file[2];
 log(fileBegin, fileEnd, nextPackOffset);
 //=> 15 30 34
-log(pretty(fileBegin, fileEnd));
+log(pretty($, fileBegin, fileEnd));
 //=> blob 8\x00foo bar
 //=>

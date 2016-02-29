@@ -16,7 +16,7 @@ log(table.hashBitsToShift);
 
 GitConvert.stringToExistingArray($, 0, 'abc');
 Sha1.hash($, 0, 3, $, 3);
-log(hash(3));
+log(hash($, 3));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
 var searchHashOffset = 3;
@@ -32,7 +32,7 @@ log(HashTable.flagsOffset(table, hashOffset));
 //=> 577
 
 HashTable.setHash(table, hashOffset, searchHashOffset);
-log(hash(hashOffset));
+log(hash($, hashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 hashOffset = HashTable.findHashOffset(table, searchHashOffset);
 log(hashOffset);
@@ -73,7 +73,7 @@ HashTable.setHash(table, ~hashOffset, 80);
 GitConvert.stringToExistingArray($, 100, 'foo');
 Sha1.hash($, 100, 103, $, 103);
 searchHashOffset = 103;
-log(hash(103));
+log(hash($, 103));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
 var object = {
@@ -88,7 +88,7 @@ HashTable.save(table, object);
 hashOffset = HashTable.findHashOffset(table, searchHashOffset);
 log(hashOffset);
 //=> 536
-log(hash(hashOffset));
+log(hash($, hashOffset));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 var objectI = HashTable.objectI(table, hashOffset);
 log(objectI);

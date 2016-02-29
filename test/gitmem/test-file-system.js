@@ -23,5 +23,5 @@ system.heap.nextOffset = 203;
 FileSystem.resizeHeap(system, 1000);
 log(system.heap.capacity);
 //=> 2048
-log(pretty(system.heap.array.subarray(199, 207)));
+log(pretty(system.heap.array, 199, 207));
 //=> \x00foo\x00\x00\x00\x00
