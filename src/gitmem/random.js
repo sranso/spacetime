@@ -40,11 +40,11 @@ Random.create = function (seed) {
     var t;
     i--;
     for (j = 0; j < 512; j++) {
-        i = (i + 1) & 127;
+        i = (i + 1) % 128;
         t = x[i];
         t ^= t << 17;
         t ^= t >>> 12;
-        v = x[(i + 33) & 127];  // i - 95 mod 128
+        v = x[(i + 33) % 128];  // 33 == -95 mod 128
         v ^= v << 13;
         v ^= v >>> 15;
         x[i] = t ^ v;
@@ -66,11 +66,11 @@ Random.clone = function (original) {
 };
 
 Random.uint32 = function (random) {
-    var i = random.i = (random.i + 1) & 127;
+    var i = random.i = (random.i + 1) % 128;
     var t = random.x[i];
     t ^= t << 17;
     t ^= t >>> 12;
-    var v = random.x[(i + 33) & 127];  // i - 95 mod 128
+    var v = random.x[(i + 33) % 128];  // 33 == -95 mod 128
     v ^= v << 13;
     v ^= v >>> 15;
     v ^= t;
