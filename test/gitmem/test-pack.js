@@ -1,38 +1,9 @@
 'use strict';
 require('../helper');
 
-var blob = Blob.createFromString('foo bar\n');
-
-var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
-log(hex(deflated));
-//=> 78014bcac94f52b06048cbcf57484a2ce20200268c049b
-log(deflated.length);
-//=> 23
-
-var inflate = new pako.Inflate({chunkSize: 4096});
-inflate.push(deflated);
-log(pretty(inflate.result));
-//=> blob 8\x00foo bar
-//=>
-log(inflate.strm.next_in);
-//=> 23
-
-var pack = new Uint8Array(25);
-var j = Pack._packFile(pack, 0, blob);
-log(j, pack[0].toString(16));
-//=> 17 '38'
-
-log(hex(pack.subarray(0, j)));
-//=> 38789c4bcbcf57484a2ce202000d1402a4
-
 pack = Pack.create([blob]);
 log(hex(pack));
 //=> 5041434b000000020000000138789c4bcbcf57484a2ce202000d1402a4f6fdeefeaef7945dd30750fbcb3c45a6a163f183
-
-pack = new Uint8Array(15);
-j = Pack._packFile(pack, 0, blob);
-log('-neededSpace', j);
-//=> -neededSpace -2
 
 
 
@@ -104,16 +75,3 @@ pack[7] = 2;
 pack[pack.length - 1] = 0;
 log(Pack.validate(pack));
 //=> incorrect pack hash
-
-var file = new Uint8Array(0);
-var packOffset = 138;
-var ex = Pack.extractFile(pack, packOffset, file, 0);
-log(ex);
-//=> [ 0, 46 ]
-
-file = new Uint8Array(ex[1]);
-ex = Pack.extractFile(pack, packOffset, file, 0);
-log(ex);
-//=> [ 187, 46 ]
-log(pretty(file));
-//=> tree 38\x00100644 foobar.txt\x00\xd6u\xfaD\xe5\x06\x06\xca\xa7\x05\xc3\xf4\x8d\xe0,\xf1\x29\xc7\xf9\xa2
