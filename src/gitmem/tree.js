@@ -17,15 +17,16 @@ Tree.initialize = function () {
     $Heap.nextOffset += 40;
 
     var emptyTree = Tree.create({'.empty': 'blob'});
-    var hashOffset = emptyTree.fileStart + emptyTree.offsets['.empty'];
+    Tree.emptyStart = emptyTree[0];
+    Tree.emptyEnd = emptyTree[1];
+    var offsets = emptyTree[2];
+    var hashOffset = emptyTree.fileStart + offsets['.empty'];
     GitConvert.setHash($, hashOffset, $, Blob.emptyHashOffset);
-    Tree.emptyStart = emptyTree.fileStart;
-    Tree.emptyEnd = emptyTree.fileEnd;
     Sha1.hash($, Tree.emptyStart, Tree.emptyEnd, $, Tree.emptyHashOffset);
 
     var actuallyEmptyTree = Tree.create({});
-    Tree._actuallyEmptyStart = actuallyEmptyTree.fileStart;
-    Tree._actuallyEmptyEnd = actuallyEmptyTree.fileEnd;
+    Tree._actuallyEmptyStart = actuallyEmptyTree[0];
+    Tree._actuallyEmptyEnd = actuallyEmptyTree[1];
     Sha1.hash($, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $, Tree._actuallyEmptyHashOffset);
 };
 
@@ -134,11 +135,7 @@ Tree.create = function (props) {
         tree_j += 20;
     }
 
-    return {
-        offsets: offsets,
-        fileStart: treeStart,
-        fileEnd: treeEnd,
-    };
+    return [treeStart, treeEnd, offsets];
 };
 
 })();

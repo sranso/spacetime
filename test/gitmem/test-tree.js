@@ -24,9 +24,9 @@ var tree = Tree.create({
     bar: 'tree',
     www: 'blob',
 });
-var treeStart = tree.fileStart;
-var treeEnd = tree.fileEnd;
-var offsets = tree.offsets;
+var treeStart = tree[0];
+var treeEnd = tree[1];
+var offsets = tree[2];
 log(treeStart, treeEnd);
 //=> 153 253
 log(pretty(treeStart, treeEnd));
