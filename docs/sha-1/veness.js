@@ -15,7 +15,7 @@
  *
  * @namespace
  */
-var Sha1 = {};
+var Veness = {};
 
 
 /**
@@ -24,7 +24,7 @@ var Sha1 = {};
  * @param   {string} msg - (Unicode) string to be hashed.
  * @returns {string} Hash of msg as hex character string.
  */
-Sha1.hash = function(msg) {
+Veness.hash = function(msg) {
 
     // constants [§4.2.1]
     var K = [ 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6 ];
@@ -65,7 +65,7 @@ Sha1.hash = function(msg) {
 
         // 1 - prepare message schedule 'W'
         for (var t=0;  t<16; t++) W[t] = M[i][t];
-        for (var t=16; t<80; t++) W[t] = Sha1.ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16], 1);
+        for (var t=16; t<80; t++) W[t] = Veness.ROTL(W[t-3] ^ W[t-8] ^ W[t-14] ^ W[t-16], 1);
 
         // 2 - initialise five working variables a, b, c, d, e with previous hash value
         a = H0; b = H1; c = H2; d = H3; e = H4;
@@ -73,10 +73,10 @@ Sha1.hash = function(msg) {
         // 3 - main loop
         for (var t=0; t<80; t++) {
             var s = Math.floor(t/20); // seq for blocks of 'f' functions and 'K' constants
-            var T = (Sha1.ROTL(a,5) + Sha1.f(s,b,c,d) + e + K[s] + W[t]) & 0xffffffff;
+            var T = (Veness.ROTL(a,5) + Veness.f(s,b,c,d) + e + K[s] + W[t]) & 0xffffffff;
             e = d;
             d = c;
-            c = Sha1.ROTL(b, 30);
+            c = Veness.ROTL(b, 30);
             b = a;
             a = T;
         }
@@ -89,8 +89,8 @@ Sha1.hash = function(msg) {
         H4 = (H4+e) & 0xffffffff;
     }
 
-    return Sha1.toHexStr(H0) + Sha1.toHexStr(H1) + Sha1.toHexStr(H2) +
-           Sha1.toHexStr(H3) + Sha1.toHexStr(H4);
+    return Veness.toHexStr(H0) + Veness.toHexStr(H1) + Veness.toHexStr(H2) +
+           Veness.toHexStr(H3) + Veness.toHexStr(H4);
 };
 
 
@@ -98,7 +98,7 @@ Sha1.hash = function(msg) {
  * Function 'f' [§4.1.1].
  * @private
  */
-Sha1.f = function(s, x, y, z)  {
+Veness.f = function(s, x, y, z)  {
     switch (s) {
         case 0: return (x & y) ^ (~x & z);           // Ch()
         case 1: return  x ^ y  ^  z;                 // Parity()
@@ -111,7 +111,7 @@ Sha1.f = function(s, x, y, z)  {
  * Rotates left (circular left shift) value x by n positions [§3.2.5].
  * @private
  */
-Sha1.ROTL = function(x, n) {
+Veness.ROTL = function(x, n) {
     return (x<<n) | (x>>>(32-n));
 };
 
@@ -120,7 +120,7 @@ Sha1.ROTL = function(x, n) {
  * Hexadecimal representation of a number.
  * @private
  */
-Sha1.toHexStr = function(n) {
+Veness.toHexStr = function(n) {
     // note can't use toString(16) as it is implementation-dependant,
     // and in IE returns signed numbers when used on full words
     var s="", v;
@@ -129,5 +129,5 @@ Sha1.toHexStr = function(n) {
 };
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-if (typeof module != 'undefined' && module.exports) module.exports = Sha1; // CommonJs export
-if (typeof define == 'function' && define.amd) define([], function() { return Sha1; }); // AMD
+if (typeof module != 'undefined' && module.exports) module.exports = Veness; // CommonJs export
+if (typeof define == 'function' && define.amd) define([], function() { return Veness; }); // AMD
