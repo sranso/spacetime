@@ -74,25 +74,11 @@ Grid.checkout = function (packIndices, table, hash, hashOffset) {
     grid.hashOffset = hashOffset;
     HashTable.save(table, grid);
 
-    grid.rows = Value.checkoutNumber(packs, table, file, ofs.rows);
-    grid.columns = Value.checkoutNumber(packs, table, file, ofs.columns);
-
-    // TODO: these will be cleaner once array types work.
-    if (GitConvert.hashEqual(file, ofs.cell1, Value.none.hash, 0)) {
-        grid.cell1 = null;
-    } else {
-        grid.cell1 = Cell.checkout(packs, table, file, ofs.cell1);
-    }
-    if (GitConvert.hashEqual(file, ofs.cell2, Value.none.hash, 0)) {
-        grid.cell2 = null;
-    } else {
-        grid.cell2 = Cell.checkout(packs, table, file, ofs.cell2);
-    }
-    if (GitConvert.hashEqual(file, ofs.cell3, Value.none.hash, 0)) {
-        grid.cell3 = null;
-    } else {
-        grid.cell3 = Cell.checkout(packs, table, file, ofs.cell3);
-    }
+    grid.rows = Value.checkoutNumber(fileStart + Grid.offsets.rows);
+    grid.columns = Value.checkoutNumber(fileStart + Grid.offsets.columns);
+    grid.cell1 = Cell.checkout(packs, table, file, ofs.cell1);
+    grid.cell2 = Cell.checkout(packs, table, file, ofs.cell2);
+    grid.cell3 = Cell.checkout(packs, table, file, ofs.cell3);
 
     return grid;
 };
@@ -190,12 +176,7 @@ Cell.checkout = function (packIndices, table, hash, hashOffset) {
 
     cell.text = Value.checkoutString(packs, table, file, ofs.text);
     cell.color = Value.checkoutString(packs, table, file, ofs.color);
-
-    if (GitConvert.hashEqual(file, ofs.grid, Value.none.hash, 0)) {
-        cell.grid = null;
-    } else {
-        cell.grid = Grid.checkout(packs, table, file, ofs.grid);
-    }
+    cell.grid = Grid.checkout(packs, table, file, ofs.grid);
 
     return cell;
 };

@@ -28,11 +28,6 @@ GitConvert.hexToHash(hexArray, 0, hashBack, 0);
 log(GitConvert.hashToString(hashBack, 0));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
-log(GitConvert.hashEqual(hashArray, 0, hashArray, 0));
-//=> true
-log(GitConvert.hashEqual(hashArray, 0, hashArray.slice(), 0));
-//=> true
-
 var pktLine = GitConvert.stringToArray('1ed8');
 log(GitConvert.pktLineToLength(pktLine, 0));
 //=> 7896

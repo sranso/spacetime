@@ -99,14 +99,4 @@ GitConvert.pktLineToLength = function (pktArray, pktOffset) {
     );
 };
 
-GitConvert.hashEqual = function (array1, offset1, array2, offset2) {
-    var i;
-    for (i = 0; i < 20; i++) {
-        if (array1[offset1 + i] !== array2[offset2 + i]) {
-            return false;
-        }
-    }
-    return true;
-};
-
 })();

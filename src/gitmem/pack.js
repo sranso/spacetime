@@ -94,8 +94,12 @@ Pack.validate = function (pack) {
     var packHashComputed = new Uint8Array(20);
     Sha1.hash(packContent, packHashComputed, 0);
 
-    if (!GitConvert.hashEqual(pack, pack.length - 20, packHashComputed, 0)) {
-        return 'incorrect pack hash';
+    var j = pack.length - 20;
+    var i;
+    for (i = 0; i < 20; i++) {
+        if (pack[j + i] !== packHashComputed[i]) {
+            return 'incorrect pack hash';
+        }
     }
 
     return null;
