@@ -84,7 +84,7 @@ GitConvert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
     }
 };
 
-GitConvert.pktLineLength = function (pktArray, pktOffset) {
+GitConvert.pktLineToLength = function (pktArray, pktOffset) {
     return (
         (hexTable[pktArray[pktOffset]] << 12) |
         (hexTable[pktArray[pktOffset + 1]] << 8) |

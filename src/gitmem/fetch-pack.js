@@ -19,8 +19,8 @@ FetchPack.validateGetResponse = function (body) {
         }
     }
 
-    var pktLineLength = GitConvert.pktLineLength(body, getResponseStart.length);
-    var capabilitiesEnd = pktLineLength + getResponseStart.length - 1;
+    var lineLength = GitConvert.pktLineToLength(body, getResponseStart.length);
+    var capabilitiesEnd = lineLength + getResponseStart.length - 1;
     var capabilitiesStart = body.indexOf(0, getResponseStart.length + 4 + 40 + 1) + 1;
     var capabilitiesArray = body.subarray(capabilitiesStart, capabilitiesEnd);
     var capabilitiesString = String.fromCharCode.apply(null, capabilitiesArray);
@@ -49,17 +49,17 @@ FetchPack.refsFromGetResponse = function (body) {
 
     var refs = [[firstRefName, firstHash]];
 
-    var j = GitConvert.pktLineLength(body, getResponseStart.length) + getResponseStart.length;
+    var j = GitConvert.pktLineToLength(body, getResponseStart.length) + getResponseStart.length;
 
     while (j + 4 < body.length) {
-        var pktLineLength = GitConvert.pktLineLength(body, j);
-        var refArray = body.subarray(j + 4 + 40 + 1, j + pktLineLength - 1);
+        var lineLength = GitConvert.pktLineToLength(body, j);
+        var refArray = body.subarray(j + 4 + 40 + 1, j + lineLength - 1);
         var refName = String.fromCharCode.apply(null, refArray);
         var hash = new Uint8Array(20);
         GitConvert.hexToHash(body, j + 4, hash, 0);
         refs.push([refName, hash]);
 
-        j = j + pktLineLength;
+        j = j + lineLength;
     }
 
     return refs;
@@ -73,7 +73,7 @@ var havePrefix = GitConvert.stringToArray('have ');
 var doneLine = GitConvert.stringToArray('0009done\n');
 var firstLineLength = 4 + wantPrefix.length + 40 + 2 + capabilities.length + 1;
 var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
-var lineLength = 4 + wantPrefix.length + 40 + 1;
+var wantLineLength = 4 + wantPrefix.length + 40 + 1;
 
 FetchPack.postBody = function (packIndices, store, wants, have) {
     var firstHave = have;
@@ -87,7 +87,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         have = have.parents[0];
     }
 
-    var normalLinesLength = (wants.length - 1 + numHaves) * lineLength;
+    var normalLinesLength = (wants.length - 1 + numHaves) * wantLineLength;
     var body = new Uint8Array(firstLineLength + normalLinesLength + 4 + doneLine.length);
     body[0] = hexCharacters[firstLineLength >>> 12];
     body[1] = hexCharacters[(firstLineLength >>> 8) & 0xf];
@@ -116,10 +116,10 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     j += i + 1;
     var k;
     for (k = 1; k < wants.length; k++) {
-        body[j] = hexCharacters[lineLength >>> 12];
-        body[j + 1] = hexCharacters[(lineLength >>> 8) & 0xf];
-        body[j + 2] = hexCharacters[(lineLength >>> 4) & 0xf];
-        body[j + 3] = hexCharacters[lineLength & 0xf];
+        body[j] = hexCharacters[wantLineLength >>> 12];
+        body[j + 1] = hexCharacters[(wantLineLength >>> 8) & 0xf];
+        body[j + 2] = hexCharacters[(wantLineLength >>> 4) & 0xf];
+        body[j + 3] = hexCharacters[wantLineLength & 0xf];
 
         j += 4;
         for (i = 0; i < wantPrefix.length; i++) {
@@ -141,10 +141,10 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     j += 4;
     var have = firstHave;
     for (k = 0; k < numHaves; k++) {
-        body[j] = hexCharacters[lineLength >>> 12];
-        body[j + 1] = hexCharacters[(lineLength >>> 8) & 0xf];
-        body[j + 2] = hexCharacters[(lineLength >>> 4) & 0xf];
-        body[j + 3] = hexCharacters[lineLength & 0xf];
+        body[j] = hexCharacters[wantLineLength >>> 12];
+        body[j + 1] = hexCharacters[(wantLineLength >>> 8) & 0xf];
+        body[j + 2] = hexCharacters[(wantLineLength >>> 4) & 0xf];
+        body[j + 3] = hexCharacters[wantLineLength & 0xf];
 
         j += 4;
         for (i = 0; i < havePrefix.length; i++) {
@@ -172,7 +172,7 @@ FetchPack.packFromPostResponse = function (body) {
         if (body[j] === 'P'.charCodeAt(0)) {
             return body.subarray(j);
         }
-        j += GitConvert.pktLineLength(body, j);
+        j += GitConvert.pktLineToLength(body, j);
     }
 
     return null;

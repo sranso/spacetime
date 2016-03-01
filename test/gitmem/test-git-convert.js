@@ -33,6 +33,6 @@ GitConvert.setHash(file, 10, hashArray, 0);
 log(GitConvert.hashToString(file.subarray(10), 0));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
-var pktLineLength = GitConvert.stringToArray('1ed8');
-log(GitConvert.pktLineLength(pktLineLength, 0));
+var pktLine = GitConvert.stringToArray('1ed8');
+log(GitConvert.pktLineToLength(pktLine, 0));
 //=> 7896
