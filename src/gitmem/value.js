@@ -2,12 +2,13 @@
 global.Value = {};
 (function () {
 
-Value.createBlobObject = function (data, file, hash, hashOffset) {
+Value.createBlobObject = function (fileStart, fileEnd, hashOffset, data) {
     return {
-        data: data,
-        file: file,
-        hash: hash,
+        fileStart: fileStart,
+        fileEnd: fileEnd,
         hashOffset: hashOffset,
+
+        data: data,
     };
 };
 
@@ -30,51 +31,83 @@ Value.blobFromBoolean = function (bool) {
     return Blob.createFromString('' + Boolean(bool));
 };
 
-Value.parseString = function (blob) {
-    return Blob.parseStringOffset(blob, 1);
+Value.parseString = function (blobStart, blobEnd) {
+    var contentStart = Blob.contentStart(blobStart);
+    var blobArray = $.subarray(contentStart + 1, blobEnd);
+    return String.fromCharCode.apply(null, blobArray);
 };
 
-Value.parseNumber = function (blob) {
-    return Number(Blob.parseString(blob));
+Value.parseNumber = function (blobStart, blobEnd) {
+    var contentStart = Blob.contentStart(blobStart);
+    var blobArray = $.subarray(contentStart, blobEnd);
+    return Number(String.fromCharCode.apply(null, blobArray));
 };
 
-Value.parseBoolean = function (blob) {
-    return Blob.parseArray(blob)[0] === 't'.charCodeAt(0);
+Value.parseBoolean = function (blobStart, blobEnd) {
+    var contentStart = Blob.contentStart(blobStart);
+    return $[contentStart] === 't'.charCodeAt(0);
 };
 
-Value.checkoutString = function (packIndices, table, hash, hashOffset) {
-    var string = HashTable.get(table, hash, hashOffset);
-    if (string != null) {
-        return string.data;
+Value.checkoutString = function (searchHashOffset) {
+    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
+    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
+        return $HashTable.objects[objectIndex].data;
     }
 
-    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
-    string = Value.parseString(file);
-    HashTable.save(table, Value.createBlobObject(string, file, hash, hashOffset));
+    var packOffset = $PackIndex.offsets[objectIndex];
+    var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset);
+    var fileStart = fileRange[0];
+    var fileEnd = fileRange[1];
+
+    var string = Value.parseString(fileStart, fileEnd);
+    var object = Value.createBlobObject(fileStart, fileEnd, hashOffset, string);
+    $HashTable.objects[objectIndex] = object;
+    $[flagsOffset] |= HashTable.isObject;
+
     return string;
 };
 
-Value.checkoutNumber = function (packIndices, table, hash, hashOffset) {
-    var number = HashTable.get(table, hash, hashOffset);
-    if (number != null) {
-        return number.data;
+Value.checkoutNumber = function (searchHashOffset) {
+    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
+    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
+        return $HashTable.objects[objectIndex].data;
     }
 
-    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
-    number = Value.parseNumber(file);
-    HashTable.save(table, Value.createBlobObject(number, file, hash, hashOffset));
+    var packOffset = $PackIndex.offsets[objectIndex];
+    var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset);
+    var fileStart = fileRange[0];
+    var fileEnd = fileRange[1];
+
+    var number = Value.parseNumber(fileStart, fileEnd);
+    var object = Value.createBlobObject(fileStart, fileEnd, hashOffset, number);
+    $HashTable.objects[objectIndex] = object;
+    $[flagsOffset] |= HashTable.isObject;
+
     return number;
 };
 
-Value.checkoutBoolean = function (packIndices, table, hash, hashOffset) {
-    var bool = HashTable.get(table, hash, hashOffset);
-    if (bool != null) {
-        return bool.data;
+Value.checkoutBoolean = function (searchHashOffset) {
+    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
+    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
+        return $HashTable.objects[objectIndex].data;
     }
 
-    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
-    bool = Value.parseBoolean(file);
-    HashTable.save(table, Value.createBlobObject(bool, file, hash, hashOffset));
+    var packOffset = $PackIndex.offsets[objectIndex];
+    var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset);
+    var fileStart = fileRange[0];
+    var fileEnd = fileRange[1];
+
+    var bool = Value.parseBoolean(fileStart, fileEnd);
+    var object = Value.createBlobObject(fileStart, fileEnd, hashOffset, bool);
+    $HashTable.objects[objectIndex] = object;
+    $[flagsOffset] |= HashTable.isObject;
+
     return bool;
 };
 
