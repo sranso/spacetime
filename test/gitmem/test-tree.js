@@ -49,7 +49,21 @@ Sha1.hash($, fooStart, $Heap.nextOffset, $, treeStart + offsets.foo);
 log(hash($, treeStart + offsets.foo));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
+
+var barStart = $Heap.nextOffset;
+GitConvert.stringToExistingArray($, barStart, 'bar');
+$Heap.nextOffset += 3;
+var barHashOffset = $Heap.nextOffset;
+$Heap.nextOffset += 20;
+Sha1.hash($, barStart, $Heap.nextOffset, $, barHashOffset);
+log(hash($, barHashOffset));
+//=> ab48e8a80caa10695287570c66633692b2058b77
+Tree.setHash(treeStart + offsets.bar, barHashOffset);
+log(hash($, treeStart + offsets.bar));
+//=> ab48e8a80caa10695287570c66633692b2058b77
+
+
 log(Tree.catFile(treeStart, treeEnd));
-//=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    bar
+//=> 040000 tree ab48e8a80caa10695287570c66633692b2058b77    bar
 //=> 100644 blob 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33    foo
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    www

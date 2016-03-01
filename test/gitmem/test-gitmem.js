@@ -121,7 +121,7 @@ Grid.setAll = function (original, modifications) {
 
 var zeroBlob = Value.blobFromNumber(0);
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
-GitConvert.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
+Tree.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 HashTable.save($HashTable, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);

@@ -30,7 +30,7 @@ log(hash($, treeHashOffset));
 var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
 var parentHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-GitConvert.setHash($, parentHashOffset, parentHash, 0);
+GitConvert.arrayToExistingArray($, parentHashOffset, parentHash);
 
 var commitObject = {
     tree: {hashOffset: treeHashOffset},

@@ -16,7 +16,13 @@ GitConvert.stringToExistingArray = function (array, offset, string) {
     for (i = 0; i < string.length; i++) {
         array[offset + i] = string.charCodeAt(i);
     }
-    return offset;
+};
+
+GitConvert.arrayToExistingArray = function (array, offset, fromArray) {
+    var i;
+    for (i = 0; i < fromArray.length; i++) {
+        array[offset + i] = fromArray[i];
+    }
 };
 
 GitConvert.hashToString = function (hashArray, hashOffset) {
@@ -101,13 +107,6 @@ GitConvert.hashEqual = function (array1, offset1, array2, offset2) {
         }
     }
     return true;
-};
-
-GitConvert.setHash = function (targetArray, targetOffset, sourceArray, sourceOffset) {
-    var i;
-    for (i = 0; i < 20; i++) {
-        targetArray[targetOffset + i] = sourceArray[sourceOffset + i];
-    }
 };
 
 })();
