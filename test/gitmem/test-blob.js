@@ -13,7 +13,7 @@ log(pretty($, blobStart, blobEnd));
 //=> blob 3\x00foo
 var contentStart = Blob.contentStart(blobStart);
 //=> 7
-log(GitConvert.arraySliceToString($, contentStart, blobEnd));
+log(pretty($, contentStart, blobEnd));
 //=> foo
 
 
