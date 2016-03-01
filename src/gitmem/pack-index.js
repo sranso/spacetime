@@ -53,13 +53,4 @@ PackIndex.indexPack = function (index, pack) {
     }
 };
 
-PackIndex.lookupFile = function (index, hashOffset) {
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var offset = index.offsets[objectIndex];
-    var file = PackData.extractFile($PackData, $PackData.array, offset);
-    var fileStart = file[0];
-    var fileEnd = file[1];
-    return [fileStart, fileEnd];
-};
-
 })();

@@ -56,17 +56,19 @@ var hashOffset = HashTable.findHashOffset($HashTable, fooHashOffset);
 log(hashOffset, hash($, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
 var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-log(objectIndex, index.offsets[objectIndex]);
+var packOffset = index.offsets[objectIndex];
+log(objectIndex, packOffset);
 //=> 0 0
 
 hashOffset = HashTable.findHashOffset($HashTable, barHashOffset);
 log(hashOffset, hash($, hashOffset));
 //=> 132 'ba0e162e1c47469e3fe4b393a8bf8c569f302116'
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-log(objectIndex, index.offsets[objectIndex]);
+packOffset = index.offsets[objectIndex];
+log(objectIndex, packOffset);
 //=> 6 12
 
-var file = PackIndex.lookupFile(index, hashOffset);
+var file = PackData.extractFile($PackData, $PackData.array, packOffset);
 var fileStart = file[0];
 var fileEnd = file[1];
 log(pretty($, fileStart, fileEnd));

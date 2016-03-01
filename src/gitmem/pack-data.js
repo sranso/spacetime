@@ -96,8 +96,8 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packData, packDataArray, packDataOffset) {
-    var pack_j = packDataOffset;
+PackData.extractFile = function (packData, packDataArray, packOffset) {
+    var pack_j = packOffset;
     var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
     if (typeBits === 0x30) {
@@ -155,9 +155,9 @@ PackData.extractFile = function (packData, packDataArray, packDataOffset) {
 
     inflate.push(packDataArray.subarray(pack_j), true);
 
-    var nextPackDataOffset = pack_j + inflate.strm.next_in;
+    var nextPackOffset = pack_j + inflate.strm.next_in;
 
-    return [fileStart, fileEnd, nextPackDataOffset];
+    return [fileStart, fileEnd, nextPackOffset];
 };
 
 var onInflateData = function (chunk) {
