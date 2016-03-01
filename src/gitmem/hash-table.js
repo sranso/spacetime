@@ -13,12 +13,19 @@ HashTable.create = function (n, heap, random) {
         objects[i] = null;
     }
 
+    var hashBitsToShift = 32;
+    i = n;
+    while (i > 1) {
+        i >>= 1;
+        hashBitsToShift--;
+    }
+
     return {
         hashesOffset: hashesOffset,
         objects: objects,
         n: n,
         load: 0,
-        hashBitsToShift: 32 - GitConvert.log2PowerOf2(n),
+        hashBitsToShift: hashBitsToShift,
         a: Random.uint32(random) | 1,
     };
 };

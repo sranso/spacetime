@@ -39,22 +39,3 @@ log(GitConvert.hashToString(file.subarray(10), 0));
 var pktLineLength = GitConvert.stringToArray('1ed8');
 log(GitConvert.pktLineLength(pktLineLength, 0));
 //=> 7896
-
-log(GitConvert.log2PowerOf2(1));
-//=> 0
-log(GitConvert.log2PowerOf2(2));
-//=> 1
-log(GitConvert.log2PowerOf2(4));
-//=> 2
-log(GitConvert.log2PowerOf2(16));
-//=> 4
-log(GitConvert.log2PowerOf2(256));
-//=> 8
-log(GitConvert.log2PowerOf2(4096));
-//=> 12
-log(GitConvert.log2PowerOf2(65536));
-//=> 16
-log(GitConvert.log2PowerOf2(16777216));
-//=> 24
-log(GitConvert.log2PowerOf2(2147483648));
-//=> 31
