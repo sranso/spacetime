@@ -27,7 +27,7 @@ Sha1.hash($, barStart, barEnd, $, barHashOffset);
 log(hash($, barHashOffset));
 //=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
 
-var inputPackData = PackData.create(216);
+var inputPackData = PackData.create(56);
 inputPackData.array[11] = 2;  // Number of packed files.
 inputPackData.nextOffset = 12;
 PackData.packFile(inputPackData, fooStart, fooEnd);
