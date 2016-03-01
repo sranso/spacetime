@@ -60,11 +60,11 @@ PackData.packFile = function (packData, fileStart, fileEnd) {
     var deflatedOffset = packData.nextOffset;
     var c = typeBits | (length & 0xf);
 
-    length >>= 4;
+    length >>>= 4;
     while (length) {
         packData.array[packData.nextOffset] = c | 0x80;
         c = length & 0x7f;
-        length >>= 7;
+        length >>>= 7;
         packData.nextOffset++;
     }
     packData.array[packData.nextOffset] = c;

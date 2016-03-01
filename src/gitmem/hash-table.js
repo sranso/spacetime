@@ -16,7 +16,7 @@ HashTable.create = function (n, heap, random) {
     var hashBitsToShift = 32;
     i = n;
     while (i > 1) {
-        i >>= 1;
+        i >>>= 1;
         hashBitsToShift--;
     }
 

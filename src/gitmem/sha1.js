@@ -187,7 +187,7 @@ var writeBigEndian = function (M_array, W8, W, offset, length) {
     var j = length - lengthExtra;
     var i;
     for (i = 0; i < j; i += 4) {
-        W[i >> 2] = (
+        W[i >>> 2] = (
             (M_array[offset + i] << 24) |
             (M_array[offset + i + 1] << 16) |
             (M_array[offset + i + 2] << 8) |
