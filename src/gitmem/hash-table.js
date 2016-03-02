@@ -97,23 +97,23 @@ HashTable.setHash = function (table, hashOffset, setHashOffset) {
     table.load++;
 };
 
-HashTable.save = function (table, object) {
+HashTable.idempotentSaveObject = function (table, object) {
     var hashOffset = HashTable.findHashOffset(table, object.hashOffset);
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash(table, hashOffset, object.hashOffset);
-        object.hashOffset = hashOffset;
+    }
 
-        var flagsOffset = HashTable.flagsOffset(table, hashOffset);
-        $[flagsOffset] |= HashTable.isObject;
-
-        var objectIndex = HashTable.objectIndex(table, hashOffset);
-        table.objects[objectIndex] = object;
-        return object;
-    } else {
-        var objectIndex = HashTable.objectIndex(table, hashOffset);
+    var flagsOffset = HashTable.flagsOffset(table, hashOffset);
+    var objectIndex = HashTable.objectIndex(table, hashOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
         return table.objects[objectIndex];
     }
+
+    $[flagsOffset] |= HashTable.isObject;
+    object.hashOffset = hashOffset;
+    table.objects[objectIndex] = object;
+    return object;
 };
 
 var clamp = function (d, length) {

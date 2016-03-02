@@ -84,16 +84,23 @@ var object = {
     hashOffset: searchHashOffset,
 };
 
-HashTable.save(table, object);
+hashOffset = HashTable.findHashOffset(table, searchHashOffset);
+log(hashOffset);
+//=> -537
+
+var gotObject = HashTable.idempotentSaveObject(table, object);
+log(gotObject.foo, gotObject.bar);
+//=> true 'buzz'
 hashOffset = HashTable.findHashOffset(table, searchHashOffset);
 log(hashOffset);
 //=> 536
 log(hash($, hashOffset));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
+
 var objectIndex = HashTable.objectIndex(table, hashOffset);
 log(objectIndex);
 //=> 1
-var gotObject = table.objects[objectIndex];
+gotObject = table.objects[objectIndex];
 log(gotObject.foo, gotObject.bar);
 //=> true 'buzz'
 
@@ -102,6 +109,22 @@ log(flagsOffset);
 //=> 514
 log($[flagsOffset], $[flagsOffset] & HashTable.isObject);
 //=> 1 1
+
+// Save a second time
+gotObject = HashTable.idempotentSaveObject(table, object);
+log(gotObject.foo, gotObject.bar);
+//=> true 'buzz'
+hashOffset = HashTable.findHashOffset(table, searchHashOffset);
+log(hashOffset);
+//=> 536
+
+// Save with existing hash, but no object
+table.objects[objectIndex] = null;
+$[flagsOffset] &= ~HashTable.isObject;
+gotObject = HashTable.idempotentSaveObject(table, object);
+log(gotObject.foo, table.objects[objectIndex].bar);
+//=> true 'buzz'
+
 
 log(HashTable.prettyPrint(table));
 //=> 1: #<0beec7 foo=true bar=buzz>
