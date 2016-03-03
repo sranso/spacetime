@@ -12,6 +12,7 @@
 // setRetArray: 312.050ms           (3.1 ns / loop   36% of the time)
 // mutateArray: 287.234ms           (2.9 ns / loop   34% of the time)
 // mutateArrayReturned: 289.892ms   (2.9 ns / loop   34% of the time)
+// mutateTypedArray: 151.948ms      (1.5 ns / loop   18% of the time)
 //
 // setRetWithBogusReturn: 151.797ms
 // returnArrayDestructure: 7689.583ms (Canary) (77 ns/loop 8x slower)
@@ -125,6 +126,19 @@ var useMutateArrayReturned = function () {
         var z = x + y;
     }
     console.timeEnd('mutateArrayReturned');
+};
+
+var useMutateTypedArray = function () {
+    console.time('mutateTypedArray');
+    var i;
+    var array = new Uint32Array(2);
+    for (i = 0; i < 100000000; i++) {
+        var r = mutateArrayReturned(i, array);
+        var x = r[0];
+        var y = r[1];
+        var z = x + y;
+    }
+    console.timeEnd('mutateTypedArray');
 };
 
 var useSetRetWithBogusReturn = function () {
