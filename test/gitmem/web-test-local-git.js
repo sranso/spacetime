@@ -223,7 +223,7 @@ var firstPush = function () {
     project.hash = new Uint8Array(20);
     Sha1.hash(project.file, project.hash, 0);
 
-    var commit = CommitObject.clone(CommitObject.none);
+    var commit = Commit.clone(Commit.none);
     commit.author = commit.committer = {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
@@ -330,11 +330,11 @@ var fetchPost = function (atCommit, refs, callback) {
 
 var afterClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var commit = CommitObject.checkout([index], loadHashTable, refHash, 0);
+    var commit = Commit.checkout([index], loadHashTable, refHash, 0);
     console.log('[afterClone] commit message: ' + commit.message);
     console.log('[afterClone] commit time: ' + new Date(commit.committer.time));
 
-    CommitObject.checkoutTree(commit, [index], loadHashTable);
+    Commit.checkoutTree(commit, [index], loadHashTable);
 
     console.log('[afterClone] loaded tree:', hex(commit.tree.hash));
     console.log('[afterClone] project text:', commit.tree.text.slice(0, 12) + '...');
@@ -377,7 +377,7 @@ var afterClone = function (refHash, pack) {
     project.hash = new Uint8Array(20);
     Sha1.hash(project.file, project.hash, 0);
 
-    var commit2 = CommitObject.clone(CommitObject.none);
+    var commit2 = Commit.clone(Commit.none);
     commit2.author = commit2.committer = {
         name: 'Jake Sandlund',
         email: 'jake@jakesandlund.com',
@@ -413,11 +413,11 @@ var afterClone = function (refHash, pack) {
 
 var afterFetch = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var commit = CommitObject.checkout([index], loadHashTable, refHash, 0);
+    var commit = Commit.checkout([index], loadHashTable, refHash, 0);
     console.log('[afterFetch] commit message: ' + commit.message);
     console.log('[afterFetch] commit time: ' + new Date(commit.committer.time));
 
-    CommitObject.checkoutTree(commit, [index], loadHashTable);
+    Commit.checkoutTree(commit, [index], loadHashTable);
 
     console.log('[afterFetch] loaded tree:', hex(commit.tree.hash));
     console.log('[afterFetch] project text:', commit.tree.text.slice(0, 12) + '...');
@@ -426,7 +426,7 @@ var afterFetch = function (refHash, pack) {
     console.log('[afterFetch] thing hashOffset:', commit.tree.thing.hashOffset);
     console.log('[afterFetch] thing name:', commit.tree.thing.name);
 
-    CommitObject.checkoutParents(commit, [index], loadHashTable);
+    Commit.checkoutParents(commit, [index], loadHashTable);
     var parentCommit = commit.parents[0];
     console.log('[afterFetch] commit parent hash:', hex(parentCommit.hash));
     console.log('[afterFetch] commit parent message:', parentCommit.message);
@@ -439,22 +439,22 @@ var lastClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
     var random = Random.create(868869);
     var table = HashTable.create(random);
-    var commit = CommitObject.checkout([index], table, refHash, 0);
+    var commit = Commit.checkout([index], table, refHash, 0);
     console.log('[lastClone] commit message: ' + commit.message);
     console.log('[lastClone] commit time: ' + new Date(commit.committer.time));
 
-    CommitObject.checkoutTree(commit, [index], table);
+    Commit.checkoutTree(commit, [index], table);
 
     console.log('[lastClone] loaded tree:', hex(commit.tree.hash));
     console.log('[lastClone] project text:', commit.tree.text.slice(0, 12) + '...');
     console.log('[lastClone] thing name:', commit.tree.thing.name);
 
-    CommitObject.checkoutParents(commit, [index], table);
+    Commit.checkoutParents(commit, [index], table);
     var parentCommit = commit.parents[0];
     console.log('[lastClone] commit parent hash:', hex(commit1.hash));
     console.log('[lastClone] commit parent message:', commit1.message);
 
-    CommitObject.checkoutTree(parentCommit, [index], table);
+    Commit.checkoutTree(parentCommit, [index], table);
 
     console.log('[lastClone] parent project text:', parentCommit.tree.text.slice(0, 12) + '...');
     console.log('[lastClone] parent thing name:', parentCommit.tree.thing.name);

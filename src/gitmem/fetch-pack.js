@@ -82,7 +82,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     while (have && numHaves < maxHaves) {
         numHaves++;
         if (!have.parents) {
-            CommitObject.checkoutParents(have, packIndices, store);
+            Commit.checkoutParents(have, packIndices, store);
         }
         have = have.parents[0];
     }

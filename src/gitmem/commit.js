@@ -1,8 +1,8 @@
 'use strict';
-global.CommitObject = {};
+global.Commit = {};
 (function () {
 
-CommitObject.clone = function (original) {
+Commit.clone = function (original) {
     return {
         tree: original.tree,
         parents: original.parents,
@@ -15,7 +15,7 @@ CommitObject.clone = function (original) {
     };
 };
 
-CommitObject.none = CommitObject.clone({
+Commit.none = Commit.clone({
     tree: null,
     parents: null,
     author: {
@@ -34,7 +34,7 @@ CommitObject.none = CommitObject.clone({
     hashOffset: 0,
 });
 
-CommitObject.checkout = function (packIndices, table, hash, hashOffset) {
+Commit.checkout = function (packIndices, table, hash, hashOffset) {
     var commit = HashTable.get(table, hash, hashOffset);
     if (commit) {
         return commit;
@@ -43,7 +43,7 @@ CommitObject.checkout = function (packIndices, table, hash, hashOffset) {
     var packs = packIndices;
     var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
 
-    commit = CommitObject.clone(CommitObject.none);
+    commit = Commit.clone(Commit.none);
     commit.file = file;
     commit.hash = hash;
     commit.hashOffset = hashOffset;
@@ -56,18 +56,18 @@ CommitObject.checkout = function (packIndices, table, hash, hashOffset) {
     return commit;
 };
 
-CommitObject.checkoutTree = function (commit, packIndices, table) {
+Commit.checkoutTree = function (commit, packIndices, table) {
     var treeHash = CommitFile.parseTree(commit.file);
     commit.tree = Project.checkout(packIndices, table, treeHash, 0);
 };
 
-CommitObject.checkoutParents = function (commit, packIndices, table) {
+Commit.checkoutParents = function (commit, packIndices, table) {
     var parentHashes = CommitFile.parseParents(commit.file);
     commit.parents = [];
     var i;
 
     for (i = 0; i < parentHashes.length; i++) {
-        commit.parents[i] = CommitObject.checkout(packIndices, table, parentHashes[i], 0);
+        commit.parents[i] = Commit.checkout(packIndices, table, parentHashes[i], 0);
     }
 };
 

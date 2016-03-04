@@ -60,7 +60,7 @@ log(singleRef.length, singleRef[0][0]);
 
 
 
-var commit1 = CommitObject.clone(CommitObject.none);
+var commit1 = Commit.clone(Commit.none);
 commit1.author = commit1.committer = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
@@ -76,7 +76,7 @@ Sha1.hash(commit1.file, commit1.hash, 0);
 log(hex(commit1.hash));
 //=> b11da54dece45e24d1bfefdba6b5e5ce38ec126b
 
-var commit2 = CommitObject.clone(commit1);
+var commit2 = Commit.clone(commit1);
 commit2.author = commit2.committer = {
     name: 'snakes',
     email: commit1.author.email,
@@ -90,7 +90,7 @@ Sha1.hash(commit2.file, commit2.hash, 0);
 log(hex(commit2.hash));
 //=> d278c413b49559191bd25b4f7bac2712b1eb325c
 
-var commit3 = CommitObject.clone(commit2);
+var commit3 = Commit.clone(commit2);
 commit3.author = commit3.committer = {
     name: commit1.author.name,
     email: commit1.author.email,

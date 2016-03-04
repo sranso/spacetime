@@ -15,7 +15,7 @@ Sha1.hash(tree, treeHash, 0);
 log(hex(treeHash));
 //=> 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 
-var commit = CommitObject.clone(CommitObject.none);
+var commit = Commit.clone(Commit.none);
 commit.author = commit.committer = {
     name: 'Jake Sandlund',
     email: 'jake@jakesandlund.com',
@@ -32,7 +32,7 @@ Sha1.hash(commit.file, commit.hash, 0);
 log(hex(commit.hash));
 //=> b9b5c2bc0c5b434d250c282ca4178429354ddea5
 
-var secondCommit = CommitObject.clone(commit);
+var secondCommit = Commit.clone(commit);
 secondCommit.author = {
     name: 'snakes',
     email: commit.author.email,
@@ -52,13 +52,13 @@ var index = PackIndex.create(pack);
 var random = Random.create(2524766);
 var table = HashTable.create(random);
 
-var gotSecondCommit = CommitObject.checkout([index], table, secondCommit.hash, 0);
+var gotSecondCommit = Commit.checkout([index], table, secondCommit.hash, 0);
 log(hex(gotSecondCommit.hash));
 //=> 0840832364159f7fac3419a336375ce0e54b1ec2
 log(gotSecondCommit.author.name, gotSecondCommit.committer.email);
 //=> snakes jake@jakesandlund.com
 
-CommitObject.checkoutParents(gotSecondCommit, [index], table);
+Commit.checkoutParents(gotSecondCommit, [index], table);
 var gotCommit = gotSecondCommit.parents[0];
 log(hex(gotCommit.hash));
 //=> b9b5c2bc0c5b434d250c282ca4178429354ddea5
@@ -67,6 +67,6 @@ log(gotCommit.author.name, gotCommit.committer.time);
 
 log(gotCommit.parents);
 //=> null
-CommitObject.checkoutParents(gotCommit, [index], table);
+Commit.checkoutParents(gotCommit, [index], table);
 log(gotCommit.parents);
 //=> []
