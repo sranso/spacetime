@@ -6,6 +6,7 @@ global.$ = $Heap.array;
 var random = Random.create(29923321);
 global.$HashTable = HashTable.create(16, $Heap, random);
 
+Tree.initialize();
 FastSet.initialize();
 
 var Thing = {};
@@ -34,15 +35,14 @@ Thing.none = null;
 var offsets = null;
 
 Thing.initialize = function () {
-    Thing.none = clone({
+    var noneValues = {
         string: '',
         number: 0,
         bool: false,
-        object: null,
-        fileStart: -1,
-        fileEnd: -1,
-        hashOffset: -1,
-    });
+        object: {hashOffset: Tree.emptyHashOffset},
+    };
+
+    var none = clone(noneValues);
 
     var noneTree = Tree.create({
         string: 'blob',
@@ -51,9 +51,13 @@ Thing.initialize = function () {
         object: 'tree',
     });
 
-    Thing.none.fileStart = noneTree[0];
-    Thing.none.fileEnd = noneTree[1];
+    none.fileStart = noneTree[0];
+    none.fileEnd = noneTree[1];
     offsets = noneTree[2];
+
+    $Heap.nextOffset = none.fileStart;
+
+    Thing.none = Thing.setAll(none, noneValues);
 };
 
 Thing.set = function (original, prop, value) {
@@ -67,6 +71,21 @@ Thing.setAll = function (original, modifications) {
 
 Thing.initialize();
 
+var none = Thing.none;
+log('"' + none.string + '"', none.number, none.bool);
+//=> "" 0 false
+
+log(none.fileStart, none.fileEnd, none.fileEnd - none.fileStart);
+//=> 532 674 142
+
+log(hash($, none.fileStart + offsets.string));
+//=> 9d68933c44f13985b9eb19159da6eb3ff0e574bf
+
+var hashOffset = HashTable.findHashOffset($HashTable, none.fileStart + offsets.bool);
+var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+var gotBool = $HashTable.objects[objectIndex].data;
+log(gotBool, typeof gotBool);
+//=> false 'boolean'
 
 
 var objectRange = Value.blobFromString('bar');
@@ -96,10 +115,8 @@ log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 log(hash($, thing1.fileStart + offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-var hashOffset = HashTable.findHashOffset($HashTable, thing1.fileStart + offsets.string);
-log(hashOffset);
-//=> 260
-var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+hashOffset = HashTable.findHashOffset($HashTable, thing1.fileStart + offsets.string);
+objectIndex = HashTable.objectIndex($HashTable, hashOffset);
 var gotString = $HashTable.objects[objectIndex].data;
 log(gotString, typeof gotString);
 //=> foo string

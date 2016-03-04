@@ -22,17 +22,13 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     value = mutateFile(internalHashOffset, value, type);
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
-    console.log('set1', prop, value);
     var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
-    console.log(hashOffset);
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        console.log(hashOffset);
         HashTable.setHash($HashTable, hashOffset, tempHashOffset);
     }
     var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
     var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    console.log(flagsOffset, $[flagsOffset]);
     if ($[flagsOffset] & HashTable.isObject) {
         $Heap.nextOffset = originalHeapOffset;
         return $HashTable.objects[objectIndex];
@@ -42,7 +38,6 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
-    console.log('set', prop, value);
     thing[prop] = value;
 
     $[flagsOffset] |= HashTable.isObject;
@@ -126,27 +121,26 @@ var mutateFile = function (internalHashOffset, value, type) {
             var blobObject = Value.createBlobObject(blobStart, blobEnd, hashOffset, value);
 
             $[flagsOffset] |= HashTable.isObject;
-            console.log('blob', hashOffset, $[flagsOffset]);
             $HashTable.objects[objectIndex] = blobObject;
             return blobObject.data;
         }
     }
 };
 
-var cloneFile = function (originalFileBegin, originalFileEnd) {
-    var fileLength = originalFileBegin - originalFileEnd;
+var cloneFile = function (originalFileStart, originalFileEnd) {
+    var fileLength = originalFileEnd - originalFileStart;
     if ($Heap.nextOffset + fileLength > $Heap.capacity) {
         FileSystem.expandHeap($Heap, fileLength);
     }
-    var fileBegin = $Heap.nextOffset;
+    var fileStart = $Heap.nextOffset;
     $Heap.nextOffset += fileLength;
     var fileEnd = $Heap.nextOffset;
     var i;
     for (i = 0; i < fileLength; i++) {
-        $[fileBegin + i] = $[originalFileBegin + i];
+        $[fileStart + i] = $[originalFileStart + i];
     }
 
-    return [fileBegin, fileEnd];
+    return [fileStart, fileEnd];
 };
 
 })();
