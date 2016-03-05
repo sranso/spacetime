@@ -70,7 +70,7 @@ commit1.author = commit1.committer = {
 commit1.tree = {hash: Tree._actuallyEmptyTreeHash, hashOffset: 0};
 commit1.parents = [];
 commit1.message = 'Initial commit\n';
-commit1.file = CommitFile.createFromObject(commit1);
+commit1.file = CommitFile.create(commit1);
 commit1.hash = new Uint8Array(20);
 Sha1.hash(commit1.file, commit1.hash, 0);
 log(hex(commit1.hash));
@@ -84,7 +84,7 @@ commit2.author = commit2.committer = {
     timezoneOffset: commit1.author.timezoneOffset,
 };
 commit2.parents = [commit1];
-commit2.file = CommitFile.createFromObject(commit2);
+commit2.file = CommitFile.create(commit2);
 commit2.hash = new Uint8Array(20);
 Sha1.hash(commit2.file, commit2.hash, 0);
 log(hex(commit2.hash));
@@ -101,7 +101,7 @@ commit3.parents = [
     commit2,
     commit1,
 ];
-commit3.file = CommitFile.createFromObject(commit3);
+commit3.file = CommitFile.create(commit3);
 commit3.hash = new Uint8Array(20);
 Sha1.hash(commit3.file, commit3.hash, 0);
 log(hex(commit3.hash));

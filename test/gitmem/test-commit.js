@@ -26,7 +26,7 @@ commit.tree = {hash: treeHash, hashOffset: 0};
 commit.parents = [];
 commit.message = 'Initial commit\n';
 
-commit.file = CommitFile.createFromObject(commit);
+commit.file = CommitFile.create(commit);
 commit.hash = new Uint8Array(20);
 Sha1.hash(commit.file, commit.hash, 0);
 log(hex(commit.hash));
@@ -41,7 +41,7 @@ secondCommit.author = {
 };
 secondCommit.parents = [commit];
 
-secondCommit.file = CommitFile.createFromObject(secondCommit);
+secondCommit.file = CommitFile.create(secondCommit);
 secondCommit.hash = new Uint8Array(20);
 Sha1.hash(secondCommit.file, secondCommit.hash, 0);
 log(hex(secondCommit.hash));

@@ -39,7 +39,7 @@ var commitObject = {
     message: 'Initial commit\n',
 };
 
-var commit = CommitFile.createFromObject(commitObject);
+var commit = CommitFile.create(commitObject);
 var commitHash = new Uint8Array(20);
 Sha1.hash(commit, commitHash, 0);
 log(hex(commitHash));

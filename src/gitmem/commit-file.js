@@ -22,7 +22,7 @@ var constantLength = 'tree \nauthor  <>  -0600\ncommitter  <>  -0600\n\n'.length
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40 + 1;
 
-CommitFile.createFromObject = function (commit) {
+CommitFile.create = function (commit) {
     var authorName = commit.author.name; // TODO: make this safe
     var authorEmail = commit.author.email;
     var timeAuthored = '' + Math.floor(commit.author.time / 1000);

@@ -234,7 +234,7 @@ var firstPush = function () {
     commit.tree = project;
     commit.parents = [];
 
-    commit.file = CommitFile.createFromObject(commit);
+    commit.file = CommitFile.create(commit);
     commit.hash = new Uint8Array(20);
     Sha1.hash(commit.file, commit.hash, 0);
     console.log('[firstPush] created commit with hash', hex(commit.hash));
@@ -388,7 +388,7 @@ var afterClone = function (refHash, pack) {
     commit2.tree = project;
     commit2.parents = [commit];
 
-    commit2.file = CommitFile.createFromObject(commit2);
+    commit2.file = CommitFile.create(commit2);
     commit2.hash = new Uint8Array(20);
     Sha1.hash(commit2.file, commit2.hash, 0);
     console.log('[afterClone] created commit2 with hash', hex(commit2.hash));

@@ -50,7 +50,7 @@ var commitObject = {
     message: 'Foo commit\n',
 };
 
-var commitRange = CommitFile.createFromObject(commitObject);
+var commitRange = CommitFile.create(commitObject);
 var commitStart = commitRange[0];
 var commitEnd = commitRange[1];
 
@@ -98,7 +98,7 @@ Sha1.hash($, secondParentOffset, secondParentHashOffset, $, secondParentHashOffs
 commitObject.parents.push({hashOffset: secondParentHashOffset});
 commitObject.committer.time = 1454897681000;
 commitObject.committer.name = 'snakes';
-var mergeCommitRange = CommitFile.createFromObject(commitObject);
+var mergeCommitRange = CommitFile.create(commitObject);
 var mergeCommitStart = mergeCommitRange[0];
 var mergeCommitEnd = mergeCommitRange[1];
 
