@@ -34,19 +34,19 @@ GitConvert.arrayToExistingArray($, parentHashOffset, parentHash);
 
 var commitObject = {
     tree: {hashOffset: treeHashOffset},
-    parents: [{hashOffset: parentHashOffset}],
-    committer: {
-        name: 'Jake Sandlund',
-        email: 'jake@jakesandlund.com',
-        time: 1454274859000,
-        timezoneOffset: 360,
-    },
-    author: {
-        name: 'Jake Sandlund',
-        email: 'jake@jakesandlund.com',
-        time: 1454274859000,
-        timezoneOffset: 360,
-    },
+    parent: {hashOffset: parentHashOffset},
+    mergeParent: null,
+
+    authorName: 'Jake Sandlund',
+    authorEmail: 'jake@jakesandlund.com',
+    authorTime: 1454274859000,
+    authorTimezoneOffset: 360,
+
+    committerName: 'Jake Sandlund',
+    committerEmail: 'jake@jakesandlund.com',
+    committerTime: 1454274859000,
+    committerTimezoneOffset: 360,
+
     message: 'Foo commit\n',
 };
 
@@ -76,17 +76,31 @@ log(hash($, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
 var parentHashesOffset = $Heap.nextOffset;
-$Heap.nextOffset += 3 * 20;
+$Heap.nextOffset += 2 * 20;
 var nParents = CommitFile.parseParents(commitStart, commitEnd, parentHashesOffset);
 log(nParents, hash($, parentHashesOffset));
 //=> 1 '4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf'
 
-var gotAuthor = CommitFile.parseAuthor(commitStart, commitEnd);
-log(gotAuthor);
-//=> { name: 'Jake Sandlund',
-//=>   email: 'jake@jakesandlund.com',
-//=>   time: 1454274859000,
-//=>   timezoneOffset: 360 }
+var gotCommit = {};
+CommitFile.parse(commitStart, commitEnd, gotCommit);
+log(gotCommit.authorName, gotCommit.authorEmail);
+//=> Jake Sandlund jake@jakesandlund.com
+log(gotCommit.authorTime, gotCommit.authorTimezoneOffset);
+//=> 1454274859000 360
+log(gotCommit.committerName, gotCommit.committerEmail);
+//=> Jake Sandlund jake@jakesandlund.com
+log(gotCommit.committerTime, gotCommit.committerTimezoneOffset);
+//=> 1454274859000 360
+log(gotCommit.message);
+//=> Foo commit
+//=>
+
+
+
+
+
+
+
 
 var secondParentString = 'secondParent';
 var secondParentOffset = $Heap.nextOffset;
@@ -95,9 +109,11 @@ GitConvert.stringToExistingArray($, secondParentOffset, secondParentString);
 var secondParentHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
 Sha1.hash($, secondParentOffset, secondParentHashOffset, $, secondParentHashOffset);
-commitObject.parents.push({hashOffset: secondParentHashOffset});
-commitObject.committer.time = 1454897681000;
-commitObject.committer.name = 'snakes';
+log(hash($, secondParentHashOffset));
+//=> 06d3749d842b0a2f56f5368932fd616f89f7cf58
+commitObject.mergeParent = {hashOffset: secondParentHashOffset};
+commitObject.committerTime = 1454897681000;
+commitObject.committerName = 'snakes';
 var mergeCommitRange = CommitFile.create(commitObject);
 var mergeCommitStart = mergeCommitRange[0];
 var mergeCommitEnd = mergeCommitRange[1];
@@ -119,15 +135,3 @@ log(hash($, parentHashesOffset));
 //=> 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
 log(hash($, parentHashesOffset + 20));
 //=> 06d3749d842b0a2f56f5368932fd616f89f7cf58
-
-var gotCommitter = CommitFile.parseCommitter(mergeCommitStart, mergeCommitEnd);
-log(gotCommitter);
-//=> { name: 'snakes',
-//=>   email: 'jake@jakesandlund.com',
-//=>   time: 1454897681000,
-//=>   timezoneOffset: 360 }
-
-var gotMessage = CommitFile.parseMessage(mergeCommitStart, mergeCommitEnd);
-log(gotMessage);
-//=> Foo commit
-//=>

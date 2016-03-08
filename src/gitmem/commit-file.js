@@ -23,22 +23,26 @@ constantLength += 40;
 var perParentLength = parentPrefix.length + 40 + 1;
 
 CommitFile.create = function (commit) {
-    var authorName = commit.author.name; // TODO: make this safe
-    var authorEmail = commit.author.email;
-    var timeAuthored = '' + Math.floor(commit.author.time / 1000);
-    var timezoneAuthored = CommitFile.timezoneString(commit.author.timezoneOffset);
+    var authorName = commit.authorName; // TODO: make this safe
+    var authorEmail = commit.authorEmail;
+    var authorTime = '' + Math.floor(commit.authorTime / 1000);
+    var authorTimezone = CommitFile.timezoneString(commit.authorTimezoneOffset);
 
-    var committerName = commit.committer.name; // TODO: make this safe
-    var committerEmail = commit.committer.email;
-    var timeCommited = '' + Math.floor(commit.committer.time / 1000);
-    var timezoneCommited = CommitFile.timezoneString(commit.committer.timezoneOffset);
+    var committerName = commit.committerName; // TODO: make this safe
+    var committerEmail = commit.committerEmail;
+    var committerTime = '' + Math.floor(commit.committerTime / 1000);
+    var committerTimezone = CommitFile.timezoneString(commit.committerTimezoneOffset);
 
     var message = commit.message;
 
     var length = constantLength;
-    length += commit.parents.length * perParentLength;
-    length += authorName.length + authorEmail.length + timeAuthored.length;
-    length += committerName.length + committerEmail.length + timeCommited.length;
+    if (commit.mergeParent) {
+        length += 2 * perParentLength;
+    } else {
+        length += 1 * perParentLength;
+    }
+    length += authorName.length + authorEmail.length + authorTime.length;
+    length += committerName.length + committerEmail.length + committerTime.length;
     length += message.length;
 
     var lengthString = '' + length;
@@ -71,16 +75,25 @@ CommitFile.create = function (commit) {
     GitConvert.hashToHex($, commit.tree.hashOffset, $, commit_j);
     $[commit_j + 40] = 0x0a;
 
-    var p, parentCommit;
-    for (p = 0; p < commit.parents.length; p++) {
+    // parent
+    commit_j += 40 + 1;
+    for (i = 0; i < parentPrefix.length; i++) {
+        $[commit_j + i] = parentPrefix[i];
+    }
+
+    commit_j += i;
+    GitConvert.hashToHex($, commit.parent.hashOffset, $, commit_j);
+    $[commit_j + 40] = 0x0a;
+
+    // mergeParent
+    if (commit.mergeParent) {
         commit_j += 40 + 1;
         for (i = 0; i < parentPrefix.length; i++) {
             $[commit_j + i] = parentPrefix[i];
         }
 
         commit_j += i;
-        parentCommit = commit.parents[p];
-        GitConvert.hashToHex($, parentCommit.hashOffset, $, commit_j);
+        GitConvert.hashToHex($, commit.mergeParent.hashOffset, $, commit_j);
         $[commit_j + 40] = 0x0a;
     }
 
@@ -105,14 +118,14 @@ CommitFile.create = function (commit) {
     $[commit_j + i + 1] = 0x20;
 
     commit_j += i + 2;
-    for (i = 0; i < timeAuthored.length; i++) {
-        $[commit_j + i] = timeAuthored.charCodeAt(i);
+    for (i = 0; i < authorTime.length; i++) {
+        $[commit_j + i] = authorTime.charCodeAt(i);
     }
     $[commit_j + i] = 0x20;
 
     commit_j += i + 1;
-    for (i = 0; i < timezoneAuthored.length; i++) {
-        $[commit_j + i] = timezoneAuthored.charCodeAt(i);
+    for (i = 0; i < authorTimezone.length; i++) {
+        $[commit_j + i] = authorTimezone.charCodeAt(i);
     }
     $[commit_j + i] = 0x0a;
 
@@ -137,14 +150,14 @@ CommitFile.create = function (commit) {
     $[commit_j + i + 1] = 0x20;
 
     commit_j += i + 2;
-    for (i = 0; i < timeCommited.length; i++) {
-        $[commit_j + i] = timeCommited.charCodeAt(i);
+    for (i = 0; i < committerTime.length; i++) {
+        $[commit_j + i] = committerTime.charCodeAt(i);
     }
     $[commit_j + i] = 0x20;
 
     commit_j += i + 1;
-    for (i = 0; i < timezoneCommited.length; i++) {
-        $[commit_j + i] = timezoneCommited.charCodeAt(i);
+    for (i = 0; i < committerTimezone.length; i++) {
+        $[commit_j + i] = committerTimezone.charCodeAt(i);
     }
     $[commit_j + i] = 0x0a;
     $[commit_j + i + 1] = 0x0a;
@@ -176,63 +189,60 @@ CommitFile.parseParents = function (commitStart, commitEnd, hashesOffset) {
     return n;
 };
 
-CommitFile.parseAuthor = function (commitStart, commitEnd) {
-    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+CommitFile.parse = function (fileStart, fileEnd, commit) {
+    var j = $.indexOf(0, fileStart + 7) + 1 + treePrefix.length + 40 + 1;
     while ($[j] === parentPrefix[0]) {
         j += parentPrefix.length + 40 + 1;
     }
 
+    // author
     j += authorPrefix.length;
-    return parseAuthorOrCommitter(j);
-};
+    var nameArray = $.subarray(j, $.indexOf('<'.charCodeAt(0), j) - 1);
+    commit.authorName = String.fromCharCode.apply(null, nameArray);
 
-CommitFile.parseCommitter = function (commitStart, commitEnd) {
-    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
-    while ($[j] === parentPrefix[0]) {
-        j += parentPrefix.length + 40 + 1;
-    }
+    j += nameArray.length + 1 + 1;
+    var emailArray = $.subarray(j, $.indexOf('>'.charCodeAt(0), j));
+    commit.authorEmail = String.fromCharCode.apply(null, emailArray);
 
-    j = $.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
-    j += 1 + committerPrefix.length;
-    return parseAuthorOrCommitter(j);
-};
-
-var parseAuthorOrCommitter = function (nameStart) {
-    var lessThanOffset = $.indexOf('<'.charCodeAt(0), nameStart);
-    var nameArray = $.subarray(nameStart, lessThanOffset - 1);
-    var name = String.fromCharCode.apply(null, nameArray);
-
-    var greaterThanOffset = $.indexOf('>'.charCodeAt(0), lessThanOffset);
-    var emailArray = $.subarray(lessThanOffset + 1, greaterThanOffset);
-    var email = String.fromCharCode.apply(null, emailArray);
-
-    var spaceOffset = $.indexOf(0x20, greaterThanOffset + 10);
-    var secondsArray = $.subarray(greaterThanOffset + 2, spaceOffset);
+    j += emailArray.length + 1 + 1;
+    var secondsArray = $.subarray(j, $.indexOf(0x20, j + 8));
     var seconds = String.fromCharCode.apply(null, secondsArray);
-    var timezoneArray = $.subarray(spaceOffset + 1, spaceOffset + 6);
-    var timezone = String.fromCharCode.apply(null, timezoneArray);
+    commit.authorTime = Number(seconds) * 1000;
 
+    j += secondsArray.length + 1;
+    var timezoneArray = $.subarray(j, j + 5);
+    var timezone = String.fromCharCode.apply(null, timezoneArray);
+    commit.authorTimezoneOffset = timezoneOffsetFromString(timezone);
+
+    // committer
+    j += timezoneArray.length + 1 + committerPrefix.length;
+    nameArray = $.subarray(j, $.indexOf('<'.charCodeAt(0), j) - 1);
+    commit.committerName = String.fromCharCode.apply(null, nameArray);
+
+    j += nameArray.length + 1 + 1;
+    emailArray = $.subarray(j, $.indexOf('>'.charCodeAt(0), j));
+    commit.committerEmail = String.fromCharCode.apply(null, emailArray);
+
+    j += emailArray.length + 1 + 1;
+    secondsArray = $.subarray(j, $.indexOf(0x20, j + 8));
+    seconds = String.fromCharCode.apply(null, secondsArray);
+    commit.committerTime = Number(seconds) * 1000;
+
+    j += secondsArray.length + 1;
+    timezoneArray = $.subarray(j, j + 5);
+    timezone = String.fromCharCode.apply(null, timezoneArray);
+    commit.committerTimezoneOffset = timezoneOffsetFromString(timezone);
+
+    j += timezoneArray.length + 1 + 1;
+    var messageArray = $.subarray(j, fileEnd);
+    commit.message = String.fromCharCode.apply(null, messageArray);
+};
+
+var timezoneOffsetFromString = function (timezone) {
     var sign = timezone[0] === '+' ? -1 : +1;
     var hours = Number(timezone.slice(1, 3));
     var minutes = Number(timezone.slice(3));
-
-    return {
-        name: name,
-        email: email,
-        time: Number(seconds) * 1000,
-        timezoneOffset: sign * (60 * hours + minutes),
-    };
-};
-
-CommitFile.parseMessage = function (commitStart, commitEnd) {
-    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
-    while ($[j] === parentPrefix[0]) {
-        j += parentPrefix.length + 40 + 1;
-    }
-
-    j = $.indexOf(0x0a, j + 26);  // 26 is < min bytes for author
-    j = $.indexOf(0x0a, j + 29);  // 29 is < min bytes for committer
-    return String.fromCharCode.apply(null, $.subarray(j + 2, commitEnd));
+    return sign * (60 * hours + minutes);
 };
 
 })();
