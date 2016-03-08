@@ -4,6 +4,20 @@ require('../helper');
 global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 
+CommitFile.initialize();
+log(CommitFile.initialStart, CommitFile.initialEnd);
+//=> 0 200
+log(pretty($, CommitFile.initialStart, CommitFile.initialEnd));
+//=> commit 189\x00tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904
+//=> author Jake Sandlund <jake@jakesandlund.com> 1457216632 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1457216632 -0600
+//=>
+//=> Initial commit
+//=>
+
+log(hash($, CommitFile.initialHashOffset));
+//=> 362f278d085c99a7adfbb1d74a57dd68db0109a9
+
 log(CommitFile.timezoneString(360));
 //=> -0600
 

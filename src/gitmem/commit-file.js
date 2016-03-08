@@ -8,6 +8,28 @@ var parentPrefix = GitConvert.stringToArray('parent ');
 var authorPrefix = GitConvert.stringToArray('author ');
 var committerPrefix = GitConvert.stringToArray('committer ');
 
+CommitFile.initialStart = -1;
+CommitFile.initialEnd = -1;
+CommitFile.initialHashOffset = -1;
+
+CommitFile.initialize = function () {
+    CommitFile.initialStart = $Heap.nextOffset;
+    var initialCommitString = (
+        'commit 189\0tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904\n' +
+        'author Jake Sandlund <jake@jakesandlund.com> 1457216632 -0600\n' +
+        'committer Jake Sandlund <jake@jakesandlund.com> 1457216632 -0600\n' +
+        '\n' +
+        'Initial commit\n'
+    );
+    GitConvert.stringToExistingArray($, CommitFile.initialStart, initialCommitString);
+    CommitFile.initialEnd = CommitFile.initialStart + initialCommitString.length;
+    $Heap.nextOffset = CommitFile.initialEnd;
+
+    CommitFile.initialHashOffset = $Heap.nextOffset;
+    Sha1.hash($, CommitFile.initialStart, CommitFile.initialEnd, $, CommitFile.initialHashOffset);
+    $Heap.nextOffset += 20;
+};
+
 CommitFile.timezoneString = function (timezoneOffset) {
     var absOffset = Math.abs(timezoneOffset);
     var hoursNumber = Math.floor(absOffset / 60);
