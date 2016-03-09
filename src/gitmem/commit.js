@@ -2,72 +2,138 @@
 global.Commit = {};
 (function () {
 
-Commit.clone = function (original) {
+var clone = function (original) {
     return {
+        fileStart: -1,
+        fileEnd: -1,
+        hashOffset: -1,
+
         tree: original.tree,
-        parents: original.parents,
-        author: original.author,
-        committer: original.committer,
+        parent: original.parent,
+        mergeParent: original.mergeParent,
+
+        authorName: original.authorName,
+        authorEmail: original.authorEmail,
+        authorTime: original.authorTime,
+        authorTimezoneOffset: original.authorTimezoneOffset,
+
+        committerName: original.committerName,
+        committerEmail: original.committerEmail,
+        committerTime: original.committerTime,
+        committerTimezoneOffset: original.committerTimezoneOffset,
+
         message: original.message,
-        file: original.file.slice(),
-        hash: null,
-        hashOffset: 0,
     };
 };
 
-Commit.none = Commit.clone({
-    tree: null,
-    parents: null,
-    author: {
-        name: 'Your Name',
-        email: 'you@example.com',
-        date: new Date(),
-    },
-    committer: {
-        name: 'Your Name',
-        email: 'you@example.com',
-        date: new Date(),
-    },
-    message: 'Initial commit\n',
-    file: new Uint8Array(0),
-    hash: new Uint8Array(0),
-    hashOffset: 0,
-});
+Commit.none = null;
+var parentHashOffset = -1;
+var mergeParentHashOffset = -1;
+var tempHashOffset = -1;
 
-Commit.checkout = function (packIndices, table, hash, hashOffset) {
-    var commit = HashTable.get(table, hash, hashOffset);
-    if (commit) {
-        return commit;
+Commit.initialize = function () {
+    Commit.none = clone({
+        tree: null,
+        parent: null,
+        mergeParent: null,
+
+        authorName: 'Your Name',
+        authorEmail: 'you@example.com',
+        authorTime: Date.now(),
+        authorTimezoneOffset: (new Date()).getTimezoneOffset(),
+
+        committerName: 'Your Name',
+        committerEmail: 'you@example.com',
+        committerTime: Date.now(),
+        committerTimezoneOffset: (new Date()).getTimezoneOffset(),
+
+        message: 'Initial commit\n',
+    });
+
+    tempHashOffset = $Heap.nextOffset;
+    $Heap.nextOffset += 20;
+    parentHashOffset = $Heap.nextOffset;
+    $Heap.nextOffset += 20;
+    mergeParentHashOffset = $Heap.nextOffset;
+    $Heap.nextOffset += 20;
+};
+
+Commit.setAll = function (original, modifications) {
+    var commit = clone(original);
+    var prop;
+    for (prop in modifications) {
+        commit[prop] = modifications[prop];
     }
 
-    var packs = packIndices;
-    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
+    var fileRange = CommitFile.create(commit);
+    var fileStart = fileRange[0];
+    var fileEnd = fileRange[1];
 
-    commit = Commit.clone(Commit.none);
-    commit.file = file;
-    commit.hash = hash;
+    if ($Heap.nextOffset + 20 > $Heap.capacity) {
+        FileSystem.resizeHeap($FileSystem, 20);
+    }
+    Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    if (hashOffset < 0) {
+        hashOffset = ~hashOffset;
+        HashTable.setHash($HashTable, hashOffset, tempHashOffset);
+    }
+    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
+        return $HashTable.objects[objectIndex];
+    }
+
+    commit.fileStart = fileStart;
+    commit.fileEnd = fileEnd;
     commit.hashOffset = hashOffset;
-    HashTable.save(table, commit);
 
-    commit.author = CommitFile.parseAuthor(file);
-    commit.committer = CommitFile.parseAuthor(file);
-    commit.message = CommitFile.parseMessage(file);
+    $[flagsOffset] |= HashTable.isObject;
+    $HashTable.objects[objectIndex] = commit;
+
+    return commit;
+};
+
+Commit.checkout = function (searchHashOffset) {
+    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
+    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+    var flagsOffset = HashTable.flagsOffset($HashTable, flagsOffset);
+    if ($[flagsOffset] & HashTable.isObject) {
+        return $HashTable.objects[objectIndex];
+    }
+
+    var packOffset = $PackIndex.offsets[objectIndex];
+    var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset);
+    var fileStart = fileRange[0];
+    var fileEnd = fileRange[1];
+
+    var commit = clone(Commit.none);
+    commit.fileStart = fileStart;
+    commit.fileEnd = fileEnd;
+    commit.hashOffset = hashOffset;
+
+    CommitFile.parse(fileStart, fileEnd, commit);
+
+    $HashTable.objects[objectIndex] = commit;
+    $[flagsOffset] |= HashTable.isObject;
 
     return commit;
 };
 
 Commit.checkoutTree = function (commit, packIndices, table) {
-    var treeHash = CommitFile.parseTree(commit.file);
-    commit.tree = Project.checkout(packIndices, table, treeHash, 0);
+    CommitFile.parseTree(commit.fileStart, commit.fileEnd, tempHashOffset);
+    commit.tree = Project.checkout(treeHashOffset);
 };
 
-Commit.checkoutParents = function (commit, packIndices, table) {
-    var parentHashes = CommitFile.parseParents(commit.file);
-    commit.parents = [];
-    var i;
+Commit.checkoutParents = function (commit) {
+    var numParents = CommitFile.parseParents(commit.fileStart, commit.fileEnd, parentHashOffset);
 
-    for (i = 0; i < parentHashes.length; i++) {
-        commit.parents[i] = Commit.checkout(packIndices, table, parentHashes[i], 0);
+    if (numParents >= 1) {
+        commit.parent = Commit.checkout(parentHashOffset);
+    }
+    if (numParents >= 2) {
+        commit.mergeParent = Commit.checkout(mergeParentHashOffset);
     }
 };
 
