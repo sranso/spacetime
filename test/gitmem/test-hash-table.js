@@ -95,5 +95,7 @@ $[flagsOffset] |= HashTable.isObject;
 log(flagsOffset, $[flagsOffset]);
 //=> 514 1
 
-log(HashTable.prettyPrint(table));
+table.objects[3] = object;
+log(prettyHashTable(table));
 //=> 1: #<0beec7 foo=bar>
+//=> 3: #<0beec7 foo=bar>

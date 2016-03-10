@@ -216,7 +216,7 @@ log(Tree.catFile(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
-log(HashTable.prettyPrint($HashTable));
+log(prettyHashTable($HashTable));
 //=> 1: #<70bfe9 null>
 //=> 2: #<03c754 white>, #<4b14dc grid=null text= color=white>
 //=> 4: #<c22708 0>
@@ -253,7 +253,7 @@ var grid2 = Grid.setAll(grid1, {
 log(hex(grid2.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
-log(HashTable.prettyPrint($HashTable));
+log(prettyHashTable($HashTable));
 //=> 5: #<70bfe9 null>, #<56a605 1>
 //=> 9: #<4b14dc grid=null text= color=white>, #<05dafb rows=0 colu..=0 cell1=[obj.. cell2..>
 //=> 10: #<03c754 white>
@@ -289,7 +289,7 @@ log(gotGrid.rows, gotGrid.columns, gotGrid.cell1.text);
 log(gotGrid.cell2.color, gotGrid.cell3.text);
 //=> red bar
 
-log(HashTable.prettyPrint(newHashTable));
+log(prettyHashTable(newHashTable));
 //=> 0: #<6f1e0d grid=null text=foo color=white>, #<89ced6 grid=null text=foo color=red>
 //=> 1: #<0af810 red>
 //=> 3: #<e440e5 3>
