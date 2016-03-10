@@ -2,8 +2,8 @@
 global.Sha1 = {};
 (function () {
 
-// 512 / 8  = 64
-// 512 / 32 = 16
+// 512 bits / 8  = 64 bytes
+// 512 bits / 32 = 16 words
 
 var W = new Int32Array(80);
 var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
@@ -41,7 +41,14 @@ Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
     var fullBlockEnd = M_end - lastBlockBytes;
     var i;
     for (startByte = M_start; startByte < fullBlockEnd; startByte += 64) {
-        writeBigEndian(M_array, W8, W, startByte, 64);
+        for (i = 0; i < 64; i += 4) {
+            W[i >>> 2] = (
+                (M_array[startByte + i] << 24) |
+                (M_array[startByte + i + 1] << 16) |
+                (M_array[startByte + i + 2] << 8) |
+                M_array[startByte + i + 3]
+            );
+        }
         hashBlock(W);
     }
 
@@ -49,10 +56,28 @@ Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
     for (i = 0; i < 16; i++) {
         W[i] = 0;
     }
-    writeBigEndian(M_array, W8, W, startByte, lastBlockBytes);
+
+    var lastWordBytes = lastBlockBytes % 4;
+    var lastBlockBytesAligned = lastBlockBytes - lastWordBytes;
+    for (i = 0; i < lastBlockBytesAligned; i += 4) {
+        W[i >>> 2] = (
+            (M_array[startByte + i] << 24) |
+            (M_array[startByte + i + 1] << 16) |
+            (M_array[startByte + i + 2] << 8) |
+            M_array[startByte + i + 3]
+        );
+    }
+
+    switch (lastWordBytes) {
+    case 3:
+        W8[i + 1] = M_array[startByte + i + 2];
+    case 2:
+        W8[i + 2] = M_array[startByte + i + 1];
+    case 1:
+        W8[i + 3] = M_array[startByte + i];
+    }
 
     // Pad the message with a "one" bit [5.1.1]
-    var lastWordBytes = lastBlockBytes % 4;
     W8[lastBlockBytes + 3 - lastWordBytes - lastWordBytes] = 0x80;
 
     if (lastBlockBytes > 64 - 8 - 1) {
@@ -181,45 +206,5 @@ var hashBlock = function (W) {
     H3 = (d + H3) | 0;
     H4 = (e + H4) | 0;
 };
-
-var writeBigEndian = function (M_array, W8, W, offset, length) {
-    var lengthExtra = length % 4;
-    var j = length - lengthExtra;
-    var i;
-    for (i = 0; i < j; i += 4) {
-        W[i >>> 2] = (
-            (M_array[offset + i] << 24) |
-            (M_array[offset + i + 1] << 16) |
-            (M_array[offset + i + 2] << 8) |
-            M_array[offset + i + 3]
-        );
-    }
-
-    switch (lengthExtra) {
-    case 3:
-        W8[j + 1] = M_array[offset + j + 2];
-    case 2:
-        W8[j + 2] = M_array[offset + j + 1];
-    case 1:
-        W8[j + 3] = M_array[offset + j];
-    }
-};
-
-// var f = function (t, x, y, z) {
-//     var t20 = Math.floor(t / 20);
-//     switch (t20) {
-//         case 0:
-//             return (x & y) ^ (~x & z);
-//         case 1:
-//         case 3:
-//             return x ^ y ^ z;
-//         case 2:
-//             return (x & y) ^ (x & z) ^ (y & z);
-//     }
-// };
-//
-// var ROTL = function (n, x) {
-//     return (x << n) | (x >>> (32 - n));
-// };
 
 })();
