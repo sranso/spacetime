@@ -112,6 +112,11 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
+hashOffset = HashTable.findHashOffset($HashTable, thing1.hashOffset);
+objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+log($HashTable.objects[objectIndex] === thing1);
+//=> true
+
 log(hash($, thing1.fileStart + offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
@@ -124,6 +129,12 @@ log(gotString, typeof gotString);
 var thing2 = Thing.set(thing1, 'number', 42);
 log(thing2.number);
 //=> 42
+
+var thing3 = Thing.set(thing2, 'number', 375.2);
+log(thing3.number);
+//=> 375.2
+log(thing3 === thing1);
+//=> true
 
 var numberRange = Value.blobFromNumber(42);
 var numberStart = numberRange[0];

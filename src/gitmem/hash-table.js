@@ -97,25 +97,6 @@ HashTable.setHash = function (table, hashOffset, setHashOffset) {
     table.load++;
 };
 
-HashTable.idempotentSaveObject = function (table, object) {
-    var hashOffset = HashTable.findHashOffset(table, object.hashOffset);
-    if (hashOffset < 0) {
-        hashOffset = ~hashOffset;
-        HashTable.setHash(table, hashOffset, object.hashOffset);
-    }
-
-    var flagsOffset = HashTable.flagsOffset(table, hashOffset);
-    var objectIndex = HashTable.objectIndex(table, hashOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        return table.objects[objectIndex];
-    }
-
-    $[flagsOffset] |= HashTable.isObject;
-    object.hashOffset = hashOffset;
-    table.objects[objectIndex] = object;
-    return object;
-};
-
 var clamp = function (d, length) {
     if (d.length > length) {
         return d.slice(0, length - 2) + '..';
