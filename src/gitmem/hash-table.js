@@ -37,18 +37,12 @@ HashTable.findHashOffset = function (table, searchHashOffset) {
         ($[searchHashOffset + 2] << 8) |
         $[searchHashOffset + 3]
     );
-    var h2 = 1 | (
-        ($[searchHashOffset] << 24) |
-        ($[searchHashOffset + 1] << 16) |
-        ($[searchHashOffset + 2] << 8) |
-        $[searchHashOffset + 3]
-    );
+    var h = h1 >>> table.hashBitsToShift;
     var i;
     var j;
     var k;
 
-    for (j = 0; j < 1000; j++) {
-        var h = (h1 + Math.imul(j, h2)) >>> table.hashBitsToShift;
+    for (j = 1; j < 1000; j++) {
         var blockOffset = 64 * Math.floor(h / 3) + table.hashesOffset;
         var setByte = $[blockOffset];
 
@@ -66,6 +60,14 @@ HashTable.findHashOffset = function (table, searchHashOffset) {
                 return ~offset;
             }
         }
+
+        var h2 = 1 | (
+            ($[searchHashOffset] << 24) |
+            ($[searchHashOffset + 1] << 16) |
+            ($[searchHashOffset + 2] << 8) |
+            $[searchHashOffset + 3]
+        );
+        h = (h1 + Math.imul(j, h2)) >>> table.hashBitsToShift;
     }
 
     throw new Error('Reached maximum iterations searching for hash');
