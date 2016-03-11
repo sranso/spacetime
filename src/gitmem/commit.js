@@ -69,9 +69,6 @@ Commit.setAll = function (original, modifications) {
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
-    if ($Heap.nextOffset + 20 > $Heap.capacity) {
-        FileSystem.resizeHeap($FileSystem, 20);
-    }
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
     var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
     if (hashOffset < 0) {
@@ -89,36 +86,20 @@ Commit.setAll = function (original, modifications) {
     commit.hashOffset = hashOffset;
 
     $[flagsOffset] |= HashTable.isObject;
+    $[flagsOffset] &= ~HashTable.isCachedFile;
     $HashTable.objects[objectIndex] = commit;
 
     return commit;
 };
 
-Commit.checkout = function (searchHashOffset) {
-    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, flagsOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        return $HashTable.objects[objectIndex];
-    }
-
-    var packOffset = $PackIndex.offsets[objectIndex];
-    var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset);
-    var fileStart = fileRange[0];
-    var fileEnd = fileRange[1];
-
+var checkoutFile = function (fileStart, fileEnd) {
     var commit = clone(Commit.none);
-    commit.fileStart = fileStart;
-    commit.fileEnd = fileEnd;
-    commit.hashOffset = hashOffset;
-
     CommitFile.parse(fileStart, fileEnd, commit);
-
-    $HashTable.objects[objectIndex] = commit;
-    $[flagsOffset] |= HashTable.isObject;
-
     return commit;
+};
+
+Commit.checkout = function (searchHashOffset) {
+    return FastCheckout.checkout(searchHashOffset, checkoutFile);
 };
 
 Commit.checkoutTree = function (commit, packIndices, table) {

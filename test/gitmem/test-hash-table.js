@@ -1,11 +1,11 @@
 'use strict';
 require('../helper');
 
-var random = Random.create(42);
 global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 $Heap.nextOffset = 512;
 
+var random = Random.create(42);
 var table = HashTable.create(8, $Heap, random);
 log(table.hashesOffset, $Heap.nextOffset);
 //=> 512 704

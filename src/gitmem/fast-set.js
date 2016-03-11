@@ -12,13 +12,15 @@ FastSet.initialize = function () {
 
 FastSet.set = function (original, prop, value, offsets, types, clone) {
     var originalHeapOffset = $Heap.nextOffset;
-    var fileRange = cloneFile(original.fileStart, original.fileEnd);
+
+    var fileRange = copyFile(original.fileStart, original.fileEnd);
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
     var offset = offsets[prop];
     var type = types[prop];
     var internalHashOffset = fileStart + offset;
+
     value = mutateFile(internalHashOffset, value, type);
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
@@ -41,6 +43,7 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     thing[prop] = value;
 
     $[flagsOffset] |= HashTable.isObject;
+    $[flagsOffset] &= ~HashTable.isCachedFile;
     $HashTable.objects[objectIndex] = thing;
 
     return thing;
@@ -48,7 +51,8 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
 
 FastSet.setAll = function (original, modifications, offsets, types, clone) {
     var originalHeapOffset = $Heap.nextOffset;
-    var fileRange = cloneFile(original.fileStart, original.fileEnd);
+
+    var fileRange = copyFile(original.fileStart, original.fileEnd);
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
@@ -58,6 +62,7 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
         var offset = offsets[prop];
         var type = types[prop];
         var internalHashOffset = fileStart + offset;
+
         modifications[prop] = mutateFile(internalHashOffset, value, type);
     }
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
@@ -83,6 +88,7 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
     }
 
     $[flagsOffset] |= HashTable.isObject;
+    $[flagsOffset] &= ~HashTable.isCachedFile;
     $HashTable.objects[objectIndex] = thing;
 
     return thing;
@@ -121,13 +127,14 @@ var mutateFile = function (internalHashOffset, value, type) {
             var blobObject = Value.createBlobObject(blobStart, blobEnd, hashOffset, value);
 
             $[flagsOffset] |= HashTable.isObject;
+            $[flagsOffset] &= ~HashTable.isCachedFile;
             $HashTable.objects[objectIndex] = blobObject;
             return blobObject.data;
         }
     }
 };
 
-var cloneFile = function (originalFileStart, originalFileEnd) {
+var copyFile = function (originalFileStart, originalFileEnd) {
     var fileLength = originalFileEnd - originalFileStart;
     if ($Heap.nextOffset + fileLength > $Heap.capacity) {
         FileSystem.expandHeap($Heap, fileLength);
@@ -135,6 +142,7 @@ var cloneFile = function (originalFileStart, originalFileEnd) {
     var fileStart = $Heap.nextOffset;
     $Heap.nextOffset += fileLength;
     var fileEnd = $Heap.nextOffset;
+
     var i;
     for (i = 0; i < fileLength; i++) {
         $[fileStart + i] = $[originalFileStart + i];
