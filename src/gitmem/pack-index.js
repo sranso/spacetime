@@ -22,17 +22,20 @@ PackIndex.indexPack = function (index, pack) {
     var j = 12;
     var k;
     for (k = 0; k < numFiles; k++) {
-        var file = PackData.extractFile($PackData, pack, j);
+        var file = PackData.extractFile($PackData, pack, j, $FileCache.heap);
         var fileStart = file[0];
         var fileEnd = file[1];
         var nextPackOffset = file[2];
 
-        Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
+        Sha1.hash($FileCache.heap.array, fileStart, fileEnd, $, tempHashOffset);
         var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
             var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
             HashTable.setHash($HashTable, hashOffset, tempHashOffset);
+
+            FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
+            FileCache.maybeRewindNextOffset($FileCache);
 
             var deflatedLength = nextPackOffset - j;
             if ($PackData.nextOffset + deflatedLength > $PackData.capacity) {

@@ -6,6 +6,7 @@ global.$ = $Heap.array;
 var random = Random.create(526926);
 global.$HashTable = HashTable.create(8, $Heap, random);
 global.$PackData = PackData.create(512);
+global.$FileCache = FileCache.create(3, 22);
 
 PackIndex.initialize();
 
@@ -60,6 +61,12 @@ var packOffset = index.offsets[objectIndex];
 log(objectIndex, packOffset);
 //=> 0 0
 
+var file = PackData.extractFile($PackData, $PackData.array, packOffset, $Heap);
+var fileStart = file[0];
+var fileEnd = file[1];
+log(pretty($, fileStart, fileEnd));
+//=> blob 3\x00foo
+
 hashOffset = HashTable.findHashOffset($HashTable, barHashOffset);
 log(hashOffset, hash($, hashOffset));
 //=> 132 'ba0e162e1c47469e3fe4b393a8bf8c569f302116'
@@ -68,8 +75,17 @@ packOffset = index.offsets[objectIndex];
 log(objectIndex, packOffset);
 //=> 6 12
 
-var file = PackData.extractFile($PackData, $PackData.array, packOffset);
-var fileStart = file[0];
-var fileEnd = file[1];
-log(pretty($, fileStart, fileEnd));
+log($FileCache.firstIndex, $FileCache.nextIndex);
+//=> 0 2
+log($FileCache.heap.nextOffset);
+//=> 0
+log($FileCache.fileStarts[0], $FileCache.fileStarts[1]);
+//=> 0 10
+var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
+log($[flagsOffset] & HashTable.isCachedFile);
+//=> 2
+var cachedFile = $HashTable.objects[objectIndex];
+log(cachedFile.fileStart, cachedFile.fileEnd);
+//=> 10 20
+log(pretty($FileCache.heap.array, cachedFile.fileStart, cachedFile.fileEnd));
 //=> blob 3\x00bar

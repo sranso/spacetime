@@ -96,7 +96,7 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packData, packDataArray, packOffset) {
+PackData.extractFile = function (packData, packDataArray, packOffset, heap) {
     var pack_j = packOffset;
     var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
@@ -121,25 +121,28 @@ PackData.extractFile = function (packData, packDataArray, packOffset) {
 
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
-    if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-        FileSystem.resizeHeap($FileSystem, fileLength);
+    if (heap.nextOffset + fileLength > heap.capacity) {
+        if (heap === $FileCache.heap) {
+            FileCache.resize(FileCache, fileLength);
+        } else {
+            FileSystem.resizeHeap($FileSystem, fileLength);
+        }
     }
-    var fileStart = $Heap.nextOffset;
+    var fileStart = heap.nextOffset;
     var fileEnd = fileStart + fileLength;
-    $Heap.nextOffset = fileEnd;
 
     var file_j = fileStart;
     var i;
     for (i = 0; i < prefix.length; i++) {
-        $[file_j + i] = prefix[i];
+        heap.array[file_j + i] = prefix[i];
     }
 
     file_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        $[file_j + i] = lengthString.charCodeAt(i);
+        heap.array[file_j + i] = lengthString.charCodeAt(i);
     }
 
-    $Heap.nextOffset = file_j + i + 1;
+    heap.nextOffset = file_j + i + 1;
 
     if (length < 32768) {
         // Try to only need one chunk.
@@ -151,6 +154,7 @@ PackData.extractFile = function (packData, packDataArray, packOffset) {
 
     var inflate = new pako.Inflate({chunkSize: chunkSize});
     inflate.onData = onInflateData;
+    inflate.heap = heap;
     inflate.onEnd = onEnd;
 
     inflate.push(packDataArray.subarray(pack_j), true);
@@ -161,11 +165,12 @@ PackData.extractFile = function (packData, packDataArray, packOffset) {
 };
 
 var onInflateData = function (chunk) {
+    var heap = this.heap;
     var i;
     for (i = 0; i < chunk.length; i++) {
-        $[$Heap.nextOffset + i] = chunk[i];
+        heap.array[heap.nextOffset + i] = chunk[i];
     }
-    $Heap.nextOffset += i;
+    heap.nextOffset += i;
 };
 
 })();
