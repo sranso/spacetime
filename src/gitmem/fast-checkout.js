@@ -20,7 +20,7 @@ FastCheckout.checkout = function (searchHashOffset, checkoutFile) {
         // Copy file
         var fileLength = cachedFileEnd - cachedFileStart;
         if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-            FileSystem.expandHeap($Heap, fileLength);
+            GarbageCollector.resizeHeap($FileSystem, fileLength);
         }
         var fileStart = $Heap.nextOffset;
         $Heap.nextOffset += fileLength;

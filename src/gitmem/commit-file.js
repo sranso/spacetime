@@ -70,7 +70,7 @@ CommitFile.create = function (commit) {
     var lengthString = '' + length;
     var commitLength = commitPrefix.length + lengthString.length + 1 + length;
     if ($Heap.nextOffset + commitLength > $Heap.capacity) {
-        FileSystem.resizeHeap($FileSystem, commitLength);
+        GarbageCollector.resizeHeap($FileSystem, commitLength);
     }
     var commitStart = $Heap.nextOffset;
     var commitEnd = commitStart + commitLength;

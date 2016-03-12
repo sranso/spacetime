@@ -22,7 +22,7 @@ Blob.createFromString = function (string) {
     var lengthString = '' + string.length;
     var blobLength = blobPrefix.length + lengthString.length + 1 + string.length;
     if ($Heap.nextOffset + blobLength > $Heap.capacity) {
-        FileSystem.resizeHeap($FileSystem, blobLength);
+        GarbageCollector.resizeHeap($FileSystem, blobLength);
     }
     var blobStart = $Heap.nextOffset;
     var blobEnd = blobStart + blobLength;

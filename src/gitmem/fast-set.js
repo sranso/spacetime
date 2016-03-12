@@ -131,7 +131,7 @@ var mutateFile = function (internalHashOffset, value, type) {
 var copyFile = function (originalFileStart, originalFileEnd) {
     var fileLength = originalFileEnd - originalFileStart;
     if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-        FileSystem.expandHeap($Heap, fileLength);
+        GarbageCollector.resizeHeap($FileSystem, fileLength);
     }
     var fileStart = $Heap.nextOffset;
     $Heap.nextOffset += fileLength;

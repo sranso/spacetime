@@ -84,7 +84,7 @@ Tree.create = function (props) {
     var headerLength = treePrefix.length + lengthString.length + 1;
     var treeLength = headerLength + length;
     if ($Heap.nextOffset + treeLength > $Heap.capacity) {
-        FileSystem.resizeHeap($FileSystem, treeLength);
+        GarbageCollector.resizeHeap($FileSystem, treeLength);
     }
     var treeStart = $Heap.nextOffset;
     var treeEnd = treeStart + treeLength;

@@ -125,7 +125,7 @@ PackData.extractFile = function (packData, packDataArray, packOffset, heap) {
         if (heap === $FileCache.heap) {
             FileCache.resize(FileCache, fileLength);
         } else {
-            FileSystem.resizeHeap($FileSystem, fileLength);
+            GarbageCollector.resizeHeap($FileSystem, fileLength);
         }
     }
     var fileStart = heap.nextOffset;
