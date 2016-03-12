@@ -26,6 +26,7 @@ HashTable.create = function (n, heap, random) {
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,
+        mask: -1 >>> hashBitsToShift,
         a: Random.uint32(random) | 1,
     };
 };
@@ -36,8 +37,8 @@ HashTable.findHashOffset = function (table, searchHashOffset) {
         ($[searchHashOffset + 1] << 16) |
         ($[searchHashOffset + 2] << 8) |
         $[searchHashOffset + 3]
-    );
-    var h = h1 >>> table.hashBitsToShift;
+    ) >>> table.hashBitsToShift;
+    var h = h1;
     var i;
     var j;
     var k;
@@ -61,13 +62,14 @@ HashTable.findHashOffset = function (table, searchHashOffset) {
             }
         }
 
-        var h2 = 1 | (
-            ($[searchHashOffset] << 24) |
-            ($[searchHashOffset + 1] << 16) |
-            ($[searchHashOffset + 2] << 8) |
-            $[searchHashOffset + 3]
+        var h2 = (
+            ($[searchHashOffset + 4] << 24) |
+            ($[searchHashOffset + 5] << 16) |
+            ($[searchHashOffset + 6] << 8) |
+            $[searchHashOffset + 7] |
+            1
         );
-        h = (h1 + Math.imul(j, h2)) >>> table.hashBitsToShift;
+        h = (h1 + Math.imul(j, h2)) & table.mask;
     }
 
     throw new Error('Reached maximum iterations searching for hash');
