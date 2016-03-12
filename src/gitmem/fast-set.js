@@ -100,19 +100,10 @@ var mutateFile = function (internalHashOffset, value, type) {
 
         return value;
     } else {
-        if (type === 'string') {
-            var blobRange = Value.blobFromString(value);
-        } else if (type === 'number') {
-            var blobRange = Value.blobFromNumber(value);
-        } else if (type === 'boolean') {
-            var blobRange = Value.blobFromBoolean(value);
-        } else {
-            throw new Error('Unsupported type: ' + type);
-        }
-
-        var blobStart = blobRange[0];
-        var blobEnd = blobRange[1];
-        Sha1.hash($, blobStart, blobEnd, $, internalHashOffset);
+        var fileRange = Value.createBlob(type, value);
+        var fileStart = fileRange[0];
+        var fileEnd = fileRange[1];
+        Sha1.hash($, fileStart, fileEnd, $, internalHashOffset);
 
         var hashOffset = HashTable.findHashOffset($HashTable, internalHashOffset);
         if (hashOffset < 0) {
@@ -122,14 +113,17 @@ var mutateFile = function (internalHashOffset, value, type) {
         var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
         var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
         if ($[flagsOffset] & HashTable.isObject) {
-            return $HashTable.objects[objectIndex].data;
+            return $HashTable.objects[objectIndex].value;
         } else {
-            var blobObject = Value.createBlobObject(blobStart, blobEnd, hashOffset, value);
+            var valueObject = Value.createObject(value);
+            valueObject.fileStart = fileStart;
+            valueObject.fileEnd = fileEnd;
+            valueObject.hashOffset = hashOffset;
 
             $[flagsOffset] |= HashTable.isObject;
             $[flagsOffset] &= ~HashTable.isCachedFile;
-            $HashTable.objects[objectIndex] = blobObject;
-            return blobObject.data;
+            $HashTable.objects[objectIndex] = valueObject;
+            return valueObject.value;
         }
     }
 };

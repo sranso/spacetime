@@ -83,12 +83,12 @@ log(hash($, none.fileStart + offsets.string));
 
 var hashOffset = HashTable.findHashOffset($HashTable, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotBool = $HashTable.objects[objectIndex].data;
+var gotBool = $HashTable.objects[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
 
-var objectRange = Value.blobFromString('bar');
+var objectRange = Value.createBlob('string', 'bar');
 
 var object1 = {
     fileStart: objectRange[0],
@@ -122,7 +122,7 @@ log(hash($, thing1.fileStart + offsets.string));
 
 hashOffset = HashTable.findHashOffset($HashTable, thing1.fileStart + offsets.string);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotString = $HashTable.objects[objectIndex].data;
+var gotString = $HashTable.objects[objectIndex].value;
 log(gotString, typeof gotString);
 //=> foo string
 
@@ -136,7 +136,7 @@ log(thing3.number);
 log(thing3 === thing1);
 //=> true
 
-var numberRange = Value.blobFromNumber(42);
+var numberRange = Value.createBlob('number', 42);
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 var numberHashOffset = $Heap.nextOffset;
@@ -144,12 +144,12 @@ $Heap.nextOffset += 20;
 Sha1.hash($, numberStart, numberEnd, $, numberHashOffset);
 hashOffset = HashTable.findHashOffset($HashTable, numberHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotNumber = $HashTable.objects[objectIndex].data;
+var gotNumber = $HashTable.objects[objectIndex].value;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
 hashOffset = HashTable.findHashOffset($HashTable, thing2.fileStart + offsets.bool);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotBool = $HashTable.objects[objectIndex].data;
+var gotBool = $HashTable.objects[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'

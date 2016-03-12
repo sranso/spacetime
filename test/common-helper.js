@@ -54,22 +54,22 @@ global.prettyHashTable = function (table) {
     for (i = 0; i < table.objects.length; i++) {
         var object = table.objects[i];
         if (object) {
-            var data;
-            if (object.hasOwnProperty('data')) {
-                data = '' + object.data;
+            var value;
+            if (object.hasOwnProperty('value')) {
+                value = '' + object.value;
             } else {
                 var keys = Object.keys(object);
                 var ignoreKeys = ['fileStart', 'fileEnd', 'hashOffset'];
                 keys = keys.filter(function (key) {
                     return ignoreKeys.indexOf(key) === -1;
                 });
-                data = keys.map(function (key) {
+                value = keys.map(function (key) {
                     var d = '' + object[key];
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
             var hash = GitConvert.hashToString($, object.hashOffset);
-            pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(data, 36) + '>');
+            pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }
 

@@ -12,7 +12,7 @@ PackIndex.initialize();
 CommitFile.initialize();
 Commit.initialize();
 
-var fooRange = Value.blobFromString('foo');
+var fooRange = Value.createBlob('string', 'foo');
 var fooStart = fooRange[0];
 var fooEnd = fooRange[1];
 
