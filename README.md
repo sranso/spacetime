@@ -31,6 +31,7 @@ $ cp dev/nginx.example.conf dev/nginx.conf
 Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the client secret. Start nginx and fcgiwrap:
 
 ``` bash
+$ rm dev/fcgiwrap.sock  # if it exists already
 $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
 $ nginx -c /Users/jakesandlund/spacetimecode/spacetime/dev/nginx.conf
 ```
