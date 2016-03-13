@@ -3,8 +3,8 @@ require('../helper');
 
 global.$Heap = Heap.create(256);
 global.$ = $Heap.array;
-global.$Random = Random.create(91285);
-global.$HashTable = HashTable.create(4, $Heap, $Random);
+var random = Random.create(91285);
+global.$HashTable = HashTable.create(4, $Heap, random);
 global.$PackIndex = PackIndex.create(4);
 global.$PackData = PackData.create(128);
 global.$FileCache = FileCache.create(2, 128);
