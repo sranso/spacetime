@@ -100,6 +100,8 @@ var mutateFile = function (internalHashOffset, value, type) {
 
         return value;
     } else {
+        var originalHeapOffset = $Heap.nextOffset;
+
         var fileRange = Value.createBlob(type, value);
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
@@ -113,6 +115,7 @@ var mutateFile = function (internalHashOffset, value, type) {
         var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
         var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
         if ($[flagsOffset] & HashTable.isObject) {
+            $Heap.nextOffset = originalHeapOffset;
             return $HashTable.objects[objectIndex].value;
         } else {
             var valueObject = Value.createObject(value);
