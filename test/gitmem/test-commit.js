@@ -5,6 +5,7 @@ global.$Heap = Heap.create(4096);
 global.$ = $Heap.array;
 var random = Random.create(28591);
 global.$HashTable = HashTable.create(8, $Heap, random);
+global.$Objects = Objects.create(8);
 global.$PackIndex = PackIndex.create(8);
 global.$PackData = PackData.create(1024);
 
@@ -65,10 +66,10 @@ var hashOffset = HashTable.findHashOffset($HashTable, commit.hashOffset);
 log(hashOffset, hash($, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
 var objectIndex = HashTable.objectIndex($HashTable, commit.hashOffset);
-log(objectIndex, $HashTable.objects[objectIndex].authorTime);
+var savedCommit = $Objects.table[objectIndex];
+log(objectIndex, savedCommit.authorTime);
 //=> 3 1454907687000
-var flagsOffset = HashTable.flagsOffset($HashTable, commit.hashOffset);
-log($[flagsOffset] & HashTable.isObject);
+log(savedCommit.flags & Objects.isFullObject);
 //=> 1
 
 var secondCommit = Commit.setAll(commit, {
@@ -106,8 +107,7 @@ objectIndex = HashTable.objectIndex($HashTable, hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, commit.fileStart, commit.fileEnd);
 // Save first commit
-$HashTable.objects[objectIndex] = commit;
-$[HashTable.flagsOffset($HashTable, hashOffset)] |= HashTable.isObject;
+$Objects.table[objectIndex] = commit;
 
 hashOffset = ~HashTable.findHashOffset($HashTable, treeHashOffset);
 HashTable.setHash($HashTable, hashOffset, treeHashOffset);

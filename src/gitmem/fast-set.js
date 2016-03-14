@@ -25,26 +25,28 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
     var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, tempHashOffset);
-    }
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        $Heap.nextOffset = originalHeapOffset;
-        return $HashTable.objects[objectIndex];
+        thing = clone(original);
+        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
+    } else {
+        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var found = $Objects.table[objectIndex];
+        if (found && (found.flags & Objects.isFullObject)) {
+            $Heap.nextOffset = originalHeapOffset;
+            return found;
+        }
+        thing = clone(original);
+        $Objects.table[objectIndex] = thing;
     }
 
-    var thing = clone(original);
+    thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
     thing[prop] = value;
-
-    $[flagsOffset] |= HashTable.isObject;
-    $[flagsOffset] &= ~HashTable.isCachedFile;
-    $HashTable.objects[objectIndex] = thing;
 
     return thing;
 };
@@ -68,28 +70,30 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
     var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, tempHashOffset);
-    }
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        $Heap.nextOffset = originalHeapOffset;
-        return $HashTable.objects[objectIndex];
+        thing = clone(original);
+        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
+    } else {
+        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var found = $Objects.table[objectIndex];
+        if (found && (found.flags & Objects.isFullObject)) {
+            $Heap.nextOffset = originalHeapOffset;
+            return found;
+        }
+        thing = clone(original);
+        $Objects.table[objectIndex] = thing;
     }
 
-    var thing = clone(original);
+    thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
     for (prop in modifications) {
         thing[prop] = modifications[prop];
     }
-
-    $[flagsOffset] |= HashTable.isObject;
-    $[flagsOffset] &= ~HashTable.isCachedFile;
-    $HashTable.objects[objectIndex] = thing;
 
     return thing;
 };
@@ -107,27 +111,30 @@ var mutateFile = function (internalHashOffset, value, type) {
         var fileEnd = fileRange[1];
         Sha1.hash($, fileStart, fileEnd, $, internalHashOffset);
 
+        var valueObject;
         var hashOffset = HashTable.findHashOffset($HashTable, internalHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
             HashTable.setHash($HashTable, hashOffset, internalHashOffset);
-        }
-        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-        var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-        if ($[flagsOffset] & HashTable.isObject) {
-            $Heap.nextOffset = originalHeapOffset;
-            return $HashTable.objects[objectIndex].value;
+            valueObject = Value.createObject(value);
+            $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = valueObject;
         } else {
-            var valueObject = Value.createObject(value);
-            valueObject.fileStart = fileStart;
-            valueObject.fileEnd = fileEnd;
-            valueObject.hashOffset = hashOffset;
-
-            $[flagsOffset] |= HashTable.isObject;
-            $[flagsOffset] &= ~HashTable.isCachedFile;
-            $HashTable.objects[objectIndex] = valueObject;
-            return valueObject.value;
+            var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+            var found = $Objects.table[objectIndex];
+            if (found && (found.flags & Objects.isFullObject)) {
+                $Heap.nextOffset = originalHeapOffset;
+                return found.value;
+            }
+            valueObject = Value.createObject(value);
+            $Objects.table[objectIndex] = valueObject;
         }
+
+        valueObject.flags = Objects.isFullObject;
+        valueObject.fileStart = fileStart;
+        valueObject.fileEnd = fileEnd;
+        valueObject.hashOffset = hashOffset;
+
+        return valueObject.value;
     }
 };
 

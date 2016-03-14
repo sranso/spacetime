@@ -4,6 +4,7 @@ global.Commit = {};
 
 var clone = function (original) {
     return {
+        flags: 0,
         fileStart: -1,
         fileEnd: -1,
         hashOffset: -1,
@@ -74,20 +75,20 @@ Commit.setAll = function (original, modifications) {
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, tempHashOffset);
-    }
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        return $HashTable.objects[objectIndex];
+        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = commit;
+    } else {
+        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var found = $Objects.table[objectIndex];
+        if (found && (found.flags & Objects.isFullObject)) {
+            return foundCommit;
+        }
+        $Objects.table[objectIndex] = commit;
     }
 
+    commit.flags = Objects.isFullObject;
     commit.fileStart = fileStart;
     commit.fileEnd = fileEnd;
     commit.hashOffset = hashOffset;
-
-    $[flagsOffset] |= HashTable.isObject;
-    $[flagsOffset] &= ~HashTable.isCachedFile;
-    $HashTable.objects[objectIndex] = commit;
 
     return commit;
 };

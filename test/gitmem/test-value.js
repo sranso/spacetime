@@ -5,6 +5,7 @@ global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 var random = Random.create(526926);
 global.$HashTable = HashTable.create(8, $Heap, random);
+global.$Objects = Objects.create(8);
 global.$PackIndex = PackIndex.create(8);
 global.$PackData = PackData.create(512);
 
@@ -85,7 +86,7 @@ log(gotStringAgain, typeof gotStringAgain);
 //=> foo string
 hashOffset = HashTable.findHashOffset($HashTable, stringHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var savedString = $HashTable.objects[objectIndex].value;
+var savedString = $Objects.table[objectIndex].value;
 log(savedString, typeof savedString);
 //=> foo string
 
@@ -94,7 +95,7 @@ log(gotNumber, typeof gotNumber);
 //=> 375.2 'number'
 hashOffset = HashTable.findHashOffset($HashTable, numberHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var savedNumber = $HashTable.objects[objectIndex].value;
+var savedNumber = $Objects.table[objectIndex].value;
 log(savedNumber, typeof savedNumber);
 //=> 375.2 'number'
 
@@ -103,7 +104,7 @@ log(gotTrue, typeof gotTrue);
 //=> true 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, trueHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var savedTrue = $HashTable.objects[objectIndex].value;
+var savedTrue = $Objects.table[objectIndex].value;
 log(savedTrue, typeof savedTrue);
 //=> true 'boolean'
 
@@ -112,6 +113,6 @@ log(gotFalse, typeof gotFalse);
 //=> false 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, falseHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var savedFalse = $HashTable.objects[objectIndex].value;
+var savedFalse = $Objects.table[objectIndex].value;
 log(savedFalse, typeof savedFalse);
 //=> false 'boolean'

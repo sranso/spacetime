@@ -5,6 +5,7 @@ global.$Heap = Heap.create(256);
 global.$ = $Heap.array;
 var random = Random.create(91285);
 global.$HashTable = HashTable.create(4, $Heap, random);
+global.$Objects = Objects.create(4);
 global.$PackIndex = PackIndex.create(4);
 global.$PackData = PackData.create(128);
 global.$FileCache = FileCache.create(2, 128);
@@ -56,14 +57,14 @@ log(object.foo);
 //=> foo
 log(hash($, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
-log($HashTable.objects[objectIndex].foo);
+var savedObject = $Objects.table[objectIndex];
+log(savedObject.foo);
 //=> foo
-var flagsOffset = HashTable.flagsOffset($HashTable, object.hashOffset);
-log($[flagsOffset] & HashTable.isObject);
+log(savedObject.flags & Objects.isFullObject);
 //=> 1
 
 
-// Checkout from $HashTable.objects
+// Checkout from $Objects.table
 var packData = $PackData;
 global.$PackData = null;
 var object = FastCheckout.checkout(blobHashOffset, checkoutFile);
@@ -74,20 +75,17 @@ log(hash($, object.hashOffset));
 
 
 // Checkout from $FileCache
-$HashTable.objects[objectIndex] = null;
-$[flagsOffset] &= ~HashTable.isObject;
+$Objects.table[objectIndex] = null;
 var fileRange = PackData.extractFile(packData, packData.array, $PackIndex.offsets[objectIndex], $FileCache.heap);
 var fileStart = fileRange[0];
 var fileEnd = fileRange[1];
 FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
-log($[flagsOffset] & HashTable.isCachedFile);
-//=> 2
+log($Objects.table[objectIndex].flags & Objects.isFullObject);
+//=> 0
 var object = FastCheckout.checkout(blobHashOffset, checkoutFile);
 log(object.foo);
 //=> foo
 log(hash($, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
-log($[flagsOffset] & HashTable.isObject);
+log(object.flags & Objects.isFullObject);
 //=> 1
-log($[flagsOffset] & HashTable.isCachedFile);
-//=> 0

@@ -48,18 +48,18 @@ global.hash = function (array, hashOffset) {
     return hex(array, hashOffset, hashOffset + 20);
 };
 
-global.prettyHashTable = function (table) {
+global.prettyObjectList = function (objects) {
     var pretty = [];
     var i;
-    for (i = 0; i < table.objects.length; i++) {
-        var object = table.objects[i];
+    for (i = 0; i < objects.length; i++) {
+        var object = objects[i];
         if (object) {
             var value;
             if (object.hasOwnProperty('value')) {
                 value = '' + object.value;
             } else {
                 var keys = Object.keys(object);
-                var ignoreKeys = ['fileStart', 'fileEnd', 'hashOffset'];
+                var ignoreKeys = ['flags', 'fileStart', 'fileEnd', 'hashOffset'];
                 keys = keys.filter(function (key) {
                     return ignoreKeys.indexOf(key) === -1;
                 });

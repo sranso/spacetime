@@ -5,6 +5,7 @@ global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 var random = Random.create(526926);
 global.$HashTable = HashTable.create(8, $Heap, random);
+global.$Objects = Objects.create(8);
 global.$PackData = PackData.create(512);
 global.$FileCache = FileCache.create(3, 22);
 
@@ -81,11 +82,10 @@ log($FileCache.heap.nextOffset);
 //=> 0
 log($FileCache.fileStarts[0], $FileCache.fileStarts[1]);
 //=> 0 10
-var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-log($[flagsOffset] & HashTable.isCachedFile);
-//=> 2
-var cachedFile = $HashTable.objects[objectIndex];
-log(cachedFile.fileStart, cachedFile.fileEnd);
+var cacheObject = $Objects.table[objectIndex];
+log(cacheObject.flags & Objects.isFullObject);
+//=> 0
+log(cacheObject.fileStart, cacheObject.fileEnd);
 //=> 10 20
-log(pretty($FileCache.heap.array, cachedFile.fileStart, cachedFile.fileEnd));
+log(pretty($FileCache.heap.array, cacheObject.fileStart, cacheObject.fileEnd));
 //=> blob 3\x00bar

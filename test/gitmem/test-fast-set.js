@@ -5,6 +5,7 @@ global.$Heap = Heap.create(2048);
 global.$ = $Heap.array;
 var random = Random.create(29923321);
 global.$HashTable = HashTable.create(16, $Heap, random);
+global.$Objects = Objects.create(16);
 
 Tree.initialize();
 FastSet.initialize();
@@ -13,6 +14,7 @@ var Thing = {};
 
 var clone = function (original) {
     return {
+        flags: 0,
         fileStart: -1,
         fileEnd: -1,
         hashOffset: -1,
@@ -78,12 +80,12 @@ log('"' + none.string + '"', none.number, none.bool);
 log(none.fileStart, none.fileEnd, none.fileEnd - none.fileStart);
 //=> 532 674 142
 
-log(hash($, none.fileStart + offsets.string));
-//=> 9d68933c44f13985b9eb19159da6eb3ff0e574bf
+log(hash($, none.fileStart + offsets.bool));
+//=> 02e4a84d62c4b0fe9cca60bba7b9799f78f1f7ed
 
 var hashOffset = HashTable.findHashOffset($HashTable, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotBool = $HashTable.objects[objectIndex].value;
+var gotBool = $Objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
@@ -112,9 +114,12 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
+log(thing1.flags & Objects.isFullObject);
+//=> 1
+
 hashOffset = HashTable.findHashOffset($HashTable, thing1.hashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-log($HashTable.objects[objectIndex] === thing1);
+log($Objects.table[objectIndex] === thing1);
 //=> true
 
 log(hash($, thing1.fileStart + offsets.string));
@@ -122,13 +127,15 @@ log(hash($, thing1.fileStart + offsets.string));
 
 hashOffset = HashTable.findHashOffset($HashTable, thing1.fileStart + offsets.string);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotString = $HashTable.objects[objectIndex].value;
+var gotString = $Objects.table[objectIndex].value;
 log(gotString, typeof gotString);
 //=> foo string
 
 var thing2 = Thing.set(thing1, 'number', 42);
 log(thing2.number);
 //=> 42
+log(thing2.flags & Objects.isFullObject);
+//=> 1
 
 var thing3 = Thing.set(thing2, 'number', 375.2);
 log(thing3.number);
@@ -144,12 +151,12 @@ $Heap.nextOffset += 20;
 Sha1.hash($, numberStart, numberEnd, $, numberHashOffset);
 hashOffset = HashTable.findHashOffset($HashTable, numberHashOffset);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotNumber = $HashTable.objects[objectIndex].value;
+var gotNumber = $Objects.table[objectIndex].value;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
 hashOffset = HashTable.findHashOffset($HashTable, thing2.fileStart + offsets.bool);
 objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-var gotBool = $HashTable.objects[objectIndex].value;
+var gotBool = $Objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'

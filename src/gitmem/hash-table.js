@@ -7,14 +7,8 @@ HashTable.create = function (n, heap, random) {
     var hashesOffset = 64 * Math.ceil(heap.nextOffset / 64);
     heap.nextOffset = hashesOffset + hashesSize;
 
-    var objects = new Array(n);
-    var i;
-    for (i = 0; i < n; i++) {
-        objects[i] = null;
-    }
-
     var hashBitsToShift = 32;
-    i = n;
+    var i = n;
     while (i > 1) {
         i >>>= 1;
         hashBitsToShift--;
@@ -22,7 +16,6 @@ HashTable.create = function (n, heap, random) {
 
     return {
         hashesOffset: hashesOffset,
-        objects: objects,
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,
@@ -81,13 +74,6 @@ HashTable.objectIndex = function (table, hashOffset) {
 };
 
 var blockMask = ~63;
-
-HashTable.flagsOffset = function (table, hashOffset) {
-    return (hashOffset & blockMask) + ((hashOffset >>> 4) & 3) + 1;
-};
-
-HashTable.isObject = 1;
-HashTable.isCachedFile = 2;
 
 HashTable.setHash = function (table, hashOffset, setHashOffset) {
     var blockOffset = hashOffset & blockMask;

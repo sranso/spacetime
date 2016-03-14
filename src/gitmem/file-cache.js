@@ -33,15 +33,13 @@ FileCache.resize = function (cache, mallocSize) {
 };
 
 FileCache.registerCachedFile = function (cache, fileStart, fileEnd, hashOffset) {
-    var cachedFile = {
+    var cacheObject = {
+        flags: 0 & ~Objects.isFullObject,
         fileStart: fileStart,
         fileEnd: fileEnd,
         hashOffset: hashOffset,
     };
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    $HashTable.objects[objectIndex] = cachedFile;
-    $[flagsOffset] |= HashTable.isCachedFile;
+    $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = cacheObject;
 
     var currentIndex = cache.nextIndex;
     cache.fileStarts[currentIndex] = fileStart;
@@ -54,24 +52,23 @@ FileCache.registerCachedFile = function (cache, fileStart, fileEnd, hashOffset) 
     while (cache.firstIndex !== currentIndex) {
         var firstStart = cache.fileStarts[cache.firstIndex];
         if (fileStart <= firstStart && firstStart < fileEnd) {
-            clearFirstCacheFile(cache);
+            clearFirstCacheObject(cache);
         } else {
             break;
         }
     }
     if (cache.nextIndex === cache.firstIndex) {
         // Avoid overflow
-        clearFirstCacheFile(cache);
+        clearFirstCacheObject(cache);
     }
 };
 
-var clearFirstCacheFile = function (cache) {
+var clearFirstCacheObject = function (cache) {
     var hashOffset = cache.hashOffsets[cache.firstIndex];
     var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    if ($[flagsOffset] & HashTable.isCachedFile) {
-        $[flagsOffset] &= ~HashTable.isCachedFile;
-        $HashTable.objects[objectIndex] = null;
+    var cacheObject = $Objects.table[objectIndex];
+    if (cacheObject && !(cacheObject.flags & Objects.isFullObject)) {
+        $Objects.table[objectIndex] = null;
     }
     cache.firstIndex++;
     if (cache.firstIndex === cache.fileStarts.length) {
@@ -84,7 +81,7 @@ FileCache.maybeRewindNextOffset = function (cache) {
     if (heap.nextOffset + heap.capacity / 8 > heap.capacity) {
         while (cache.firstIndex !== cache.nextIndex) {
             if (cache.fileStarts[cache.firstIndex] >= heap.nextOffset) {
-                clearFirstCacheFile(cache);
+                clearFirstCacheObject(cache);
             } else {
                 break;
             }

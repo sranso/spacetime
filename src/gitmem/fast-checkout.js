@@ -5,45 +5,45 @@ global.FastCheckout = {};
 FastCheckout.checkout = function (searchHashOffset, checkoutFile) {
     var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
     var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
-    var flagsOffset = HashTable.flagsOffset($HashTable, hashOffset);
-    if ($[flagsOffset] & HashTable.isObject) {
-        return $HashTable.objects[objectIndex];
-    }
+    var found = $Objects.table[objectIndex];
+    var fileStart;
+    var fileEnd;
 
-    if ($[flagsOffset] & HashTable.isCachedFile) {
-        var cachedFile = $HashTable.objects[objectIndex];
-        var cachedFileStart = cachedFile.fileStart;
-        var cachedFileEnd = cachedFile.fileEnd;
+    if (found) {
+        if (found.flags & Objects.isFullObject) {
+            return found;
+        } else {
+            var cachedFileStart = found.fileStart;
+            var cachedFileEnd = found.fileEnd;
 
-        $[flagsOffset] &= ~HashTable.isCachedFile;
+            // Copy file
+            var fileLength = cachedFileEnd - cachedFileStart;
+            if ($Heap.nextOffset + fileLength > $Heap.capacity) {
+                GarbageCollector.resizeHeap($FileSystem, fileLength);
+            }
+            fileStart = $Heap.nextOffset;
+            $Heap.nextOffset += fileLength;
+            fileEnd = $Heap.nextOffset;
 
-        // Copy file
-        var fileLength = cachedFileEnd - cachedFileStart;
-        if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-            GarbageCollector.resizeHeap($FileSystem, fileLength);
-        }
-        var fileStart = $Heap.nextOffset;
-        $Heap.nextOffset += fileLength;
-        var fileEnd = $Heap.nextOffset;
-
-        var i;
-        for (i = 0; i < fileLength; i++) {
-            $[fileStart + i] = $FileCache.heap.array[cachedFileStart + i];
+            var i;
+            for (i = 0; i < fileLength; i++) {
+                $[fileStart + i] = $FileCache.heap.array[cachedFileStart + i];
+            }
         }
     } else {
         var packOffset = $PackIndex.offsets[objectIndex];
         var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset, $Heap);
-        var fileStart = fileRange[0];
-        var fileEnd = fileRange[1];
+        fileStart = fileRange[0];
+        fileEnd = fileRange[1];
     }
 
     var thing = checkoutFile(fileStart, fileEnd);
+    thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
 
-    $HashTable.objects[objectIndex] = thing;
-    $[flagsOffset] |= HashTable.isObject;
+    $Objects.table[objectIndex] = thing;
 
     return thing;
 };

@@ -9,8 +9,8 @@ var random = Random.create(42);
 var table = HashTable.create(8, $Heap, random);
 log(table.hashesOffset, $Heap.nextOffset);
 //=> 512 704
-log(table.n, table.objects.length);
-//=> 8 8
+log(table.n);
+//=> 8
 log(table.hashBitsToShift);
 //=> 29
 
@@ -27,9 +27,6 @@ hashOffset = ~hashOffset;
 
 log(HashTable.objectIndex(table, hashOffset));
 //=> 3
-
-log(HashTable.flagsOffset(table, hashOffset));
-//=> 577
 
 HashTable.setHash(table, hashOffset, searchHashOffset);
 log(hash($, hashOffset));
@@ -63,39 +60,3 @@ hashOffset = HashTable.findHashOffset(table, 80);
 log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
 //=> 516 0
 HashTable.setHash(table, ~hashOffset, 80);
-
-
-
-
-
-
-
-GitConvert.stringToExistingArray($, 100, 'foo');
-Sha1.hash($, 100, 103, $, 103);
-searchHashOffset = 103;
-log(hash($, 103));
-//=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
-
-var object = {
-    foo: 'bar',
-    fileStart: 100,
-    fileEnd: 103,
-    hashOffset: searchHashOffset,
-};
-
-hashOffset = ~HashTable.findHashOffset(table, searchHashOffset);
-log(hashOffset);
-//=> 536
-var objectIndex = HashTable.objectIndex(table, hashOffset);
-log(objectIndex);
-//=> 1
-table.objects[objectIndex] = object;
-var flagsOffset = HashTable.flagsOffset(table, hashOffset);
-$[flagsOffset] |= HashTable.isObject;
-log(flagsOffset, $[flagsOffset]);
-//=> 514 1
-
-table.objects[3] = object;
-log(prettyHashTable(table));
-//=> 1: #<0beec7 foo=bar>
-//=> 3: #<0beec7 foo=bar>
