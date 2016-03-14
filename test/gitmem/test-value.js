@@ -15,25 +15,25 @@ var valueObject = Value.createObject('foo bar');
 log(valueObject.value);
 //=> foo bar
 
-var stringRange = Value.createBlob('string', 'foo');
+var stringRange = Value.createBlob('foo', 'string');
 var stringStart = stringRange[0];
 var stringEnd = stringRange[1];
 log(pretty($, stringStart, stringEnd));
 //=> blob 4\x00"foo
 
-var numberRange = Value.createBlob('number', 375.2);
+var numberRange = Value.createBlob(375.2, 'number');
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 log(pretty($, numberStart, numberEnd));
 //=> blob 5\x00375.2
 
-var trueRange = Value.createBlob('boolean', true);
+var trueRange = Value.createBlob(true, 'boolean');
 var trueStart = trueRange[0];
 var trueEnd = trueRange[1];
 log(pretty($, trueStart, trueEnd));
 //=> blob 4\x00true
 
-var falseRange = Value.createBlob('boolean', false);
+var falseRange = Value.createBlob(false, 'boolean');
 var falseStart = falseRange[0];
 var falseEnd = falseRange[1];
 log(pretty($, falseStart, falseEnd));
@@ -76,12 +76,12 @@ objectIndex = HashTable.objectIndex($HashTable, hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, falseStart, falseEnd);
 
-var gotString = Value.checkout('string', stringHashOffset);
+var gotString = Value.checkout(stringHashOffset, 'string');
 log(gotString, typeof gotString);
 //=> foo string
 // Make sure it works a second time, as we store object in
 // table the first time we checkout.
-var gotStringAgain = Value.checkout('string', stringHashOffset);
+var gotStringAgain = Value.checkout(stringHashOffset, 'string');
 log(gotStringAgain, typeof gotStringAgain);
 //=> foo string
 hashOffset = HashTable.findHashOffset($HashTable, stringHashOffset);
@@ -90,7 +90,7 @@ var savedString = $Objects.table[objectIndex].value;
 log(savedString, typeof savedString);
 //=> foo string
 
-var gotNumber = Value.checkout('number', numberHashOffset);
+var gotNumber = Value.checkout(numberHashOffset, 'number');
 log(gotNumber, typeof gotNumber);
 //=> 375.2 'number'
 hashOffset = HashTable.findHashOffset($HashTable, numberHashOffset);
@@ -99,7 +99,7 @@ var savedNumber = $Objects.table[objectIndex].value;
 log(savedNumber, typeof savedNumber);
 //=> 375.2 'number'
 
-var gotTrue = Value.checkout('boolean', trueHashOffset);
+var gotTrue = Value.checkout(trueHashOffset, 'boolean');
 log(gotTrue, typeof gotTrue);
 //=> true 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, trueHashOffset);
@@ -108,7 +108,7 @@ var savedTrue = $Objects.table[objectIndex].value;
 log(savedTrue, typeof savedTrue);
 //=> true 'boolean'
 
-var gotFalse = Value.checkout('boolean', falseHashOffset);
+var gotFalse = Value.checkout(falseHashOffset, 'boolean');
 log(gotFalse, typeof gotFalse);
 //=> false 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, falseHashOffset);

@@ -90,7 +90,7 @@ log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
 
-var objectRange = Value.createBlob('string', 'bar');
+var objectRange = Value.createBlob('bar', 'string');
 
 var object1 = {
     fileStart: objectRange[0],
@@ -143,7 +143,7 @@ log(thing3.number);
 log(thing3 === thing1);
 //=> true
 
-var numberRange = Value.createBlob('number', 42);
+var numberRange = Value.createBlob(42, 'number');
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 var numberHashOffset = $Heap.nextOffset;

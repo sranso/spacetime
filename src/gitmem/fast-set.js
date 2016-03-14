@@ -106,7 +106,7 @@ var mutateFile = function (internalHashOffset, value, type) {
     } else {
         var originalHeapOffset = $Heap.nextOffset;
 
-        var fileRange = Value.createBlob(type, value);
+        var fileRange = Value.createBlob(value, type);
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
         Sha1.hash($, fileStart, fileEnd, $, internalHashOffset);

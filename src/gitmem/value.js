@@ -13,7 +13,7 @@ Value.createObject = function (value) {
     };
 };
 
-Value.createBlob = function (type, value) {
+Value.createBlob = function (value, type) {
     if (type === 'string') {
         return Blob.createFromString('"' + value);
     } else if (type === 'number') {
@@ -45,7 +45,7 @@ var checkoutBoolean = function (fileStart, fileEnd) {
     return Value.createObject(bool);
 };
 
-Value.checkout = function (type, searchHashOffset) {
+Value.checkout = function (searchHashOffset, type) {
     if (type === 'string') {
         return FastCheckout.checkout(searchHashOffset, checkoutString).value;
     } else if (type === 'number') {

@@ -105,7 +105,7 @@ Grid.setAll = function (original, modifications) {
     return HashTable.save($HashTable, grid);
 };
 
-var zeroBlob = Value.createBlob('number', 0);
+var zeroBlob = Value.createBlob(0, 'number');
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 Tree.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
 HashTable.save($HashTable, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
@@ -204,7 +204,7 @@ Cell.setAll = function (original, modifications) {
 };
 
 
-var colorBlob = Value.createBlob('string', Cell.none.color);
+var colorBlob = Value.createBlob(Cell.none.color, 'string');
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
 HashTable.save($HashTable, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
@@ -227,7 +227,7 @@ var grid1 = Grid.clone(Grid.none);
 
 var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
-var blob = Value.createBlob('string', cell1.text);
+var blob = Value.createBlob(cell1.text, 'string');
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
 HashTable.save($HashTable, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
