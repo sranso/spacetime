@@ -46,7 +46,7 @@ log(hex(packData.array, offset, packData.nextOffset));
 
 
 
-var file = PackData.extractFile(packData, packData.array, offset);
+var file = PackData.extractFile(packData, packData.array, offset, $Heap);
 var fileStart = file[0];
 var fileEnd = file[1];
 var nextPackOffset = file[2];
