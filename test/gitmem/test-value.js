@@ -56,25 +56,25 @@ var hashOffset = ~HashTable.findHashOffset($HashTable, $, stringHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, stringHashOffset);
 var objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, stringStart, stringEnd);
+PackData.packFile($PackData, $, stringStart, stringEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, numberHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, numberStart, numberEnd);
+PackData.packFile($PackData, $, numberStart, numberEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, trueHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, trueHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, trueStart, trueEnd);
+PackData.packFile($PackData, $, trueStart, trueEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, falseHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, falseHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, falseStart, falseEnd);
+PackData.packFile($PackData, $, falseStart, falseEnd);
 
 var gotString = Value.checkout($, stringHashOffset, 'string');
 log(gotString, typeof gotString);

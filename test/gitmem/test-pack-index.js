@@ -32,8 +32,8 @@ log(hash($, barHashOffset));
 var inputPackData = PackData.create(56);
 inputPackData.array[11] = 2;  // Number of packed files.
 inputPackData.nextOffset = 12;
-PackData.packFile(inputPackData, fooStart, fooEnd);
-PackData.packFile(inputPackData, barStart, barEnd);
+PackData.packFile(inputPackData, $, fooStart, fooEnd);
+PackData.packFile(inputPackData, $, barStart, barEnd);
 
 var inputPackHashOffset = inputPackData.nextOffset;
 var inputPack = inputPackData.array;

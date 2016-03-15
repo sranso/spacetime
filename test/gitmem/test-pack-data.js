@@ -29,16 +29,16 @@ var packData = PackData.create(32);
 log(packData.nextOffset, packData.capacity);
 //=> 0 32
 
-var offset = PackData.packFile(packData, blobStart, blobEnd);
-log(offset, packData.nextOffset, packData.capacity);
+var packOffset = PackData.packFile(packData, $, blobStart, blobEnd);
+log(packOffset, packData.nextOffset, packData.capacity);
 //=> 0 17 32
-log(hex(packData.array, offset, packData.nextOffset));
+log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
-var offset = PackData.packFile(packData, blobStart, blobEnd);
-log(offset, packData.nextOffset, packData.capacity);
+packOffset = PackData.packFile(packData, $, blobStart, blobEnd);
+log(packOffset, packData.nextOffset, packData.capacity);
 //=> 17 34 64
-log(hex(packData.array, offset, packData.nextOffset));
+log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
 
@@ -46,7 +46,7 @@ log(hex(packData.array, offset, packData.nextOffset));
 
 
 
-var file = PackData.extractFile(packData, packData.array, offset, $Heap);
+var file = PackData.extractFile(packData, packData.array, packOffset, $Heap);
 var fileStart = file[0];
 var fileEnd = file[1];
 var nextPackOffset = file[2];

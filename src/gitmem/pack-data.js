@@ -31,7 +31,7 @@ PackData.resize = function (packData, mallocSize) {
     packData.capacity = capacity;
 };
 
-PackData.packFile = function (packData, fileStart, fileEnd) {
+PackData.packFile = function (packData, $, fileStart, fileEnd) {
     var contentStart = $.indexOf(0, fileStart + 5) + 1;
     var length = fileEnd - contentStart;
 

@@ -116,13 +116,13 @@ hashOffset = ~HashTable.findHashOffset($HashTable, oldHashes, secondCommit.hashO
 HashTable.setHash($HashTable, hashOffset, oldHashes, secondCommit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, secondCommit.fileStart, secondCommit.fileEnd);
+PackData.packFile($PackData, $, secondCommit.fileStart, secondCommit.fileEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, oldHashes, commit.hashOffset);
 HashTable.setHash($HashTable, hashOffset, oldHashes, commit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, commit.fileStart, commit.fileEnd);
+PackData.packFile($PackData, $, commit.fileStart, commit.fileEnd);
 // Save first commit
 $Objects.table[objectIndex] = commit;
 
@@ -132,13 +132,13 @@ objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 log(objectIndex, $PackData.nextOffset);
 //=> 6 321
-PackData.packFile($PackData, treeStart, treeEnd);
+PackData.packFile($PackData, $, treeStart, treeEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, fooHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, fooHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, fooStart, fooEnd);
+PackData.packFile($PackData, $, fooStart, fooEnd);
 
 
 var gotSecondCommit = Commit.checkout(oldHashes, secondCommit.hashOffset);
