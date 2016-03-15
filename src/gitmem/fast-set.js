@@ -24,11 +24,11 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     value = mutateFile(internalHashOffset, value, type);
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
     } else {
@@ -69,11 +69,11 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
     }
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
     } else {
@@ -112,10 +112,10 @@ var mutateFile = function (internalHashOffset, value, type) {
         Sha1.hash($, fileStart, fileEnd, $, internalHashOffset);
 
         var valueObject;
-        var hashOffset = HashTable.findHashOffset($HashTable, internalHashOffset);
+        var hashOffset = HashTable.findHashOffset($HashTable, $, internalHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            HashTable.setHash($HashTable, hashOffset, internalHashOffset);
+            HashTable.setHash($HashTable, hashOffset, $, internalHashOffset);
             valueObject = Value.createObject(value);
             $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = valueObject;
         } else {

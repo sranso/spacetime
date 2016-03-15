@@ -45,13 +45,13 @@ var checkoutBoolean = function (fileStart, fileEnd) {
     return Value.createObject(bool);
 };
 
-Value.checkout = function (searchHashOffset, type) {
+Value.checkout = function ($, searchHashOffset, type) {
     if (type === 'string') {
-        return FastCheckout.checkout(searchHashOffset, checkoutString).value;
+        return FastCheckout.checkout($, searchHashOffset, checkoutString).value;
     } else if (type === 'number') {
-        return FastCheckout.checkout(searchHashOffset, checkoutNumber).value;
+        return FastCheckout.checkout($, searchHashOffset, checkoutNumber).value;
     } else if (type === 'boolean') {
-        return FastCheckout.checkout(searchHashOffset, checkoutBoolean).value;
+        return FastCheckout.checkout($, searchHashOffset, checkoutBoolean).value;
     } else {
         throw new Error('Unsupported type: ' + type);
     }

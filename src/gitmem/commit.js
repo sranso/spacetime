@@ -71,10 +71,10 @@ Commit.setAll = function (original, modifications) {
     var fileEnd = fileRange[1];
 
     Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
-    var hashOffset = HashTable.findHashOffset($HashTable, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
         $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = commit;
     } else {
         var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
@@ -99,8 +99,8 @@ var checkoutFile = function (fileStart, fileEnd) {
     return commit;
 };
 
-Commit.checkout = function (searchHashOffset) {
-    return FastCheckout.checkout(searchHashOffset, checkoutFile);
+Commit.checkout = function ($, searchHashOffset) {
+    return FastCheckout.checkout($, searchHashOffset, checkoutFile);
 };
 
 Commit.checkoutTree = function (commit, packIndices, table) {
@@ -112,10 +112,10 @@ Commit.checkoutParents = function (commit) {
     var numParents = CommitFile.parseParents(commit.fileStart, commit.fileEnd, parentHashOffset);
 
     if (numParents >= 1) {
-        commit.parent = Commit.checkout(parentHashOffset);
+        commit.parent = Commit.checkout($, parentHashOffset);
     }
     if (numParents >= 2) {
-        commit.mergeParent = Commit.checkout(mergeParentHashOffset);
+        commit.mergeParent = Commit.checkout($, mergeParentHashOffset);
     }
 };
 

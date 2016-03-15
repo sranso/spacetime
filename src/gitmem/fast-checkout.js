@@ -2,8 +2,8 @@
 global.FastCheckout = {};
 (function () {
 
-FastCheckout.checkout = function (searchHashOffset, checkoutFile) {
-    var hashOffset = HashTable.findHashOffset($HashTable, searchHashOffset);
+FastCheckout.checkout = function ($, searchHashOffset, checkoutFile) {
+    var hashOffset = HashTable.findHashOffset($HashTable, $, searchHashOffset);
     var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
     var found = $Objects.table[objectIndex];
     var fileStart;
@@ -27,7 +27,7 @@ FastCheckout.checkout = function (searchHashOffset, checkoutFile) {
 
             var i;
             for (i = 0; i < fileLength; i++) {
-                $[fileStart + i] = $FileCache.heap.array[cachedFileStart + i];
+                $Heap.array[fileStart + i] = $FileCache.heap.array[cachedFileStart + i];
             }
         }
     } else {

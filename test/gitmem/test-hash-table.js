@@ -1,39 +1,38 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(1024);
+global.$Heap = Heap.create(256);
 global.$ = $Heap.array;
-$Heap.nextOffset = 512;
 
 var random = Random.create(42);
-var table = HashTable.create(8, $Heap, random);
-log(table.hashesOffset, $Heap.nextOffset);
-//=> 512 704
+var table = HashTable.create(8, random);
+log(table.hashes.length);
+//=> 192
 log(table.n);
 //=> 8
 log(table.hashBitsToShift);
 //=> 29
 
 GitConvert.stringToExistingArray($, 0, 'abc');
-Sha1.hash($, 0, 3, $, 3);
-log(hash($, 3));
+var searchHashOffset = 3;
+Sha1.hash($, 0, 3, $, searchHashOffset);
+log(hash($, searchHashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
-var searchHashOffset = 3;
-var hashOffset = HashTable.findHashOffset(table, searchHashOffset);
+var hashOffset = HashTable.findHashOffset(table, $, searchHashOffset);
 log(hashOffset, ~hashOffset);
-//=> -581 580
+//=> -69 68
 hashOffset = ~hashOffset;
 
 log(HashTable.objectIndex(table, hashOffset));
 //=> 3
 
-HashTable.setHash(table, hashOffset, searchHashOffset);
-log(hash($, hashOffset));
+HashTable.setHash(table, hashOffset, $, searchHashOffset);
+log(hash(table.hashes, hashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
-hashOffset = HashTable.findHashOffset(table, searchHashOffset);
+hashOffset = HashTable.findHashOffset(table, $, searchHashOffset);
 log(hashOffset);
-//=> 580
+//=> 68
 
 
 
@@ -48,15 +47,15 @@ GitConvert.arrayToExistingArray($, 40, hashInBlock2);
 GitConvert.arrayToExistingArray($, 60, hashInBlock3);
 GitConvert.arrayToExistingArray($, 80, hashInNextBlock1);
 
-hashOffset = HashTable.findHashOffset(table, 40);
-log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
-//=> 600 4
-HashTable.setHash(table, ~hashOffset, 40);
-hashOffset = HashTable.findHashOffset(table, 60);
-log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
-//=> 620 5
-HashTable.setHash(table, ~hashOffset, 60);
-hashOffset = HashTable.findHashOffset(table, 80);
-log(~hashOffset, HashTable.objectIndex(table, ~hashOffset));
-//=> 516 0
-HashTable.setHash(table, ~hashOffset, 80);
+hashOffset = ~HashTable.findHashOffset(table, $, 40);
+log(hashOffset, HashTable.objectIndex(table, hashOffset));
+//=> 88 4
+HashTable.setHash(table, hashOffset, $, 40);
+hashOffset = ~HashTable.findHashOffset(table, $, 60);
+log(hashOffset, HashTable.objectIndex(table, hashOffset));
+//=> 108 5
+HashTable.setHash(table, hashOffset, $, 60);
+hashOffset = ~HashTable.findHashOffset(table, $, 80);
+log(hashOffset, HashTable.objectIndex(table, hashOffset));
+//=> 4 0
+HashTable.setHash(table, hashOffset, $, 80);

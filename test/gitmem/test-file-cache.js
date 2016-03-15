@@ -4,7 +4,7 @@ require('../helper');
 global.$Heap = Heap.create(1024);
 global.$ = $Heap.array;
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(8, $Heap, random);
+global.$HashTable = HashTable.create(8, random);
 global.$Objects = Objects.create(8);
 
 var cache = FileCache.create(8, 128);
@@ -42,7 +42,7 @@ GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'foo');
 var tempHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
 Sha1.hash(cache.heap.array, fileStart, fileEnd, $, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, tempHashOffset);
+var hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
 
 FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
@@ -61,7 +61,7 @@ log(cacheObject.flags & Objects.isFullObject);
 var oldObjectIndex = objectIndex;
 GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'bar');
 Sha1.hash(cache.heap.array, fileStart, fileEnd, $, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, tempHashOffset);
+var hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
 //=> 1 2
@@ -88,7 +88,7 @@ log($Objects.table[oldObjectIndex].fileEnd);
 // Don't overflow the nextIndex
 GitConvert.stringToExistingArray(cache.heap.array, fileStart + 2, 'Z');
 Sha1.hash(cache.heap.array, fileStart + 2, fileEnd, $, tempHashOffset);
-hashOffset = ~HashTable.findHashOffset($HashTable, tempHashOffset);
+hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart + 2, fileStart + 2, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
 //=> 2 1
