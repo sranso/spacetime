@@ -1,5 +1,5 @@
 .PHONY: test
 
 test:
-	node test/run.js
-	git diff --exit-code -- test/**/test-*.js
+	@node test/run.js
+	@git diff --exit-code -- test/**/test-*.js
