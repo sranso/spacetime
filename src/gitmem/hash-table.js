@@ -65,7 +65,7 @@ HashTable.findHashOffset = function (table, $, searchHashOffset) {
     throw new Error('Reached maximum iterations searching for hash');
 };
 
-HashTable.objectIndex = function (table, hashOffset) {
+HashTable.objectIndex = function (hashOffset) {
     return 3 * (hashOffset >>> 6) + ((hashOffset >>> 4) & 3);
 };
 

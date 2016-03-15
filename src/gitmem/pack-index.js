@@ -31,7 +31,7 @@ PackIndex.indexPack = function (index, pack) {
         var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+            var objectIndex = HashTable.objectIndex(hashOffset);
             HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
 
             FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);

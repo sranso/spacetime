@@ -49,7 +49,7 @@ log(cache.firstIndex, cache.nextIndex);
 //=> 0 1
 log(cache.fileStarts[0]);
 //=> 29
-var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+var objectIndex = HashTable.objectIndex(hashOffset);
 var cacheObject = $Objects.table[objectIndex];
 log(objectIndex, cacheObject.fileEnd);
 //=> 6 32
@@ -67,7 +67,7 @@ log(cache.firstIndex, cache.nextIndex);
 //=> 1 2
 log($Objects.table[oldObjectIndex]);
 //=> null
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 cacheObject = $Objects.table[objectIndex];
 log(objectIndex, cacheObject.fileEnd);
 //=> 0 32
@@ -92,7 +92,7 @@ hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart + 2, fileStart + 2, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
 //=> 2 1
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 log($Objects.table[objectIndex].fileEnd);
 //=> 31
 

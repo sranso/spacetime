@@ -30,9 +30,9 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
+        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
     } else {
-        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var objectIndex = HashTable.objectIndex(hashOffset);
         var found = $Objects.table[objectIndex];
         if (found && (found.flags & Objects.isFullObject)) {
             $Heap.nextOffset = originalHeapOffset;
@@ -75,9 +75,9 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = thing;
+        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
     } else {
-        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var objectIndex = HashTable.objectIndex(hashOffset);
         var found = $Objects.table[objectIndex];
         if (found && (found.flags & Objects.isFullObject)) {
             $Heap.nextOffset = originalHeapOffset;
@@ -117,9 +117,9 @@ var mutateFile = function (internalHashOffset, value, type) {
             hashOffset = ~hashOffset;
             HashTable.setHash($HashTable, hashOffset, $, internalHashOffset);
             valueObject = Value.createObject(value);
-            $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = valueObject;
+            $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
         } else {
-            var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+            var objectIndex = HashTable.objectIndex(hashOffset);
             var found = $Objects.table[objectIndex];
             if (found && (found.flags & Objects.isFullObject)) {
                 $Heap.nextOffset = originalHeapOffset;

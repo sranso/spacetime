@@ -54,25 +54,25 @@ Sha1.hash($, falseStart, falseEnd, $, falseHashOffset);
 
 var hashOffset = ~HashTable.findHashOffset($HashTable, $, stringHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, stringHashOffset);
-var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+var objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, stringStart, stringEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, numberHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, numberHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, numberStart, numberEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, trueHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, trueHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, trueStart, trueEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, falseHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, falseHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, falseStart, falseEnd);
 
@@ -85,7 +85,7 @@ var gotStringAgain = Value.checkout($, stringHashOffset, 'string');
 log(gotStringAgain, typeof gotStringAgain);
 //=> foo string
 hashOffset = HashTable.findHashOffset($HashTable, $, stringHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 var savedString = $Objects.table[objectIndex].value;
 log(savedString, typeof savedString);
 //=> foo string
@@ -94,7 +94,7 @@ var gotNumber = Value.checkout($, numberHashOffset, 'number');
 log(gotNumber, typeof gotNumber);
 //=> 375.2 'number'
 hashOffset = HashTable.findHashOffset($HashTable, $, numberHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 var savedNumber = $Objects.table[objectIndex].value;
 log(savedNumber, typeof savedNumber);
 //=> 375.2 'number'
@@ -103,7 +103,7 @@ var gotTrue = Value.checkout($, trueHashOffset, 'boolean');
 log(gotTrue, typeof gotTrue);
 //=> true 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, $, trueHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 var savedTrue = $Objects.table[objectIndex].value;
 log(savedTrue, typeof savedTrue);
 //=> true 'boolean'
@@ -112,7 +112,7 @@ var gotFalse = Value.checkout($, falseHashOffset, 'boolean');
 log(gotFalse, typeof gotFalse);
 //=> false 'boolean'
 hashOffset = HashTable.findHashOffset($HashTable, $, falseHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 var savedFalse = $Objects.table[objectIndex].value;
 log(savedFalse, typeof savedFalse);
 //=> false 'boolean'

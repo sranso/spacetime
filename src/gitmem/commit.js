@@ -75,9 +75,9 @@ Commit.setAll = function (original, modifications) {
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
-        $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = commit;
+        $Objects.table[HashTable.objectIndex(hashOffset)] = commit;
     } else {
-        var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+        var objectIndex = HashTable.objectIndex(hashOffset);
         var found = $Objects.table[objectIndex];
         if (found && (found.flags & Objects.isFullObject)) {
             return foundCommit;

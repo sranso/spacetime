@@ -4,7 +4,7 @@ global.FastCheckout = {};
 
 FastCheckout.checkout = function ($, searchHashOffset, checkoutFile) {
     var hashOffset = HashTable.findHashOffset($HashTable, $, searchHashOffset);
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var objectIndex = HashTable.objectIndex(hashOffset);
     var found = $Objects.table[objectIndex];
     var fileStart;
     var fileEnd;

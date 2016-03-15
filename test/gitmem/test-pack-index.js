@@ -57,7 +57,7 @@ PackIndex.indexPack(index, inputPack);
 var hashOffset = HashTable.findHashOffset($HashTable, $, fooHashOffset);
 log(hashOffset, hash($HashTable.hashes, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
-var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+var objectIndex = HashTable.objectIndex(hashOffset);
 var packOffset = index.offsets[objectIndex];
 log(objectIndex, packOffset);
 //=> 0 0
@@ -71,7 +71,7 @@ log(pretty($, fileStart, fileEnd));
 hashOffset = HashTable.findHashOffset($HashTable, $, barHashOffset);
 log(hashOffset, hash($HashTable.hashes, hashOffset));
 //=> 132 'ba0e162e1c47469e3fe4b393a8bf8c569f302116'
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 packOffset = index.offsets[objectIndex];
 log(objectIndex, packOffset);
 //=> 6 12

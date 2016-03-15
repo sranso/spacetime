@@ -39,7 +39,7 @@ FileCache.registerCachedFile = function (cache, fileStart, fileEnd, hashOffset) 
         fileEnd: fileEnd,
         hashOffset: hashOffset,
     };
-    $Objects.table[HashTable.objectIndex($HashTable, hashOffset)] = cacheObject;
+    $Objects.table[HashTable.objectIndex(hashOffset)] = cacheObject;
 
     var currentIndex = cache.nextIndex;
     cache.fileStarts[currentIndex] = fileStart;
@@ -65,7 +65,7 @@ FileCache.registerCachedFile = function (cache, fileStart, fileEnd, hashOffset) 
 
 var clearFirstCacheObject = function (cache) {
     var hashOffset = cache.hashOffsets[cache.firstIndex];
-    var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+    var objectIndex = HashTable.objectIndex(hashOffset);
     var cacheObject = $Objects.table[objectIndex];
     if (cacheObject && !(cacheObject.flags & Objects.isFullObject)) {
         $Objects.table[objectIndex] = null;

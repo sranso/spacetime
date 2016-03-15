@@ -46,7 +46,7 @@ log(hash($, blobHashOffset));
 
 var hashOffset = ~HashTable.findHashOffset($HashTable, $, blobHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, blobHashOffset);
-var objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+var objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, blobStart, blobEnd);
 

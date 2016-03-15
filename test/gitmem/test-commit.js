@@ -74,7 +74,7 @@ Sha1.hash($, commit.fileStart, commit.fileEnd, $, searchHashOffset);
 var hashOffset = HashTable.findHashOffset($HashTable, $, searchHashOffset);
 log(hashOffset, hash($HashTable.hashes, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
-var objectIndex = HashTable.objectIndex($HashTable, commit.hashOffset);
+var objectIndex = HashTable.objectIndex(commit.hashOffset);
 var savedCommit = $Objects.table[objectIndex];
 log(objectIndex, savedCommit.authorTime);
 //=> 3 1454907687000
@@ -114,13 +114,13 @@ global.$HashTable = HashTable.create(8, random);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, oldHashes, secondCommit.hashOffset);
 HashTable.setHash($HashTable, hashOffset, oldHashes, secondCommit.hashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, secondCommit.fileStart, secondCommit.fileEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, oldHashes, commit.hashOffset);
 HashTable.setHash($HashTable, hashOffset, oldHashes, commit.hashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, commit.fileStart, commit.fileEnd);
 // Save first commit
@@ -128,7 +128,7 @@ $Objects.table[objectIndex] = commit;
 
 hashOffset = ~HashTable.findHashOffset($HashTable, oldHashes, treeHashOffset);
 HashTable.setHash($HashTable, hashOffset, oldHashes, treeHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 log(objectIndex, $PackData.nextOffset);
 //=> 6 321
@@ -136,7 +136,7 @@ PackData.packFile($PackData, treeStart, treeEnd);
 
 hashOffset = ~HashTable.findHashOffset($HashTable, $, fooHashOffset);
 HashTable.setHash($HashTable, hashOffset, $, fooHashOffset);
-objectIndex = HashTable.objectIndex($HashTable, hashOffset);
+objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
 PackData.packFile($PackData, fooStart, fooEnd);
 

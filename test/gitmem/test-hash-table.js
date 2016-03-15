@@ -24,7 +24,7 @@ log(hashOffset, ~hashOffset);
 //=> -69 68
 hashOffset = ~hashOffset;
 
-log(HashTable.objectIndex(table, hashOffset));
+log(HashTable.objectIndex(hashOffset));
 //=> 3
 
 HashTable.setHash(table, hashOffset, $, searchHashOffset);
@@ -48,14 +48,14 @@ GitConvert.arrayToExistingArray($, 60, hashInBlock3);
 GitConvert.arrayToExistingArray($, 80, hashInNextBlock1);
 
 hashOffset = ~HashTable.findHashOffset(table, $, 40);
-log(hashOffset, HashTable.objectIndex(table, hashOffset));
+log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 88 4
 HashTable.setHash(table, hashOffset, $, 40);
 hashOffset = ~HashTable.findHashOffset(table, $, 60);
-log(hashOffset, HashTable.objectIndex(table, hashOffset));
+log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 108 5
 HashTable.setHash(table, hashOffset, $, 60);
 hashOffset = ~HashTable.findHashOffset(table, $, 80);
-log(hashOffset, HashTable.objectIndex(table, hashOffset));
+log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 4 0
 HashTable.setHash(table, hashOffset, $, 80);
