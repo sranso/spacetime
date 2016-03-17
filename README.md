@@ -65,7 +65,7 @@ If you are using Vim, the following adds a keyboard shortcut (`<leader>r`) to ru
 
 ``` vim
 nnoremap <leader>r :w<CR>:Test<CR>:e<CR>
-command -nargs=0 Test execute 'silent !node % quiet' | redraw!
+command -nargs=0 Test execute 'silent !dev/run-test-for-vim.sh %' | redraw!
 ```
 
 ## License and Copyright
