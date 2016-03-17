@@ -11,6 +11,7 @@ FastSet.initialize = function () {
 };
 
 FastSet.set = function (original, prop, value, offsets, types, clone) {
+    var $h = $Heap.array;
     var originalHeapOffset = $Heap.nextOffset;
 
     var fileRange = copyFile(original.fileStart, original.fileEnd);
@@ -22,13 +23,13 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     var internalHashOffset = fileStart + offset;
 
     value = mutateFile(internalHashOffset, value, type);
-    Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
+    Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
     } else {
@@ -52,6 +53,7 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
 };
 
 FastSet.setAll = function (original, modifications, offsets, types, clone) {
+    var $h = $Heap.array;
     var originalHeapOffset = $Heap.nextOffset;
 
     var fileRange = copyFile(original.fileStart, original.fileEnd);
@@ -67,13 +69,13 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
 
         modifications[prop] = mutateFile(internalHashOffset, value, type);
     }
-    Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
+    Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
     } else {
@@ -99,8 +101,10 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
 };
 
 var mutateFile = function (internalHashOffset, value, type) {
+    var $h = $Heap.array;
+
     if (type === 'object') {
-        Tree.setHash(internalHashOffset, value.hashOffset);
+        Tree.setHash($h, internalHashOffset, $h, value.hashOffset);
 
         return value;
     } else {
@@ -109,13 +113,13 @@ var mutateFile = function (internalHashOffset, value, type) {
         var fileRange = Value.createBlob(value, type);
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
-        Sha1.hash($, fileStart, fileEnd, $, internalHashOffset);
+        Sha1.hash($h, fileStart, fileEnd, $h, internalHashOffset);
 
         var valueObject;
-        var hashOffset = HashTable.findHashOffset($HashTable, $, internalHashOffset);
+        var hashOffset = HashTable.findHashOffset($HashTable, $h, internalHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            HashTable.setHash($HashTable, hashOffset, $, internalHashOffset);
+            HashTable.setHash($HashTable, hashOffset, $h, internalHashOffset);
             valueObject = Value.createObject(value);
             $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
         } else {
@@ -147,9 +151,10 @@ var copyFile = function (originalFileStart, originalFileEnd) {
     $Heap.nextOffset += fileLength;
     var fileEnd = $Heap.nextOffset;
 
+    var $h = $Heap.array;
     var i;
     for (i = 0; i < fileLength; i++) {
-        $[fileStart + i] = $[originalFileStart + i];
+        $h[fileStart + i] = $h[originalFileStart + i];
     }
 
     return [fileStart, fileEnd];

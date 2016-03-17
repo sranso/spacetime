@@ -68,7 +68,7 @@ global.prettyObjectList = function (objects) {
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
-            var hash = GitConvert.hashToString($, object.hashOffset);
+            var hash = GitConvert.hashToString($HashTable.hashes, object.hashOffset);
             pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }

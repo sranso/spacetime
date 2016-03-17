@@ -13,7 +13,9 @@ Blob.initialize = function () {
     var emptyBlobRange = Blob.createFromString('');
     Blob.emptyStart = emptyBlobRange[0];
     Blob.emptyEnd = emptyBlobRange[1];
-    Sha1.hash($, Blob.emptyStart, Blob.emptyEnd, $, Blob.emptyHashOffset);
+
+    var $h = $Heap.array;
+    Sha1.hash($h, Blob.emptyStart, Blob.emptyEnd, $h, Blob.emptyHashOffset);
 };
 
 var blobPrefix = GitConvert.stringToArray('blob ');
@@ -28,28 +30,30 @@ Blob.createFromString = function (string) {
     var blobEnd = blobStart + blobLength;
     $Heap.nextOffset = blobEnd;
 
+    var $h = $Heap.array;
+
     var blob_j = blobStart;
     var i;
     for (i = 0; i < blobPrefix.length; i++) {
-        $[blob_j + i] = blobPrefix[i];
+        $h[blob_j + i] = blobPrefix[i];
     }
 
     blob_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        $[blob_j + i] = lengthString.charCodeAt(i);
+        $h[blob_j + i] = lengthString.charCodeAt(i);
     }
-    $[blob_j + i] = 0;
+    $h[blob_j + i] = 0;
 
     blob_j += i + 1;
     for (i = 0; i < string.length; i++) {
-        $[blob_j + i] = string.charCodeAt(i);
+        $h[blob_j + i] = string.charCodeAt(i);
     }
 
     return [blobStart, blobEnd];
 };
 
-Blob.contentStart = function (blobStart) {
-    return $.indexOf(0, blobStart + 6) + 1;
+Blob.contentStart = function ($b, blobStart) {
+    return $b.indexOf(0, blobStart + 6) + 1;
 };
 
 })();

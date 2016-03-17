@@ -27,12 +27,12 @@ PackIndex.indexPack = function (index, pack) {
         var fileEnd = file[1];
         var nextPackOffset = file[2];
 
-        Sha1.hash($FileCache.heap.array, fileStart, fileEnd, $, tempHashOffset);
-        var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
+        Sha1.hash($FileCache.heap.array, fileStart, fileEnd, $Heap.array, tempHashOffset);
+        var hashOffset = HashTable.findHashOffset($HashTable, $Heap.array, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
             var objectIndex = HashTable.objectIndex(hashOffset);
-            HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
+            HashTable.setHash($HashTable, hashOffset, $Heap.array, tempHashOffset);
 
             FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
             FileCache.maybeRewindNextOffset($FileCache);

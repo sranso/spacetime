@@ -2,8 +2,8 @@
 global.FastCheckout = {};
 (function () {
 
-FastCheckout.checkout = function ($, searchHashOffset, checkoutFile) {
-    var hashOffset = HashTable.findHashOffset($HashTable, $, searchHashOffset);
+FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
+    var hashOffset = HashTable.findHashOffset($HashTable, $s, searchHashOffset);
     var objectIndex = HashTable.objectIndex(hashOffset);
     var found = $Objects.table[objectIndex];
     var fileStart;
@@ -37,7 +37,7 @@ FastCheckout.checkout = function ($, searchHashOffset, checkoutFile) {
         fileEnd = fileRange[1];
     }
 
-    var thing = checkoutFile(fileStart, fileEnd);
+    var thing = checkoutFile($Heap.array, fileStart, fileEnd);
     thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;

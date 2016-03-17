@@ -11,6 +11,8 @@ Tree._actuallyEmptyEnd = -1;
 Tree._actuallyEmptyHashOffset = -1;
 
 Tree.initialize = function () {
+    var $h = $Heap.array;
+
     $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
     Tree.emptyHashOffset = $Heap.nextOffset;
     Tree._actuallyEmptyHashOffset = $Heap.nextOffset + 20;
@@ -21,23 +23,25 @@ Tree.initialize = function () {
     Tree.emptyEnd = emptyTree[1];
     var offsets = emptyTree[2];
     var hashOffset = emptyTree.fileStart + offsets['.empty'];
-    Tree.setHash(hashOffset, Blob.emptyHashOffset);
-    Sha1.hash($, Tree.emptyStart, Tree.emptyEnd, $, Tree.emptyHashOffset);
+    Tree.setHash($h, hashOffset, $h, Blob.emptyHashOffset);
+    Sha1.hash($h, Tree.emptyStart, Tree.emptyEnd, $h, Tree.emptyHashOffset);
 
     var actuallyEmptyTree = Tree.create({});
     Tree._actuallyEmptyStart = actuallyEmptyTree[0];
     Tree._actuallyEmptyEnd = actuallyEmptyTree[1];
-    Sha1.hash($, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $, Tree._actuallyEmptyHashOffset);
+    Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
 };
 
 Tree.catFile = function (treeStart, treeEnd) {
-    var pretty = [];
-    var j = $.indexOf(0, treeStart + 6) + 1;
-    while (j < treeEnd) {
-        var modeEnd = $.indexOf(0x20, j + 5);
-        var filenameEnd = $.indexOf(0, modeEnd + 2);
+    var $h = $Heap.array;
 
-        var mode = String.fromCharCode.apply(null, $.subarray(j, modeEnd));
+    var pretty = [];
+    var j = $h.indexOf(0, treeStart + 6) + 1;
+    while (j < treeEnd) {
+        var modeEnd = $h.indexOf(0x20, j + 5);
+        var filenameEnd = $h.indexOf(0, modeEnd + 2);
+
+        var mode = String.fromCharCode.apply(null, $h.subarray(j, modeEnd));
         if (mode === '100644') {
             var type = 'blob';
         } else if (mode === '40000') {
@@ -48,10 +52,10 @@ Tree.catFile = function (treeStart, treeEnd) {
         }
 
         j = modeEnd + 1;
-        var filename = String.fromCharCode.apply(null, $.subarray(j, filenameEnd));
+        var filename = String.fromCharCode.apply(null, $h.subarray(j, filenameEnd));
 
         j = filenameEnd + 1;
-        var hash = GitConvert.hashToString($, j);
+        var hash = GitConvert.hashToString($h, j);
         pretty.push([mode, type, hash, '  ', filename].join(' '));
 
         j += 20;
@@ -92,17 +96,19 @@ Tree.create = function (props) {
 
     var offsets = {};
 
+    var $h = $Heap.array;
+
     var tree_j = treeStart;
     var i;
     for (i = 0; i < treePrefix.length; i++) {
-        $[tree_j + i] = treePrefix[i];
+        $h[tree_j + i] = treePrefix[i];
     }
 
     tree_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        $[tree_j + i] = lengthString.charCodeAt(i);
+        $h[tree_j + i] = lengthString.charCodeAt(i);
     }
-    $[tree_j + i] = 0;
+    $h[tree_j + i] = 0;
 
     tree_j += i + 1;
     for (n = 0; n < names.length; n++) {
@@ -116,20 +122,20 @@ Tree.create = function (props) {
         }
 
         for (i = 0; i < mode.length; i++) {
-            $[tree_j + i] = mode[i];
+            $h[tree_j + i] = mode[i];
         }
-        $[tree_j + i] = 0x20;
+        $h[tree_j + i] = 0x20;
 
         tree_j += i + 1;
         for (i = 0; i < name.length; i++) {
-            $[tree_j + i] = name.charCodeAt(i);
+            $h[tree_j + i] = name.charCodeAt(i);
         }
-        $[tree_j + i] = 0;
+        $h[tree_j + i] = 0;
 
         tree_j += i + 1;
         offsets[name] = tree_j - treeStart;
         for (i = 0; i < 20; i++) {
-            $[tree_j + i] = $[hashOffset + i];
+            $h[tree_j + i] = $h[hashOffset + i];
         }
 
         tree_j += 20;
@@ -138,10 +144,10 @@ Tree.create = function (props) {
     return [treeStart, treeEnd, offsets];
 };
 
-Tree.setHash = function (targetOffset, sourceOffset) {
+Tree.setHash = function ($t, targetOffset, $s, sourceOffset) {
     var i;
     for (i = 0; i < 20; i++) {
-        $[targetOffset + i] = $[sourceOffset + i];
+        $t[targetOffset + i] = $s[sourceOffset + i];
     }
 };
 

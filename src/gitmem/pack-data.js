@@ -31,8 +31,8 @@ PackData.resize = function (packData, mallocSize) {
     packData.capacity = capacity;
 };
 
-PackData.packFile = function (packData, $, fileStart, fileEnd) {
-    var contentStart = $.indexOf(0, fileStart + 5) + 1;
+PackData.packFile = function (packData, $f, fileStart, fileEnd) {
+    var contentStart = $f.indexOf(0, fileStart + 5) + 1;
     var length = fileEnd - contentStart;
 
     if (length < 32768) {
@@ -44,14 +44,14 @@ PackData.packFile = function (packData, $, fileStart, fileEnd) {
     }
 
     var typeBits;
-    if ($[fileStart] === blobPrefix[0]) {
+    if ($f[fileStart] === blobPrefix[0]) {
         typeBits = 0x30;
-    } else if ($[fileStart + 1] === treePrefix[1]) {
+    } else if ($f[fileStart + 1] === treePrefix[1]) {
         typeBits = 0x20;
-    } else if ($[fileStart] === commitPrefix[0]) {
+    } else if ($f[fileStart] === commitPrefix[0]) {
         typeBits = 0x10;
     } else {
-        throw new Error('Unknown type: ' + $.slice(fileStart, fileStart + 4).join(','));
+        throw new Error('Unknown type: ' + $f.slice(fileStart, fileStart + 4).join(','));
     }
 
     if (packData.nextOffset + maxPackHeaderSize > packData.capacity) {
@@ -74,7 +74,7 @@ PackData.packFile = function (packData, $, fileStart, fileEnd) {
     deflate.onData = onDeflateData;
     deflate.onEnd = onEnd;
     deflate.packData = packData;
-    deflate.push($.subarray(contentStart, fileEnd), true);
+    deflate.push($f.subarray(contentStart, fileEnd), true);
 
     return deflatedOffset;
 };

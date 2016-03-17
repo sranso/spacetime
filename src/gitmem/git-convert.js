@@ -11,24 +11,24 @@ GitConvert.stringToArray = function (string) {
     return array;
 };
 
-GitConvert.stringToExistingArray = function (array, offset, string) {
+GitConvert.stringToExistingArray = function ($e, existingOffset, string) {
     var i;
     for (i = 0; i < string.length; i++) {
-        array[offset + i] = string.charCodeAt(i);
+        $e[existingOffset + i] = string.charCodeAt(i);
     }
 };
 
-GitConvert.arrayToExistingArray = function (array, offset, fromArray) {
+GitConvert.arrayToExistingArray = function ($e, existingOffset, fromArray) {
     var i;
     for (i = 0; i < fromArray.length; i++) {
-        array[offset + i] = fromArray[i];
+        $e[existingOffset + i] = fromArray[i];
     }
 };
 
-GitConvert.hashToString = function (hashArray, hashOffset) {
+GitConvert.hashToString = function ($h, hashOffset) {
     var str = [];
     for (var i = 0; i < 20; i++) {
-        var hex = '00' + hashArray[hashOffset + i].toString(16);
+        var hex = '00' + $h[hashOffset + i].toString(16);
         str.push(hex.slice(-2));
     }
     return str.join('');
@@ -90,12 +90,12 @@ GitConvert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
     }
 };
 
-GitConvert.pktLineToLength = function (pktArray, pktOffset) {
+GitConvert.pktLineToLength = function ($p, pktOffset) {
     return (
-        (hexTable[pktArray[pktOffset]] << 12) |
-        (hexTable[pktArray[pktOffset + 1]] << 8) |
-        (hexTable[pktArray[pktOffset + 2]] << 4) |
-        hexTable[pktArray[pktOffset + 3]]
+        (hexTable[$p[pktOffset]] << 12) |
+        (hexTable[$p[pktOffset + 1]] << 8) |
+        (hexTable[$p[pktOffset + 2]] << 4) |
+        hexTable[$p[pktOffset + 3]]
     );
 };
 

@@ -60,6 +60,8 @@ Commit.initialize = function () {
 };
 
 Commit.setAll = function (original, modifications) {
+    var $h = $Heap.array;
+
     var commit = clone(original);
     var prop;
     for (prop in modifications) {
@@ -70,11 +72,11 @@ Commit.setAll = function (original, modifications) {
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
-    Sha1.hash($, fileStart, fileEnd, $, tempHashOffset);
-    var hashOffset = HashTable.findHashOffset($HashTable, $, tempHashOffset);
+    Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, $, tempHashOffset);
+        HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
         $Objects.table[HashTable.objectIndex(hashOffset)] = commit;
     } else {
         var objectIndex = HashTable.objectIndex(hashOffset);
@@ -93,29 +95,31 @@ Commit.setAll = function (original, modifications) {
     return commit;
 };
 
-var checkoutFile = function (fileStart, fileEnd) {
+var checkoutFile = function ($f, fileStart, fileEnd) {
     var commit = clone(Commit.none);
-    CommitFile.parse(fileStart, fileEnd, commit);
+    CommitFile.parse($f, fileStart, fileEnd, commit);
     return commit;
 };
 
-Commit.checkout = function ($, searchHashOffset) {
-    return FastCheckout.checkout($, searchHashOffset, checkoutFile);
+Commit.checkout = function ($s, searchHashOffset) {
+    return FastCheckout.checkout($s, searchHashOffset, checkoutFile);
 };
 
 Commit.checkoutTree = function (commit, packIndices, table) {
-    CommitFile.parseTree(commit.fileStart, commit.fileEnd, tempHashOffset);
+    var $h = $Heap.array;
+    CommitFile.parseTree($h, commit.fileStart, commit.fileEnd, $h, tempHashOffset);
     commit.tree = Project.checkout(treeHashOffset);
 };
 
 Commit.checkoutParents = function (commit) {
-    var numParents = CommitFile.parseParents(commit.fileStart, commit.fileEnd, parentHashOffset);
+    var $h = $Heap.array;
+    var numParents = CommitFile.parseParents($h, commit.fileStart, commit.fileEnd, $h, parentHashOffset);
 
     if (numParents >= 1) {
-        commit.parent = Commit.checkout($, parentHashOffset);
+        commit.parent = Commit.checkout($h, parentHashOffset);
     }
     if (numParents >= 2) {
-        commit.mergeParent = Commit.checkout($, mergeParentHashOffset);
+        commit.mergeParent = Commit.checkout($h, mergeParentHashOffset);
     }
 };
 

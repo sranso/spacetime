@@ -20,13 +20,13 @@ HashTable.create = function (n, random) {
     };
 };
 
-HashTable.findHashOffset = function (table, $, searchHashOffset) {
+HashTable.findHashOffset = function (table, $s, searchHashOffset) {
     var hashes = table.hashes;
     var h1 = Math.imul(table.a,
-        ($[searchHashOffset] << 24) |
-        ($[searchHashOffset + 1] << 16) |
-        ($[searchHashOffset + 2] << 8) |
-        $[searchHashOffset + 3]
+        ($s[searchHashOffset] << 24) |
+        ($s[searchHashOffset + 1] << 16) |
+        ($s[searchHashOffset + 2] << 8) |
+        $s[searchHashOffset + 3]
     ) >>> table.hashBitsToShift;
     var h = h1;
     var i;
@@ -42,7 +42,7 @@ HashTable.findHashOffset = function (table, $, searchHashOffset) {
             var hashOffset = blockOffset + 4 + 20 * k;
             if (setByte & (1 << k)) {
                 for (i = 0; i < 20; i++) {
-                    if (hashes[hashOffset + i] !== $[searchHashOffset + i]) {
+                    if (hashes[hashOffset + i] !== $s[searchHashOffset + i]) {
                         continue searchBlock;
                     }
                 }
@@ -53,10 +53,10 @@ HashTable.findHashOffset = function (table, $, searchHashOffset) {
         }
 
         var h2 = (
-            ($[searchHashOffset + 4] << 24) |
-            ($[searchHashOffset + 5] << 16) |
-            ($[searchHashOffset + 6] << 8) |
-            $[searchHashOffset + 7] |
+            ($s[searchHashOffset + 4] << 24) |
+            ($s[searchHashOffset + 5] << 16) |
+            ($s[searchHashOffset + 6] << 8) |
+            $s[searchHashOffset + 7] |
             1
         );
         h = (h1 + Math.imul(j, h2)) & table.mask;
@@ -71,14 +71,14 @@ HashTable.objectIndex = function (hashOffset) {
 
 var blockMask = ~63;
 
-HashTable.setHash = function (table, hashOffset, $, sourceHashOffset) {
+HashTable.setHash = function (table, hashOffset, $s, sourceHashOffset) {
     var blockOffset = hashOffset & blockMask;
     var setBit = 1 << ((hashOffset >>> 4) & 3);
     table.hashes[blockOffset] |= setBit;
 
     var i;
     for (i = 0; i < 20; i++) {
-        table.hashes[hashOffset + i] = $[sourceHashOffset + i];
+        table.hashes[hashOffset + i] = $s[sourceHashOffset + i];
     }
     table.load++;
 };

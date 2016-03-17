@@ -1,13 +1,13 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(512);
-global.$ = $Heap.array;
+global.$Heap = Heap.create(64);
+var $h = $Heap.array;
 
 var blobRange = Blob.createFromString('foo bar\n');
 var blobStart = blobRange[0];
 var blobEnd = blobRange[1];
-var blob = $.subarray(blobStart, blobEnd);
+var blob = $h.subarray(blobStart, blobEnd);
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
 log(hex(deflated));
@@ -29,13 +29,13 @@ var packData = PackData.create(32);
 log(packData.nextOffset, packData.capacity);
 //=> 0 32
 
-var packOffset = PackData.packFile(packData, $, blobStart, blobEnd);
+var packOffset = PackData.packFile(packData, $h, blobStart, blobEnd);
 log(packOffset, packData.nextOffset, packData.capacity);
 //=> 0 17 32
 log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
-packOffset = PackData.packFile(packData, $, blobStart, blobEnd);
+packOffset = PackData.packFile(packData, $h, blobStart, blobEnd);
 log(packOffset, packData.nextOffset, packData.capacity);
 //=> 17 34 64
 log(hex(packData.array, packOffset, packData.nextOffset));
@@ -52,6 +52,6 @@ var fileEnd = file[1];
 var nextPackOffset = file[2];
 log(fileStart, fileEnd, nextPackOffset);
 //=> 15 30 34
-log(pretty($, fileStart, fileEnd));
+log(pretty($h, fileStart, fileEnd));
 //=> blob 8\x00foo bar
 //=>

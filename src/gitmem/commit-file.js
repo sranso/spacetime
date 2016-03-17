@@ -13,6 +13,8 @@ CommitFile.initialEnd = -1;
 CommitFile.initialHashOffset = -1;
 
 CommitFile.initialize = function () {
+    var $h = $Heap.array;
+
     CommitFile.initialStart = $Heap.nextOffset;
     var initialCommitString = (
         'commit 189\0tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904\n' +
@@ -21,12 +23,12 @@ CommitFile.initialize = function () {
         '\n' +
         'Initial commit\n'
     );
-    GitConvert.stringToExistingArray($, CommitFile.initialStart, initialCommitString);
+    GitConvert.stringToExistingArray($h, CommitFile.initialStart, initialCommitString);
     CommitFile.initialEnd = CommitFile.initialStart + initialCommitString.length;
     $Heap.nextOffset = CommitFile.initialEnd;
 
     CommitFile.initialHashOffset = $Heap.nextOffset;
-    Sha1.hash($, CommitFile.initialStart, CommitFile.initialEnd, $, CommitFile.initialHashOffset);
+    Sha1.hash($h, CommitFile.initialStart, CommitFile.initialEnd, $h, CommitFile.initialHashOffset);
     $Heap.nextOffset += 20;
 };
 
@@ -76,133 +78,135 @@ CommitFile.create = function (commit) {
     var commitEnd = commitStart + commitLength;
     $Heap.nextOffset = commitEnd;
 
+    var $h = $Heap.array;
+
     var commit_j = commitStart;
     var i;
     for (i = 0; i < commitPrefix.length; i++) {
-        $[commit_j + i] = commitPrefix[i];
+        $h[commit_j + i] = commitPrefix[i];
     }
 
     commit_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        $[commit_j + i] = lengthString.charCodeAt(i);
+        $h[commit_j + i] = lengthString.charCodeAt(i);
     }
-    $[commit_j + i] = 0;
+    $h[commit_j + i] = 0;
 
     commit_j += i + 1;
     for (i = 0; i < treePrefix.length; i++) {
-        $[commit_j + i] = treePrefix[i];
+        $h[commit_j + i] = treePrefix[i];
     }
 
     commit_j += i;
-    GitConvert.hashToHex($HashTable.hashes, commit.tree.hashOffset, $, commit_j);
-    $[commit_j + 40] = 0x0a;
+    GitConvert.hashToHex($HashTable.hashes, commit.tree.hashOffset, $h, commit_j);
+    $h[commit_j + 40] = 0x0a;
 
     // parent
     commit_j += 40 + 1;
     for (i = 0; i < parentPrefix.length; i++) {
-        $[commit_j + i] = parentPrefix[i];
+        $h[commit_j + i] = parentPrefix[i];
     }
 
     commit_j += i;
-    GitConvert.hashToHex($HashTable.hashes, commit.parent.hashOffset, $, commit_j);
-    $[commit_j + 40] = 0x0a;
+    GitConvert.hashToHex($HashTable.hashes, commit.parent.hashOffset, $h, commit_j);
+    $h[commit_j + 40] = 0x0a;
 
     // mergeParent
     if (commit.mergeParent) {
         commit_j += 40 + 1;
         for (i = 0; i < parentPrefix.length; i++) {
-            $[commit_j + i] = parentPrefix[i];
+            $h[commit_j + i] = parentPrefix[i];
         }
 
         commit_j += i;
-        GitConvert.hashToHex($HashTable.hashes, commit.mergeParent.hashOffset, $, commit_j);
-        $[commit_j + 40] = 0x0a;
+        GitConvert.hashToHex($HashTable.hashes, commit.mergeParent.hashOffset, $h, commit_j);
+        $h[commit_j + 40] = 0x0a;
     }
 
     // author
     commit_j += 40 + 1;
     for (i = 0; i < authorPrefix.length; i++) {
-        $[commit_j + i] = authorPrefix[i];
+        $h[commit_j + i] = authorPrefix[i];
     }
 
     commit_j += i;
     for (i = 0; i < authorName.length; i++) {
-        $[commit_j + i] = authorName.charCodeAt(i);
+        $h[commit_j + i] = authorName.charCodeAt(i);
     }
-    $[commit_j + i] = 0x20;
-    $[commit_j + i + 1] = '<'.charCodeAt(0);
+    $h[commit_j + i] = 0x20;
+    $h[commit_j + i + 1] = '<'.charCodeAt(0);
 
     commit_j += i + 2;
     for (i = 0; i < authorEmail.length; i++) {
-        $[commit_j + i] = authorEmail.charCodeAt(i);
+        $h[commit_j + i] = authorEmail.charCodeAt(i);
     }
-    $[commit_j + i] = '>'.charCodeAt(0);
-    $[commit_j + i + 1] = 0x20;
+    $h[commit_j + i] = '>'.charCodeAt(0);
+    $h[commit_j + i + 1] = 0x20;
 
     commit_j += i + 2;
     for (i = 0; i < authorTime.length; i++) {
-        $[commit_j + i] = authorTime.charCodeAt(i);
+        $h[commit_j + i] = authorTime.charCodeAt(i);
     }
-    $[commit_j + i] = 0x20;
+    $h[commit_j + i] = 0x20;
 
     commit_j += i + 1;
     for (i = 0; i < authorTimezone.length; i++) {
-        $[commit_j + i] = authorTimezone.charCodeAt(i);
+        $h[commit_j + i] = authorTimezone.charCodeAt(i);
     }
-    $[commit_j + i] = 0x0a;
+    $h[commit_j + i] = 0x0a;
 
     // committer
     commit_j += i + 1;
     for (i = 0; i < committerPrefix.length; i++) {
-        $[commit_j + i] = committerPrefix[i];
+        $h[commit_j + i] = committerPrefix[i];
     }
 
     commit_j += i;
     for (i = 0; i < committerName.length; i++) {
-        $[commit_j + i] = committerName.charCodeAt(i);
+        $h[commit_j + i] = committerName.charCodeAt(i);
     }
-    $[commit_j + i] = 0x20;
-    $[commit_j + i + 1] = '<'.charCodeAt(0);
+    $h[commit_j + i] = 0x20;
+    $h[commit_j + i + 1] = '<'.charCodeAt(0);
 
     commit_j += i + 2;
     for (i = 0; i < committerEmail.length; i++) {
-        $[commit_j + i] = committerEmail.charCodeAt(i);
+        $h[commit_j + i] = committerEmail.charCodeAt(i);
     }
-    $[commit_j + i] = '>'.charCodeAt(0);
-    $[commit_j + i + 1] = 0x20;
+    $h[commit_j + i] = '>'.charCodeAt(0);
+    $h[commit_j + i + 1] = 0x20;
 
     commit_j += i + 2;
     for (i = 0; i < committerTime.length; i++) {
-        $[commit_j + i] = committerTime.charCodeAt(i);
+        $h[commit_j + i] = committerTime.charCodeAt(i);
     }
-    $[commit_j + i] = 0x20;
+    $h[commit_j + i] = 0x20;
 
     commit_j += i + 1;
     for (i = 0; i < committerTimezone.length; i++) {
-        $[commit_j + i] = committerTimezone.charCodeAt(i);
+        $h[commit_j + i] = committerTimezone.charCodeAt(i);
     }
-    $[commit_j + i] = 0x0a;
-    $[commit_j + i + 1] = 0x0a;
+    $h[commit_j + i] = 0x0a;
+    $h[commit_j + i + 1] = 0x0a;
 
     commit_j += i + 2;
     for (i = 0; i < message.length; i++) {
-        $[commit_j + i] = message.charCodeAt(i);
+        $h[commit_j + i] = message.charCodeAt(i);
     }
 
     return [commitStart, commitEnd];
 };
 
-CommitFile.parseTree = function (commitStart, commitEnd, treeHashOffset) {
-    var hexOffset = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
-    GitConvert.hexToHash($, hexOffset, $, treeHashOffset);
+CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treeHashOffset) {
+    var hexOffset = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
+    GitConvert.hexToHash($c, hexOffset, $t, treeHashOffset);
 };
 
-CommitFile.parseParents = function (commitStart, commitEnd, parentHashesOffset) {
-    var j = $.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
+CommitFile.parseParents = function ($c, commitStart, commitEnd, $p, parentHashesOffset) {
+    var j = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
     var n = 0;
-    while ($[j] === parentPrefix[0]) {
+    while ($c[j] === parentPrefix[0]) {
         j += parentPrefix.length;
-        GitConvert.hexToHash($, j, $, parentHashesOffset);
+        GitConvert.hexToHash($c, j, $p, parentHashesOffset);
         j += 40 + 1;
         parentHashesOffset += 20;
         n++;
@@ -211,52 +215,52 @@ CommitFile.parseParents = function (commitStart, commitEnd, parentHashesOffset) 
     return n;
 };
 
-CommitFile.parse = function (fileStart, fileEnd, commit) {
-    var j = $.indexOf(0, fileStart + 7) + 1 + treePrefix.length + 40 + 1;
-    while ($[j] === parentPrefix[0]) {
+CommitFile.parse = function ($f, fileStart, fileEnd, commit) {
+    var j = $f.indexOf(0, fileStart + 7) + 1 + treePrefix.length + 40 + 1;
+    while ($f[j] === parentPrefix[0]) {
         j += parentPrefix.length + 40 + 1;
     }
 
     // author
     j += authorPrefix.length;
-    var nameArray = $.subarray(j, $.indexOf('<'.charCodeAt(0), j) - 1);
+    var nameArray = $f.subarray(j, $f.indexOf('<'.charCodeAt(0), j) - 1);
     commit.authorName = String.fromCharCode.apply(null, nameArray);
 
     j += nameArray.length + 1 + 1;
-    var emailArray = $.subarray(j, $.indexOf('>'.charCodeAt(0), j));
+    var emailArray = $f.subarray(j, $f.indexOf('>'.charCodeAt(0), j));
     commit.authorEmail = String.fromCharCode.apply(null, emailArray);
 
     j += emailArray.length + 1 + 1;
-    var secondsArray = $.subarray(j, $.indexOf(0x20, j + 8));
+    var secondsArray = $f.subarray(j, $f.indexOf(0x20, j + 8));
     var seconds = String.fromCharCode.apply(null, secondsArray);
     commit.authorTime = Number(seconds) * 1000;
 
     j += secondsArray.length + 1;
-    var timezoneArray = $.subarray(j, j + 5);
+    var timezoneArray = $f.subarray(j, j + 5);
     var timezone = String.fromCharCode.apply(null, timezoneArray);
     commit.authorTimezoneOffset = timezoneOffsetFromString(timezone);
 
     // committer
     j += timezoneArray.length + 1 + committerPrefix.length;
-    nameArray = $.subarray(j, $.indexOf('<'.charCodeAt(0), j) - 1);
+    nameArray = $f.subarray(j, $f.indexOf('<'.charCodeAt(0), j) - 1);
     commit.committerName = String.fromCharCode.apply(null, nameArray);
 
     j += nameArray.length + 1 + 1;
-    emailArray = $.subarray(j, $.indexOf('>'.charCodeAt(0), j));
+    emailArray = $f.subarray(j, $f.indexOf('>'.charCodeAt(0), j));
     commit.committerEmail = String.fromCharCode.apply(null, emailArray);
 
     j += emailArray.length + 1 + 1;
-    secondsArray = $.subarray(j, $.indexOf(0x20, j + 8));
+    secondsArray = $f.subarray(j, $f.indexOf(0x20, j + 8));
     seconds = String.fromCharCode.apply(null, secondsArray);
     commit.committerTime = Number(seconds) * 1000;
 
     j += secondsArray.length + 1;
-    timezoneArray = $.subarray(j, j + 5);
+    timezoneArray = $f.subarray(j, j + 5);
     timezone = String.fromCharCode.apply(null, timezoneArray);
     commit.committerTimezoneOffset = timezoneOffsetFromString(timezone);
 
     j += timezoneArray.length + 1 + 1;
-    var messageArray = $.subarray(j, fileEnd);
+    var messageArray = $f.subarray(j, fileEnd);
     commit.message = String.fromCharCode.apply(null, messageArray);
 };
 

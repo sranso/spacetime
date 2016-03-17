@@ -10,21 +10,21 @@ var W8 = new Uint8Array(W.buffer, 0, 16 * 4);
 
 var H0, H1, H2, H3, H4;
 
-Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
-    if (!(M_array instanceof Uint8Array)) {
-        throw new Error('M_array is not a Uint8Array');
+Sha1.hash = function ($m, messageStart, messageEnd, $h, hashOffset) {
+    if (!($m instanceof Uint8Array)) {
+        throw new Error('$m is not a Uint8Array');
     }
-    if (typeof M_start !== 'number') {
-        throw new Error('M_start is not a number');
+    if (typeof messageStart !== 'number') {
+        throw new Error('messageStart is not a number');
     }
-    if (typeof M_end !== 'number') {
-        throw new Error('M_end is not a number');
+    if (typeof messageEnd !== 'number') {
+        throw new Error('messageEnd is not a number');
     }
-    if (!(H_array instanceof Uint8Array)) {
-        throw new Error('H_array is not a Uint8Array');
+    if (!($h instanceof Uint8Array)) {
+        throw new Error('$h is not a Uint8Array');
     }
-    if (typeof H_offset !== 'number') {
-        throw new Error('H_offset is not a number');
+    if (typeof hashOffset !== 'number') {
+        throw new Error('hashOffset is not a number');
     }
 
     var startByte;
@@ -36,17 +36,17 @@ Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
     H3 = 0x10325476 | 0;
     H4 = 0xc3d2e1f0 | 0;
 
-    var M_length = M_end - M_start;
-    var lastBlockBytes = M_length % 64;
-    var fullBlockEnd = M_end - lastBlockBytes;
+    var messageLength = messageEnd - messageStart;
+    var lastBlockBytes = messageLength % 64;
+    var fullBlockEnd = messageEnd - lastBlockBytes;
     var i;
-    for (startByte = M_start; startByte < fullBlockEnd; startByte += 64) {
+    for (startByte = messageStart; startByte < fullBlockEnd; startByte += 64) {
         for (i = 0; i < 64; i += 4) {
             W[i >>> 2] = (
-                (M_array[startByte + i] << 24) |
-                (M_array[startByte + i + 1] << 16) |
-                (M_array[startByte + i + 2] << 8) |
-                M_array[startByte + i + 3]
+                ($m[startByte + i] << 24) |
+                ($m[startByte + i + 1] << 16) |
+                ($m[startByte + i + 2] << 8) |
+                $m[startByte + i + 3]
             );
         }
         hashBlock(W);
@@ -61,20 +61,20 @@ Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
     var lastBlockBytesAligned = lastBlockBytes - lastWordBytes;
     for (i = 0; i < lastBlockBytesAligned; i += 4) {
         W[i >>> 2] = (
-            (M_array[startByte + i] << 24) |
-            (M_array[startByte + i + 1] << 16) |
-            (M_array[startByte + i + 2] << 8) |
-            M_array[startByte + i + 3]
+            ($m[startByte + i] << 24) |
+            ($m[startByte + i + 1] << 16) |
+            ($m[startByte + i + 2] << 8) |
+            $m[startByte + i + 3]
         );
     }
 
     switch (lastWordBytes) {
     case 3:
-        W8[i + 1] = M_array[startByte + i + 2];
+        W8[i + 1] = $m[startByte + i + 2];
     case 2:
-        W8[i + 2] = M_array[startByte + i + 1];
+        W8[i + 2] = $m[startByte + i + 1];
     case 1:
-        W8[i + 3] = M_array[startByte + i];
+        W8[i + 3] = $m[startByte + i];
     }
 
     // Pad the message with a "one" bit [5.1.1]
@@ -89,34 +89,34 @@ Sha1.hash = function (M_array, M_start, M_end, H_array, H_offset) {
 
     // Append the length in bits [5.1.1]
     // Message must be less than 500 MB (for this implementation)
-    W[15] = M_length * 8;
+    W[15] = messageLength * 8;
     hashBlock(W);
 
     // Write hash to output array
-    H_array[H_offset] = H0 >>> 24;
-    H_array[H_offset + 1] = (H0 >>> 16) & 0xff;
-    H_array[H_offset + 2] = (H0 >>> 8) & 0xff;
-    H_array[H_offset + 3] = H0 & 0xff;
+    $h[hashOffset] = H0 >>> 24;
+    $h[hashOffset + 1] = (H0 >>> 16) & 0xff;
+    $h[hashOffset + 2] = (H0 >>> 8) & 0xff;
+    $h[hashOffset + 3] = H0 & 0xff;
 
-    H_array[H_offset + 4] = H1 >>> 24;
-    H_array[H_offset + 5] = (H1 >>> 16) & 0xff;
-    H_array[H_offset + 6] = (H1 >>> 8) & 0xff;
-    H_array[H_offset + 7] = H1 & 0xff;
+    $h[hashOffset + 4] = H1 >>> 24;
+    $h[hashOffset + 5] = (H1 >>> 16) & 0xff;
+    $h[hashOffset + 6] = (H1 >>> 8) & 0xff;
+    $h[hashOffset + 7] = H1 & 0xff;
 
-    H_array[H_offset + 8] = H2 >>> 24;
-    H_array[H_offset + 9] = (H2 >>> 16) & 0xff;
-    H_array[H_offset + 10] = (H2 >>> 8) & 0xff;
-    H_array[H_offset + 11] = H2 & 0xff;
+    $h[hashOffset + 8] = H2 >>> 24;
+    $h[hashOffset + 9] = (H2 >>> 16) & 0xff;
+    $h[hashOffset + 10] = (H2 >>> 8) & 0xff;
+    $h[hashOffset + 11] = H2 & 0xff;
 
-    H_array[H_offset + 12] = H3 >>> 24;
-    H_array[H_offset + 13] = (H3 >>> 16) & 0xff;
-    H_array[H_offset + 14] = (H3 >>> 8) & 0xff;
-    H_array[H_offset + 15] = H3 & 0xff;
+    $h[hashOffset + 12] = H3 >>> 24;
+    $h[hashOffset + 13] = (H3 >>> 16) & 0xff;
+    $h[hashOffset + 14] = (H3 >>> 8) & 0xff;
+    $h[hashOffset + 15] = H3 & 0xff;
 
-    H_array[H_offset + 16] = H4 >>> 24;
-    H_array[H_offset + 17] = (H4 >>> 16) & 0xff;
-    H_array[H_offset + 18] = (H4 >>> 8) & 0xff;
-    H_array[H_offset + 19] = H4 & 0xff;
+    $h[hashOffset + 16] = H4 >>> 24;
+    $h[hashOffset + 17] = (H4 >>> 16) & 0xff;
+    $h[hashOffset + 18] = (H4 >>> 8) & 0xff;
+    $h[hashOffset + 19] = H4 & 0xff;
 };
 
 // Hash computation [6.1.2]

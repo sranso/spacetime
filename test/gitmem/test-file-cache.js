@@ -1,8 +1,6 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(1024);
-global.$ = $Heap.array;
 var random = Random.create(526926);
 global.$HashTable = HashTable.create(8, random);
 global.$Objects = Objects.create(8);
@@ -39,10 +37,10 @@ cache = FileCache.create(3, 32);
 var fileStart = 29;
 var fileEnd = fileStart + 3;
 GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'foo');
-var tempHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-Sha1.hash(cache.heap.array, fileStart, fileEnd, $, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
+var $t = new Uint8Array(20);
+var tempHashOffset = 0;
+Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
+var hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
 
 FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
@@ -60,8 +58,8 @@ log(cacheObject.flags & Objects.isFullObject);
 // Registering will clear old cached files
 var oldObjectIndex = objectIndex;
 GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'bar');
-Sha1.hash(cache.heap.array, fileStart, fileEnd, $, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
+Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
+var hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
 //=> 1 2
@@ -87,8 +85,8 @@ log($Objects.table[oldObjectIndex].fileEnd);
 
 // Don't overflow the nextIndex
 GitConvert.stringToExistingArray(cache.heap.array, fileStart + 2, 'Z');
-Sha1.hash(cache.heap.array, fileStart + 2, fileEnd, $, tempHashOffset);
-hashOffset = ~HashTable.findHashOffset($HashTable, $, tempHashOffset);
+Sha1.hash(cache.heap.array, fileStart + 2, fileEnd, $t, tempHashOffset);
+hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart + 2, fileStart + 2, hashOffset);
 log(cache.firstIndex, cache.nextIndex);
 //=> 2 1

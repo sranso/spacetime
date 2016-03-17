@@ -2,7 +2,7 @@
 require('../helper');
 
 global.$Heap = Heap.create(1024);
-global.$ = $Heap.array;
+var $h = $Heap.array;
 var random = Random.create(29923321);
 global.$HashTable = HashTable.create(16, random);
 global.$Objects = Objects.create(16);
@@ -80,10 +80,10 @@ log('"' + none.string + '"', none.number, none.bool);
 log(none.fileStart, none.fileEnd, none.fileEnd - none.fileStart);
 //=> 148 290 142
 
-log(hash($, none.fileStart + offsets.bool));
+log(hash($h, none.fileStart + offsets.bool));
 //=> 02e4a84d62c4b0fe9cca60bba7b9799f78f1f7ed
 
-var hashOffset = HashTable.findHashOffset($HashTable, $, none.fileStart + offsets.bool);
+var hashOffset = HashTable.findHashOffset($HashTable, $h, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex(hashOffset);
 var gotBool = $Objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
@@ -102,7 +102,7 @@ var object1 = {
 
 object1.hashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, object1.fileStart, object1.fileEnd, $, object1.hashOffset);
+Sha1.hash($h, object1.fileStart, object1.fileEnd, $h, object1.hashOffset);
 
 var thing1 = Thing.setAll(Thing.none, {
     string: 'foo',
@@ -119,16 +119,16 @@ log(thing1.flags & Objects.isFullObject);
 
 var searchHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, thing1.fileStart, thing1.fileEnd, $, searchHashOffset);
-hashOffset = HashTable.findHashOffset($HashTable, $, searchHashOffset);
+Sha1.hash($h, thing1.fileStart, thing1.fileEnd, $h, searchHashOffset);
+hashOffset = HashTable.findHashOffset($HashTable, $h, searchHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 log($Objects.table[objectIndex] === thing1);
 //=> true
 
-log(hash($, thing1.fileStart + offsets.string));
+log(hash($h, thing1.fileStart + offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-hashOffset = HashTable.findHashOffset($HashTable, $, thing1.fileStart + offsets.string);
+hashOffset = HashTable.findHashOffset($HashTable, $h, thing1.fileStart + offsets.string);
 objectIndex = HashTable.objectIndex(hashOffset);
 var gotString = $Objects.table[objectIndex].value;
 log(gotString, typeof gotString);
@@ -151,14 +151,14 @@ var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 var numberHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($, numberStart, numberEnd, $, numberHashOffset);
-hashOffset = HashTable.findHashOffset($HashTable, $, numberHashOffset);
+Sha1.hash($h, numberStart, numberEnd, $h, numberHashOffset);
+hashOffset = HashTable.findHashOffset($HashTable, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 var gotNumber = $Objects.table[objectIndex].value;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
-hashOffset = HashTable.findHashOffset($HashTable, $, thing2.fileStart + offsets.bool);
+hashOffset = HashTable.findHashOffset($HashTable, $h, thing2.fileStart + offsets.bool);
 objectIndex = HashTable.objectIndex(hashOffset);
 var gotBool = $Objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
