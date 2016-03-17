@@ -2,8 +2,6 @@ var fs = require('fs');
 var path = require('path');
 var util = require('util');
 
-require('./common-helper');
-
 var loader = require('./loader');
 
 var html = fs.readFileSync(path.resolve(__dirname, '../new.html'), 'utf-8');

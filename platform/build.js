@@ -173,7 +173,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
     var scripts = [];
     $('script').each(function () {
         var src = $(this).attr('src');
-        if (src && src.indexOf('./vendor/') === -1) {
+        if (src && src.indexOf('./src/') === 0) {
             scripts.push(path.join(dir, src));
         }
     });

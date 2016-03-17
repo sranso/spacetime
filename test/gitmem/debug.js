@@ -1,3 +1,6 @@
+'use strict';
+(function () {
+
 global.pretty = function (array, start, end) {
     if (!(array instanceof Uint8Array)) {
         throw new Error('array must be Uint8Array');
@@ -83,3 +86,5 @@ var clamp = function (d, length) {
         return d;
     }
 };
+
+})();
