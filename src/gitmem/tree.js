@@ -32,38 +32,6 @@ Tree.initialize = function () {
     Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
 };
 
-Tree.catFile = function (treeStart, treeEnd) {
-    var $h = $Heap.array;
-
-    var pretty = [];
-    var j = $h.indexOf(0, treeStart + 6) + 1;
-    while (j < treeEnd) {
-        var modeEnd = $h.indexOf(0x20, j + 5);
-        var filenameEnd = $h.indexOf(0, modeEnd + 2);
-
-        var mode = String.fromCharCode.apply(null, $h.subarray(j, modeEnd));
-        if (mode === '100644') {
-            var type = 'blob';
-        } else if (mode === '40000') {
-            mode = '040000';
-            var type = 'tree';
-        } else {
-            var type = 'unknown';
-        }
-
-        j = modeEnd + 1;
-        var filename = String.fromCharCode.apply(null, $h.subarray(j, filenameEnd));
-
-        j = filenameEnd + 1;
-        var hash = GitConvert.hashToString($h, j);
-        pretty.push([mode, type, hash, '  ', filename].join(' '));
-
-        j += 20;
-    }
-
-    return pretty.join('\n');
-};
-
 var treePrefix = GitConvert.stringToArray('tree ');
 var treeMode = GitConvert.stringToArray('40000');
 var blobMode = GitConvert.stringToArray('100644');

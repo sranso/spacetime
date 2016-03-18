@@ -87,4 +87,34 @@ var clamp = function (d, length) {
     }
 };
 
+global.prettyTree = function ($t, treeStart, treeEnd) {
+    var pretty = [];
+    var j = $t.indexOf(0, treeStart + 6) + 1;
+    while (j < treeEnd) {
+        var modeEnd = $t.indexOf(0x20, j + 5);
+        var filenameEnd = $t.indexOf(0, modeEnd + 2);
+
+        var mode = String.fromCharCode.apply(null, $t.subarray(j, modeEnd));
+        if (mode === '100644') {
+            var type = 'blob';
+        } else if (mode === '40000') {
+            mode = '040000';
+            var type = 'tree';
+        } else {
+            var type = 'unknown';
+        }
+
+        j = modeEnd + 1;
+        var filename = String.fromCharCode.apply(null, $t.subarray(j, filenameEnd));
+
+        j = filenameEnd + 1;
+        var hash = GitConvert.hashToString($t, j);
+        pretty.push([mode, type, hash, '  ', filename].join(' '));
+
+        j += 20;
+    }
+
+    return pretty.join('\n');
+};
+
 })();

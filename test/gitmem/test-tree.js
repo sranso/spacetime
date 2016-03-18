@@ -63,7 +63,7 @@ log(hash($h, treeStart + offsets.bar));
 //=> ab48e8a80caa10695287570c66633692b2058b77
 
 
-log(Tree.catFile(treeStart, treeEnd));
+log(prettyTree($h, treeStart, treeEnd));
 //=> 040000 tree ab48e8a80caa10695287570c66633692b2058b77    bar
 //=> 100644 blob 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33    foo
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    www
