@@ -2,9 +2,9 @@
 global.PackData = {};
 (function () {
 
-var blobPrefix = GitConvert.stringToArray('blob ');
-var treePrefix = GitConvert.stringToArray('tree ');
-var commitPrefix = GitConvert.stringToArray('commit ');
+var blobPrefix = Convert.stringToArray('blob ');
+var treePrefix = Convert.stringToArray('tree ');
+var commitPrefix = Convert.stringToArray('commit ');
 
 PackData.create = function (capacity) {
     return Heap.create(capacity);

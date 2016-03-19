@@ -18,7 +18,7 @@ Blob.initialize = function () {
     Sha1.hash($h, Blob.emptyStart, Blob.emptyEnd, $h, Blob.emptyHashOffset);
 };
 
-var blobPrefix = GitConvert.stringToArray('blob ');
+var blobPrefix = Convert.stringToArray('blob ');
 
 Blob.createFromString = function (string) {
     var lengthString = '' + string.length;

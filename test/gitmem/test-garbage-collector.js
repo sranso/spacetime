@@ -18,7 +18,7 @@ log(system.heap.nextOffset);
 log(system.heap.capacity, system.heap.array.length);
 //=> 512 512
 
-GitConvert.stringToExistingArray(system.heap.array, 200, 'foo bar');
+Convert.stringToExistingArray(system.heap.array, 200, 'foo bar');
 system.heap.nextOffset = 203;
 GarbageCollector.resizeHeap(system, 1000);
 log(system.heap.capacity);

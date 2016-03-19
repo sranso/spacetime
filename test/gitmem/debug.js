@@ -71,7 +71,7 @@ global.prettyObjectList = function (objects) {
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
-            var hash = GitConvert.hashToString($HashTable.hashes, object.hashOffset);
+            var hash = Convert.hashToString($HashTable.hashes, object.hashOffset);
             pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }
@@ -108,7 +108,7 @@ global.prettyTree = function ($t, treeStart, treeEnd) {
         var filename = String.fromCharCode.apply(null, $t.subarray(j, filenameEnd));
 
         j = filenameEnd + 1;
-        var hash = GitConvert.hashToString($t, j);
+        var hash = Convert.hashToString($t, j);
         pretty.push([mode, type, hash, '  ', filename].join(' '));
 
         j += 20;

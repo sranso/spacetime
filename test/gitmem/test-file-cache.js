@@ -19,7 +19,7 @@ log(cache.heap.nextOffset);
 log(cache.heap.capacity, cache.heap.array.length);
 //=> 256 256
 
-GitConvert.stringToExistingArray(cache.heap.array, 200, 'foo bar');
+Convert.stringToExistingArray(cache.heap.array, 200, 'foo bar');
 cache.heap.nextOffset = 203;
 FileCache.resize(cache, 500);
 log(cache.heap.capacity);
@@ -36,7 +36,7 @@ log(pretty(cache.heap.array, 199, 207));
 cache = FileCache.create(3, 32);
 var fileStart = 29;
 var fileEnd = fileStart + 3;
-GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'foo');
+Convert.stringToExistingArray(cache.heap.array, fileStart, 'foo');
 var $t = new Uint8Array(20);
 var tempHashOffset = 0;
 Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
@@ -57,7 +57,7 @@ log(cacheObject.flags & Objects.isFullObject);
 
 // Registering will clear old cached files
 var oldObjectIndex = objectIndex;
-GitConvert.stringToExistingArray(cache.heap.array, fileStart, 'bar');
+Convert.stringToExistingArray(cache.heap.array, fileStart, 'bar');
 Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
 var hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
@@ -84,7 +84,7 @@ log($Objects.table[oldObjectIndex].fileEnd);
 //=> 30
 
 // Don't overflow the nextIndex
-GitConvert.stringToExistingArray(cache.heap.array, fileStart + 2, 'Z');
+Convert.stringToExistingArray(cache.heap.array, fileStart + 2, 'Z');
 Sha1.hash(cache.heap.array, fileStart + 2, fileEnd, $t, tempHashOffset);
 hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
 FileCache.registerCachedFile(cache, fileStart + 2, fileStart + 2, hashOffset);

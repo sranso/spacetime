@@ -247,10 +247,10 @@ var rushaRawDigest8 = function (M, H, H_offset) {
     }
 };
 
-var tinyArray = GitConvert.stringToArray(tinyTest);
-var smallArray = GitConvert.stringToArray(smallTest);
-var mediumArray = GitConvert.stringToArray(mediumTest);
-var largeArray = GitConvert.stringToArray(largeTest);
+var tinyArray = Convert.stringToArray(tinyTest);
+var smallArray = Convert.stringToArray(smallTest);
+var mediumArray = Convert.stringToArray(mediumTest);
+var largeArray = Convert.stringToArray(largeTest);
 
 var i;
 var shasum;

@@ -2,11 +2,11 @@
 global.CommitFile = {};
 (function () {
 
-var commitPrefix = GitConvert.stringToArray('commit ');
-var treePrefix = GitConvert.stringToArray('tree ');
-var parentPrefix = GitConvert.stringToArray('parent ');
-var authorPrefix = GitConvert.stringToArray('author ');
-var committerPrefix = GitConvert.stringToArray('committer ');
+var commitPrefix = Convert.stringToArray('commit ');
+var treePrefix = Convert.stringToArray('tree ');
+var parentPrefix = Convert.stringToArray('parent ');
+var authorPrefix = Convert.stringToArray('author ');
+var committerPrefix = Convert.stringToArray('committer ');
 
 CommitFile.initialStart = -1;
 CommitFile.initialEnd = -1;
@@ -23,7 +23,7 @@ CommitFile.initialize = function () {
         '\n' +
         'Initial commit\n'
     );
-    GitConvert.stringToExistingArray($h, CommitFile.initialStart, initialCommitString);
+    Convert.stringToExistingArray($h, CommitFile.initialStart, initialCommitString);
     CommitFile.initialEnd = CommitFile.initialStart + initialCommitString.length;
     $Heap.nextOffset = CommitFile.initialEnd;
 
@@ -98,7 +98,7 @@ CommitFile.create = function (commit) {
     }
 
     commit_j += i;
-    GitConvert.hashToHex($HashTable.hashes, commit.tree.hashOffset, $h, commit_j);
+    Convert.hashToHex($HashTable.hashes, commit.tree.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // parent
@@ -108,7 +108,7 @@ CommitFile.create = function (commit) {
     }
 
     commit_j += i;
-    GitConvert.hashToHex($HashTable.hashes, commit.parent.hashOffset, $h, commit_j);
+    Convert.hashToHex($HashTable.hashes, commit.parent.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // mergeParent
@@ -119,7 +119,7 @@ CommitFile.create = function (commit) {
         }
 
         commit_j += i;
-        GitConvert.hashToHex($HashTable.hashes, commit.mergeParent.hashOffset, $h, commit_j);
+        Convert.hashToHex($HashTable.hashes, commit.mergeParent.hashOffset, $h, commit_j);
         $h[commit_j + 40] = 0x0a;
     }
 
@@ -198,7 +198,7 @@ CommitFile.create = function (commit) {
 
 CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treeHashOffset) {
     var hexOffset = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
-    GitConvert.hexToHash($c, hexOffset, $t, treeHashOffset);
+    Convert.hexToHash($c, hexOffset, $t, treeHashOffset);
 };
 
 CommitFile.parseParents = function ($c, commitStart, commitEnd, $p, parentHashesOffset) {
@@ -206,7 +206,7 @@ CommitFile.parseParents = function ($c, commitStart, commitEnd, $p, parentHashes
     var n = 0;
     while ($c[j] === parentPrefix[0]) {
         j += parentPrefix.length;
-        GitConvert.hexToHash($c, j, $p, parentHashesOffset);
+        Convert.hexToHash($c, j, $p, parentHashesOffset);
         j += 40 + 1;
         parentHashesOffset += 20;
         n++;

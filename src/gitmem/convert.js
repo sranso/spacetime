@@ -1,8 +1,8 @@
 'use strict';
-global.GitConvert = {};
+global.Convert = {};
 (function () {
 
-GitConvert.stringToArray = function (string) {
+Convert.stringToArray = function (string) {
     var array = new Uint8Array(string.length);
     var i;
     for (i = 0; i < string.length; i++) {
@@ -11,21 +11,21 @@ GitConvert.stringToArray = function (string) {
     return array;
 };
 
-GitConvert.stringToExistingArray = function ($e, existingOffset, string) {
+Convert.stringToExistingArray = function ($e, existingOffset, string) {
     var i;
     for (i = 0; i < string.length; i++) {
         $e[existingOffset + i] = string.charCodeAt(i);
     }
 };
 
-GitConvert.arrayToExistingArray = function ($e, existingOffset, fromArray) {
+Convert.arrayToExistingArray = function ($e, existingOffset, fromArray) {
     var i;
     for (i = 0; i < fromArray.length; i++) {
         $e[existingOffset + i] = fromArray[i];
     }
 };
 
-GitConvert.hashToString = function ($h, hashOffset) {
+Convert.hashToString = function ($h, hashOffset) {
     var str = [];
     for (var i = 0; i < 20; i++) {
         var hex = '00' + $h[hashOffset + i].toString(16);
@@ -34,9 +34,9 @@ GitConvert.hashToString = function ($h, hashOffset) {
     return str.join('');
 };
 
-var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
+var hexCharacters = Convert.stringToArray('0123456789abcdef');
 
-GitConvert.hashToHex = function (hashArray, hashOffset, hexArray, hexOffset) {
+Convert.hashToHex = function (hashArray, hashOffset, hexArray, hexOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
         var h = hashArray[hashOffset + i / 2];
@@ -80,7 +80,7 @@ var hexTable = new Uint8Array([
     -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0, -1|0,  // f8-ff
 ]);
 
-GitConvert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
+Convert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
     var i;
     for (i = 0; i < 40; i += 2) {
         hashArray[hashOffset + i / 2] = (
@@ -90,7 +90,7 @@ GitConvert.hexToHash = function (hexArray, hexOffset, hashArray, hashOffset) {
     }
 };
 
-GitConvert.pktLineToLength = function ($p, pktOffset) {
+Convert.pktLineToLength = function ($p, pktOffset) {
     return (
         (hexTable[$p[pktOffset]] << 12) |
         (hexTable[$p[pktOffset + 1]] << 8) |

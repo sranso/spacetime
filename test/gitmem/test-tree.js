@@ -42,7 +42,7 @@ log(hash($h, treeStart + offsets.www));
 
 
 var fooStart = $Heap.nextOffset;
-GitConvert.stringToExistingArray($h, fooStart, 'foo');
+Convert.stringToExistingArray($h, fooStart, 'foo');
 $Heap.nextOffset += 3;
 
 Sha1.hash($h, fooStart, $Heap.nextOffset, $h, treeStart + offsets.foo);
@@ -51,7 +51,7 @@ log(hash($h, treeStart + offsets.foo));
 
 
 var barStart = $Heap.nextOffset;
-GitConvert.stringToExistingArray($h, barStart, 'bar');
+Convert.stringToExistingArray($h, barStart, 'bar');
 $Heap.nextOffset += 3;
 var barHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;

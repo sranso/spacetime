@@ -8,9 +8,9 @@ SendPack.postContentType = 'application/x-git-receive-pack-request';
 SendPack.zeroHash = new Uint8Array(20);
 SendPack.nonePack = new Uint8Array(0);
 
-var capabilities = GitConvert.stringToArray('report-status quiet agent=gitmem/0.0.0');
+var capabilities = Convert.stringToArray('report-status quiet agent=gitmem/0.0.0');
 var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length + 1;
-var hexCharacters = GitConvert.stringToArray('0123456789abcdef');
+var hexCharacters = Convert.stringToArray('0123456789abcdef');
 
 SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     var firstLineLength = firstLineConstantLength + branch.length;
@@ -23,13 +23,13 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
 
     var j = 4;
     var i;
-    GitConvert.hashToHex(previousHash, 0, body, j);
+    Convert.hashToHex(previousHash, 0, body, j);
 
     j += 40;
     body[j] = 0x20;
 
     j += 1;
-    GitConvert.hashToHex(currentHash, 0, body, j);
+    Convert.hashToHex(currentHash, 0, body, j);
 
     j += 40;
     body[j] = 0x20;

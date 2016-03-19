@@ -32,9 +32,9 @@ Tree.initialize = function () {
     Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
 };
 
-var treePrefix = GitConvert.stringToArray('tree ');
-var treeMode = GitConvert.stringToArray('40000');
-var blobMode = GitConvert.stringToArray('100644');
+var treePrefix = Convert.stringToArray('tree ');
+var treeMode = Convert.stringToArray('40000');
+var blobMode = Convert.stringToArray('100644');
 
 Tree.create = function (props) {
     var names = Object.keys(props);
