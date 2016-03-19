@@ -10,7 +10,7 @@ Blob.initialize = function () {
     $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
     Blob.emptyHashOffset = $Heap.nextOffset;
     $Heap.nextOffset += 20;
-    var emptyBlobRange = Blob.createFromString('');
+    var emptyBlobRange = Blob.create('');
     Blob.emptyStart = emptyBlobRange[0];
     Blob.emptyEnd = emptyBlobRange[1];
 
@@ -20,7 +20,7 @@ Blob.initialize = function () {
 
 var blobPrefix = Convert.stringToArray('blob ');
 
-Blob.createFromString = function (string) {
+Blob.create = function (string) {
     var lengthString = '' + string.length;
     var blobLength = blobPrefix.length + lengthString.length + 1 + string.length;
     if ($Heap.nextOffset + blobLength > $Heap.capacity) {

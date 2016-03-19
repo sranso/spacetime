@@ -15,11 +15,11 @@ Value.createObject = function (value) {
 
 Value.createBlob = function (value, type) {
     if (type === 'string') {
-        return Blob.createFromString('"' + value);
+        return Blob.create('"' + value);
     } else if (type === 'number') {
-        return Blob.createFromString('' + Number(value));
+        return Blob.create('' + Number(value));
     } else if (type === 'boolean') {
-        return Blob.createFromString('' + Boolean(value));
+        return Blob.create('' + Boolean(value));
     } else {
         throw new Error('Unsupported type: ' + type);
     }

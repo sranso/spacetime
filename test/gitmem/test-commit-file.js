@@ -27,7 +27,7 @@ log(CommitFile.timezoneString(-90));
 
 // Recreate a real commit.
 
-var blobRange = Blob.createFromString('foo\n');
+var blobRange = Blob.create('foo\n');
 var tree = Tree.create({
     foo: 'blob',
 });

@@ -34,7 +34,7 @@ var checkoutFile = function ($f, fileStart, fileEnd) {
 
 
 
-var blobRange = Blob.createFromString('foo');
+var blobRange = Blob.create('foo');
 var blobStart = blobRange[0];
 var blobEnd = blobRange[1];
 

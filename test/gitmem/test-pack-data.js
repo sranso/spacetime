@@ -4,7 +4,7 @@ require('../helper');
 global.$Heap = Heap.create(64);
 var $h = $Heap.array;
 
-var blobRange = Blob.createFromString('foo bar\n');
+var blobRange = Blob.create('foo bar\n');
 var blobStart = blobRange[0];
 var blobEnd = blobRange[1];
 var blob = $h.subarray(blobStart, blobEnd);
