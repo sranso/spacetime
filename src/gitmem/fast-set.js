@@ -3,6 +3,7 @@ global.FastSet = {};
 (function () {
 
 var tempHashOffset = -1;
+var fileRange = new Uint32Array(2);
 
 FastSet.initialize = function () {
     $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
@@ -14,7 +15,7 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     var $h = $Heap.array;
     var originalHeapOffset = $Heap.nextOffset;
 
-    var fileRange = copyFile(original.fileStart, original.fileEnd);
+    copyFile(original.fileStart, original.fileEnd, fileRange);
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
@@ -56,7 +57,7 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
     var $h = $Heap.array;
     var originalHeapOffset = $Heap.nextOffset;
 
-    var fileRange = copyFile(original.fileStart, original.fileEnd);
+    copyFile(original.fileStart, original.fileEnd, fileRange);
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
@@ -110,10 +111,10 @@ var mutateFile = function (internalHashOffset, value, type) {
     } else {
         var originalHeapOffset = $Heap.nextOffset;
 
-        var fileRange = Value.createBlob(value, type);
-        var fileStart = fileRange[0];
-        var fileEnd = fileRange[1];
-        Sha1.hash($h, fileStart, fileEnd, $h, internalHashOffset);
+        Value.createBlob(value, type, fileRange);
+        var blobStart = fileRange[0];
+        var blobEnd = fileRange[1];
+        Sha1.hash($h, blobStart, blobEnd, $h, internalHashOffset);
 
         var valueObject;
         var hashOffset = HashTable.findHashOffset($HashTable, $h, internalHashOffset);
@@ -134,15 +135,15 @@ var mutateFile = function (internalHashOffset, value, type) {
         }
 
         valueObject.flags = Objects.isFullObject;
-        valueObject.fileStart = fileStart;
-        valueObject.fileEnd = fileEnd;
+        valueObject.fileStart = blobStart;
+        valueObject.fileEnd = blobEnd;
         valueObject.hashOffset = hashOffset;
 
         return valueObject.value;
     }
 };
 
-var copyFile = function (originalFileStart, originalFileEnd) {
+var copyFile = function (originalFileStart, originalFileEnd, fileRange) {
     var fileLength = originalFileEnd - originalFileStart;
     if ($Heap.nextOffset + fileLength > $Heap.capacity) {
         GarbageCollector.resizeHeap($FileSystem, fileLength);
@@ -157,7 +158,9 @@ var copyFile = function (originalFileStart, originalFileEnd) {
         $h[fileStart + i] = $h[originalFileStart + i];
     }
 
-    return [fileStart, fileEnd];
+    fileRange[0] = fileStart;
+    fileRange[1] = fileEnd;
+    return fileRange;
 };
 
 })();

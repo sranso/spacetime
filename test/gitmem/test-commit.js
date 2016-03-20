@@ -13,16 +13,16 @@ PackIndex.initialize();
 CommitFile.initialize();
 Commit.initialize();
 
-var fooRange = Value.createBlob('foo', 'string');
+var fooRange = Value.createBlob('foo', 'string', []);
 var fooStart = fooRange[0];
 var fooEnd = fooRange[1];
 
-var tree = Tree.create({
+var offsets = {};
+var treeRange = Tree.create({
     foo: 'blob',
-});
-var treeStart = tree[0];
-var treeEnd = tree[1];
-var offsets = tree[2];
+}, offsets, []);
+var treeStart = treeRange[0];
+var treeEnd = treeRange[1];
 
 var fooHashOffset = treeStart + offsets.foo;
 Sha1.hash($h, fooStart, fooEnd, $h, fooHashOffset);

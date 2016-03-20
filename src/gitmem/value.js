@@ -13,13 +13,13 @@ Value.createObject = function (value) {
     };
 };
 
-Value.createBlob = function (value, type) {
+Value.createBlob = function (value, type, blobRange) {
     if (type === 'string') {
-        return Blob.create('"' + value);
+        return Blob.create('"' + value, blobRange);
     } else if (type === 'number') {
-        return Blob.create('' + Number(value));
+        return Blob.create('' + Number(value), blobRange);
     } else if (type === 'boolean') {
-        return Blob.create('' + Boolean(value));
+        return Blob.create('' + Boolean(value), blobRange);
     } else {
         throw new Error('Unsupported type: ' + type);
     }

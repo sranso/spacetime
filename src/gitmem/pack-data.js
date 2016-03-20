@@ -96,7 +96,7 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packData, packDataArray, packOffset, heap) {
+PackData.extractFile = function (packData, packDataArray, packOffset, heap, fileRange) {
     var pack_j = packOffset;
     var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
@@ -161,7 +161,9 @@ PackData.extractFile = function (packData, packDataArray, packOffset, heap) {
 
     var nextPackOffset = pack_j + inflate.strm.next_in;
 
-    return [fileStart, fileEnd, nextPackOffset];
+    fileRange[0] = fileStart;
+    fileRange[1] = fileEnd;
+    return nextPackOffset;
 };
 
 var onInflateData = function (chunk) {

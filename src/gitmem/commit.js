@@ -59,6 +59,8 @@ Commit.initialize = function () {
     $Heap.nextOffset += 20;
 };
 
+var fileRange = new Uint32Array(2);
+
 Commit.setAll = function (original, modifications) {
     var $h = $Heap.array;
 
@@ -68,9 +70,10 @@ Commit.setAll = function (original, modifications) {
         commit[prop] = modifications[prop];
     }
 
-    var fileRange = CommitFile.create(commit);
+    CommitFile.create(commit, fileRange);
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
+    console.log(fileStart, fileEnd);
 
     Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
     var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
@@ -82,7 +85,7 @@ Commit.setAll = function (original, modifications) {
         var objectIndex = HashTable.objectIndex(hashOffset);
         var found = $Objects.table[objectIndex];
         if (found && (found.flags & Objects.isFullObject)) {
-            return foundCommit;
+            return found;
         }
         $Objects.table[objectIndex] = commit;
     }

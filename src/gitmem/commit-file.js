@@ -46,7 +46,7 @@ var constantLength = 'tree \nauthor  <>  -0600\ncommitter  <>  -0600\n\n'.length
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40 + 1;
 
-CommitFile.create = function (commit) {
+CommitFile.create = function (commit, fileRange) {
     var authorName = commit.authorName; // TODO: make this safe
     var authorEmail = commit.authorEmail;
     var authorTime = '' + Math.floor(commit.authorTime / 1000);
@@ -193,7 +193,9 @@ CommitFile.create = function (commit) {
         $h[commit_j + i] = message.charCodeAt(i);
     }
 
-    return [commitStart, commitEnd];
+    fileRange[0] = commitStart;
+    fileRange[1] = commitEnd;
+    return fileRange;
 };
 
 CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treeHashOffset) {

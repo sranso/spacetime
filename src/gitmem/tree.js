@@ -18,17 +18,17 @@ Tree.initialize = function () {
     Tree._actuallyEmptyHashOffset = $Heap.nextOffset + 20;
     $Heap.nextOffset += 40;
 
-    var emptyTree = Tree.create({'.empty': 'blob'});
-    Tree.emptyStart = emptyTree[0];
-    Tree.emptyEnd = emptyTree[1];
-    var offsets = emptyTree[2];
-    var hashOffset = emptyTree.fileStart + offsets['.empty'];
+    var offsets = {};
+    var treeRange = Tree.create({'.empty': 'blob'}, offsets, []);
+    Tree.emptyStart = treeRange[0];
+    Tree.emptyEnd = treeRange[1];
+    var hashOffset = Tree.emptyStart + offsets['.empty'];
     Tree.setHash($h, hashOffset, $h, Blob.emptyHashOffset);
     Sha1.hash($h, Tree.emptyStart, Tree.emptyEnd, $h, Tree.emptyHashOffset);
 
-    var actuallyEmptyTree = Tree.create({});
-    Tree._actuallyEmptyStart = actuallyEmptyTree[0];
-    Tree._actuallyEmptyEnd = actuallyEmptyTree[1];
+    treeRange = Tree.create({}, offsets, []);
+    Tree._actuallyEmptyStart = treeRange[0];
+    Tree._actuallyEmptyEnd = treeRange[1];
     Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
 };
 
@@ -36,7 +36,7 @@ var treePrefix = Convert.stringToArray('tree ');
 var treeMode = Convert.stringToArray('40000');
 var blobMode = Convert.stringToArray('100644');
 
-Tree.create = function (props) {
+Tree.create = function (props, offsets, treeRange) {
     var names = Object.keys(props);
     names.sort();
 
@@ -61,8 +61,6 @@ Tree.create = function (props) {
     var treeStart = $Heap.nextOffset;
     var treeEnd = treeStart + treeLength;
     $Heap.nextOffset = treeEnd;
-
-    var offsets = {};
 
     var $h = $Heap.array;
 
@@ -109,7 +107,9 @@ Tree.create = function (props) {
         tree_j += 20;
     }
 
-    return [treeStart, treeEnd, offsets];
+    treeRange[0] = treeStart;
+    treeRange[1] = treeEnd;
+    return treeRange;
 };
 
 Tree.setHash = function ($t, targetOffset, $s, sourceOffset) {

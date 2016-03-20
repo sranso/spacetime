@@ -34,7 +34,7 @@ var checkoutFile = function ($f, fileStart, fileEnd) {
 
 
 
-var blobRange = Blob.create('foo');
+var blobRange = Blob.create('foo', []);
 var blobStart = blobRange[0];
 var blobEnd = blobRange[1];
 
@@ -76,7 +76,8 @@ log(hash($HashTable.hashes, object.hashOffset));
 
 // Checkout from $FileCache
 $Objects.table[objectIndex] = null;
-var fileRange = PackData.extractFile(packData, packData.array, $PackIndex.offsets[objectIndex], $FileCache.heap);
+var fileRange = [];
+PackData.extractFile(packData, packData.array, $PackIndex.offsets[objectIndex], $FileCache.heap, fileRange);
 var fileStart = fileRange[0];
 var fileEnd = fileRange[1];
 FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);

@@ -32,7 +32,8 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
         }
     } else {
         var packOffset = $PackIndex.offsets[objectIndex];
-        var fileRange = PackData.extractFile($PackData, $PackData.array, packOffset, $Heap);
+        var fileRange = [];
+        PackData.extractFile($PackData, $PackData.array, packOffset, $Heap, fileRange);
         fileStart = fileRange[0];
         fileEnd = fileRange[1];
     }

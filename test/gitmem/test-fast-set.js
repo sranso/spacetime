@@ -34,7 +34,7 @@ var types = {
 };
 
 Thing.none = null;
-var offsets = null;
+var offsets = {};
 
 Thing.initialize = function () {
     var noneValues = {
@@ -46,16 +46,15 @@ Thing.initialize = function () {
 
     var none = clone(noneValues);
 
-    var noneTree = Tree.create({
+    var fileRange = Tree.create({
         string: 'blob',
         number: 'blob',
         bool: 'blob',
         object: 'tree',
-    });
+    }, offsets, []);
 
-    none.fileStart = noneTree[0];
-    none.fileEnd = noneTree[1];
-    offsets = noneTree[2];
+    none.fileStart = fileRange[0];
+    none.fileEnd = fileRange[1];
 
     $Heap.nextOffset = none.fileStart;
 
@@ -90,7 +89,7 @@ log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
 
-var objectRange = Value.createBlob('bar', 'string');
+var objectRange = Value.createBlob('bar', 'string', []);
 
 var object1 = {
     fileStart: objectRange[0],
@@ -146,7 +145,7 @@ log(thing3.number);
 log(thing3 === thing1);
 //=> true
 
-var numberRange = Value.createBlob(42, 'number');
+var numberRange = Value.createBlob(42, 'number', []);
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 var numberHashOffset = $Heap.nextOffset;

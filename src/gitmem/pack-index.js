@@ -16,16 +16,17 @@ PackIndex.create = function (n) {
     };
 };
 
+var fileRange = new Uint32Array(2);
+
 PackIndex.indexPack = function (index, pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
 
     var j = 12;
     var k;
     for (k = 0; k < numFiles; k++) {
-        var file = PackData.extractFile($PackData, pack, j, $FileCache.heap);
-        var fileStart = file[0];
-        var fileEnd = file[1];
-        var nextPackOffset = file[2];
+        var nextPackOffset = PackData.extractFile($PackData, pack, j, $FileCache.heap, fileRange);
+        var fileStart = fileRange[0];
+        var fileEnd = fileRange[1];
 
         Sha1.hash($FileCache.heap.array, fileStart, fileEnd, $Heap.array, tempHashOffset);
         var hashOffset = HashTable.findHashOffset($HashTable, $Heap.array, tempHashOffset);

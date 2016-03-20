@@ -19,14 +19,14 @@ log(hash($h, Tree._actuallyEmptyHashOffset));
 //=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 
 
-var tree = Tree.create({
+var offsets = {};
+var treeRange = Tree.create({
     foo: 'blob',
     bar: 'tree',
     www: 'blob',
-});
-var treeStart = tree[0];
-var treeEnd = tree[1];
-var offsets = tree[2];
+}, offsets, []);
+var treeStart = treeRange[0];
+var treeEnd = treeRange[1];
 log(treeStart, treeEnd);
 //=> 153 253
 log(pretty($h, treeStart, treeEnd));

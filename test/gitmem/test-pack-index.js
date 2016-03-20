@@ -11,7 +11,7 @@ global.$FileCache = FileCache.create(3, 22);
 
 PackIndex.initialize();
 
-var fooRange = Blob.create('foo');
+var fooRange = Blob.create('foo', []);
 var fooStart = fooRange[0];
 var fooEnd = fooRange[1];
 var fooHashOffset = $Heap.nextOffset;
@@ -20,7 +20,7 @@ Sha1.hash($h, fooStart, fooEnd, $h, fooHashOffset);
 log(hash($h, fooHashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
-var barRange = Blob.create('bar');
+var barRange = Blob.create('bar', []);
 var barStart = barRange[0];
 var barEnd = barRange[1];
 var barHashOffset = $Heap.nextOffset;
@@ -62,9 +62,10 @@ var packOffset = index.offsets[objectIndex];
 log(objectIndex, packOffset);
 //=> 0 0
 
-var file = PackData.extractFile($PackData, $PackData.array, packOffset, $Heap);
-var fileStart = file[0];
-var fileEnd = file[1];
+var fileRange = [];
+PackData.extractFile($PackData, $PackData.array, packOffset, $Heap, fileRange);
+var fileStart = fileRange[0];
+var fileEnd = fileRange[1];
 log(pretty($h, fileStart, fileEnd));
 //=> blob 3\x00foo
 

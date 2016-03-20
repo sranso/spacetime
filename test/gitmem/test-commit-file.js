@@ -27,13 +27,13 @@ log(CommitFile.timezoneString(-90));
 
 // Recreate a real commit.
 
-var blobRange = Blob.create('foo\n');
-var tree = Tree.create({
+var blobRange = Blob.create('foo\n', []);
+var offsets = {};
+var treeRange = Tree.create({
     foo: 'blob',
-});
-var treeStart = tree[0];
-var treeEnd = tree[1];
-var offsets = tree[2];
+}, offsets, []);
+var treeStart = treeRange[0];
+var treeEnd = treeRange[1];
 Sha1.hash($h, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
 
 var hashesNextOffset = 0;
@@ -66,7 +66,7 @@ var commitObject = {
     message: 'Foo commit\n',
 };
 
-var commitRange = CommitFile.create(commitObject);
+var commitRange = CommitFile.create(commitObject, []);
 var commitStart = commitRange[0];
 var commitEnd = commitRange[1];
 
@@ -131,7 +131,7 @@ log(hash($HashTable.hashes, secondParentHashOffset));
 commitObject.mergeParent = {hashOffset: secondParentHashOffset};
 commitObject.committerTime = 1454897681000;
 commitObject.committerName = 'snakes';
-var mergeCommitRange = CommitFile.create(commitObject);
+var mergeCommitRange = CommitFile.create(commitObject, []);
 var mergeCommitStart = mergeCommitRange[0];
 var mergeCommitEnd = mergeCommitRange[1];
 

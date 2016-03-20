@@ -15,25 +15,25 @@ var valueObject = Value.createObject('foo bar');
 log(valueObject.value);
 //=> foo bar
 
-var stringRange = Value.createBlob('foo', 'string');
+var stringRange = Value.createBlob('foo', 'string', []);
 var stringStart = stringRange[0];
 var stringEnd = stringRange[1];
 log(pretty($h, stringStart, stringEnd));
 //=> blob 4\x00"foo
 
-var numberRange = Value.createBlob(375.2, 'number');
+var numberRange = Value.createBlob(375.2, 'number', []);
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 log(pretty($h, numberStart, numberEnd));
 //=> blob 5\x00375.2
 
-var trueRange = Value.createBlob(true, 'boolean');
+var trueRange = Value.createBlob(true, 'boolean', []);
 var trueStart = trueRange[0];
 var trueEnd = trueRange[1];
 log(pretty($h, trueStart, trueEnd));
 //=> blob 4\x00true
 
-var falseRange = Value.createBlob(false, 'boolean');
+var falseRange = Value.createBlob(false, 'boolean', []);
 var falseStart = falseRange[0];
 var falseEnd = falseRange[1];
 log(pretty($h, falseStart, falseEnd));

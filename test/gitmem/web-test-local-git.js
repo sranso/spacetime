@@ -194,7 +194,7 @@ var firstPush = function () {
 
     var thing = Thing.clone(Thing.none);
     thing.name = 'name1';
-    var nameBlob = Value.createBlob(thing.name, 'string');
+    var nameBlob = Value.createBlob(thing.name, 'string', []);
     Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
 
     thing.hash = project.file;
@@ -209,15 +209,15 @@ var firstPush = function () {
         'some delta compresssion\n' +
         'when we change project.text below\n'
     );
-    var textBlob = Value.createBlob(project.text, 'string');
+    var textBlob = Value.createBlob(project.text, 'string', []);
     Sha1.hash(textBlob, project.file, Project.offsets.text);
 
     project.xPosition = 0;
-    var positionBlob = Value.createBlob(project.xPosition, 'number');
+    var positionBlob = Value.createBlob(project.xPosition, 'number', []);
     Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
 
     project.hasStuff = false;
-    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean');
+    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean', []);
     Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
 
     project.hash = new Uint8Array(20);
@@ -347,7 +347,7 @@ var afterClone = function (refHash, pack) {
 
     var thing = Thing.clone(commit.tree.thing);
     thing.name = 'thingname';
-    var nameBlob = Value.createBlob(thing.name, 'string');
+    var nameBlob = Value.createBlob(thing.name, 'string', []);
     Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
 
     thing.hash = project.file;
@@ -363,15 +363,15 @@ var afterClone = function (refHash, pack) {
         'some delta compresssion\n' +
         'when we change project.text below\n'
     );
-    var textBlob = Value.createBlob(project.text, 'string');
+    var textBlob = Value.createBlob(project.text, 'string', []);
     Sha1.hash(textBlob, project.file, Project.offsets.text);
 
     project.xPosition = -2362.8589701;
-    var positionBlob = Value.createBlob(project.xPosition, 'number');
+    var positionBlob = Value.createBlob(project.xPosition, 'number', []);
     Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
 
     project.hasStuff = true;
-    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean');
+    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean', []);
     Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
 
     project.hash = new Uint8Array(20);
