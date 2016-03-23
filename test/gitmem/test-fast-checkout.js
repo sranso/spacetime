@@ -55,6 +55,8 @@ PackData.packFile($PackData, $h, blobStart, blobEnd);
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
 log(object.foo);
 //=> foo
+log(object.hashOffset, hashOffset);
+//=> 4 4
 log(hash($HashTable.hashes, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 var savedObject = $Objects.table[objectIndex];
@@ -62,6 +64,8 @@ log(savedObject.foo);
 //=> foo
 log(savedObject.flags & Objects.isFullObject);
 //=> 1
+log(savedObject.fileEnd, $FileCache.heap.nextOffset);
+//=> 10 10
 
 
 // Checkout from $Objects.table
@@ -76,8 +80,9 @@ log(hash($HashTable.hashes, object.hashOffset));
 
 // Checkout from $FileCache
 $Objects.table[objectIndex] = null;
+$FileCache.nextIndex = 0;
 var fileRange = [];
-PackData.extractFile(packData, packData.array, $PackIndex.offsets[objectIndex], $FileCache.heap, fileRange);
+PackData.extractFile(packData.array, $PackIndex.offsets[objectIndex], fileRange);
 var fileStart = fileRange[0];
 var fileEnd = fileRange[1];
 FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);

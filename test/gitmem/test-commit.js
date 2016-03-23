@@ -8,6 +8,7 @@ global.$HashTable = HashTable.create(8, random);
 global.$Objects = Objects.create(8);
 global.$PackIndex = PackIndex.create(8);
 global.$PackData = PackData.create(1024);
+global.$FileCache = FileCache.create(8, 2048);
 
 PackIndex.initialize();
 CommitFile.initialize();
@@ -144,7 +145,7 @@ PackData.packFile($PackData, $h, fooStart, fooEnd);
 var gotSecondCommit = Commit.checkout(oldHashes, secondCommit.hashOffset);
 log(hash($HashTable.hashes, gotSecondCommit.hashOffset));
 //=> 46a0cef9b97fb229a4b763b29a6ec9fb24b298e6
-log(pretty($h, gotSecondCommit.fileStart, gotSecondCommit.fileEnd));
+log(pretty($FileCache.heap.array, gotSecondCommit.fileStart, gotSecondCommit.fileEnd));
 //=> commit 230\x00tree 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 //=> parent 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 //=> author snakes <jake@jakesandlund.com> 1454907687 -0800

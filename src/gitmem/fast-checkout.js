@@ -13,32 +13,21 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
         if (found.flags & Objects.isFullObject) {
             return found;
         } else {
-            var cachedFileStart = found.fileStart;
-            var cachedFileEnd = found.fileEnd;
-
-            // Copy file
-            var fileLength = cachedFileEnd - cachedFileStart;
-            if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-                GarbageCollector.resizeHeap($FileSystem, fileLength);
-            }
-            fileStart = $Heap.nextOffset;
-            $Heap.nextOffset += fileLength;
-            fileEnd = $Heap.nextOffset;
-
-            var i;
-            for (i = 0; i < fileLength; i++) {
-                $Heap.array[fileStart + i] = $FileCache.heap.array[cachedFileStart + i];
-            }
+            fileStart = found.fileStart;
+            fileEnd = found.fileEnd;
         }
     } else {
         var packOffset = $PackIndex.offsets[objectIndex];
         var fileRange = [];
-        PackData.extractFile($PackData, $PackData.array, packOffset, $Heap, fileRange);
+        PackData.extractFile($PackData.array, packOffset, fileRange);
         fileStart = fileRange[0];
         fileEnd = fileRange[1];
+
+        FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
+        FileCache.maybeRewindNextOffset($FileCache);
     }
 
-    var thing = checkoutFile($Heap.array, fileStart, fileEnd);
+    var thing = checkoutFile($FileCache.heap.array, fileStart, fileEnd);
     thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;

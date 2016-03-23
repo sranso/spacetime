@@ -3,6 +3,7 @@ require('../helper');
 
 global.$Heap = Heap.create(64);
 var $h = $Heap.array;
+global.$FileCache = FileCache.create(2, 32);
 
 var blobRange = Blob.create('foo bar\n', []);
 var blobStart = blobRange[0];
@@ -47,11 +48,13 @@ log(hex(packData.array, packOffset, packData.nextOffset));
 
 
 var fileRange = [];
-var nextPackOffset = PackData.extractFile(packData, packData.array, packOffset, $Heap, fileRange);
+var nextPackOffset = PackData.extractFile(packData.array, packOffset, fileRange);
 var fileStart = fileRange[0];
 var fileEnd = fileRange[1];
 log(fileStart, fileEnd, nextPackOffset);
-//=> 15 30 34
-log(pretty($h, fileStart, fileEnd));
+//=> 0 15 34
+log($FileCache.heap.nextOffset);
+//=> 15
+log(pretty($FileCache.heap.array, fileStart, fileEnd));
 //=> blob 8\x00foo bar
 //=>

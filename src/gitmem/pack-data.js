@@ -96,7 +96,7 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packData, packDataArray, packOffset, heap, fileRange) {
+PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     var pack_j = packOffset;
     var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
@@ -121,28 +121,25 @@ PackData.extractFile = function (packData, packDataArray, packOffset, heap, file
 
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
-    if (heap.nextOffset + fileLength > heap.capacity) {
-        if (heap === $FileCache.heap) {
-            FileCache.resize(FileCache, fileLength);
-        } else {
-            GarbageCollector.resizeHeap($FileSystem, fileLength);
-        }
+
+    if ($FileCache.heap.nextOffset + fileLength > $FileCache.heap.capacity) {
+        FileCache.resize(FileCache, fileLength);
     }
-    var fileStart = heap.nextOffset;
+    var fileStart = $FileCache.heap.nextOffset;
     var fileEnd = fileStart + fileLength;
 
     var file_j = fileStart;
     var i;
     for (i = 0; i < prefix.length; i++) {
-        heap.array[file_j + i] = prefix[i];
+        $FileCache.heap.array[file_j + i] = prefix[i];
     }
 
     file_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        heap.array[file_j + i] = lengthString.charCodeAt(i);
+        $FileCache.heap.array[file_j + i] = lengthString.charCodeAt(i);
     }
 
-    heap.nextOffset = file_j + i + 1;
+    $FileCache.heap.nextOffset = file_j + i + 1;
 
     if (length < 32768) {
         // Try to only need one chunk.
@@ -154,7 +151,7 @@ PackData.extractFile = function (packData, packDataArray, packOffset, heap, file
 
     var inflate = new pako.Inflate({chunkSize: chunkSize});
     inflate.onData = onInflateData;
-    inflate.heap = heap;
+    inflate.heap = $FileCache.heap;
     inflate.onEnd = onEnd;
 
     inflate.push(packDataArray.subarray(pack_j), true);

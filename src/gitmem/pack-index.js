@@ -24,7 +24,7 @@ PackIndex.indexPack = function (index, pack) {
     var j = 12;
     var k;
     for (k = 0; k < numFiles; k++) {
-        var nextPackOffset = PackData.extractFile($PackData, pack, j, $FileCache.heap, fileRange);
+        var nextPackOffset = PackData.extractFile(pack, j, fileRange);
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
 
