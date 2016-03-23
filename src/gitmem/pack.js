@@ -53,25 +53,6 @@ Pack.create = function (files) {
     return pack.subarray(0, j + 20);
 }
 
-var resizePack = function (pack, targetLength) {
-    var newLength = pack.length;
-    while (newLength < targetLength) {
-        if (newLength < 32768) {
-            var newLength = pack.length * 2;
-        } else {
-            var newLength = 8192 * (((pack.length * 1.5) >>> 13) + 1);
-        }
-    }
-
-    var newPack = new Uint8Array(newLength);
-    var i;
-    for (i = 0; i < pack.length; i++) {
-        newPack[i] = pack[i];
-    }
-
-    return newPack;
-}
-
 Pack.validate = function (pack) {
     if (pack.length < 22) {
         return 'pack length is too short';

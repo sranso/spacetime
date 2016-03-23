@@ -1,16 +1,11 @@
 'use strict';
 require('../helper');
 
+global.$Heap = Heap.create(256);
+global.$ = $Heap.array;
 var random = Random.create(283928);
-var system = GarbageCollector.create(0, 100, random);
-log(system.heap.capacity, system.heap.array.length);
-//=> 100 100
-
-system = GarbageCollector.create(6, 128, random);
-log(system.heap.capacity);
-//=> 256
-
-system.heap.nextOffset = 200;
+global.$HashTable = HashTable.create(4, $Heap, random);
+global.$PackIndex = PackIndex.create(4);
 
 GarbageCollector.resizeHeap(system, 0);
 log(system.heap.nextOffset);

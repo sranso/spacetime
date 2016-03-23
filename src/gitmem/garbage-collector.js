@@ -2,30 +2,15 @@
 global.GarbageCollector = {};
 (function () {
 
-GarbageCollector.bootSystem = null;
-GarbageCollector.tempHashOffset = -1;
+var bootHeap;
+var bootHashTable;
 
 GarbageCollector.initialize = function () {
-    GarbageCollector.bootSystem = $GarbageCollector;
-
-    var offset64 = 64 * Math.ceil($Heap.nextOffset / 64);
-    GarbageCollector.tempHashOffset = offset64;
-    $Heap.nextOffset = offset64 + 64;
+    bootHeap = $Heap;
+    bootHashTable = $HashTable;
 };
 
-GarbageCollector.create = function (hashTableN, filesCapacity, random) {
-    var heapCapacity = 64 * Math.ceil(hashTableN / 3) + filesCapacity;
-    var heap = Heap.create(heapCapacity);
-    var table = HashTable.create(hashTableN, heap, random);
-    return {
-        heap: heap,
-        hashTable: table,
-    };
-};
-
-// TODO: This should compact heap (remove old files), and maybe
-// resize the hashTable if it is close to needing it.
-GarbageCollector.resizeHeap = function (system, mallocSize) {
+GarbageCollector.collect = function (mallocSize) {
     var capacity = system.heap.capacity;
     var minimumCapacity = system.heap.nextOffset + mallocSize;
     capacity *= 2;

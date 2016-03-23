@@ -1,7 +1,21 @@
 'use strict';
 require('../helper');
 
-pack = Pack.create([blob]);
+global.$Heap = Heap.create(512);
+global.$ = $Heap.array;
+
+var blobRange = Blob.create('foo bar\n', []);
+var blobStart = blobRange[0];
+var blobEnd = blobRange[1];
+var blob = $.subarray(blobStart, blobEnd);
+
+var packData = PackData.create(32);
+var offset = PackData.packFile(packData, blobStart, blobEnd);
+log(hex(packData.array, offset, packData.nextOffset));
+//=> 38789c4bcbcf57484a2ce202000d1402a4
+
+var nFiles = 1;
+pack = Pack.create(nFiles, packData);
 log(hex(pack));
 //=> 5041434b000000020000000138789c4bcbcf57484a2ce202000d1402a4f6fdeefeaef7945dd30750fbcb3c45a6a163f183
 

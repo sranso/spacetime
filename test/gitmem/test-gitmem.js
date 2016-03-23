@@ -16,39 +16,17 @@ HashTable.save($HashTable, Value.none);
 
 var Grid = {};
 
-Grid.clone = function (original) {
-    return {
-        rows: original.rows,
-        columns: original.columns,
-        cell1: original.cell1,
-        cell2: original.cell2,
-        cell3: original.cell3,
-        file: original.file.slice(),
-        hash: null,
-        hashOffset: 0,
-    };
-};
-
-Grid.none = Grid.clone({
-    rows: 0,
-    columns: 0,
-    cell1: null,
-    cell2: null,
-    cell3: null,
-    file: new Uint8Array(0),
-    hash: new Uint8Array(20),
-    hashOffset: 0,
-});
-
 Grid.offsets = {};
 
-Grid.none.file = Tree.createSkeleton(Grid.offsets, {
+var noneFile = Tree.createSkeleton(Grid.offsets, {
     rows: 'blob',
     columns: 'blob',
     cell1: 'tree',
     cell2: 'tree',
     cell3: 'tree',
 });
+
+var noneFileRange = Heap.staticAllocate(noneFile);
 
 Grid.types = {
     rows: 'number',
@@ -58,29 +36,76 @@ Grid.types = {
     cell3: 'object',
 };
 
-Grid.checkout = function (packIndices, table, hash, hashOffset) {
-    var grid = HashTable.get(table, hash, hashOffset);
-    if (grid) {
-        return grid;
-    }
+Grid.cloneWithoutFile = function (original) {
+    return {
+        rows: original.rows,
+        columns: original.columns,
+        cell1: original.cell1,
+        cell2: original.cell2,
+        cell3: original.cell3,
+        fileStart: -1,
+        fileEnd: -1,
+        hashOffset: -1,
+    };
+};
 
-    var packs = packIndices;
-    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
+Grid.clone = function (original) {
+    var grid = Grid.cloneWithoutFile(original);
+    var fileRange = GitFile.copyFile(original.fileStart, original.fileEnd);
+    grid.fileStart = fileRange[0];
+    grid.fileEnd = fileRange[1];
+    return grid;
+};
 
-    var ofs = Grid.offsets;
-    grid = Grid.clone(Grid.none);
-    grid.file = file;
-    grid.hash = hash;
-    grid.hashOffset = hashOffset;
-    HashTable.save(table, grid);
+Grid.none = Grid.clone({
+    rows: 0,
+    columns: 0,
+    cell1: null,
+    cell2: null,
+    cell3: null,
+    fileStart: noneFileRange[0],
+    fileEnd: noneFileRange[1],
+    hashOffset: 0,
+});
 
-    grid.rows = Value.checkoutNumber(fileStart + Grid.offsets.rows);
-    grid.columns = Value.checkoutNumber(fileStart + Grid.offsets.columns);
-    grid.cell1 = Cell.checkout(packs, table, file, ofs.cell1);
-    grid.cell2 = Cell.checkout(packs, table, file, ofs.cell2);
-    grid.cell3 = Cell.checkout(packs, table, file, ofs.cell3);
+var checkoutFile = function (fileStart, fileEnd) {
+    var grid = clone(Grid.none);
+
+    grid.rows = Value.checkout($, fileStart + offsets.rows, types.rows);
+    grid.columns = Value.checkout($, fileStart + offsets.columns, types.columns);
+    grid.cell1 = Cell.checkout(fileStart + offsets.cell1);
+    grid.cell2 = Cell.checkout(fileStart + offsets.cell2);
+    grid.cell3 = Cell.checkout(fileStart + offsets.cell3);
 
     return grid;
+};
+
+Grid.checkout = function (searchHashOffset) {
+    return FastCheckout.checkout(searchHashOffset, checkoutFile);
+};
+
+var traverseChildren = [];
+
+Grid.initialize = function () {
+    traverseChildren[0] = Value.traverse;
+    traverseChildren[1] = -1;
+    traverseChildren[2] = Value.traverse;
+    traverseChildren[3] = -1;
+    traverseChildren[4] = Cell.traverse;
+    traverseChildren[5] = null;
+    traverseChildren[6] = Cell.traverse;
+    traverseChildren[7] = null;
+    traverseChildren[8] = Cell.traverse;
+    traverseChildren[9] = null;
+};
+
+Grid.traverse = function (grid) {
+    traverseChildren[1] = grid.fileStart + offsets.rows;
+    traverseChildren[3] = grid.fileStart + offsets.columns;
+    traverseChildren[5] = grid.cell1;
+    traverseChildren[7] = grid.cell2;
+    traverseChildren[9] = grid.cell3;
+    return traverseChildren;
 };
 
 Grid.set = function (original, prop, value) {
@@ -114,7 +139,7 @@ Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
 HashTable.save($HashTable, Grid.none);
 
-log(Tree.catFile(Grid.none.file));
+log(prettyTree(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell2
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell3
@@ -212,7 +237,7 @@ Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
 HashTable.save($HashTable, Cell.none);
 
-log(Tree.catFile(Cell.none.file));
+log(prettyTree(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
