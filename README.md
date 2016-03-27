@@ -8,7 +8,7 @@ Spacetime is a programming environment for interactive 2D graphics with a differ
 * Locally:
 
 ``` bash
-$ git clone https://github.com/spacetimecode/spacetime.git
+$ git clone https://github.com/getspacetime/spacetime.git
 $ cd spacetime
 $ open new.html
 ```
@@ -33,7 +33,7 @@ Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the cl
 ``` bash
 $ rm dev/fcgiwrap.sock  # if it exists already
 $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
-$ nginx -c /Users/jakesandlund/spacetimecode/spacetime/dev/nginx.conf
+$ nginx -c /Users/jakesandlund/getspacetime/spacetime/dev/nginx.conf
 ```
 
 Add a bare repository to `dev/local-git` and test pushing to it:
@@ -49,7 +49,7 @@ $ git push http://localhost:8080/local-git/testrepo.git master
 
 ### Testing
 
-Testing is done by logging values with `log`. The values are written to the test file below the log line (in addition to the terminal). Any changes to the logged values will create a diff. This means logged values must be deterministic. An example (from [test-blob.js](https://github.com/spacetimecode/spacetime/blob/master/test/gitmem/test-blob.js)):
+Testing is done by logging values with `log`. The values are written to the test file below the log line (in addition to the terminal). Any changes to the logged values will create a diff. This means logged values must be deterministic. An example (from [test-blob.js](https://github.com/getspacetime/spacetime/blob/master/test/gitmem/test-blob.js)):
 
 ``` js
 var blobRange = Blob.create('foo', []);
@@ -70,7 +70,7 @@ command -nargs=0 Test execute 'silent !dev/run-test-for-vim.sh %' | redraw!
 
 ## License and Copyright
 
-The license is available at [LICENSE.txt](https://github.com/spacetimecode/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/spacetimecode/spacetime/tree/master/LICENSES).
+The license is available at [LICENSE.txt](https://github.com/getspacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/getspacetime/spacetime/tree/master/LICENSES).
 
 Copyright &copy; 2015  Jacob Sandlund
 
