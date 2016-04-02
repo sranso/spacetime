@@ -20,14 +20,14 @@ HashTable.create = function (n, random) {
     };
 };
 
-HashTable.findHashOffset = function (table, $s, searchHashOffset) {
-    var hashes = table.hashes;
-    var h1 = Math.imul(table.a,
+HashTable.findHashOffset = function (hashTable, $s, searchHashOffset) {
+    var hashes = hashTable.hashes;
+    var h1 = Math.imul(hashTable.a,
         ($s[searchHashOffset] << 24) |
         ($s[searchHashOffset + 1] << 16) |
         ($s[searchHashOffset + 2] << 8) |
         $s[searchHashOffset + 3]
-    ) >>> table.hashBitsToShift;
+    ) >>> hashTable.hashBitsToShift;
     var h = h1;
     var i;
     var j;
@@ -59,7 +59,7 @@ HashTable.findHashOffset = function (table, $s, searchHashOffset) {
             $s[searchHashOffset + 7] |
             1
         );
-        h = (h1 + Math.imul(j, h2)) & table.mask;
+        h = (h1 + Math.imul(j, h2)) & hashTable.mask;
     }
 
     throw new Error('Reached maximum iterations searching for hash');
@@ -71,17 +71,17 @@ HashTable.objectIndex = function (hashOffset) {
 
 var blockMask = ~63;
 
-HashTable.setHash = function (table, hashOffset, $s, sourceHashOffset) {
+HashTable.setHash = function (hashTable, hashOffset, $s, sourceHashOffset) {
     var blockOffset = hashOffset & blockMask;
-    var setByte = table.hashes[blockOffset];
+    var setByte = hashTable.hashes[blockOffset];
     var setHashes = (setByte & 3) + 1;
-    table.hashes[blockOffset] = (setByte & ~3) | setHashes;
+    hashTable.hashes[blockOffset] = (setByte & ~3) | setHashes;
 
     var i;
     for (i = 0; i < 20; i++) {
-        table.hashes[hashOffset + i] = $s[sourceHashOffset + i];
+        hashTable.hashes[hashOffset + i] = $s[sourceHashOffset + i];
     }
-    table.load++;
+    hashTable.load++;
 };
 
 })();

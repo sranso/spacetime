@@ -5,12 +5,12 @@ global.$Heap = Heap.create(256);
 var $h = $Heap.array;
 
 var random = Random.create(42);
-var table = HashTable.create(8, random);
-log(table.hashes.length);
+var hashTable = HashTable.create(8, random);
+log(hashTable.hashes.length);
 //=> 192
-log(table.n);
+log(hashTable.n);
 //=> 8
-log(table.hashBitsToShift);
+log(hashTable.hashBitsToShift);
 //=> 29
 
 Convert.stringToExistingArray($h, 0, 'abc');
@@ -19,7 +19,7 @@ Sha1.hash($h, 0, 3, $h, searchHashOffset);
 log(hash($h, searchHashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
-var hashOffset = HashTable.findHashOffset(table, $h, searchHashOffset);
+var hashOffset = HashTable.findHashOffset(hashTable, $h, searchHashOffset);
 log(hashOffset, ~hashOffset);
 //=> -69 68
 hashOffset = ~hashOffset;
@@ -27,10 +27,10 @@ hashOffset = ~hashOffset;
 log(HashTable.objectIndex(hashOffset));
 //=> 3
 
-HashTable.setHash(table, hashOffset, $h, searchHashOffset);
-log(hash(table.hashes, hashOffset));
+HashTable.setHash(hashTable, hashOffset, $h, searchHashOffset);
+log(hash(hashTable.hashes, hashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
-hashOffset = HashTable.findHashOffset(table, $h, searchHashOffset);
+hashOffset = HashTable.findHashOffset(hashTable, $h, searchHashOffset);
 log(hashOffset);
 //=> 68
 
@@ -47,15 +47,15 @@ Convert.arrayToExistingArray($h, 40, hashInBlock2);
 Convert.arrayToExistingArray($h, 60, hashInBlock3);
 Convert.arrayToExistingArray($h, 80, hashInNextBlock1);
 
-hashOffset = ~HashTable.findHashOffset(table, $h, 40);
+hashOffset = ~HashTable.findHashOffset(hashTable, $h, 40);
 log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 88 4
-HashTable.setHash(table, hashOffset, $h, 40);
-hashOffset = ~HashTable.findHashOffset(table, $h, 60);
+HashTable.setHash(hashTable, hashOffset, $h, 40);
+hashOffset = ~HashTable.findHashOffset(hashTable, $h, 60);
 log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 108 5
-HashTable.setHash(table, hashOffset, $h, 60);
-hashOffset = ~HashTable.findHashOffset(table, $h, 80);
+HashTable.setHash(hashTable, hashOffset, $h, 60);
+hashOffset = ~HashTable.findHashOffset(hashTable, $h, 80);
 log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 4 0
-HashTable.setHash(table, hashOffset, $h, 80);
+HashTable.setHash(hashTable, hashOffset, $h, 80);
