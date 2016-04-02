@@ -35,21 +35,21 @@ HashTable.findHashOffset = function (table, $s, searchHashOffset) {
 
     for (j = 1; j < 1000; j++) {
         var blockOffset = 64 * Math.floor(h / 3);
-        var setByte = hashes[blockOffset];
+        var setHashes = hashes[blockOffset] & 3;
 
         searchBlock:
-        for (k = 0; k < 3; k++) {
+        for (k = 0; k < setHashes; k++) {
             var hashOffset = blockOffset + 4 + 20 * k;
-            if (setByte & (1 << k)) {
-                for (i = 0; i < 20; i++) {
-                    if (hashes[hashOffset + i] !== $s[searchHashOffset + i]) {
-                        continue searchBlock;
-                    }
+            for (i = 0; i < 20; i++) {
+                if (hashes[hashOffset + i] !== $s[searchHashOffset + i]) {
+                    continue searchBlock;
                 }
-                return hashOffset;
-            } else {
-                return ~hashOffset;
             }
+            return hashOffset;
+        }
+        if (setHashes < 3) {
+            var hashOffset = blockOffset + 4 + 20 * k;
+            return ~hashOffset;
         }
 
         var h2 = (
@@ -73,8 +73,9 @@ var blockMask = ~63;
 
 HashTable.setHash = function (table, hashOffset, $s, sourceHashOffset) {
     var blockOffset = hashOffset & blockMask;
-    var setBit = 1 << ((hashOffset >>> 4) & 3);
-    table.hashes[blockOffset] |= setBit;
+    var setByte = table.hashes[blockOffset];
+    var setHashes = (setByte & 3) + 1;
+    table.hashes[blockOffset] = (setByte & ~3) | setHashes;
 
     var i;
     for (i = 0; i < 20; i++) {
