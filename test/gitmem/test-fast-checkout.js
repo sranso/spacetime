@@ -57,7 +57,7 @@ log(object.foo);
 //=> foo
 log(object.hashOffset, hashOffset);
 //=> 4 4
-log(hash($HashTable.hashes, object.hashOffset));
+log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 var savedObject = $Objects.table[objectIndex];
 log(savedObject.foo);
@@ -74,7 +74,7 @@ global.$PackData = null;
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
 log(object.foo);
 //=> foo
-log(hash($HashTable.hashes, object.hashOffset));
+log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
 
@@ -91,7 +91,7 @@ log($Objects.table[objectIndex].flags & Objects.isFullObject);
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
 log(object.foo);
 //=> foo
-log(hash($HashTable.hashes, object.hashOffset));
+log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 log(object.flags & Objects.isFullObject);
 //=> 1

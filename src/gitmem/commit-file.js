@@ -98,7 +98,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($HashTable.hashes, commit.tree.hashOffset, $h, commit_j);
+    Convert.hashToHex($HashTable.array, commit.tree.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // parent
@@ -108,7 +108,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($HashTable.hashes, commit.parent.hashOffset, $h, commit_j);
+    Convert.hashToHex($HashTable.array, commit.parent.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // mergeParent
@@ -119,7 +119,7 @@ CommitFile.create = function (commit, fileRange) {
         }
 
         commit_j += i;
-        Convert.hashToHex($HashTable.hashes, commit.mergeParent.hashOffset, $h, commit_j);
+        Convert.hashToHex($HashTable.array, commit.mergeParent.hashOffset, $h, commit_j);
         $h[commit_j + 40] = 0x0a;
     }
 

@@ -3,7 +3,7 @@ require('../helper');
 
 global.$Heap = Heap.create(1024);
 var $h = $Heap.array;
-global.$HashTable = {hashes: new Uint8Array(128)};
+global.$HashTable = {array: new Uint8Array(128)};
 
 CommitFile.initialize();
 log(CommitFile.initialStart, CommitFile.initialEnd);
@@ -36,17 +36,17 @@ var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
 Sha1.hash($h, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
 
-var hashesNextOffset = 0;
-var treeHashOffset = hashesNextOffset;
-hashesNextOffset += 20;
-Sha1.hash($h, treeStart, treeEnd, $HashTable.hashes, treeHashOffset);
-log(hash($HashTable.hashes, treeHashOffset));
+var hashArrayNextOffset = 0;
+var treeHashOffset = hashArrayNextOffset;
+hashArrayNextOffset += 20;
+Sha1.hash($h, treeStart, treeEnd, $HashTable.array, treeHashOffset);
+log(hash($HashTable.array, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
 var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
-var parentHashOffset = hashesNextOffset;
-hashesNextOffset += 20;
-Convert.arrayToExistingArray($HashTable.hashes, parentHashOffset, parentHash);
+var parentHashOffset = hashArrayNextOffset;
+hashArrayNextOffset += 20;
+Convert.arrayToExistingArray($HashTable.array, parentHashOffset, parentHash);
 
 var commitObject = {
     tree: {hashOffset: treeHashOffset},
@@ -123,10 +123,10 @@ var secondParentStart = $Heap.nextOffset;
 var secondParentEnd = secondParentStart + secondParentString.length;
 $Heap.nextOffset = secondParentEnd;
 Convert.stringToExistingArray($h, secondParentStart, secondParentString);
-var secondParentHashOffset = hashesNextOffset;
-hashesNextOffset += 20;
-Sha1.hash($h, secondParentStart, secondParentEnd, $HashTable.hashes, secondParentHashOffset);
-log(hash($HashTable.hashes, secondParentHashOffset));
+var secondParentHashOffset = hashArrayNextOffset;
+hashArrayNextOffset += 20;
+Sha1.hash($h, secondParentStart, secondParentEnd, $HashTable.array, secondParentHashOffset);
+log(hash($HashTable.array, secondParentHashOffset));
 //=> 06d3749d842b0a2f56f5368932fd616f89f7cf58
 commitObject.mergeParent = {hashOffset: secondParentHashOffset};
 commitObject.committerTime = 1454897681000;

@@ -64,7 +64,7 @@ log($FileCache.fileStarts[0], $FileCache.fileStarts[1]);
 
 // foo
 var hashOffset = HashTable.findHashOffset($HashTable, $h, fooHashOffset);
-log(hashOffset, hash($HashTable.hashes, hashOffset));
+log(hashOffset, hash($HashTable.array, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
 var objectIndex = HashTable.objectIndex(hashOffset);
 var packOffset = index.offsets[objectIndex];
@@ -81,7 +81,7 @@ log(pretty($FileCache.heap.array, cacheObject.fileStart, cacheObject.fileEnd));
 
 // bar
 hashOffset = HashTable.findHashOffset($HashTable, $h, barHashOffset);
-log(hashOffset, hash($HashTable.hashes, hashOffset));
+log(hashOffset, hash($HashTable.array, hashOffset));
 //=> 132 'ba0e162e1c47469e3fe4b393a8bf8c569f302116'
 objectIndex = HashTable.objectIndex(hashOffset);
 packOffset = index.offsets[objectIndex];
