@@ -71,6 +71,10 @@ HashTable.objectIndex = function (hashOffset) {
 
 var blockMask = ~63;
 
+HashTable.typeOffset = function (hashOffset) {
+    return (hashOffset & blockMask) + ((hashOffset >>> 4) & 3) + 1;
+};
+
 HashTable.setHash = function (hashTable, hashOffset, $s, sourceHashOffset) {
     var blockOffset = hashOffset & blockMask;
     var setByte = hashTable.hashes[blockOffset];

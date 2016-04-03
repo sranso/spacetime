@@ -27,6 +27,9 @@ hashOffset = ~hashOffset;
 log(HashTable.objectIndex(hashOffset));
 //=> 3
 
+log(HashTable.typeOffset(hashOffset));
+//=> 65
+
 HashTable.setHash(hashTable, hashOffset, $h, searchHashOffset);
 log(hash(hashTable.hashes, hashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
