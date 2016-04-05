@@ -2,112 +2,120 @@
 require('../helper');
 
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(8, random);
-global.$Objects = Objects.create(8);
+global.$HashTable = HashTable.create(3, random);
+global.$PackIndex = {offsets: new Uint32Array(8)};
 
-var cache = FileCache.create(8, 128);
-log(cache.fileStarts.length);
+var fileCache = FileCache.create(3, 8);
+log(fileCache.fileStarts.length);
+//=> 3
+log(fileCache.array.length);
 //=> 8
-log(cache.heap.capacity, cache.heap.array.length);
-//=> 128 128
 
-cache.heap.nextOffset = 100;
+FileCache.malloc(fileCache, 7);
+log(fileCache.array.length);
+//=> 8
 
-FileCache.resize(cache, 0);
-log(cache.heap.nextOffset);
-//=> 100
-log(cache.heap.capacity, cache.heap.array.length);
-//=> 256 256
-
-Convert.stringToExistingArray(cache.heap.array, 200, 'foo bar');
-cache.heap.nextOffset = 203;
-FileCache.resize(cache, 500);
-log(cache.heap.capacity);
-//=> 1024
-log(pretty(cache.heap.array, 199, 207));
-//=> \x00foo\x00\x00\x00\x00
-
-
-
-
-
-
-
-cache = FileCache.create(3, 32);
-var fileStart = 29;
-var fileEnd = fileStart + 3;
-Convert.stringToExistingArray(cache.heap.array, fileStart, 'foo');
-var $t = new Uint8Array(20);
-var tempHashOffset = 0;
-Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
-
-FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
-log(cache.firstIndex, cache.nextIndex);
-//=> 0 1
-log(cache.fileStarts[0]);
-//=> 29
+var fileStart = 0;
+var fileEnd = 7;
+var hashOffset = 24;
 var objectIndex = HashTable.objectIndex(hashOffset);
-var cacheObject = $Objects.table[objectIndex];
-log(objectIndex, cacheObject.fileEnd);
-//=> 6 32
-log(cacheObject.flags & Objects.isFullObject);
+log(objectIndex);
+//=> 1
+$PackIndex.offsets[objectIndex] = 12345;
+
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+log(fileCache.firstIndex, fileCache.nextIndex);
+//=> 0 1
+var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
+//=> 128
+log($PackIndex.offsets[objectIndex]);
 //=> 0
-
-
-// Registering will clear old cached files
-var oldObjectIndex = objectIndex;
-Convert.stringToExistingArray(cache.heap.array, fileStart, 'bar');
-Sha1.hash(cache.heap.array, fileStart, fileEnd, $t, tempHashOffset);
-var hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
-FileCache.registerCachedFile(cache, fileStart, fileEnd, hashOffset);
-log(cache.firstIndex, cache.nextIndex);
-//=> 1 2
-log($Objects.table[oldObjectIndex]);
-//=> null
-objectIndex = HashTable.objectIndex(hashOffset);
-cacheObject = $Objects.table[objectIndex];
-log(objectIndex, cacheObject.fileEnd);
-//=> 0 32
-log(cacheObject & Objects.isFullObject);
+log(fileCache.fileStarts[0]);
 //=> 0
+log(fileCache.fileEnds[0]);
+//=> 7
+log(fileCache.hashOffsets[0]);
+//=> 24
+log(fileCache.packIndexOffsets[0]);
+//=> 12345
 
 
-
-// Wrap around nextIndex, and leave current cached files there
-// if non overlapping
-oldObjectIndex = objectIndex;
-FileCache.registerCachedFile(cache, fileStart + 1, fileStart + 1, hashOffset);
-log(cache.firstIndex, cache.nextIndex);
-//=> 1 0
-log($Objects.table[oldObjectIndex].fileEnd);
-//=> 30
-
-// Don't overflow the nextIndex
-Convert.stringToExistingArray(cache.heap.array, fileStart + 2, 'Z');
-Sha1.hash(cache.heap.array, fileStart + 2, fileEnd, $t, tempHashOffset);
-hashOffset = ~HashTable.findHashOffset($HashTable, $t, tempHashOffset);
-FileCache.registerCachedFile(cache, fileStart + 2, fileStart + 2, hashOffset);
-log(cache.firstIndex, cache.nextIndex);
-//=> 2 1
-objectIndex = HashTable.objectIndex(hashOffset);
-log($Objects.table[objectIndex].fileEnd);
-//=> 31
+// Expand the array to 8X
+fileCache.nextArrayOffset = fileEnd;
+FileCache.malloc(fileCache, 4);
+log(fileCache.array.length);
+//=> 32
+log(fileCache.nextArrayOffset);
+//=> 7
 
 
-
-// Don't rewind if 1/8 space left
-oldObjectIndex = objectIndex;
-cache.heap.nextOffset = 28;
-FileCache.maybeRewindNextOffset(cache);
-log(cache.heap.nextOffset);
-//=> 28
-
-cache.heap.nextOffset = 29;
-FileCache.maybeRewindNextOffset(cache);
-log(cache.heap.nextOffset);
-//=> 0
-log(cache.firstIndex, cache.nextIndex);
+// Purge the cache to make space
+fileCache.nextArrayOffset = 0;
+FileCache.malloc(fileCache, 3);
+log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 1 1
-log($Objects.table[oldObjectIndex]);
-//=> null
+log($PackIndex.offsets[objectIndex]);
+//=> 12345
+type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
+//=> 0
+
+
+// Register file at end
+fileStart = 30;
+fileEnd = 32;
+hashOffset = 44;
+objectIndex = HashTable.objectIndex(hashOffset);
+$PackIndex.offsets[objectIndex] = 54321;
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+log(fileCache.firstIndex, fileCache.nextIndex);
+//=> 1 2
+log($PackIndex.offsets[objectIndex]);
+//=> 1
+log(fileCache.fileStarts[2]);
+//=> 0
+
+// Register file at beginning
+fileStart = 0;
+fileEnd = 7;
+hashOffset = 24;
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+log(fileCache.firstIndex, fileCache.nextIndex);
+//=> 1 0
+
+fileCache.nextArrayOffset = 29;
+FileCache.malloc(fileCache, 4);
+log(fileCache.array.length);
+//=> 32
+
+// Wrap around
+log(fileCache.nextArrayOffset);
+//=> 0
+
+// Both the file at the end and at the beginning get cleared
+log(fileCache.firstIndex, fileCache.nextIndex);
+//=> 0 0
+log($PackIndex.offsets[objectIndex]);
+//=> 54321
+type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
+//=> 0
+
+
+
+hashOffset = 24;
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+hashOffset = 44;
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
+
+// Avoid overflow by clearing first entry
+log(fileCache.firstIndex, fileCache.nextIndex);
+//=> 1 0
+hashOffset = 24;
+log($PackIndex.offsets[HashTable.objectIndex(hashOffset)]);
+//=> 12345
+type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
+//=> 0

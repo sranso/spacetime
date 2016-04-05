@@ -2,6 +2,8 @@
 global.HashTable = {};
 (function () {
 
+HashTable.isFileCached = 1 << 7;
+
 HashTable.create = function (n, random) {
     var hashBitsToShift = 32;
     var i = n;
