@@ -2,8 +2,6 @@
 global.Objects = {};
 (function () {
 
-Objects.isFullObject = 1;
-
 Objects.create = function (n) {
     var table = new Array(n);
     var i;
@@ -13,10 +11,6 @@ Objects.create = function (n) {
 
     return {
         table: table,
-        unpacked: [],
-        packed: [],
-        nextUnpackedIndex: 0,
-        nextPackedIndex: 0,
     };
 };
 
