@@ -24,7 +24,6 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
         fileEnd = fileRange[1];
 
         FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
-        FileCache.maybeRewindNextOffset($FileCache);
     }
 
     var thing = checkoutFile($FileCache.heap.array, fileStart, fileEnd);

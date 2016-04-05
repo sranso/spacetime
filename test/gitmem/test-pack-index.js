@@ -4,10 +4,9 @@ require('../helper');
 global.$Heap = Heap.create(1024);
 var $h = $Heap.array;
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(8, random);
-global.$Objects = Objects.create(8);
+global.$HashTable = HashTable.create(4, random);
 global.$PackData = PackData.create(512);
-global.$FileCache = FileCache.create(3, 22);
+global.$FileCache = FileCache.create(2, 22);
 
 PackIndex.initialize();
 
@@ -48,16 +47,18 @@ log(hash(inputPack, inputPackHashOffset));
 
 
 
-var index = PackIndex.create($HashTable.n);
-log(index.offsets.length);
-//=> 8
+global.$PackIndex = PackIndex.create($HashTable.n);
+log($PackIndex.offsets.length);
+//=> 4
 
-PackIndex.indexPack(index, inputPack);
+$PackData.nextOffset = 123;
+
+PackIndex.indexPack($PackIndex, inputPack);
 
 log($FileCache.firstIndex, $FileCache.nextIndex);
-//=> 0 2
-log($FileCache.heap.nextOffset);
-//=> 0
+//=> 1 0
+log($FileCache.nextArrayOffset);
+//=> 20
 log($FileCache.fileStarts[0], $FileCache.fileStarts[1]);
 //=> 0 10
 
@@ -66,27 +67,34 @@ log($FileCache.fileStarts[0], $FileCache.fileStarts[1]);
 var hashOffset = HashTable.findHashOffset($HashTable, $h, fooHashOffset);
 log(hashOffset, hash($HashTable.array, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
-var objectIndex = HashTable.objectIndex(hashOffset);
-var packOffset = index.offsets[objectIndex];
-log(objectIndex, packOffset);
-//=> 0 0
-var cacheObject = $Objects.table[objectIndex];
-log(cacheObject.flags & Objects.isFullObject);
+var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
 //=> 0
-log(cacheObject.fileStart, cacheObject.fileEnd);
-//=> 0 10
-log(pretty($FileCache.heap.array, cacheObject.fileStart, cacheObject.fileEnd));
+var objectIndex = HashTable.objectIndex(hashOffset);
+var packOffset = $PackIndex.offsets[objectIndex];
+log(objectIndex, packOffset);
+//=> 0 123
+var fileRange = [];
+PackData.extractFile($PackData.array, packOffset, fileRange);
+log(pretty($FileCache.array, fileRange[0], fileRange[1]));
 //=> blob 3\x00foo
 
 
 // bar
 hashOffset = HashTable.findHashOffset($HashTable, $h, barHashOffset);
-log(hashOffset, hash($HashTable.array, hashOffset));
-//=> 132 'ba0e162e1c47469e3fe4b393a8bf8c569f302116'
+log(hashOffset, $FileCache.hashOffsets[1]);
+//=> 68 68
+log(hash($HashTable.array, hashOffset));
+//=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
+var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isFileCached);
+//=> 128
 objectIndex = HashTable.objectIndex(hashOffset);
-packOffset = index.offsets[objectIndex];
-log(objectIndex, packOffset);
-//=> 6 12
-cacheObject = $Objects.table[objectIndex];
-log(pretty($FileCache.heap.array, cacheObject.fileStart, cacheObject.fileEnd));
+var cacheIndex = $PackIndex.offsets[objectIndex];
+packOffset = $FileCache.packIndexOffsets[cacheIndex];
+log(objectIndex, cacheIndex, packOffset);
+//=> 3 1 135
+log($FileCache.fileStarts[cacheIndex], $FileCache.fileEnds[cacheIndex]);
+//=> 10 20
+log(pretty($FileCache.array, $FileCache.fileStarts[cacheIndex], $FileCache.fileEnds[cacheIndex]));
 //=> blob 3\x00bar

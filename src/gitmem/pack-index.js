@@ -18,7 +18,7 @@ PackIndex.create = function (n) {
 
 var fileRange = new Uint32Array(2);
 
-PackIndex.indexPack = function (index, pack) {
+PackIndex.indexPack = function (packIndex, pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
 
     var j = 12;
@@ -28,26 +28,27 @@ PackIndex.indexPack = function (index, pack) {
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
 
-        Sha1.hash($FileCache.heap.array, fileStart, fileEnd, $Heap.array, tempHashOffset);
+        Sha1.hash($FileCache.array, fileStart, fileEnd, $Heap.array, tempHashOffset);
         var hashOffset = HashTable.findHashOffset($HashTable, $Heap.array, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
             var objectIndex = HashTable.objectIndex(hashOffset);
             HashTable.setHash($HashTable, hashOffset, $Heap.array, tempHashOffset);
 
-            FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
-            FileCache.maybeRewindNextOffset($FileCache);
-
             var deflatedLength = nextPackOffset - j;
-            if ($PackData.nextOffset + deflatedLength > $PackData.capacity) {
-                PackData.resize($PackData);
+            if ($PackData.nextOffset + deflatedLength > $PackData.array.length) {
+                PackData.resize($PackData, deflatedLength);
             }
-            index.offsets[objectIndex] = $PackData.nextOffset;
+
+            packIndex.offsets[objectIndex] = $PackData.nextOffset;
+
             var i;
             for (i = 0; i < deflatedLength; i++) {
                 $PackData.array[$PackData.nextOffset + i] = pack[j + i];
             }
             $PackData.nextOffset += i;
+
+            FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
 
             j = nextPackOffset;
         } else {

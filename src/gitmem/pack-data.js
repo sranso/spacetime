@@ -7,13 +7,16 @@ var treePrefix = Convert.stringToArray('tree ');
 var commitPrefix = Convert.stringToArray('commit ');
 
 PackData.create = function (capacity) {
-    return Heap.create(capacity);
+    return {
+        array: new Uint8Array(capacity),
+        nextOffset: 0,
+    };
 };
 
 var maxPackHeaderSize = 8;
 
 PackData.resize = function (packData, mallocSize) {
-    var capacity = packData.capacity;
+    var capacity = packData.array.length;
     var minimumCapacity = packData.nextOffset + mallocSize;
     capacity *= 2;
     while (capacity < minimumCapacity) {
@@ -28,7 +31,6 @@ PackData.resize = function (packData, mallocSize) {
     }
 
     packData.array = array;
-    packData.capacity = capacity;
 };
 
 PackData.packFile = function (packData, $f, fileStart, fileEnd) {
@@ -54,7 +56,7 @@ PackData.packFile = function (packData, $f, fileStart, fileEnd) {
         throw new Error('Unknown type: ' + $f.slice(fileStart, fileStart + 4).join(','));
     }
 
-    if (packData.nextOffset + maxPackHeaderSize > packData.capacity) {
+    if (packData.nextOffset + maxPackHeaderSize > packData.array.length) {
         PackData.resize(packData, maxPackHeaderSize);
     }
     var deflatedOffset = packData.nextOffset;
@@ -81,7 +83,7 @@ PackData.packFile = function (packData, $f, fileStart, fileEnd) {
 
 var onDeflateData = function (chunk) {
     var packData = this.packData;
-    if (packData.nextOffset + chunk.length > packData.capacity) {
+    if (packData.nextOffset + chunk.length > packData.array.length) {
         PackData.resize(packData, chunk.length);
     }
     var array = packData.array;
@@ -122,24 +124,21 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
 
-    if ($FileCache.heap.nextOffset + fileLength > $FileCache.heap.capacity) {
-        FileCache.resize(FileCache, fileLength);
-    }
-    var fileStart = $FileCache.heap.nextOffset;
+    FileCache.malloc($FileCache, fileLength);
+    var fileStart = $FileCache.nextArrayOffset;
     var fileEnd = fileStart + fileLength;
 
-    var file_j = fileStart;
     var i;
     for (i = 0; i < prefix.length; i++) {
-        $FileCache.heap.array[file_j + i] = prefix[i];
+        $FileCache.array[$FileCache.nextArrayOffset + i] = prefix[i];
     }
 
-    file_j += i;
+    $FileCache.nextArrayOffset += i;
     for (i = 0; i < lengthString.length; i++) {
-        $FileCache.heap.array[file_j + i] = lengthString.charCodeAt(i);
+        $FileCache.array[$FileCache.nextArrayOffset + i] = lengthString.charCodeAt(i);
     }
 
-    $FileCache.heap.nextOffset = file_j + i + 1;
+    $FileCache.nextArrayOffset += i + 1;
 
     if (length < 32768) {
         // Try to only need one chunk.
@@ -151,7 +150,6 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
 
     var inflate = new pako.Inflate({chunkSize: chunkSize});
     inflate.onData = onInflateData;
-    inflate.heap = $FileCache.heap;
     inflate.onEnd = onEnd;
 
     inflate.push(packDataArray.subarray(pack_j), true);
@@ -164,12 +162,11 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
 };
 
 var onInflateData = function (chunk) {
-    var heap = this.heap;
     var i;
     for (i = 0; i < chunk.length; i++) {
-        heap.array[heap.nextOffset + i] = chunk[i];
+        $FileCache.array[$FileCache.nextArrayOffset + i] = chunk[i];
     }
-    heap.nextOffset += i;
+    $FileCache.nextArrayOffset += i;
 };
 
 })();

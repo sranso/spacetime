@@ -27,17 +27,17 @@ log(inflate.strm.next_in);
 
 
 var packData = PackData.create(32);
-log(packData.nextOffset, packData.capacity);
+log(packData.nextOffset, packData.array.length);
 //=> 0 32
 
 var packOffset = PackData.packFile(packData, $h, blobStart, blobEnd);
-log(packOffset, packData.nextOffset, packData.capacity);
+log(packOffset, packData.nextOffset, packData.array.length);
 //=> 0 17 32
 log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
 packOffset = PackData.packFile(packData, $h, blobStart, blobEnd);
-log(packOffset, packData.nextOffset, packData.capacity);
+log(packOffset, packData.nextOffset, packData.array.length);
 //=> 17 34 64
 log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
@@ -53,8 +53,8 @@ var fileStart = fileRange[0];
 var fileEnd = fileRange[1];
 log(fileStart, fileEnd, nextPackOffset);
 //=> 0 15 34
-log($FileCache.heap.nextOffset);
+log($FileCache.nextArrayOffset);
 //=> 15
-log(pretty($FileCache.heap.array, fileStart, fileEnd));
+log(pretty($FileCache.array, fileStart, fileEnd));
 //=> blob 8\x00foo bar
 //=>
