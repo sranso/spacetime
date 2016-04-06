@@ -14,10 +14,7 @@ PackIndex.initialize();
 
 var clone = function (original) {
     return {
-        fileStart: -1,
-        fileEnd: -1,
         hashOffset: -1,
-
         foo: original.foo,
     };
 };
@@ -59,39 +56,40 @@ log(object.hashOffset, hashOffset);
 //=> 4 4
 log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
+var type = $HashTable.array[HashTable.typeOffset(object.hashOffset)];
+log(type & HashTable.isObject);
+//=> 64
 var savedObject = $Objects.table[objectIndex];
-log(savedObject.foo);
-//=> foo
-log(savedObject.flags & Objects.isFullObject);
-//=> 1
-log(savedObject.fileEnd, $FileCache.heap.nextOffset);
+log(savedObject.foo, object === savedObject);
+//=> foo true
+log(type & HashTable.isFileCached);
+//=> 128
+var objectIndex = HashTable.objectIndex(object.hashOffset);
+var cacheIndex = $PackIndex.offsets[objectIndex];
+log($FileCache.fileEnds[cacheIndex], $FileCache.nextArrayOffset);
 //=> 10 10
+log(pretty($FileCache.array, $FileCache.fileStarts[cacheIndex], $FileCache.fileEnds[cacheIndex]));
+//=> blob 3\x00foo
 
 
 // Checkout from $Objects.table
 var packData = $PackData;
 global.$PackData = null;
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
-log(object.foo);
-//=> foo
+global.$PackData = packData;
+log(object.foo, object === savedObject);
+//=> foo true
 log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
 
 // Checkout from $FileCache
-$Objects.table[objectIndex] = null;
-$FileCache.nextIndex = 0;
-var fileRange = [];
-PackData.extractFile(packData.array, $PackIndex.offsets[objectIndex], fileRange);
-var fileStart = fileRange[0];
-var fileEnd = fileRange[1];
-FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
-log($Objects.table[objectIndex].flags & Objects.isFullObject);
-//=> 0
+$HashTable.array[HashTable.typeOffset(object.hashOffset)] &= ~HashTable.isObject;
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
-log(object.foo);
-//=> foo
+log(object.foo, object === savedObject);
+//=> foo false
 log(hash($HashTable.array, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
-log(object.flags & Objects.isFullObject);
-//=> 1
+var type = $HashTable.array[HashTable.typeOffset(object.hashOffset)];
+log(type & HashTable.isObject);
+//=> 64

@@ -14,7 +14,6 @@ var Thing = {};
 
 var clone = function (original) {
     return {
-        flags: 0,
         fileStart: -1,
         fileEnd: -1,
         hashOffset: -1,
@@ -113,13 +112,13 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
-log(thing1.flags & Objects.isFullObject);
-//=> 1
-
 var searchHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
 Sha1.hash($h, thing1.fileStart, thing1.fileEnd, $h, searchHashOffset);
 hashOffset = HashTable.findHashOffset($HashTable, $h, searchHashOffset);
+var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+log(type & HashTable.isObject);
+//=> 64
 objectIndex = HashTable.objectIndex(hashOffset);
 log($Objects.table[objectIndex] === thing1);
 //=> true
@@ -136,8 +135,6 @@ log(gotString, typeof gotString);
 var thing2 = Thing.set(thing1, 'number', 42);
 log(thing2.number);
 //=> 42
-log(thing2.flags & Objects.isFullObject);
-//=> 1
 
 var thing3 = Thing.set(thing2, 'number', 375.2);
 log(thing3.number);

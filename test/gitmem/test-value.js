@@ -7,6 +7,7 @@ var random = Random.create(526926);
 global.$HashTable = HashTable.create(8, random);
 global.$Objects = Objects.create(8);
 global.$PackIndex = PackIndex.create(8);
+global.$FileCache = FileCache.create(3, 100);
 global.$PackData = PackData.create(512);
 
 PackIndex.initialize();

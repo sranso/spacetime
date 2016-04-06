@@ -33,18 +33,18 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
         HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
     } else {
-        var objectIndex = HashTable.objectIndex(hashOffset);
-        var found = $Objects.table[objectIndex];
-        if (found && (found.flags & Objects.isFullObject)) {
+        var typeOffset = HashTable.typeOffset(hashOffset);
+        if ($HashTable.array[typeOffset] & HashTable.isObject) {
             $Heap.nextOffset = originalHeapOffset;
-            return found;
+            return $Objects.table[HashTable.objectIndex(hashOffset)];
         }
         thing = clone(original);
-        $Objects.table[objectIndex] = thing;
+        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $HashTable.array[typeOffset] |= HashTable.isObject;
     }
 
-    thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
@@ -79,18 +79,18 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
         HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
         $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
     } else {
-        var objectIndex = HashTable.objectIndex(hashOffset);
-        var found = $Objects.table[objectIndex];
-        if (found && (found.flags & Objects.isFullObject)) {
+        var typeOffset = HashTable.typeOffset(hashOffset);
+        if ($HashTable.array[typeOffset] & HashTable.isObject) {
             $Heap.nextOffset = originalHeapOffset;
-            return found;
+            return $Objects.table[HashTable.objectIndex(hashOffset)];
         }
         thing = clone(original);
-        $Objects.table[objectIndex] = thing;
+        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $HashTable.array[typeOffset] |= HashTable.isObject;
     }
 
-    thing.flags = Objects.isFullObject;
     thing.fileStart = fileStart;
     thing.fileEnd = fileEnd;
     thing.hashOffset = hashOffset;
@@ -123,18 +123,18 @@ var mutateFile = function (internalHashOffset, value, type) {
             HashTable.setHash($HashTable, hashOffset, $h, internalHashOffset);
             valueObject = Value.createObject(value);
             $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
+            $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
         } else {
-            var objectIndex = HashTable.objectIndex(hashOffset);
-            var found = $Objects.table[objectIndex];
-            if (found && (found.flags & Objects.isFullObject)) {
+            var typeOffset = HashTable.typeOffset(hashOffset);
+            if ($HashTable.array[typeOffset] & HashTable.isObject) {
                 $Heap.nextOffset = originalHeapOffset;
-                return found.value;
+                return $Objects.table[HashTable.objectIndex(hashOffset)].value;
             }
             valueObject = Value.createObject(value);
-            $Objects.table[objectIndex] = valueObject;
+            $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
+            $HashTable.array[typeOffset] |= HashTable.isObject;
         }
 
-        valueObject.flags = Objects.isFullObject;
         valueObject.fileStart = blobStart;
         valueObject.fileEnd = blobEnd;
         valueObject.hashOffset = hashOffset;

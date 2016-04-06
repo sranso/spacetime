@@ -2,6 +2,7 @@
 global.HashTable = {};
 (function () {
 
+HashTable.isObject = 1 << 6;
 HashTable.isFileCached = 1 << 7;
 
 HashTable.create = function (n, random) {
