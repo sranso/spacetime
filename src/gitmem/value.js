@@ -4,10 +4,7 @@ global.Value = {};
 
 Value.createObject = function (value) {
     return {
-        fileStart: -1,
-        fileEnd: -1,
         hashOffset: -1,
-
         value: value,
     };
 };

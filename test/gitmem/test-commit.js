@@ -26,7 +26,7 @@ var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
 
 var fooHashOffset = treeStart + offsets.foo;
-Sha1.hash($h, fooStart, fooEnd, $h, fooHashOffset);
+Sha1.hash($FileCache.array, fooStart, fooEnd, $h, fooHashOffset);
 
 var treeHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
@@ -142,7 +142,7 @@ hashOffset = ~HashTable.findHashOffset($HashTable, $h, fooHashOffset);
 HashTable.setHash($HashTable, hashOffset, $h, fooHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $h, fooStart, fooEnd);
+PackData.packFile($PackData, $FileCache.array, fooStart, fooEnd);
 
 
 var gotSecondCommit = Commit.checkout(oldHashArray, secondCommit.hashOffset);

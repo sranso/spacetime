@@ -114,7 +114,7 @@ var mutateFile = function (internalHashOffset, value, type) {
         Value.createBlob(value, type, fileRange);
         var blobStart = fileRange[0];
         var blobEnd = fileRange[1];
-        Sha1.hash($h, blobStart, blobEnd, $h, internalHashOffset);
+        Sha1.hash($FileCache.array, blobStart, blobEnd, $h, internalHashOffset);
 
         var valueObject;
         var hashOffset = HashTable.findHashOffset($HashTable, $h, internalHashOffset);
@@ -135,8 +135,6 @@ var mutateFile = function (internalHashOffset, value, type) {
             $HashTable.array[typeOffset] |= HashTable.isObject;
         }
 
-        valueObject.fileStart = blobStart;
-        valueObject.fileEnd = blobEnd;
         valueObject.hashOffset = hashOffset;
 
         return valueObject.value;

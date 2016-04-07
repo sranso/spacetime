@@ -2,8 +2,8 @@
 require('../helper');
 
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(3, random);
-global.$PackIndex = {offsets: new Uint32Array(8)};
+global.$HashTable = HashTable.create(4, random);
+global.$PackIndex = PackIndex.create(4);
 
 var fileCache = FileCache.create(3, 8);
 log(fileCache.fileStarts.length);

@@ -1,6 +1,7 @@
 'use strict';
 require('../helper');
 
+global.$FileCache = FileCache.create(3, 32);
 global.$Heap = Heap.create(512);
 var $h = $Heap.array;
 

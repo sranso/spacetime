@@ -5,6 +5,7 @@ global.$Heap = Heap.create(1024);
 var $h = $Heap.array;
 var random = Random.create(29923321);
 global.$HashTable = HashTable.create(16, random);
+global.$FileCache = FileCache.create(2, 32);
 global.$Objects = Objects.create(16);
 
 Tree.initialize();
@@ -89,18 +90,17 @@ log(gotBool, typeof gotBool);
 
 
 var objectRange = Value.createBlob('bar', 'string', []);
+var objectStart = objectRange[0];
+var objectEnd = objectRange[1];
 
 var object1 = {
-    fileStart: objectRange[0],
-    fileEnd: objectRange[1],
     hashOffset: -1,
-
     bar: 'bar',
 };
 
 object1.hashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($h, object1.fileStart, object1.fileEnd, $h, object1.hashOffset);
+Sha1.hash($FileCache.array, objectStart, objectEnd, $h, object1.hashOffset);
 
 var thing1 = Thing.setAll(Thing.none, {
     string: 'foo',
@@ -147,7 +147,7 @@ var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
 var numberHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($h, numberStart, numberEnd, $h, numberHashOffset);
+Sha1.hash($FileCache.array, numberStart, numberEnd, $h, numberHashOffset);
 hashOffset = HashTable.findHashOffset($HashTable, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 var gotNumber = $Objects.table[objectIndex].value;

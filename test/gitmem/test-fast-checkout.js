@@ -37,7 +37,7 @@ var blobEnd = blobRange[1];
 
 var blobHashOffset = $Heap.nextOffset;
 $Heap.nextOffset += 20;
-Sha1.hash($h, blobStart, blobEnd, $h, blobHashOffset);
+Sha1.hash($FileCache.array, blobStart, blobEnd, $h, blobHashOffset);
 log(hash($h, blobHashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
@@ -45,7 +45,7 @@ var hashOffset = ~HashTable.findHashOffset($HashTable, $h, blobHashOffset);
 HashTable.setHash($HashTable, hashOffset, $h, blobHashOffset);
 var objectIndex = HashTable.objectIndex(hashOffset);
 $PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $h, blobStart, blobEnd);
+PackData.packFile($PackData, $FileCache.array, blobStart, blobEnd);
 
 
 // Checkout from PackData
@@ -67,7 +67,7 @@ log(type & HashTable.isFileCached);
 var objectIndex = HashTable.objectIndex(object.hashOffset);
 var cacheIndex = $PackIndex.offsets[objectIndex];
 log($FileCache.fileEnds[cacheIndex], $FileCache.nextArrayOffset);
-//=> 10 10
+//=> 20 20
 log(pretty($FileCache.array, $FileCache.fileStarts[cacheIndex], $FileCache.fileEnds[cacheIndex]));
 //=> blob 3\x00foo
 

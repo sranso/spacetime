@@ -1,6 +1,7 @@
 'use strict';
 require('../helper');
 
+global.$FileCache = FileCache.create(2, 16);
 global.$Heap = Heap.create(1024);
 var $h = $Heap.array;
 global.$HashTable = {array: new Uint8Array(128)};
@@ -34,7 +35,7 @@ var treeRange = Tree.create({
 }, offsets, []);
 var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
-Sha1.hash($h, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
+Sha1.hash($FileCache.array, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
 
 var hashArrayNextOffset = 0;
 var treeHashOffset = hashArrayNextOffset;
