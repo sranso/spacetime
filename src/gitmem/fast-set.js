@@ -109,7 +109,7 @@ var mutateFile = function (internalHashOffset, value, type) {
 
         return value;
     } else {
-        var originalHeapOffset = $heap.nextOffset;
+        var originalFileCacheOffset = $fileCache.nextArrayOffset;
 
         Value.createBlob(value, type, fileRange);
         var blobStart = fileRange[0];
@@ -124,15 +124,17 @@ var mutateFile = function (internalHashOffset, value, type) {
             valueObject = Value.createObject(value);
             $objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
             $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+            FileCache.registerCachedFile($fileCache, blobStart, blobEnd, hashOffset);
         } else {
             var typeOffset = HashTable.typeOffset(hashOffset);
             if ($hashTable.array[typeOffset] & HashTable.isObject) {
-                $heap.nextOffset = originalHeapOffset;
+                $fileCache.nextArrayOffset = originalFileCacheOffset;
                 return $objects.table[HashTable.objectIndex(hashOffset)].value;
             }
             valueObject = Value.createObject(value);
             $objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
             $hashTable.array[typeOffset] |= HashTable.isObject;
+            FileCache.registerCachedFile($fileCache, blobStart, blobEnd, hashOffset);
         }
 
         valueObject.hashOffset = hashOffset;
