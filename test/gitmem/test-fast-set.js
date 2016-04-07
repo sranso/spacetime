@@ -1,12 +1,12 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(1024);
-var $h = $Heap.array;
+global.$heap = Heap.create(1024);
+var $h = $heap.array;
 var random = Random.create(29923321);
-global.$HashTable = HashTable.create(16, random);
-global.$FileCache = FileCache.create(2, 32);
-global.$Objects = Objects.create(16);
+global.$hashTable = HashTable.create(16, random);
+global.$fileCache = FileCache.create(2, 32);
+global.$objects = Objects.create(16);
 
 Tree.initialize();
 FastSet.initialize();
@@ -56,7 +56,7 @@ Thing.initialize = function () {
     none.fileStart = fileRange[0];
     none.fileEnd = fileRange[1];
 
-    $Heap.nextOffset = none.fileStart;
+    $heap.nextOffset = none.fileStart;
 
     Thing.none = Thing.setAll(none, noneValues);
 };
@@ -82,9 +82,9 @@ log(none.fileStart, none.fileEnd, none.fileEnd - none.fileStart);
 log(hash($h, none.fileStart + offsets.bool));
 //=> 02e4a84d62c4b0fe9cca60bba7b9799f78f1f7ed
 
-var hashOffset = HashTable.findHashOffset($HashTable, $h, none.fileStart + offsets.bool);
+var hashOffset = HashTable.findHashOffset($hashTable, $h, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex(hashOffset);
-var gotBool = $Objects.table[objectIndex].value;
+var gotBool = $objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
@@ -98,9 +98,9 @@ var object1 = {
     bar: 'bar',
 };
 
-object1.hashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-Sha1.hash($FileCache.array, objectStart, objectEnd, $h, object1.hashOffset);
+object1.hashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+Sha1.hash($fileCache.array, objectStart, objectEnd, $h, object1.hashOffset);
 
 var thing1 = Thing.setAll(Thing.none, {
     string: 'foo',
@@ -112,23 +112,23 @@ var thing1 = Thing.setAll(Thing.none, {
 log(thing1.string, thing1.number, thing1.bool, thing1.object.bar);
 //=> foo 375.2 true bar
 
-var searchHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
+var searchHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
 Sha1.hash($h, thing1.fileStart, thing1.fileEnd, $h, searchHashOffset);
-hashOffset = HashTable.findHashOffset($HashTable, $h, searchHashOffset);
-var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
+var type = $hashTable.array[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
 objectIndex = HashTable.objectIndex(hashOffset);
-log($Objects.table[objectIndex] === thing1);
+log($objects.table[objectIndex] === thing1);
 //=> true
 
 log(hash($h, thing1.fileStart + offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-hashOffset = HashTable.findHashOffset($HashTable, $h, thing1.fileStart + offsets.string);
+hashOffset = HashTable.findHashOffset($hashTable, $h, thing1.fileStart + offsets.string);
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotString = $Objects.table[objectIndex].value;
+var gotString = $objects.table[objectIndex].value;
 log(gotString, typeof gotString);
 //=> foo string
 
@@ -145,17 +145,17 @@ log(thing3 === thing1);
 var numberRange = Value.createBlob(42, 'number', []);
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
-var numberHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-Sha1.hash($FileCache.array, numberStart, numberEnd, $h, numberHashOffset);
-hashOffset = HashTable.findHashOffset($HashTable, $h, numberHashOffset);
+var numberHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+Sha1.hash($fileCache.array, numberStart, numberEnd, $h, numberHashOffset);
+hashOffset = HashTable.findHashOffset($hashTable, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotNumber = $Objects.table[objectIndex].value;
+var gotNumber = $objects.table[objectIndex].value;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
-hashOffset = HashTable.findHashOffset($HashTable, $h, thing2.fileStart + offsets.bool);
+hashOffset = HashTable.findHashOffset($hashTable, $h, thing2.fileStart + offsets.bool);
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotBool = $Objects.table[objectIndex].value;
+var gotBool = $objects.table[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'

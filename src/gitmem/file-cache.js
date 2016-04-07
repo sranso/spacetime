@@ -18,9 +18,9 @@ FileCache.create = function (maxNumCached, arrayCapacity) {
 FileCache.registerCachedFile = function (fileCache, fileStart, fileEnd, hashOffset) {
     var currentIndex = fileCache.nextIndex;
     var objectIndex = HashTable.objectIndex(hashOffset);
-    var packIndexOffset = $PackIndex.offsets[objectIndex];
-    $PackIndex.offsets[objectIndex] = currentIndex;
-    $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isFileCached;
+    var packIndexOffset = $packIndex.offsets[objectIndex];
+    $packIndex.offsets[objectIndex] = currentIndex;
+    $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isFileCached;
 
     fileCache.fileStarts[currentIndex] = fileStart;
     fileCache.fileEnds[currentIndex] = fileEnd;
@@ -80,8 +80,8 @@ FileCache.malloc = function (fileCache, mallocLength) {
 var clearFirstCacheObject = function (fileCache) {
     var hashOffset = fileCache.hashOffsets[fileCache.firstIndex];
     var objectIndex = HashTable.objectIndex(hashOffset);
-    $HashTable.array[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
-    $PackIndex.offsets[objectIndex] = fileCache.packIndexOffsets[fileCache.firstIndex];
+    $hashTable.array[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
+    $packIndex.offsets[objectIndex] = fileCache.packIndexOffsets[fileCache.firstIndex];
 
     fileCache.firstIndex++;
     if (fileCache.firstIndex === fileCache.fileStarts.length) {

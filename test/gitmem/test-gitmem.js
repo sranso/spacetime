@@ -11,8 +11,8 @@ var gitmem = Gitmem.create();
 Gitmem.load(gitmem);
 Gitmem._randomSeed = oldSeedFunction;
 
-HashTable.save($HashTable, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
-HashTable.save($HashTable, Value.none);
+HashTable.save($hashTable, Value.createBlobObject('', Blob.emptyBlob, Blob.emptyBlobHash, 0));
+HashTable.save($hashTable, Value.none);
 
 var Grid = {};
 
@@ -114,7 +114,7 @@ Grid.set = function (original, prop, value) {
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
 
-    return HashTable.save($HashTable, grid);
+    return HashTable.save($hashTable, grid);
 };
 
 Grid.setAll = function (original, modifications) {
@@ -127,17 +127,17 @@ Grid.setAll = function (original, modifications) {
     grid.hash = new Uint8Array(20);
     Sha1.hash(grid.file, grid.hash, 0);
 
-    return HashTable.save($HashTable, grid);
+    return HashTable.save($hashTable, grid);
 };
 
 var zeroBlob = Value.createBlob(0, 'number', []);
 Sha1.hash(zeroBlob, Grid.none.file, Grid.offsets.rows);
 Tree.setHash(Grid.none.file, Grid.offsets.columns, Grid.none.file, Grid.offsets.rows);
-HashTable.save($HashTable, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
+HashTable.save($hashTable, Value.createBlobObject(0, zeroBlob, Grid.none.file, Grid.offsets.rows));
 
 Grid.none.hash = new Uint8Array(20);
 Sha1.hash(Grid.none.file, Grid.none.hash, Grid.none.hashOffset);
-HashTable.save($HashTable, Grid.none);
+HashTable.save($hashTable, Grid.none);
 
 log(prettyTree(Grid.none.file));
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    cell1
@@ -212,7 +212,7 @@ Cell.set = function (original, prop, value) {
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
 
-    return HashTable.save($HashTable, cell);
+    return HashTable.save($hashTable, cell);
 };
 
 Cell.setAll = function (original, modifications) {
@@ -225,23 +225,23 @@ Cell.setAll = function (original, modifications) {
     cell.hash = new Uint8Array(20);
     Sha1.hash(cell.file, cell.hash, 0);
 
-    return HashTable.save($HashTable, cell);
+    return HashTable.save($hashTable, cell);
 };
 
 
 var colorBlob = Value.createBlob(Cell.none.color, 'string', []);
 Sha1.hash(colorBlob, Cell.none.file, Cell.offsets.color);
-HashTable.save($HashTable, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
+HashTable.save($hashTable, Value.createBlobObject(Cell.none.color, colorBlob, Cell.none.file, Cell.offsets.color));
 
 Cell.none.hash = new Uint8Array(20);
 Sha1.hash(Cell.none.file, Cell.none.hash, Cell.none.hashOffset);
-HashTable.save($HashTable, Cell.none);
+HashTable.save($hashTable, Cell.none);
 
 log(prettyTree(Cell.none.file));
 //=> 100644 blob 03c7548022813b90e8b84dba373b867c18d991e6    color
 //=> 040000 tree 70bfe9793f3fc43d2a2306a58186fe0c88b86999    grid
 //=> 100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    text
-log(prettyHashTable($HashTable));
+log(prettyHashTable($hashTable));
 //=> 1: #<70bfe9 null>
 //=> 2: #<03c754 white>, #<4b14dc grid=null text= color=white>
 //=> 4: #<c22708 0>
@@ -254,16 +254,16 @@ var cell1 = Cell.clone(Cell.none);
 cell1.text = 'foo';
 var blob = Value.createBlob(cell1.text, 'string', []);
 Sha1.hash(blob, cell1.file, Cell.offsets.text);
-HashTable.save($HashTable, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
+HashTable.save($hashTable, Value.createBlobObject(cell1.text, blob, cell1.file, Cell.offsets.text));
 
 cell1.hash = grid1.file;
 cell1.hashOffset = Grid.offsets.cell1;
 Sha1.hash(cell1.file, cell1.hash, cell1.hashOffset);
-grid1.cell1 = HashTable.save($HashTable, cell1);
+grid1.cell1 = HashTable.save($hashTable, cell1);
 
 grid1.hash = new Uint8Array(20);
 Sha1.hash(grid1.file, grid1.hash, grid1.hashOffset);
-HashTable.save($HashTable, grid1);
+HashTable.save($hashTable, grid1);
 
 // high-level
 var cell2 = Cell.set(cell1, 'color', 'red');
@@ -278,7 +278,7 @@ var grid2 = Grid.setAll(grid1, {
 log(hex(grid2.hash));
 //=> b20786edf47f056fea926f16862c4b01a9ea39e9
 
-log(prettyHashTable($HashTable));
+log(prettyHashTable($hashTable));
 //=> 5: #<70bfe9 null>, #<56a605 1>
 //=> 9: #<4b14dc grid=null text= color=white>, #<05dafb rows=0 colu..=0 cell1=[obj.. cell2..>
 //=> 10: #<03c754 white>
@@ -294,7 +294,7 @@ log(prettyHashTable($HashTable));
 //=> 29: #<d45772 foo>
 //=> 31: #<0af810 red>
 
-var objects = $HashTable.objects.reduce(function (a, b) {
+var objects = $hashTable.objects.reduce(function (a, b) {
     return a.concat(b);
 }, []);
 var files = objects.map(function (a) {

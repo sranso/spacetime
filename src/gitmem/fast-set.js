@@ -6,14 +6,14 @@ var tempHashOffset = -1;
 var fileRange = new Uint32Array(2);
 
 FastSet.initialize = function () {
-    $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
-    tempHashOffset = $Heap.nextOffset;
-    $Heap.nextOffset += 20;
+    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
+    tempHashOffset = $heap.nextOffset;
+    $heap.nextOffset += 20;
 };
 
 FastSet.set = function (original, prop, value, offsets, types, clone) {
-    var $h = $Heap.array;
-    var originalHeapOffset = $Heap.nextOffset;
+    var $h = $heap.array;
+    var originalHeapOffset = $heap.nextOffset;
 
     copyFile(original.fileStart, original.fileEnd, fileRange);
     var fileStart = fileRange[0];
@@ -26,23 +26,23 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
     value = mutateFile(internalHashOffset, value, type);
     Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($hashTable, $h, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
+        HashTable.setHash($hashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
-        $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+        $objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
     } else {
         var typeOffset = HashTable.typeOffset(hashOffset);
-        if ($HashTable.array[typeOffset] & HashTable.isObject) {
-            $Heap.nextOffset = originalHeapOffset;
-            return $Objects.table[HashTable.objectIndex(hashOffset)];
+        if ($hashTable.array[typeOffset] & HashTable.isObject) {
+            $heap.nextOffset = originalHeapOffset;
+            return $objects.table[HashTable.objectIndex(hashOffset)];
         }
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
-        $HashTable.array[typeOffset] |= HashTable.isObject;
+        $objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $hashTable.array[typeOffset] |= HashTable.isObject;
     }
 
     thing.fileStart = fileStart;
@@ -54,8 +54,8 @@ FastSet.set = function (original, prop, value, offsets, types, clone) {
 };
 
 FastSet.setAll = function (original, modifications, offsets, types, clone) {
-    var $h = $Heap.array;
-    var originalHeapOffset = $Heap.nextOffset;
+    var $h = $heap.array;
+    var originalHeapOffset = $heap.nextOffset;
 
     copyFile(original.fileStart, original.fileEnd, fileRange);
     var fileStart = fileRange[0];
@@ -72,23 +72,23 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
     }
     Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
 
-    var hashOffset = HashTable.findHashOffset($HashTable, $h, tempHashOffset);
+    var hashOffset = HashTable.findHashOffset($hashTable, $h, tempHashOffset);
     var thing;
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
-        HashTable.setHash($HashTable, hashOffset, $h, tempHashOffset);
+        HashTable.setHash($hashTable, hashOffset, $h, tempHashOffset);
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
-        $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+        $objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
     } else {
         var typeOffset = HashTable.typeOffset(hashOffset);
-        if ($HashTable.array[typeOffset] & HashTable.isObject) {
-            $Heap.nextOffset = originalHeapOffset;
-            return $Objects.table[HashTable.objectIndex(hashOffset)];
+        if ($hashTable.array[typeOffset] & HashTable.isObject) {
+            $heap.nextOffset = originalHeapOffset;
+            return $objects.table[HashTable.objectIndex(hashOffset)];
         }
         thing = clone(original);
-        $Objects.table[HashTable.objectIndex(hashOffset)] = thing;
-        $HashTable.array[typeOffset] |= HashTable.isObject;
+        $objects.table[HashTable.objectIndex(hashOffset)] = thing;
+        $hashTable.array[typeOffset] |= HashTable.isObject;
     }
 
     thing.fileStart = fileStart;
@@ -102,37 +102,37 @@ FastSet.setAll = function (original, modifications, offsets, types, clone) {
 };
 
 var mutateFile = function (internalHashOffset, value, type) {
-    var $h = $Heap.array;
+    var $h = $heap.array;
 
     if (type === 'object') {
         Tree.setHash($h, internalHashOffset, $h, value.hashOffset);
 
         return value;
     } else {
-        var originalHeapOffset = $Heap.nextOffset;
+        var originalHeapOffset = $heap.nextOffset;
 
         Value.createBlob(value, type, fileRange);
         var blobStart = fileRange[0];
         var blobEnd = fileRange[1];
-        Sha1.hash($FileCache.array, blobStart, blobEnd, $h, internalHashOffset);
+        Sha1.hash($fileCache.array, blobStart, blobEnd, $h, internalHashOffset);
 
         var valueObject;
-        var hashOffset = HashTable.findHashOffset($HashTable, $h, internalHashOffset);
+        var hashOffset = HashTable.findHashOffset($hashTable, $h, internalHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            HashTable.setHash($HashTable, hashOffset, $h, internalHashOffset);
+            HashTable.setHash($hashTable, hashOffset, $h, internalHashOffset);
             valueObject = Value.createObject(value);
-            $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
-            $HashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+            $objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
+            $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
         } else {
             var typeOffset = HashTable.typeOffset(hashOffset);
-            if ($HashTable.array[typeOffset] & HashTable.isObject) {
-                $Heap.nextOffset = originalHeapOffset;
-                return $Objects.table[HashTable.objectIndex(hashOffset)].value;
+            if ($hashTable.array[typeOffset] & HashTable.isObject) {
+                $heap.nextOffset = originalHeapOffset;
+                return $objects.table[HashTable.objectIndex(hashOffset)].value;
             }
             valueObject = Value.createObject(value);
-            $Objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
-            $HashTable.array[typeOffset] |= HashTable.isObject;
+            $objects.table[HashTable.objectIndex(hashOffset)] = valueObject;
+            $hashTable.array[typeOffset] |= HashTable.isObject;
         }
 
         valueObject.hashOffset = hashOffset;
@@ -143,14 +143,14 @@ var mutateFile = function (internalHashOffset, value, type) {
 
 var copyFile = function (originalFileStart, originalFileEnd, fileRange) {
     var fileLength = originalFileEnd - originalFileStart;
-    if ($Heap.nextOffset + fileLength > $Heap.capacity) {
-        GarbageCollector.resizeHeap($FileSystem, fileLength);
+    if ($heap.nextOffset + fileLength > $heap.capacity) {
+        GarbageCollector.resizeHeap($fileSystem, fileLength);
     }
-    var fileStart = $Heap.nextOffset;
-    $Heap.nextOffset += fileLength;
-    var fileEnd = $Heap.nextOffset;
+    var fileStart = $heap.nextOffset;
+    $heap.nextOffset += fileLength;
+    var fileEnd = $heap.nextOffset;
 
-    var $h = $Heap.array;
+    var $h = $heap.array;
     var i;
     for (i = 0; i < fileLength; i++) {
         $h[fileStart + i] = $h[originalFileStart + i];

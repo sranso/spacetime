@@ -5,34 +5,34 @@ global.FastCheckout = {};
 var fileRange = new Uint32Array(2);
 
 FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
-    var hashOffset = HashTable.findHashOffset($HashTable, $s, searchHashOffset);
+    var hashOffset = HashTable.findHashOffset($hashTable, $s, searchHashOffset);
     var objectIndex = HashTable.objectIndex(hashOffset);
     var typeOffset = HashTable.typeOffset(hashOffset);
-    var type = $HashTable.array[typeOffset];
+    var type = $hashTable.array[typeOffset];
     if (type & HashTable.isObject) {
-        return $Objects.table[objectIndex];
+        return $objects.table[objectIndex];
     }
 
     var fileStart;
     var fileEnd;
     if (type & HashTable.isFileCached) {
-        var cacheIndex = $PackIndex.offsets[objectIndex];
-        fileStart = $FileCache.fileStarts[cacheIndex];
-        fileEnd = $FileCache.fileEnds[cacheIndex];
+        var cacheIndex = $packIndex.offsets[objectIndex];
+        fileStart = $fileCache.fileStarts[cacheIndex];
+        fileEnd = $fileCache.fileEnds[cacheIndex];
     } else {
-        var packOffset = $PackIndex.offsets[objectIndex];
-        PackData.extractFile($PackData.array, packOffset, fileRange);
+        var packOffset = $packIndex.offsets[objectIndex];
+        PackData.extractFile($packData.array, packOffset, fileRange);
         fileStart = fileRange[0];
         fileEnd = fileRange[1];
 
-        FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
+        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     }
 
-    var thing = checkoutFile($FileCache.array, fileStart, fileEnd);
+    var thing = checkoutFile($fileCache.array, fileStart, fileEnd);
     thing.hashOffset = hashOffset;
 
-    $HashTable.array[typeOffset] |= HashTable.isObject;
-    $Objects.table[objectIndex] = thing;
+    $hashTable.array[typeOffset] |= HashTable.isObject;
+    $objects.table[objectIndex] = thing;
 
     return thing;
 };

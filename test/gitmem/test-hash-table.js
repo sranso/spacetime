@@ -1,8 +1,8 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(256);
-var $h = $Heap.array;
+global.$heap = Heap.create(256);
+var $h = $heap.array;
 
 var random = Random.create(42);
 var hashTable = HashTable.create(8, random);

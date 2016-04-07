@@ -5,9 +5,9 @@ global.PackIndex = {};
 var tempHashOffset = -1;
 
 PackIndex.initialize = function () {
-    $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
-    tempHashOffset = $Heap.nextOffset;
-    $Heap.nextOffset += 20;
+    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
+    tempHashOffset = $heap.nextOffset;
+    $heap.nextOffset += 20;
 };
 
 PackIndex.create = function (n) {
@@ -28,27 +28,27 @@ PackIndex.indexPack = function (packIndex, pack) {
         var fileStart = fileRange[0];
         var fileEnd = fileRange[1];
 
-        Sha1.hash($FileCache.array, fileStart, fileEnd, $Heap.array, tempHashOffset);
-        var hashOffset = HashTable.findHashOffset($HashTable, $Heap.array, tempHashOffset);
+        Sha1.hash($fileCache.array, fileStart, fileEnd, $heap.array, tempHashOffset);
+        var hashOffset = HashTable.findHashOffset($hashTable, $heap.array, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
             var objectIndex = HashTable.objectIndex(hashOffset);
-            HashTable.setHash($HashTable, hashOffset, $Heap.array, tempHashOffset);
+            HashTable.setHash($hashTable, hashOffset, $heap.array, tempHashOffset);
 
             var deflatedLength = nextPackOffset - j;
-            if ($PackData.nextOffset + deflatedLength > $PackData.array.length) {
-                PackData.resize($PackData, deflatedLength);
+            if ($packData.nextOffset + deflatedLength > $packData.array.length) {
+                PackData.resize($packData, deflatedLength);
             }
 
-            packIndex.offsets[objectIndex] = $PackData.nextOffset;
+            packIndex.offsets[objectIndex] = $packData.nextOffset;
 
             var i;
             for (i = 0; i < deflatedLength; i++) {
-                $PackData.array[$PackData.nextOffset + i] = pack[j + i];
+                $packData.array[$packData.nextOffset + i] = pack[j + i];
             }
-            $PackData.nextOffset += i;
+            $packData.nextOffset += i;
 
-            FileCache.registerCachedFile($FileCache, fileStart, fileEnd, hashOffset);
+            FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
 
             j = nextPackOffset;
         } else {

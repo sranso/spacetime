@@ -33,7 +33,7 @@ Thing.none.file = Tree.createSkeleton(Thing.offsets, {
 // BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
 // Thing.none.hash = new Uint8Array(20);
 // Sha1.hash(Thing.none.file, Thing.none.hash, 0);
-// HashTable.save($HashTable, Thing.none);
+// HashTable.save($hashTable, Thing.none);
 
 Thing.checkout = function (packIndices, table, hash, hashOffset) {
     var thing = HashTable.get(table, hash, hashOffset);

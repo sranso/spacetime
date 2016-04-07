@@ -1,9 +1,9 @@
 'use strict';
 require('../helper');
 
-global.$FileCache = FileCache.create(3, 32);
-global.$Heap = Heap.create(512);
-var $h = $Heap.array;
+global.$fileCache = FileCache.create(3, 32);
+global.$heap = Heap.create(512);
+var $h = $heap.array;
 
 Blob.initialize();
 Tree.initialize();
@@ -42,21 +42,21 @@ log(hash($h, treeStart + offsets.www));
 //=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 
 
-var fooStart = $Heap.nextOffset;
+var fooStart = $heap.nextOffset;
 Convert.stringToExistingArray($h, fooStart, 'foo');
-$Heap.nextOffset += 3;
+$heap.nextOffset += 3;
 
-Sha1.hash($h, fooStart, $Heap.nextOffset, $h, treeStart + offsets.foo);
+Sha1.hash($h, fooStart, $heap.nextOffset, $h, treeStart + offsets.foo);
 log(hash($h, treeStart + offsets.foo));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
 
-var barStart = $Heap.nextOffset;
+var barStart = $heap.nextOffset;
 Convert.stringToExistingArray($h, barStart, 'bar');
-$Heap.nextOffset += 3;
-var barHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-Sha1.hash($h, barStart, $Heap.nextOffset, $h, barHashOffset);
+$heap.nextOffset += 3;
+var barHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+Sha1.hash($h, barStart, $heap.nextOffset, $h, barHashOffset);
 log(hash($h, barHashOffset));
 //=> ab48e8a80caa10695287570c66633692b2058b77
 Tree.setHash($h, treeStart + offsets.bar, $h, barHashOffset);

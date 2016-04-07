@@ -13,9 +13,9 @@ CommitFile.initialEnd = -1;
 CommitFile.initialHashOffset = -1;
 
 CommitFile.initialize = function () {
-    var $h = $Heap.array;
+    var $h = $heap.array;
 
-    CommitFile.initialStart = $Heap.nextOffset;
+    CommitFile.initialStart = $heap.nextOffset;
     var initialCommitString = (
         'commit 189\0tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904\n' +
         'author Jake Sandlund <jake@jakesandlund.com> 1457216632 -0600\n' +
@@ -25,11 +25,11 @@ CommitFile.initialize = function () {
     );
     Convert.stringToExistingArray($h, CommitFile.initialStart, initialCommitString);
     CommitFile.initialEnd = CommitFile.initialStart + initialCommitString.length;
-    $Heap.nextOffset = CommitFile.initialEnd;
+    $heap.nextOffset = CommitFile.initialEnd;
 
-    CommitFile.initialHashOffset = $Heap.nextOffset;
+    CommitFile.initialHashOffset = $heap.nextOffset;
     Sha1.hash($h, CommitFile.initialStart, CommitFile.initialEnd, $h, CommitFile.initialHashOffset);
-    $Heap.nextOffset += 20;
+    $heap.nextOffset += 20;
 };
 
 CommitFile.timezoneString = function (timezoneOffset) {
@@ -71,14 +71,14 @@ CommitFile.create = function (commit, fileRange) {
 
     var lengthString = '' + length;
     var commitLength = commitPrefix.length + lengthString.length + 1 + length;
-    if ($Heap.nextOffset + commitLength > $Heap.capacity) {
-        GarbageCollector.resizeHeap($FileSystem, commitLength);
+    if ($heap.nextOffset + commitLength > $heap.capacity) {
+        GarbageCollector.resizeHeap($fileSystem, commitLength);
     }
-    var commitStart = $Heap.nextOffset;
+    var commitStart = $heap.nextOffset;
     var commitEnd = commitStart + commitLength;
-    $Heap.nextOffset = commitEnd;
+    $heap.nextOffset = commitEnd;
 
-    var $h = $Heap.array;
+    var $h = $heap.array;
 
     var commit_j = commitStart;
     var i;
@@ -98,7 +98,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($HashTable.array, commit.tree.hashOffset, $h, commit_j);
+    Convert.hashToHex($hashTable.array, commit.tree.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // parent
@@ -108,7 +108,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($HashTable.array, commit.parent.hashOffset, $h, commit_j);
+    Convert.hashToHex($hashTable.array, commit.parent.hashOffset, $h, commit_j);
     $h[commit_j + 40] = 0x0a;
 
     // mergeParent
@@ -119,7 +119,7 @@ CommitFile.create = function (commit, fileRange) {
         }
 
         commit_j += i;
-        Convert.hashToHex($HashTable.array, commit.mergeParent.hashOffset, $h, commit_j);
+        Convert.hashToHex($hashTable.array, commit.mergeParent.hashOffset, $h, commit_j);
         $h[commit_j + 40] = 0x0a;
     }
 

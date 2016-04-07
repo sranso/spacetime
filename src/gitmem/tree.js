@@ -11,12 +11,12 @@ Tree._actuallyEmptyEnd = -1;
 Tree._actuallyEmptyHashOffset = -1;
 
 Tree.initialize = function () {
-    var $h = $Heap.array;
+    var $h = $heap.array;
 
-    $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
-    Tree.emptyHashOffset = $Heap.nextOffset;
-    Tree._actuallyEmptyHashOffset = $Heap.nextOffset + 20;
-    $Heap.nextOffset += 40;
+    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
+    Tree.emptyHashOffset = $heap.nextOffset;
+    Tree._actuallyEmptyHashOffset = $heap.nextOffset + 20;
+    $heap.nextOffset += 40;
 
     var offsets = {};
     var treeRange = Tree.create({'.empty': 'blob'}, offsets, []);
@@ -55,14 +55,14 @@ Tree.create = function (props, offsets, treeRange) {
     var lengthString = '' + length;
     var headerLength = treePrefix.length + lengthString.length + 1;
     var treeLength = headerLength + length;
-    if ($Heap.nextOffset + treeLength > $Heap.capacity) {
-        GarbageCollector.resizeHeap($FileSystem, treeLength);
+    if ($heap.nextOffset + treeLength > $heap.capacity) {
+        GarbageCollector.resizeHeap($fileSystem, treeLength);
     }
-    var treeStart = $Heap.nextOffset;
+    var treeStart = $heap.nextOffset;
     var treeEnd = treeStart + treeLength;
-    $Heap.nextOffset = treeEnd;
+    $heap.nextOffset = treeEnd;
 
-    var $h = $Heap.array;
+    var $h = $heap.array;
 
     var tree_j = treeStart;
     var i;

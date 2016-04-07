@@ -7,10 +7,10 @@ log(objects.table.length);
 log(objects.table[0], objects.table[3]);
 //=> null null
 
-global.$HashTable = {array: new Uint8Array(20)};
-$HashTable.array[0] = 0x12;
-$HashTable.array[1] = 0x34;
-$HashTable.array[2] = 0x56;
+global.$hashTable = {array: new Uint8Array(20)};
+$hashTable.array[0] = 0x12;
+$hashTable.array[1] = 0x34;
+$hashTable.array[2] = 0x56;
 
 var object = {
     hashOffset: 0,

@@ -5,15 +5,15 @@ global.Blob = {};
 Blob.emptyHashOffset = -1;
 
 Blob.initialize = function () {
-    $Heap.nextOffset = 64 * Math.ceil($Heap.nextOffset / 64);
-    Blob.emptyHashOffset = $Heap.nextOffset;
-    $Heap.nextOffset += 20;
+    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
+    Blob.emptyHashOffset = $heap.nextOffset;
+    $heap.nextOffset += 20;
     var emptyBlobRange = Blob.create('', new Uint32Array(2));
     var emptyStart = emptyBlobRange[0];
     var emptyEnd = emptyBlobRange[1];
 
-    var $h = $Heap.array;
-    Sha1.hash($FileCache.array, emptyStart, emptyEnd, $h, Blob.emptyHashOffset);
+    var $h = $heap.array;
+    Sha1.hash($fileCache.array, emptyStart, emptyEnd, $h, Blob.emptyHashOffset);
 };
 
 var blobPrefix = Convert.stringToArray('blob ');
@@ -21,12 +21,12 @@ var blobPrefix = Convert.stringToArray('blob ');
 Blob.create = function (string, blobRange) {
     var lengthString = '' + string.length;
     var blobLength = blobPrefix.length + lengthString.length + 1 + string.length;
-    FileCache.malloc($FileCache, blobLength);
-    var blobStart = $FileCache.nextArrayOffset;
+    FileCache.malloc($fileCache, blobLength);
+    var blobStart = $fileCache.nextArrayOffset;
     var blobEnd = blobStart + blobLength;
-    $FileCache.nextArrayOffset = blobEnd;
+    $fileCache.nextArrayOffset = blobEnd;
 
-    var $f = $FileCache.array;
+    var $f = $fileCache.array;
 
     var blob_j = blobStart;
     var i;

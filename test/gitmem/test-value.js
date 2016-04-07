@@ -1,14 +1,14 @@
 'use strict';
 require('../helper');
 
-global.$Heap = Heap.create(1024);
-var $h = $Heap.array;
+global.$heap = Heap.create(1024);
+var $h = $heap.array;
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(8, random);
-global.$Objects = Objects.create(8);
-global.$PackIndex = PackIndex.create(8);
-global.$FileCache = FileCache.create(3, 128);
-global.$PackData = PackData.create(512);
+global.$hashTable = HashTable.create(8, random);
+global.$objects = Objects.create(8);
+global.$packIndex = PackIndex.create(8);
+global.$fileCache = FileCache.create(3, 128);
+global.$packData = PackData.create(512);
 
 PackIndex.initialize();
 
@@ -19,63 +19,63 @@ log(valueObject.value);
 var stringRange = Value.createBlob('foo', 'string', []);
 var stringStart = stringRange[0];
 var stringEnd = stringRange[1];
-log(pretty($FileCache.array, stringStart, stringEnd));
+log(pretty($fileCache.array, stringStart, stringEnd));
 //=> blob 4\x00"foo
 
 var numberRange = Value.createBlob(375.2, 'number', []);
 var numberStart = numberRange[0];
 var numberEnd = numberRange[1];
-log(pretty($FileCache.array, numberStart, numberEnd));
+log(pretty($fileCache.array, numberStart, numberEnd));
 //=> blob 5\x00375.2
 
 var trueRange = Value.createBlob(true, 'boolean', []);
 var trueStart = trueRange[0];
 var trueEnd = trueRange[1];
-log(pretty($FileCache.array, trueStart, trueEnd));
+log(pretty($fileCache.array, trueStart, trueEnd));
 //=> blob 4\x00true
 
 var falseRange = Value.createBlob(false, 'boolean', []);
 var falseStart = falseRange[0];
 var falseEnd = falseRange[1];
-log(pretty($FileCache.array, falseStart, falseEnd));
+log(pretty($fileCache.array, falseStart, falseEnd));
 //=> blob 5\x00false
 
-var stringHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-var numberHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-var trueHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-var falseHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
-Sha1.hash($FileCache.array, stringStart, stringEnd, $h, stringHashOffset);
-Sha1.hash($FileCache.array, numberStart, numberEnd, $h, numberHashOffset);
-Sha1.hash($FileCache.array, trueStart, trueEnd, $h, trueHashOffset);
-Sha1.hash($FileCache.array, falseStart, falseEnd, $h, falseHashOffset);
+var stringHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+var numberHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+var trueHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+var falseHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+Sha1.hash($fileCache.array, stringStart, stringEnd, $h, stringHashOffset);
+Sha1.hash($fileCache.array, numberStart, numberEnd, $h, numberHashOffset);
+Sha1.hash($fileCache.array, trueStart, trueEnd, $h, trueHashOffset);
+Sha1.hash($fileCache.array, falseStart, falseEnd, $h, falseHashOffset);
 
-var hashOffset = ~HashTable.findHashOffset($HashTable, $h, stringHashOffset);
-HashTable.setHash($HashTable, hashOffset, $h, stringHashOffset);
+var hashOffset = ~HashTable.findHashOffset($hashTable, $h, stringHashOffset);
+HashTable.setHash($hashTable, hashOffset, $h, stringHashOffset);
 var objectIndex = HashTable.objectIndex(hashOffset);
-$PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $FileCache.array, stringStart, stringEnd);
+$packIndex.offsets[objectIndex] = $packData.nextOffset;
+PackData.packFile($packData, $fileCache.array, stringStart, stringEnd);
 
-hashOffset = ~HashTable.findHashOffset($HashTable, $h, numberHashOffset);
-HashTable.setHash($HashTable, hashOffset, $h, numberHashOffset);
+hashOffset = ~HashTable.findHashOffset($hashTable, $h, numberHashOffset);
+HashTable.setHash($hashTable, hashOffset, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-$PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $FileCache.array, numberStart, numberEnd);
+$packIndex.offsets[objectIndex] = $packData.nextOffset;
+PackData.packFile($packData, $fileCache.array, numberStart, numberEnd);
 
-hashOffset = ~HashTable.findHashOffset($HashTable, $h, trueHashOffset);
-HashTable.setHash($HashTable, hashOffset, $h, trueHashOffset);
+hashOffset = ~HashTable.findHashOffset($hashTable, $h, trueHashOffset);
+HashTable.setHash($hashTable, hashOffset, $h, trueHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-$PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $FileCache.array, trueStart, trueEnd);
+$packIndex.offsets[objectIndex] = $packData.nextOffset;
+PackData.packFile($packData, $fileCache.array, trueStart, trueEnd);
 
-hashOffset = ~HashTable.findHashOffset($HashTable, $h, falseHashOffset);
-HashTable.setHash($HashTable, hashOffset, $h, falseHashOffset);
+hashOffset = ~HashTable.findHashOffset($hashTable, $h, falseHashOffset);
+HashTable.setHash($hashTable, hashOffset, $h, falseHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-$PackIndex.offsets[objectIndex] = $PackData.nextOffset;
-PackData.packFile($PackData, $FileCache.array, falseStart, falseEnd);
+$packIndex.offsets[objectIndex] = $packData.nextOffset;
+PackData.packFile($packData, $fileCache.array, falseStart, falseEnd);
 
 var gotString = Value.checkout($h, stringHashOffset, 'string');
 log(gotString, typeof gotString);
@@ -85,35 +85,35 @@ log(gotString, typeof gotString);
 var gotStringAgain = Value.checkout($h, stringHashOffset, 'string');
 log(gotStringAgain, typeof gotStringAgain);
 //=> foo string
-hashOffset = HashTable.findHashOffset($HashTable, $h, stringHashOffset);
+hashOffset = HashTable.findHashOffset($hashTable, $h, stringHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var savedString = $Objects.table[objectIndex].value;
+var savedString = $objects.table[objectIndex].value;
 log(savedString, typeof savedString);
 //=> foo string
 
 var gotNumber = Value.checkout($h, numberHashOffset, 'number');
 log(gotNumber, typeof gotNumber);
 //=> 375.2 'number'
-hashOffset = HashTable.findHashOffset($HashTable, $h, numberHashOffset);
+hashOffset = HashTable.findHashOffset($hashTable, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var savedNumber = $Objects.table[objectIndex].value;
+var savedNumber = $objects.table[objectIndex].value;
 log(savedNumber, typeof savedNumber);
 //=> 375.2 'number'
 
 var gotTrue = Value.checkout($h, trueHashOffset, 'boolean');
 log(gotTrue, typeof gotTrue);
 //=> true 'boolean'
-hashOffset = HashTable.findHashOffset($HashTable, $h, trueHashOffset);
+hashOffset = HashTable.findHashOffset($hashTable, $h, trueHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var savedTrue = $Objects.table[objectIndex].value;
+var savedTrue = $objects.table[objectIndex].value;
 log(savedTrue, typeof savedTrue);
 //=> true 'boolean'
 
 var gotFalse = Value.checkout($h, falseHashOffset, 'boolean');
 log(gotFalse, typeof gotFalse);
 //=> false 'boolean'
-hashOffset = HashTable.findHashOffset($HashTable, $h, falseHashOffset);
+hashOffset = HashTable.findHashOffset($hashTable, $h, falseHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var savedFalse = $Objects.table[objectIndex].value;
+var savedFalse = $objects.table[objectIndex].value;
 log(savedFalse, typeof savedFalse);
 //=> false 'boolean'

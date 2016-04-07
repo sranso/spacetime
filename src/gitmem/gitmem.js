@@ -4,10 +4,10 @@ global.Gitmem = {};
 
 Gitmem.initialize = function () {
     var bootSystem = GarbageCollector.create(0, 1024, random);
-    var bootHeap = $Heap.create(1024);
+    var bootHeap = Heap.create(1024);
     var random = Random.create(Gitmem._randomSeed());
 
-    global.$Heap = bootHeap;
+    global.$heap = bootHeap;
     global.$ = bootHeap.array;
 
     GarbageCollector.initialize();
@@ -19,39 +19,39 @@ Gitmem.initialize = function () {
         throw new Error('Unexpected boot heap size: ' + bootHeap.nextOffset);
     }
 
-    global.$Heap = null;
+    global.$heap = null;
     global.$ = null;
 };
 
 Gitmem.create = function () {
-    global.$Random = Random.create(Gitmem._randomSeed());
-    global.$Heap = Heap.create(8388608); // 8 MiB
-    global.$ = $Heap.array;
-    global.$HashTable = HashTable.create(262144, $Random);
-    global.$PackIndex = PackIndex.create(262144);
-    global.$PackData = PackData.create(8388608);
-    global.$FileCache = FileCache.create(8388608);
+    global.$random = Random.create(Gitmem._randomSeed());
+    global.$heap = Heap.create(8388608); // 8 MiB
+    global.$ = $heap.array;
+    global.$hashTable = HashTable.create(262144, $random);
+    global.$packIndex = PackIndex.create(262144);
+    global.$packData = PackData.create(8388608);
+    global.$fileCache = FileCache.create(8388608);
 
     GarbageCollector.collect(8388608);
 
     return {
-        random: $Random,
-        heap: $Heap,
-        hashTable: $HashTable,
-        packIndex: $PackIndex,
-        packData: $PackData,
-        fileCache: $FileCache,
+        random: $random,
+        heap: $heap,
+        hashTable: $hashTable,
+        packIndex: $packIndex,
+        packData: $packData,
+        fileCache: $fileCache,
     };
 };
 
 Gitmem.load = function (gitmem) {
-    global.$Random = gitmem.random;
-    global.$Heap = gitmem.heap;
+    global.$random = gitmem.random;
+    global.$heap = gitmem.heap;
     global.$ = gitmem.heap.array;
-    global.$HashTable = gitmem.hashTable;
-    global.$PackIndex = gitmem.packIndex;
-    global.$PackData = gitmem.packData;
-    global.$FileCache = gitmem.fileCache;
+    global.$hashTable = gitmem.hashTable;
+    global.$packIndex = gitmem.packIndex;
+    global.$packData = gitmem.packData;
+    global.$fileCache = gitmem.fileCache;
 };
 
 Gitmem._randomSeed = function () {

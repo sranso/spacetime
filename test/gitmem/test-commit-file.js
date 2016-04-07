@@ -1,10 +1,10 @@
 'use strict';
 require('../helper');
 
-global.$FileCache = FileCache.create(2, 16);
-global.$Heap = Heap.create(1024);
-var $h = $Heap.array;
-global.$HashTable = {array: new Uint8Array(128)};
+global.$fileCache = FileCache.create(2, 16);
+global.$heap = Heap.create(1024);
+var $h = $heap.array;
+global.$hashTable = {array: new Uint8Array(128)};
 
 CommitFile.initialize();
 log(CommitFile.initialStart, CommitFile.initialEnd);
@@ -35,19 +35,19 @@ var treeRange = Tree.create({
 }, offsets, []);
 var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
-Sha1.hash($FileCache.array, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
+Sha1.hash($fileCache.array, blobRange[0], blobRange[1], $h, treeStart + offsets.foo);
 
 var hashArrayNextOffset = 0;
 var treeHashOffset = hashArrayNextOffset;
 hashArrayNextOffset += 20;
-Sha1.hash($h, treeStart, treeEnd, $HashTable.array, treeHashOffset);
-log(hash($HashTable.array, treeHashOffset));
+Sha1.hash($h, treeStart, treeEnd, $hashTable.array, treeHashOffset);
+log(hash($hashTable.array, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
 var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
 var parentHashOffset = hashArrayNextOffset;
 hashArrayNextOffset += 20;
-Convert.arrayToExistingArray($HashTable.array, parentHashOffset, parentHash);
+Convert.arrayToExistingArray($hashTable.array, parentHashOffset, parentHash);
 
 var commitObject = {
     tree: {hashOffset: treeHashOffset},
@@ -80,20 +80,20 @@ log(pretty($h, commitStart, commitEnd));
 //=> Foo commit
 //=>
 
-var commitHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
+var commitHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
 Sha1.hash($h, commitStart, commitEnd, $h, commitHashOffset);
 log(hash($h, commitHashOffset));
 //=> dbcb62b19db062d928144514502df45e86d91eac
 
-treeHashOffset = $Heap.nextOffset;
-$Heap.nextOffset += 20;
+treeHashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
 CommitFile.parseTree($h, commitStart, commitEnd, $h, treeHashOffset);
 log(hash($h, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
-var parentHashesOffset = $Heap.nextOffset;
-$Heap.nextOffset += 2 * 20;
+var parentHashesOffset = $heap.nextOffset;
+$heap.nextOffset += 2 * 20;
 var nParents = CommitFile.parseParents($h, commitStart, commitEnd, $h, parentHashesOffset);
 log(nParents, hash($h, parentHashesOffset));
 //=> 1 '4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf'
@@ -120,14 +120,14 @@ log(gotCommit.message);
 
 
 var secondParentString = 'secondParent';
-var secondParentStart = $Heap.nextOffset;
+var secondParentStart = $heap.nextOffset;
 var secondParentEnd = secondParentStart + secondParentString.length;
-$Heap.nextOffset = secondParentEnd;
+$heap.nextOffset = secondParentEnd;
 Convert.stringToExistingArray($h, secondParentStart, secondParentString);
 var secondParentHashOffset = hashArrayNextOffset;
 hashArrayNextOffset += 20;
-Sha1.hash($h, secondParentStart, secondParentEnd, $HashTable.array, secondParentHashOffset);
-log(hash($HashTable.array, secondParentHashOffset));
+Sha1.hash($h, secondParentStart, secondParentEnd, $hashTable.array, secondParentHashOffset);
+log(hash($hashTable.array, secondParentHashOffset));
 //=> 06d3749d842b0a2f56f5368932fd616f89f7cf58
 commitObject.mergeParent = {hashOffset: secondParentHashOffset};
 commitObject.committerTime = 1454897681000;

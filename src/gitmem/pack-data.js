@@ -124,21 +124,21 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
 
-    FileCache.malloc($FileCache, fileLength);
-    var fileStart = $FileCache.nextArrayOffset;
+    FileCache.malloc($fileCache, fileLength);
+    var fileStart = $fileCache.nextArrayOffset;
     var fileEnd = fileStart + fileLength;
 
     var i;
     for (i = 0; i < prefix.length; i++) {
-        $FileCache.array[$FileCache.nextArrayOffset + i] = prefix[i];
+        $fileCache.array[$fileCache.nextArrayOffset + i] = prefix[i];
     }
 
-    $FileCache.nextArrayOffset += i;
+    $fileCache.nextArrayOffset += i;
     for (i = 0; i < lengthString.length; i++) {
-        $FileCache.array[$FileCache.nextArrayOffset + i] = lengthString.charCodeAt(i);
+        $fileCache.array[$fileCache.nextArrayOffset + i] = lengthString.charCodeAt(i);
     }
 
-    $FileCache.nextArrayOffset += i + 1;
+    $fileCache.nextArrayOffset += i + 1;
 
     if (length < 32768) {
         // Try to only need one chunk.
@@ -164,9 +164,9 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
 var onInflateData = function (chunk) {
     var i;
     for (i = 0; i < chunk.length; i++) {
-        $FileCache.array[$FileCache.nextArrayOffset + i] = chunk[i];
+        $fileCache.array[$fileCache.nextArrayOffset + i] = chunk[i];
     }
-    $FileCache.nextArrayOffset += i;
+    $fileCache.nextArrayOffset += i;
 };
 
 })();

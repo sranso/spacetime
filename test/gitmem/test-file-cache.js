@@ -2,8 +2,8 @@
 require('../helper');
 
 var random = Random.create(526926);
-global.$HashTable = HashTable.create(4, random);
-global.$PackIndex = PackIndex.create(4);
+global.$hashTable = HashTable.create(4, random);
+global.$packIndex = PackIndex.create(4);
 
 var fileCache = FileCache.create(3, 8);
 log(fileCache.fileStarts.length);
@@ -21,15 +21,15 @@ var hashOffset = 24;
 var objectIndex = HashTable.objectIndex(hashOffset);
 log(objectIndex);
 //=> 1
-$PackIndex.offsets[objectIndex] = 12345;
+$packIndex.offsets[objectIndex] = 12345;
 
 FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
 log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 0 1
-var type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+var type = $hashTable.array[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
-log($PackIndex.offsets[objectIndex]);
+log($packIndex.offsets[objectIndex]);
 //=> 0
 log(fileCache.fileStarts[0]);
 //=> 0
@@ -55,9 +55,9 @@ fileCache.nextArrayOffset = 0;
 FileCache.malloc(fileCache, 3);
 log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 1 1
-log($PackIndex.offsets[objectIndex]);
+log($packIndex.offsets[objectIndex]);
 //=> 12345
-type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+type = $hashTable.array[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 0
 
@@ -67,11 +67,11 @@ fileStart = 30;
 fileEnd = 32;
 hashOffset = 44;
 objectIndex = HashTable.objectIndex(hashOffset);
-$PackIndex.offsets[objectIndex] = 54321;
+$packIndex.offsets[objectIndex] = 54321;
 FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
 log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 1 2
-log($PackIndex.offsets[objectIndex]);
+log($packIndex.offsets[objectIndex]);
 //=> 1
 log(fileCache.fileStarts[2]);
 //=> 0
@@ -96,9 +96,9 @@ log(fileCache.nextArrayOffset);
 // Both the file at the end and at the beginning get cleared
 log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 0 0
-log($PackIndex.offsets[objectIndex]);
+log($packIndex.offsets[objectIndex]);
 //=> 54321
-type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+type = $hashTable.array[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 0
 
@@ -114,8 +114,8 @@ FileCache.registerCachedFile(fileCache, fileStart, fileEnd, hashOffset);
 log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 1 0
 hashOffset = 24;
-log($PackIndex.offsets[HashTable.objectIndex(hashOffset)]);
+log($packIndex.offsets[HashTable.objectIndex(hashOffset)]);
 //=> 12345
-type = $HashTable.array[HashTable.typeOffset(hashOffset)];
+type = $hashTable.array[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 0
