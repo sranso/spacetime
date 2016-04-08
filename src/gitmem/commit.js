@@ -73,13 +73,14 @@ Commit.setAll = function (original, modifications) {
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
-    Sha1.hash($h, fileStart, fileEnd, $h, tempHashOffset);
+    Sha1.hash($fileCache.array, fileStart, fileEnd, $h, tempHashOffset);
     var hashOffset = HashTable.findHashOffset($hashTable, $h, tempHashOffset);
     if (hashOffset < 0) {
         hashOffset = ~hashOffset;
         HashTable.setHash($hashTable, hashOffset, $h, tempHashOffset);
         $objects.table[HashTable.objectIndex(hashOffset)] = commit;
         $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     } else {
         var typeOffset = HashTable.typeOffset(hashOffset);
         if ($hashTable.array[typeOffset] & HashTable.isObject) {
@@ -87,6 +88,7 @@ Commit.setAll = function (original, modifications) {
         }
         $objects.table[HashTable.objectIndex(hashOffset)] = commit;
         $hashTable.array[typeOffset] |= HashTable.isObject;
+        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     }
 
     commit.fileStart = fileStart;

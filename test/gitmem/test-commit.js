@@ -59,7 +59,7 @@ var commit = Commit.setAll(Commit.none, {
 
 log(commit.authorName, commit.committerEmail);
 //=> Jake Sandlund jake@jakesandlund.com
-log(pretty($h, commit.fileStart, commit.fileEnd));
+log(pretty($fileCache.array, commit.fileStart, commit.fileEnd));
 //=> commit 237\x00tree 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 //=> parent 362f278d085c99a7adfbb1d74a57dd68db0109a9
 //=> author Jake Sandlund <jake@jakesandlund.com> 1454907687 -0600
@@ -71,7 +71,7 @@ log(hash($hashTable.array, commit.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 var searchHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
-Sha1.hash($h, commit.fileStart, commit.fileEnd, $h, searchHashOffset);
+Sha1.hash($fileCache.array, commit.fileStart, commit.fileEnd, $h, searchHashOffset);
 var hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
 log(hashOffset, hash($hashTable.array, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
@@ -79,6 +79,8 @@ var objectIndex = HashTable.objectIndex(commit.hashOffset);
 var type = $hashTable.array[HashTable.typeOffset(commit.hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
+log(type & HashTable.isFileCached);
+//=> 128
 var savedCommit = $objects.table[objectIndex];
 log(objectIndex, savedCommit.authorTime);
 //=> 3 1454907687000
@@ -93,7 +95,7 @@ var secondCommit = Commit.setAll(commit, {
 
 searchHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
-Sha1.hash($h, secondCommit.fileStart, secondCommit.fileEnd, $h, searchHashOffset);
+Sha1.hash($fileCache.array, secondCommit.fileStart, secondCommit.fileEnd, $h, searchHashOffset);
 hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
 log(hashOffset, hash($hashTable.array, hashOffset));
 //=> 132 '46a0cef9b97fb229a4b763b29a6ec9fb24b298e6'
@@ -119,16 +121,19 @@ global.$hashTable = HashTable.create(8, random);
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, secondCommit.hashOffset);
 HashTable.setHash($hashTable, hashOffset, oldHashArray, secondCommit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
+// Clear cache to ensure checkout from packData
+$hashTable.array[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
 $packIndex.offsets[objectIndex] = $packData.nextOffset;
-PackData.packFile($packData, $h, secondCommit.fileStart, secondCommit.fileEnd);
+PackData.packFile($packData, $fileCache.array, secondCommit.fileStart, secondCommit.fileEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, commit.hashOffset);
 HashTable.setHash($hashTable, hashOffset, oldHashArray, commit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 $packIndex.offsets[objectIndex] = $packData.nextOffset;
-PackData.packFile($packData, $h, commit.fileStart, commit.fileEnd);
+PackData.packFile($packData, $fileCache.array, commit.fileStart, commit.fileEnd);
 // Save first commit
 $objects.table[objectIndex] = commit;
+$hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
 
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, treeHashOffset);
 HashTable.setHash($hashTable, hashOffset, oldHashArray, treeHashOffset);
@@ -153,7 +158,7 @@ log(type & HashTable.isFileCached);
 //=> 128
 var cacheIndex = $packIndex.offsets[HashTable.objectIndex(gotSecondCommit.hashOffset)];
 log(cacheIndex);
-//=> 0
+//=> 2
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
 //=> commit 230\x00tree 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 //=> parent 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
@@ -167,6 +172,8 @@ log(gotSecondCommit.authorName, gotSecondCommit.authorTimezoneOffset);
 
 Commit.checkoutParents(gotSecondCommit);
 var gotCommit = gotSecondCommit.parent;
+log(gotCommit === commit);
+//=> true
 log(hash($hashTable.array, gotCommit.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 log(gotCommit.authorName, gotCommit.committerEmail);
