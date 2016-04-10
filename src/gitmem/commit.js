@@ -4,8 +4,6 @@ global.Commit = {};
 
 var clone = function (original) {
     return {
-        fileStart: -1,
-        fileEnd: -1,
         hashOffset: -1,
 
         tree: original.tree,
@@ -91,8 +89,6 @@ Commit.setAll = function (original, modifications) {
         FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     }
 
-    commit.fileStart = fileStart;
-    commit.fileEnd = fileEnd;
     commit.hashOffset = hashOffset;
 
     return commit;
@@ -118,7 +114,8 @@ Commit.checkoutTree = function (commit, packIndices, table) {
 
 Commit.checkoutParents = function (commit) {
     var $h = $heap.array;
-    var numParents = CommitFile.parseParents($fileCache.array, commit.fileStart, commit.fileEnd, $h, parentHashOffset);
+    var cacheIndex = $packIndex.offsets[HashTable.objectIndex(commit.hashOffset)];
+    var numParents = CommitFile.parseParents($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex], $h, parentHashOffset);
 
     if (numParents >= 1) {
         commit.parent = Commit.checkout($h, parentHashOffset);
