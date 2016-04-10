@@ -8,7 +8,7 @@ FileCache.create = function (maxNumCached, arrayCapacity) {
         fileStarts: new Uint32Array(maxNumCached),
         fileEnds: new Uint32Array(maxNumCached),
         hashOffsets: new Uint32Array(maxNumCached),
-        packIndexOffsets: new Uint32Array(maxNumCached),
+        overwrittenData32: new Uint32Array(maxNumCached),
         nextArrayOffset: 0,
         nextIndex: 0,
         firstIndex: 0,
@@ -17,15 +17,15 @@ FileCache.create = function (maxNumCached, arrayCapacity) {
 
 FileCache.registerCachedFile = function (fileCache, fileStart, fileEnd, hashOffset) {
     var currentIndex = fileCache.nextIndex;
-    var objectIndex = HashTable.objectIndex(hashOffset);
-    var packIndexOffset = $packIndex.offsets[objectIndex];
-    $packIndex.offsets[objectIndex] = currentIndex;
+    var data32_offset = (hashOffset >> 2) + HashTable.data32_cacheIndex;
+    var overwrittenData32 = $hashTable.data32[data32_offset];
+    $hashTable.data32[data32_offset] = currentIndex;
     $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isFileCached;
 
     fileCache.fileStarts[currentIndex] = fileStart;
     fileCache.fileEnds[currentIndex] = fileEnd;
     fileCache.hashOffsets[currentIndex] = hashOffset;
-    fileCache.packIndexOffsets[currentIndex] = packIndexOffset;
+    fileCache.overwrittenData32[currentIndex] = overwrittenData32;
 
     fileCache.nextIndex++;
     if (fileCache.nextIndex === fileCache.fileStarts.length) {
@@ -79,9 +79,9 @@ FileCache.malloc = function (fileCache, mallocLength) {
 
 var clearFirstCacheObject = function (fileCache) {
     var hashOffset = fileCache.hashOffsets[fileCache.firstIndex];
-    var objectIndex = HashTable.objectIndex(hashOffset);
     $hashTable.hashes8[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
-    $packIndex.offsets[objectIndex] = fileCache.packIndexOffsets[fileCache.firstIndex];
+    var data32_offset = (hashOffset >> 2) + HashTable.data32_cacheIndex;
+    $hashTable.data32[data32_offset] = fileCache.overwrittenData32[fileCache.firstIndex];
 
     fileCache.firstIndex++;
     if (fileCache.firstIndex === fileCache.fileStarts.length) {

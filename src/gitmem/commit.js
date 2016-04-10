@@ -114,7 +114,8 @@ Commit.checkoutTree = function (commit, packIndices, table) {
 
 Commit.checkoutParents = function (commit) {
     var $h = $heap.array;
-    var cacheIndex = $packIndex.offsets[HashTable.objectIndex(commit.hashOffset)];
+    var data32_offset = (commit.hashOffset >> 2) + HashTable.data32_cacheIndex;
+    var cacheIndex = $hashTable.data32[data32_offset];
     var numParents = CommitFile.parseParents($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex], $h, parentHashOffset);
 
     if (numParents >= 1) {

@@ -6,7 +6,6 @@ var $h = $heap.array;
 var random = Random.create(91285);
 global.$hashTable = HashTable.create(4, random);
 global.$objects = Objects.create(4);
-global.$packIndex = PackIndex.create(4);
 global.$packData = PackData.create(128);
 global.$fileCache = FileCache.create(2, 128);
 
@@ -43,8 +42,7 @@ log(hash($h, blobHashOffset));
 
 var hashOffset = ~HashTable.findHashOffset($hashTable, $h, blobHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, blobHashOffset);
-var objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, blobStart, blobEnd);
 
 
@@ -59,13 +57,13 @@ log(hash($hashTable.hashes8, object.hashOffset));
 var type = $hashTable.hashes8[HashTable.typeOffset(object.hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
+var objectIndex = HashTable.objectIndex(object.hashOffset);
 var savedObject = $objects.table[objectIndex];
 log(savedObject.foo, object === savedObject);
 //=> foo true
 log(type & HashTable.isFileCached);
 //=> 128
-var objectIndex = HashTable.objectIndex(object.hashOffset);
-var cacheIndex = $packIndex.offsets[objectIndex];
+var cacheIndex = $hashTable.data32[(object.hashOffset >> 2) + HashTable.data32_cacheIndex];
 log($fileCache.fileEnds[cacheIndex], $fileCache.nextArrayOffset);
 //=> 20 20
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));

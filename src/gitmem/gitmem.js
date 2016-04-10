@@ -26,7 +26,6 @@ Gitmem.create = function () {
     global.$heap = Heap.create(8388608); // 8 MiB
     global.$ = $heap.array;
     global.$hashTable = HashTable.create(262144, $random);
-    global.$packIndex = PackIndex.create(262144);
     global.$packData = PackData.create(8388608);
     global.$fileCache = FileCache.create(8388608);
 
@@ -34,7 +33,6 @@ Gitmem.create = function () {
         random: $random,
         heap: $heap,
         hashTable: $hashTable,
-        packIndex: $packIndex,
         packData: $packData,
         fileCache: $fileCache,
     };
@@ -45,7 +43,6 @@ Gitmem.load = function (gitmem) {
     global.$heap = gitmem.heap;
     global.$ = gitmem.heap.array;
     global.$hashTable = gitmem.hashTable;
-    global.$packIndex = gitmem.packIndex;
     global.$packData = gitmem.packData;
     global.$fileCache = gitmem.fileCache;
 };

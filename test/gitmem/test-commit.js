@@ -6,7 +6,6 @@ var $h = $heap.array;
 var random = Random.create(28591);
 global.$hashTable = HashTable.create(8, random);
 global.$objects = Objects.create(8);
-global.$packIndex = PackIndex.create(8);
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(8, 2048);
 
@@ -64,8 +63,7 @@ log(type & HashTable.isObject);
 //=> 64
 log(type & HashTable.isFileCached);
 //=> 128
-var objectIndex = HashTable.objectIndex(commit.hashOffset);
-var cacheIndex = $packIndex.offsets[objectIndex];
+var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
 var fileStart = $fileCache.fileStarts[cacheIndex];
 var fileEnd = $fileCache.fileEnds[cacheIndex];
 log(pretty($fileCache.array, fileStart, fileEnd));
@@ -84,6 +82,7 @@ Sha1.hash($fileCache.array, fileStart, fileEnd, $h, searchHashOffset);
 var hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
 log(hashOffset, hash($hashTable.hashes8, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
+var objectIndex = HashTable.objectIndex(commit.hashOffset);
 var savedCommit = $objects.table[objectIndex];
 log(savedCommit.authorTime, savedCommit === commit);
 //=> 1454907687000 true
@@ -104,7 +103,7 @@ log(secondCommit.authorName, secondCommit.authorTimezoneOffset);
 log(hash($hashTable.hashes8, secondCommit.parent.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 
-cacheIndex = $packIndex.offsets[HashTable.objectIndex(secondCommit.hashOffset)];
+cacheIndex = $hashTable.data32[(secondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
 var secondFileStart = $fileCache.fileStarts[cacheIndex];
 var secondFileEnd = $fileCache.fileEnds[cacheIndex];
 
@@ -122,9 +121,7 @@ global.$hashTable = HashTable.create(8, random);
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, secondCommit.hashOffset);
 HashTable.setHash($hashTable, hashOffset, oldHashArray, secondCommit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-// Clear cache to ensure checkout from packData
-$hashTable.hashes8[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, secondFileStart, secondFileEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, commit.hashOffset);
@@ -136,16 +133,12 @@ $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
 
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, treeHashOffset);
 HashTable.setHash($hashTable, hashOffset, oldHashArray, treeHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
-log(objectIndex, $packData.nextOffset);
-//=> 6 164
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $h, treeStart, treeEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, $h, fooHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, fooHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, fooStart, fooEnd);
 
 
@@ -155,7 +148,7 @@ log(hash($hashTable.hashes8, gotSecondCommit.hashOffset));
 type = $hashTable.hashes8[HashTable.typeOffset(gotSecondCommit.hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
-var cacheIndex = $packIndex.offsets[HashTable.objectIndex(gotSecondCommit.hashOffset)];
+var cacheIndex = $hashTable.data32[(gotSecondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
 log(cacheIndex);
 //=> 2
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
@@ -181,3 +174,5 @@ log(gotCommit.authorName, gotCommit.committerEmail);
 //=> Jake Sandlund jake@jakesandlund.com
 
 // TODO: Checkout without file cached recreates the file
+
+// TODO: Checkout tree

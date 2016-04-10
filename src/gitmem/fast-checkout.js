@@ -16,11 +16,13 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
     var fileStart;
     var fileEnd;
     if (type & HashTable.isFileCached) {
-        var cacheIndex = $packIndex.offsets[objectIndex];
+        var data32_offset = (hashOffset >> 2) + HashTable.data32_cacheIndex;
+        var cacheIndex = $hashTable.data32[data32_offset];
         fileStart = $fileCache.fileStarts[cacheIndex];
         fileEnd = $fileCache.fileEnds[cacheIndex];
     } else {
-        var packOffset = $packIndex.offsets[objectIndex];
+        var data32_offset = (hashOffset >> 2) + HashTable.data32_packOffset;
+        var packOffset = $hashTable.data32[data32_offset];
         PackData.extractFile($packData.array, packOffset, fileRange);
         fileStart = fileRange[0];
         fileEnd = fileRange[1];

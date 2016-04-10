@@ -5,7 +5,6 @@ global.$heap = Heap.create(1024);
 var $h = $heap.array;
 var random = Random.create(29923321);
 global.$hashTable = HashTable.create(16, random);
-global.$packIndex = PackIndex.create(16);
 global.$fileCache = FileCache.create(8, 128);
 global.$objects = Objects.create(16);
 
@@ -131,10 +130,10 @@ hashOffset = HashTable.findHashOffset($hashTable, $h, thing1.fileStart + offsets
 type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
-objectIndex = HashTable.objectIndex(hashOffset);
-var cacheIndex = $packIndex.offsets[objectIndex];
+var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
 //=> blob 4\x00"foo
+objectIndex = HashTable.objectIndex(hashOffset);
 var gotString = $objects.table[objectIndex].value;
 log(gotString, typeof gotString);
 //=> foo string

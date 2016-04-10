@@ -5,6 +5,9 @@ global.HashTable = {};
 HashTable.isObject = 1 << 6;
 HashTable.isFileCached = 1 << 7;
 
+HashTable.data32_packOffset = 0;
+HashTable.data32_cacheIndex = 4;
+
 HashTable.create = function (n, random) {
     var hashBitsToShift = 32;
     var i = n;
@@ -13,8 +16,13 @@ HashTable.create = function (n, random) {
         hashBitsToShift--;
     }
 
+    var capacity = 64 * Math.ceil(n / 3);
+    var dataBuffer = new ArrayBuffer(capacity);
+
     return {
-        hashes8: new Uint8Array(64 * Math.ceil(n / 3)),
+        hashes8: new Uint8Array(capacity),
+        data8: new Uint8Array(dataBuffer),
+        data32: new Uint32Array(dataBuffer),
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,

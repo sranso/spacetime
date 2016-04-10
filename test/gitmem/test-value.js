@@ -6,7 +6,6 @@ var $h = $heap.array;
 var random = Random.create(526926);
 global.$hashTable = HashTable.create(8, random);
 global.$objects = Objects.create(8);
-global.$packIndex = PackIndex.create(8);
 global.$fileCache = FileCache.create(3, 128);
 global.$packData = PackData.create(512);
 
@@ -55,26 +54,22 @@ Sha1.hash($fileCache.array, falseStart, falseEnd, $h, falseHashOffset);
 
 var hashOffset = ~HashTable.findHashOffset($hashTable, $h, stringHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, stringHashOffset);
-var objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, stringStart, stringEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, $h, numberHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, numberHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, numberStart, numberEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, $h, trueHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, trueHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, trueStart, trueEnd);
 
 hashOffset = ~HashTable.findHashOffset($hashTable, $h, falseHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, falseHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$packIndex.offsets[objectIndex] = $packData.nextOffset;
+$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, falseStart, falseEnd);
 
 var gotString = Value.checkout($h, stringHashOffset, 'string');
@@ -86,7 +81,7 @@ var gotStringAgain = Value.checkout($h, stringHashOffset, 'string');
 log(gotStringAgain, typeof gotStringAgain);
 //=> foo string
 hashOffset = HashTable.findHashOffset($hashTable, $h, stringHashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
+var objectIndex = HashTable.objectIndex(hashOffset);
 var savedString = $objects.table[objectIndex].value;
 log(savedString, typeof savedString);
 //=> foo string

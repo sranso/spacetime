@@ -47,13 +47,9 @@ log(hash(inputPack, inputPackHashOffset));
 
 
 
-global.$packIndex = PackIndex.create($hashTable.n);
-log($packIndex.offsets.length);
-//=> 4
-
 $packData.nextOffset = 123;
 
-PackIndex.indexPack($packIndex, inputPack);
+PackIndex.indexPack(inputPack);
 
 log($fileCache.firstIndex, $fileCache.nextIndex);
 //=> 1 0
@@ -70,10 +66,9 @@ log(hashOffset, hash($hashTable.hashes8, hashOffset));
 var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 0
-var objectIndex = HashTable.objectIndex(hashOffset);
-var packOffset = $packIndex.offsets[objectIndex];
-log(objectIndex, packOffset);
-//=> 0 123
+var packOffset = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset];
+log(packOffset);
+//=> 123
 var fileRange = [];
 PackData.extractFile($packData.array, packOffset, fileRange);
 log(pretty($fileCache.array, fileRange[0], fileRange[1]));
@@ -89,11 +84,9 @@ log(hash($hashTable.hashes8, hashOffset));
 var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
-objectIndex = HashTable.objectIndex(hashOffset);
-var cacheIndex = $packIndex.offsets[objectIndex];
-packOffset = $fileCache.packIndexOffsets[cacheIndex];
-log(objectIndex, cacheIndex, packOffset);
-//=> 3 1 135
+var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
+log(cacheIndex);
+//=> 1
 log($fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]);
 //=> 30 40
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));

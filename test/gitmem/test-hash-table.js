@@ -8,6 +8,8 @@ var random = Random.create(42);
 var hashTable = HashTable.create(8, random);
 log(hashTable.hashes8.length);
 //=> 192
+log(hashTable.data8.length, hashTable.data32.length);
+//=> 192 48
 log(hashTable.n);
 //=> 8
 log(hashTable.hashBitsToShift);

@@ -10,15 +10,9 @@ PackIndex.initialize = function () {
     $heap.nextOffset += 20;
 };
 
-PackIndex.create = function (n) {
-    return {
-        offsets: new Uint32Array(n),
-    };
-};
-
 var fileRange = new Uint32Array(2);
 
-PackIndex.indexPack = function (packIndex, pack) {
+PackIndex.indexPack = function (pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
 
     var j = 12;
@@ -32,7 +26,6 @@ PackIndex.indexPack = function (packIndex, pack) {
         var hashOffset = HashTable.findHashOffset($hashTable, $heap.array, tempHashOffset);
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            var objectIndex = HashTable.objectIndex(hashOffset);
             HashTable.setHash($hashTable, hashOffset, $heap.array, tempHashOffset);
 
             var deflatedLength = nextPackOffset - j;
@@ -40,7 +33,8 @@ PackIndex.indexPack = function (packIndex, pack) {
                 PackData.resize($packData, deflatedLength);
             }
 
-            packIndex.offsets[objectIndex] = $packData.nextOffset;
+            var data32_offset = (hashOffset >> 2) + HashTable.data32_packOffset;
+            $hashTable.data32[data32_offset] = $packData.nextOffset;
 
             var i;
             for (i = 0; i < deflatedLength; i++) {
