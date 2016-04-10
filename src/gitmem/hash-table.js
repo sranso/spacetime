@@ -14,7 +14,7 @@ HashTable.create = function (n, random) {
     }
 
     return {
-        array: new Uint8Array(64 * Math.ceil(n / 3)),
+        hashes8: new Uint8Array(64 * Math.ceil(n / 3)),
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,
@@ -37,13 +37,13 @@ HashTable.findHashOffset = function (hashTable, $s, searchHashOffset) {
 
     for (j = 1; j < 1000; j++) {
         var blockOffset = 64 * Math.floor(h / 3);
-        var setHashes = hashTable.array[blockOffset] & 3;
+        var setHashes = hashTable.hashes8[blockOffset] & 3;
 
         searchBlock:
         for (k = 0; k < setHashes; k++) {
             var hashOffset = blockOffset + 4 + 20 * k;
             for (i = 0; i < 20; i++) {
-                if (hashTable.array[hashOffset + i] !== $s[searchHashOffset + i]) {
+                if (hashTable.hashes8[hashOffset + i] !== $s[searchHashOffset + i]) {
                     continue searchBlock;
                 }
             }
@@ -79,13 +79,13 @@ HashTable.typeOffset = function (hashOffset) {
 
 HashTable.setHash = function (hashTable, hashOffset, $s, sourceHashOffset) {
     var blockOffset = hashOffset & blockMask;
-    var setByte = hashTable.array[blockOffset];
+    var setByte = hashTable.hashes8[blockOffset];
     var setHashes = (setByte & 3) + 1;
-    hashTable.array[blockOffset] = (setByte & ~3) | setHashes;
+    hashTable.hashes8[blockOffset] = (setByte & ~3) | setHashes;
 
     var i;
     for (i = 0; i < 20; i++) {
-        hashTable.array[hashOffset + i] = $s[sourceHashOffset + i];
+        hashTable.hashes8[hashOffset + i] = $s[sourceHashOffset + i];
     }
     hashTable.load++;
 };

@@ -117,7 +117,7 @@ var searchHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($h, thing1.fileStart, thing1.fileEnd, $h, searchHashOffset);
 hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
-var type = $hashTable.array[HashTable.typeOffset(hashOffset)];
+var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
 objectIndex = HashTable.objectIndex(hashOffset);
@@ -128,7 +128,7 @@ log(hash($h, thing1.fileStart + offsets.string));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
 hashOffset = HashTable.findHashOffset($hashTable, $h, thing1.fileStart + offsets.string);
-type = $hashTable.array[HashTable.typeOffset(hashOffset)];
+type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
 objectIndex = HashTable.objectIndex(hashOffset);

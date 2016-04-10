@@ -71,7 +71,7 @@ global.prettyObjectList = function (objects) {
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
-            var hash = Convert.hashToString($hashTable.array, object.hashOffset);
+            var hash = Convert.hashToString($hashTable.hashes8, object.hashOffset);
             pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }

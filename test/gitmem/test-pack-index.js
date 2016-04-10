@@ -65,9 +65,9 @@ log($fileCache.fileStarts[0], $fileCache.fileStarts[1]);
 
 // foo
 var hashOffset = HashTable.findHashOffset($hashTable, $h, fooHashOffset);
-log(hashOffset, hash($hashTable.array, hashOffset));
+log(hashOffset, hash($hashTable.hashes8, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
-var type = $hashTable.array[HashTable.typeOffset(hashOffset)];
+var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 0
 var objectIndex = HashTable.objectIndex(hashOffset);
@@ -84,9 +84,9 @@ log(pretty($fileCache.array, fileRange[0], fileRange[1]));
 hashOffset = HashTable.findHashOffset($hashTable, $h, barHashOffset);
 log(hashOffset, $fileCache.hashOffsets[1]);
 //=> 68 68
-log(hash($hashTable.array, hashOffset));
+log(hash($hashTable.hashes8, hashOffset));
 //=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
-var type = $hashTable.array[HashTable.typeOffset(hashOffset)];
+var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
 objectIndex = HashTable.objectIndex(hashOffset);

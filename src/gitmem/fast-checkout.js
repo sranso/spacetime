@@ -8,7 +8,7 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
     var hashOffset = HashTable.findHashOffset($hashTable, $s, searchHashOffset);
     var objectIndex = HashTable.objectIndex(hashOffset);
     var typeOffset = HashTable.typeOffset(hashOffset);
-    var type = $hashTable.array[typeOffset];
+    var type = $hashTable.hashes8[typeOffset];
     if (type & HashTable.isObject) {
         return $objects.table[objectIndex];
     }
@@ -31,7 +31,7 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
     var thing = checkoutFile($fileCache.array, fileStart, fileEnd);
     thing.hashOffset = hashOffset;
 
-    $hashTable.array[typeOffset] |= HashTable.isObject;
+    $hashTable.hashes8[typeOffset] |= HashTable.isObject;
     $objects.table[objectIndex] = thing;
 
     return thing;

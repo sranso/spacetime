@@ -77,15 +77,15 @@ Commit.setAll = function (original, modifications) {
         hashOffset = ~hashOffset;
         HashTable.setHash($hashTable, hashOffset, $h, tempHashOffset);
         $objects.table[HashTable.objectIndex(hashOffset)] = commit;
-        $hashTable.array[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+        $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
         FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     } else {
         var typeOffset = HashTable.typeOffset(hashOffset);
-        if ($hashTable.array[typeOffset] & HashTable.isObject) {
+        if ($hashTable.hashes8[typeOffset] & HashTable.isObject) {
             return $objects.table[HashTable.objectIndex(hashOffset)];
         }
         $objects.table[HashTable.objectIndex(hashOffset)] = commit;
-        $hashTable.array[typeOffset] |= HashTable.isObject;
+        $hashTable.hashes8[typeOffset] |= HashTable.isObject;
         FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
     }
 

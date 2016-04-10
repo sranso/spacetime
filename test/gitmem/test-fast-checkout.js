@@ -54,9 +54,9 @@ log(object.foo);
 //=> foo
 log(object.hashOffset, hashOffset);
 //=> 4 4
-log(hash($hashTable.array, object.hashOffset));
+log(hash($hashTable.hashes8, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
-var type = $hashTable.array[HashTable.typeOffset(object.hashOffset)];
+var type = $hashTable.hashes8[HashTable.typeOffset(object.hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
 var savedObject = $objects.table[objectIndex];
@@ -79,17 +79,17 @@ var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
 global.$packData = packData;
 log(object.foo, object === savedObject);
 //=> foo true
-log(hash($hashTable.array, object.hashOffset));
+log(hash($hashTable.hashes8, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
 
 // Checkout from $fileCache
-$hashTable.array[HashTable.typeOffset(object.hashOffset)] &= ~HashTable.isObject;
+$hashTable.hashes8[HashTable.typeOffset(object.hashOffset)] &= ~HashTable.isObject;
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
 log(object.foo, object === savedObject);
 //=> foo false
-log(hash($hashTable.array, object.hashOffset));
+log(hash($hashTable.hashes8, object.hashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
-var type = $hashTable.array[HashTable.typeOffset(object.hashOffset)];
+var type = $hashTable.hashes8[HashTable.typeOffset(object.hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
