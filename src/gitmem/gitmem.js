@@ -3,14 +3,12 @@ global.Gitmem = {};
 (function () {
 
 Gitmem.initialize = function () {
-    var bootSystem = GarbageCollector.create(0, 1024, random);
     var bootHeap = Heap.create(1024);
     var random = Random.create(Gitmem._randomSeed());
 
     global.$heap = bootHeap;
     global.$ = bootHeap.array;
 
-    GarbageCollector.initialize();
     Blob.initialize();
     Tree.initialize();
     PackIndex.initialize();
@@ -31,8 +29,6 @@ Gitmem.create = function () {
     global.$packIndex = PackIndex.create(262144);
     global.$packData = PackData.create(8388608);
     global.$fileCache = FileCache.create(8388608);
-
-    GarbageCollector.collect(8388608);
 
     return {
         random: $random,
