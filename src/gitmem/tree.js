@@ -25,11 +25,15 @@ Tree.initialize = function () {
     var hashOffset = Tree.emptyStart + offsets['.empty'];
     Tree.setHash($h, hashOffset, $h, Blob.emptyHashOffset);
     Sha1.hash($h, Tree.emptyStart, Tree.emptyEnd, $h, Tree.emptyHashOffset);
+    log(hash($h, Tree.emptyHashOffset));
+    //=> 70bfe9793f3fc43d2a2306a58186fe0c88b86999
 
     treeRange = Tree.create({}, offsets, []);
     Tree._actuallyEmptyStart = treeRange[0];
     Tree._actuallyEmptyEnd = treeRange[1];
     Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
+    log(hash($h, Tree._actuallyEmptyHashOffset));
+    //=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 };
 
 var treePrefix = Convert.stringToArray('tree ');

@@ -28,8 +28,10 @@ CommitFile.initialize = function () {
     $heap.nextOffset = CommitFile._initialEnd;
 
     CommitFile.initialHashOffset = $heap.nextOffset;
-    Sha1.hash($h, CommitFile._initialStart, CommitFile._initialEnd, $h, CommitFile.initialHashOffset);
     $heap.nextOffset += 20;
+    Sha1.hash($h, CommitFile._initialStart, CommitFile._initialEnd, $h, CommitFile.initialHashOffset);
+    log(hash($h, CommitFile.initialHashOffset));
+    //=> 362f278d085c99a7adfbb1d74a57dd68db0109a9
 };
 
 CommitFile.timezoneString = function (timezoneOffset) {
