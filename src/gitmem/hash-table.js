@@ -16,6 +16,12 @@ HashTable.create = function (n, random) {
         hashBitsToShift--;
     }
 
+    var objects = new Array(n);
+    var i;
+    for (i = 0; i < n; i++) {
+        objects[i] = null;
+    }
+
     var capacity = 64 * Math.ceil(n / 3);
     var dataBuffer = new ArrayBuffer(capacity);
 
@@ -23,6 +29,7 @@ HashTable.create = function (n, random) {
         hashes8: new Uint8Array(capacity),
         data8: new Uint8Array(dataBuffer),
         data32: new Uint32Array(dataBuffer),
+        objects: objects,
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,

@@ -5,7 +5,6 @@ global.$heap = Heap.create(4096);
 var $h = $heap.array;
 var random = Random.create(28591);
 global.$hashTable = HashTable.create(8, random);
-global.$objects = Objects.create(8);
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(8, 2048);
 
@@ -83,7 +82,7 @@ var hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
 log(hashOffset, hash($hashTable.hashes8, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
 var objectIndex = HashTable.objectIndex(commit.hashOffset);
-var savedCommit = $objects.table[objectIndex];
+var savedCommit = $hashTable.objects[objectIndex];
 log(savedCommit.authorTime, savedCommit === commit);
 //=> 1454907687000 true
 
@@ -128,7 +127,7 @@ hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, commit.hashOffs
 HashTable.setHash($hashTable, hashOffset, oldHashArray, commit.hashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
 // Save first commit
-$objects.table[objectIndex] = commit;
+$hashTable.objects[objectIndex] = commit;
 $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
 
 hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, treeHashOffset);

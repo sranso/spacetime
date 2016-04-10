@@ -51,11 +51,11 @@ global.hash = function (array, hashOffset) {
     return hex(array, hashOffset, hashOffset + 20);
 };
 
-global.prettyObjectList = function (objects) {
+global.prettyObjectList = function (hashTable) {
     var pretty = [];
     var i;
-    for (i = 0; i < objects.length; i++) {
-        var object = objects[i];
+    for (i = 0; i < hashTable.objects.length; i++) {
+        var object = hashTable.objects[i];
         if (object) {
             var value;
             if (object.hasOwnProperty('value')) {
@@ -71,7 +71,7 @@ global.prettyObjectList = function (objects) {
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
-            var hash = Convert.hashToString($hashTable.hashes8, object.hashOffset);
+            var hash = Convert.hashToString(hashTable.hashes8, object.hashOffset);
             pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }

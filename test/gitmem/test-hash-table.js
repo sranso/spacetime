@@ -14,6 +14,10 @@ log(hashTable.n);
 //=> 8
 log(hashTable.hashBitsToShift);
 //=> 29
+log(hashTable.objects.length);
+//=> 8
+log(hashTable.objects[0], hashTable.objects[3]);
+//=> null null
 
 Convert.stringToExistingArray($h, 0, 'abc');
 var searchHashOffset = 3;
@@ -44,6 +48,7 @@ log(hashOffset);
 
 
 
+
 // var hashInBlock1 = a9993e364706816aba3e25717850c26c9cd0d89d
 var hashInBlock2 = new Uint8Array([0x76,0xd1,0x07,0x98,0x15,0xa1,0xb0,0x42,0x0f,0x2b,0xe8,0x95,0x1f,0x4a,0x98,0x56,0xd3,0xf8,0x67,0x9c]);
 var hashInBlock3 = new Uint8Array([0xc2,0x53,0x6d,0xf4,0x3b,0xa3,0x2d,0x99,0x4d,0xe2,0xc5,0xc9,0xbf,0xf8,0x38,0x83,0x12,0xb1,0xb6,0x34]);
@@ -64,3 +69,22 @@ hashOffset = ~HashTable.findHashOffset(hashTable, $h, 80);
 log(hashOffset, HashTable.objectIndex(hashOffset));
 //=> 4 0
 HashTable.setHash(hashTable, hashOffset, $h, 80);
+
+
+
+
+var object1 = {
+    hashOffset: hashOffset,
+    foo: 'bar',
+};
+hashOffset = HashTable.findHashOffset(hashTable, $h, searchHashOffset);
+var object2 = {
+    hashOffset: hashOffset,
+    some: 'thing',
+};
+
+hashTable.objects[0] = object1;
+hashTable.objects[3] = object2;
+log(prettyObjectList(hashTable));
+//=> 0: #<dcd67d foo=bar>
+//=> 3: #<a9993e some=thing>

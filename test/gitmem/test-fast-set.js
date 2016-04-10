@@ -6,7 +6,6 @@ var $h = $heap.array;
 var random = Random.create(29923321);
 global.$hashTable = HashTable.create(16, random);
 global.$fileCache = FileCache.create(8, 128);
-global.$objects = Objects.create(16);
 
 Tree.initialize();
 FastSet.initialize();
@@ -84,7 +83,7 @@ log(hash($h, none.fileStart + offsets.bool));
 
 var hashOffset = HashTable.findHashOffset($hashTable, $h, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex(hashOffset);
-var gotBool = $objects.table[objectIndex].value;
+var gotBool = $hashTable.objects[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> false 'boolean'
 
@@ -120,7 +119,7 @@ var type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
 objectIndex = HashTable.objectIndex(hashOffset);
-log($objects.table[objectIndex] === thing1);
+log($hashTable.objects[objectIndex] === thing1);
 //=> true
 
 log(hash($h, thing1.fileStart + offsets.string));
@@ -134,7 +133,7 @@ var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheInd
 log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
 //=> blob 4\x00"foo
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotString = $objects.table[objectIndex].value;
+var gotString = $hashTable.objects[objectIndex].value;
 log(gotString, typeof gotString);
 //=> foo string
 
@@ -156,12 +155,12 @@ $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, numberStart, numberEnd, $h, numberHashOffset);
 hashOffset = HashTable.findHashOffset($hashTable, $h, numberHashOffset);
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotNumber = $objects.table[objectIndex].value;
+var gotNumber = $hashTable.objects[objectIndex].value;
 log(gotNumber, typeof gotNumber);
 //=> 42 'number'
 
 hashOffset = HashTable.findHashOffset($hashTable, $h, thing2.fileStart + offsets.bool);
 objectIndex = HashTable.objectIndex(hashOffset);
-var gotBool = $objects.table[objectIndex].value;
+var gotBool = $hashTable.objects[objectIndex].value;
 log(gotBool, typeof gotBool);
 //=> true 'boolean'

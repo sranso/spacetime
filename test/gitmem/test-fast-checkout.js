@@ -5,7 +5,6 @@ global.$heap = Heap.create(256);
 var $h = $heap.array;
 var random = Random.create(91285);
 global.$hashTable = HashTable.create(4, random);
-global.$objects = Objects.create(4);
 global.$packData = PackData.create(128);
 global.$fileCache = FileCache.create(2, 128);
 
@@ -58,7 +57,7 @@ var type = $hashTable.hashes8[HashTable.typeOffset(object.hashOffset)];
 log(type & HashTable.isObject);
 //=> 64
 var objectIndex = HashTable.objectIndex(object.hashOffset);
-var savedObject = $objects.table[objectIndex];
+var savedObject = $hashTable.objects[objectIndex];
 log(savedObject.foo, object === savedObject);
 //=> foo true
 log(type & HashTable.isFileCached);
@@ -70,7 +69,7 @@ log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileE
 //=> blob 3\x00foo
 
 
-// Checkout from $objects.table
+// Checkout from $hashTable.objects
 var packData = $packData;
 global.$packData = null;
 var object = FastCheckout.checkout($h, blobHashOffset, checkoutFile);
