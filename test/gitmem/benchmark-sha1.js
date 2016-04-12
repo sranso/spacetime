@@ -5,6 +5,7 @@ var crypto = require('crypto');
 require('../helper');
 
 // tinyTest: 20 bytes  (once tested at 55 bytes = max 1 block)
+// maxTreeTest: 183 bytes
 // smallTest: 288 bytes
 // mediumTest: 566 bytes
 // largeTest: 6094 bytes
@@ -33,8 +34,15 @@ require('../helper');
 // medium: 350.995ms  /  50000      =  7.0  us      12.  ns/B
 // large: 729.027ms   /  10000      = 73.   us      12.  ns/B
 
+// Sha1.hash with max tree. Added later when small was
+// taking 354 ms (at 90% of the time).
+// max tree: 432.719ms / 200000     =  2.2  us      12.  ns/B
+
 
 var tinyTest = 'blob 12\0foo_function';
+
+var maxTreeTest =
+'tree 174\x00100644 property\x00\xDB\xA1>\xD2\xDD\xF7\x83\xEE\x81\x18\xC6\xA5\x81\xDB\xF7S\x05\xF8\x16\xA340000 detached\x00\xD9\xFAQ\x82\xE2\x01\xCF\xED*\x99\xBA*\xC3\xC1\xE4\xD6O\x04\b\xCB100644 args\x00]z\xE5\xF2S\xED\xF1^\x0E\x8F\xB3\xB5\x90Q\x8Au\xC7\x15\x96{40000 results\x00\xF3\x0FG.N\xB19\xD7\xC4&\x84\x83^\x87\xBC\xB7\xD4\x11\x27s100644 transform\x00\xB9\x9D\t|\xC9\xACj_\xE9k\xC85EZ\xF6h\xBD\x00Q\xF7';
 
 // contents of git tree
 var smallTest =
@@ -248,6 +256,7 @@ var rushaRawDigest8 = function (M, H, H_offset) {
 };
 
 var tinyArray = Convert.stringToArray(tinyTest);
+var maxTreeArray = Convert.stringToArray(maxTreeTest);
 var smallArray = Convert.stringToArray(smallTest);
 var mediumArray = Convert.stringToArray(mediumTest);
 var largeArray = Convert.stringToArray(largeTest);
@@ -267,6 +276,17 @@ for (i = 0; i < 500000; i++) {
     //shasum.digest('hex');
 }
 console.timeEnd('tiny');
+
+console.time('max tree');
+for (i = 0; i < 200000; i++) {
+    Sha1.hash(maxTreeArray, 0, maxTreeArray.length, hashArray, 0);
+    //Veness.hash(maxTreeTest);
+    //rushaRawDigest8(maxTreeArray, hash, 0);
+    //shasum = crypto.createHash('sha1');
+    //shasum.update(maxTreeArray);
+    //shasum.digest('hex');
+}
+console.timeEnd('max tree');
 
 
 console.time('small');
