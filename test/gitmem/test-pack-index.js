@@ -55,7 +55,7 @@ log($fileCache.firstIndex, $fileCache.nextIndex);
 //=> 1 0
 log($fileCache.nextArrayOffset);
 //=> 40
-log($fileCache.fileStarts[0], $fileCache.fileStarts[1]);
+log($fileCache.fileRanges[0], $fileCache.fileRanges[2]);
 //=> 20 30
 
 
@@ -87,7 +87,9 @@ log(type & HashTable.isFileCached);
 var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
 log(cacheIndex);
 //=> 1
-log($fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]);
+var fileStart = $fileCache.fileRanges[2 * cacheIndex];
+var fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
+log(fileStart, fileEnd);
 //=> 30 40
-log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
+log(pretty($fileCache.array, fileStart, fileEnd));
 //=> blob 3\x00bar

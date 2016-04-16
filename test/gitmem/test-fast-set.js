@@ -130,7 +130,9 @@ type = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(type & HashTable.isFileCached);
 //=> 128
 var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
-log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
+var fileStart = $fileCache.fileRanges[2 * cacheIndex];
+var fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
+log(pretty($fileCache.array, fileStart, fileEnd));
 //=> blob 4\x00"foo
 objectIndex = HashTable.objectIndex(hashOffset);
 var gotString = $hashTable.objects[objectIndex].value;

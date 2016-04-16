@@ -63,9 +63,11 @@ log(savedObject.foo, object === savedObject);
 log(type & HashTable.isFileCached);
 //=> 128
 var cacheIndex = $hashTable.data32[(object.hashOffset >> 2) + HashTable.data32_cacheIndex];
-log($fileCache.fileEnds[cacheIndex], $fileCache.nextArrayOffset);
+var fileStart = $fileCache.fileRanges[2 * cacheIndex];
+var fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
+log(fileEnd, $fileCache.nextArrayOffset);
 //=> 20 20
-log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
+log(pretty($fileCache.array, fileStart, fileEnd));
 //=> blob 3\x00foo
 
 

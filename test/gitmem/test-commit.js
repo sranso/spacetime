@@ -63,8 +63,8 @@ log(type & HashTable.isObject);
 log(type & HashTable.isFileCached);
 //=> 128
 var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
-var fileStart = $fileCache.fileStarts[cacheIndex];
-var fileEnd = $fileCache.fileEnds[cacheIndex];
+var fileStart = $fileCache.fileRanges[2 * cacheIndex];
+var fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
 log(pretty($fileCache.array, fileStart, fileEnd));
 //=> commit 237\x00tree 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 //=> parent 362f278d085c99a7adfbb1d74a57dd68db0109a9
@@ -103,8 +103,8 @@ log(hash($hashTable.hashes8, secondCommit.parent.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 
 cacheIndex = $hashTable.data32[(secondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
-var secondFileStart = $fileCache.fileStarts[cacheIndex];
-var secondFileEnd = $fileCache.fileEnds[cacheIndex];
+var secondFileStart = $fileCache.fileRanges[2 * cacheIndex];
+var secondFileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
 
 
 
@@ -150,7 +150,9 @@ log(type & HashTable.isFileCached);
 var cacheIndex = $hashTable.data32[(gotSecondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
 log(cacheIndex);
 //=> 2
-log(pretty($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex]));
+fileStart = $fileCache.fileRanges[2 * cacheIndex];
+fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
+log(pretty($fileCache.array, fileStart, fileEnd));
 //=> commit 230\x00tree 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 //=> parent 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 //=> author snakes <jake@jakesandlund.com> 1454907687 -0800

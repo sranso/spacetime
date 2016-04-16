@@ -2,13 +2,15 @@
 global.FileCache = {};
 (function () {
 
+FileCache.hasOverwrittenData32 = 1 << 2;
+
 FileCache.create = function (maxNumCached, arrayCapacity) {
     return {
         array: new Uint8Array(arrayCapacity),
-        fileStarts: new Uint32Array(maxNumCached),
-        fileEnds: new Uint32Array(maxNumCached),
+        fileRanges: new Uint32Array(2 * maxNumCached),
         hashOffsets: new Uint32Array(maxNumCached),
         overwrittenData32: new Uint32Array(maxNumCached),
+        flags: new Uint8Array(maxNumCached),
         nextArrayOffset: 0,
         nextIndex: 0,
         firstIndex: 0,
@@ -22,13 +24,20 @@ FileCache.registerCachedFile = function (fileCache, fileStart, fileEnd, hashOffs
     $hashTable.data32[data32_offset] = currentIndex;
     $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isFileCached;
 
-    fileCache.fileStarts[currentIndex] = fileStart;
-    fileCache.fileEnds[currentIndex] = fileEnd;
+    var doubleIndex = currentIndex * 2;
+    fileCache.fileRanges[doubleIndex] = fileStart;
+    fileCache.fileRanges[doubleIndex + 1] = fileEnd;
     fileCache.hashOffsets[currentIndex] = hashOffset;
-    fileCache.overwrittenData32[currentIndex] = overwrittenData32;
+
+    var flags = 0;
+    if (overwrittenData32) {
+        flags |= FileCache.hasOverwrittenData32;
+        fileCache.overwrittenData32[currentIndex] = overwrittenData32;
+    }
+    fileCache.flags[currentIndex] = flags;
 
     fileCache.nextIndex++;
-    if (fileCache.nextIndex === fileCache.fileStarts.length) {
+    if (fileCache.nextIndex === fileCache.hashOffsets.length) {
         fileCache.nextIndex = 0;
     }
 
@@ -55,7 +64,8 @@ FileCache.malloc = function (fileCache, mallocLength) {
             fileCache.array = array;
         } else {
             while (fileCache.firstIndex !== fileCache.nextIndex) {
-                if (fileCache.fileStarts[fileCache.firstIndex] >= fileCache.nextArrayOffset) {
+                var fileStart = fileCache.fileRanges[2 * fileCache.firstIndex];
+                if (fileStart >= fileCache.nextArrayOffset) {
                     clearFirstCacheObject(fileCache);
                 } else {
                     break;
@@ -68,7 +78,7 @@ FileCache.malloc = function (fileCache, mallocLength) {
     var mallocStart = fileCache.nextArrayOffset;
     var mallocEnd = mallocStart + mallocLength;
     while (fileCache.firstIndex !== fileCache.nextIndex) {
-        var firstStart = fileCache.fileStarts[fileCache.firstIndex];
+        var firstStart = fileCache.fileRanges[2 * fileCache.firstIndex];
         if (mallocStart <= firstStart && firstStart < mallocEnd) {
             clearFirstCacheObject(fileCache);
         } else {
@@ -81,10 +91,15 @@ var clearFirstCacheObject = function (fileCache) {
     var hashOffset = fileCache.hashOffsets[fileCache.firstIndex];
     $hashTable.hashes8[HashTable.typeOffset(hashOffset)] &= ~HashTable.isFileCached;
     var data32_offset = (hashOffset >> 2) + HashTable.data32_cacheIndex;
-    $hashTable.data32[data32_offset] = fileCache.overwrittenData32[fileCache.firstIndex];
+    var flags = fileCache.flags[fileCache.firstIndex];
+    var overwrittenData32 = 0;
+    if (flags & FileCache.hasOverwrittenData32) {
+        overwrittenData32 = fileCache.overwrittenData32[fileCache.firstIndex];
+    }
+    $hashTable.data32[data32_offset] = overwrittenData32;
 
     fileCache.firstIndex++;
-    if (fileCache.firstIndex === fileCache.fileStarts.length) {
+    if (fileCache.firstIndex === fileCache.hashOffsets.length) {
         fileCache.firstIndex = 0;
     }
 };

@@ -5,7 +5,7 @@ var random = Random.create(526926);
 global.$hashTable = HashTable.create(4, random);
 
 var fileCache = FileCache.create(3, 8);
-log(fileCache.fileStarts.length);
+log(fileCache.hashOffsets.length);
 //=> 3
 log(fileCache.array.length);
 //=> 8
@@ -27,12 +27,12 @@ log(type & HashTable.isFileCached);
 //=> 128
 log($hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex]);
 //=> 0
-log(fileCache.fileStarts[0]);
-//=> 0
-log(fileCache.fileEnds[0]);
-//=> 7
+log(fileCache.fileRanges[0], fileCache.fileRanges[1]);
+//=> 0 7
 log(fileCache.hashOffsets[0]);
 //=> 24
+log(fileCache.flags[0] & FileCache.hasOverwrittenData32);
+//=> 4
 log(fileCache.overwrittenData32[0]);
 //=> 12345
 
@@ -68,8 +68,8 @@ log(fileCache.firstIndex, fileCache.nextIndex);
 //=> 1 2
 log($hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex]);
 //=> 1
-log(fileCache.fileStarts[2]);
-//=> 0
+log(fileCache.fileRanges[2], fileCache.fileRanges[3]);
+//=> 30 32
 
 // Register file at beginning
 fileStart = 0;

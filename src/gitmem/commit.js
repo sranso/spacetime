@@ -116,7 +116,10 @@ Commit.checkoutParents = function (commit) {
     var $h = $heap.array;
     var data32_offset = (commit.hashOffset >> 2) + HashTable.data32_cacheIndex;
     var cacheIndex = $hashTable.data32[data32_offset];
-    var numParents = CommitFile.parseParents($fileCache.array, $fileCache.fileStarts[cacheIndex], $fileCache.fileEnds[cacheIndex], $h, parentHashOffset);
+    var doubleIndex = 2 * cacheIndex;
+    var fileStart = $fileCache.fileRanges[doubleIndex];
+    var fileEnd = $fileCache.fileRanges[doubleIndex + 1];
+    var numParents = CommitFile.parseParents($fileCache.array, fileStart, fileEnd, $h, parentHashOffset);
 
     if (numParents >= 1) {
         commit.parent = Commit.checkout($h, parentHashOffset);

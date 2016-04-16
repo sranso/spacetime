@@ -18,8 +18,9 @@ FastCheckout.checkout = function ($s, searchHashOffset, checkoutFile) {
     if (type & HashTable.isFileCached) {
         var data32_offset = (hashOffset >> 2) + HashTable.data32_cacheIndex;
         var cacheIndex = $hashTable.data32[data32_offset];
-        fileStart = $fileCache.fileStarts[cacheIndex];
-        fileEnd = $fileCache.fileEnds[cacheIndex];
+        var doubleIndex = 2 * cacheIndex;
+        fileStart = $fileCache.fileRanges[doubleIndex];
+        fileEnd = $fileCache.fileRanges[doubleIndex + 1];
     } else {
         var data32_offset = (hashOffset >> 2) + HashTable.data32_packOffset;
         var packOffset = $hashTable.data32[data32_offset];
