@@ -14,7 +14,7 @@ var buildAll = function (buildCallback) {
         async.apply(fs.mkdir, 'dist'),
         async.apply(fs.mkdir, 'dist/vendor'),
         function (callback) {
-            fs.readdir('spacetime/src/vendor', function (err, vendorFiles) {
+            fs.readdir('spacetime/app/vendor', function (err, vendorFiles) {
                 if (err) throw err;
                 async.eachLimit(vendorFiles, 8, buildVendor, callback);
             });
@@ -28,11 +28,11 @@ var minifiedScriptShas = {};
 var minifiedVendors = {};
 
 var buildVendor = function (vendor, callback) {
-    minifyScripts(['spacetime/src/vendor/' + vendor], function (err, result) {
+    minifyScripts(['spacetime/app/vendor/' + vendor], function (err, result) {
         if (err) throw err;
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
-        minifiedVendors['./src/vendor/' + vendor] = name;
+        minifiedVendors['./app/vendor/' + vendor] = name;
         fs.writeFile('dist/' + name, result.text, 'utf8', callback);
     });
 };
@@ -90,7 +90,7 @@ var ignoreDirectories = [
     'spacetime/dev',
     'spacetime/log',
     'spacetime/node_modules',
-    'spacetime/src',
+    'spacetime/app',
     'spacetime/test',
 ];
 
@@ -172,7 +172,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
     var scripts = [];
     $('script').each(function () {
         var src = $(this).attr('src');
-        if (src && src.indexOf('./src/') === 0) {
+        if (src && src.indexOf('./app/') === 0) {
             scripts.push(path.join(dir, src));
         }
     });
@@ -217,7 +217,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                 if (!src) {
                     return;
                 }
-                if (src.indexOf('./src/vendor/') === 0) {
+                if (src.indexOf('./app/vendor/') === 0) {
                     $(this).attr('src', '/' + minifiedVendors[src]);
                 } else if (first) {
                     $(this).attr('src', '/' + name);

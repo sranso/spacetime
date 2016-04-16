@@ -6,7 +6,7 @@ var helper = require('./helper');
 helper.logToTerminal = false;
 
 var paths = [
-    path.join(__dirname, '../src/test'),
+    path.join(__dirname, '../app/test'),
     path.join(__dirname, '../gitmem/test'),
 ].join(' ');
 

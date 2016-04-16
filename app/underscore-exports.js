@@ -6,5 +6,5 @@ if (typeof exports === 'undefined') {
 } else {
     // TODO: implement a seedable PRNG, and replace _.random
     // with something else.
-    global._ = {random: require('../src/vendor/underscore').random};
+    global._ = {random: require('../app/vendor/underscore').random};
 }
