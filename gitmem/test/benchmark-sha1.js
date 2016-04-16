@@ -2,7 +2,7 @@
 var Veness = require('../../docs/sha-1/veness');
 var Rusha = require('../../docs/sha-1/rusha');
 var crypto = require('crypto');
-require('../helper');
+require('../../test/helper');
 
 // tinyTest: 20 bytes  (once tested at 55 bytes = max 1 block)
 // maxTreeTest: 183 bytes

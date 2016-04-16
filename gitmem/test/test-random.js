@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var random = Random.create(1);
 log('1st random number ' + Random.uint32(random).toString(16));

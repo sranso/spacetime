@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var getResponseString = (
     '001e# service=git-upload-pack\n' +

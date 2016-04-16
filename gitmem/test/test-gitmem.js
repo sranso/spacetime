@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var oldSeedFunction = Gitmem._randomSeed;
 Gitmem._randomSeed = function () {

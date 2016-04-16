@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 log(Convert.stringToArray('Foo'));
 //=> Uint8Array { '0': 70, '1': 111, '2': 111 }

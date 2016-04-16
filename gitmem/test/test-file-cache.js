@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var random = Random.create(526926);
 global.$hashTable = HashTable.create(4, random);

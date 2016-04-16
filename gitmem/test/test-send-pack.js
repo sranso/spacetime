@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 log(SendPack.postPath);
 //=> /git-receive-pack

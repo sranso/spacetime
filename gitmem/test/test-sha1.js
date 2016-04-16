@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var heapArray = new Uint8Array(200);
 var $h = heapArray;

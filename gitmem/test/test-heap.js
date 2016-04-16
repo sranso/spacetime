@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 var heap = Heap.create(10);
 log(heap.nextOffset, heap.capacity, heap.array.length);

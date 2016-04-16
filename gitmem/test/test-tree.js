@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 global.$fileCache = FileCache.create(3, 32);
 global.$heap = Heap.create(512);

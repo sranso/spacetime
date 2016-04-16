@@ -1,5 +1,5 @@
 'use strict';
-var helper = require('../helper');
+var helper = require('../../test/helper');
 
 // Math.random:     91.575ms   9 ns / call
 // Random.uint32:   180.529ms  18 ns / call

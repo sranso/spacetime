@@ -1,5 +1,5 @@
 'use strict';
-require('../helper');
+require('../../test/helper');
 
 global.$Heap = Heap.create(512);
 global.$ = $Heap.array;
