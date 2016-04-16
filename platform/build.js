@@ -14,7 +14,7 @@ var buildAll = function (buildCallback) {
         async.apply(fs.mkdir, 'dist'),
         async.apply(fs.mkdir, 'dist/vendor'),
         function (callback) {
-            fs.readdir('spacetime/vendor', function (err, vendorFiles) {
+            fs.readdir('spacetime/src/vendor', function (err, vendorFiles) {
                 if (err) throw err;
                 async.eachLimit(vendorFiles, 8, buildVendor, callback);
             });
@@ -28,11 +28,11 @@ var minifiedScriptShas = {};
 var minifiedVendors = {};
 
 var buildVendor = function (vendor, callback) {
-    minifyScripts(['spacetime/vendor/' + vendor], function (err, result) {
+    minifyScripts(['spacetime/src/vendor/' + vendor], function (err, result) {
         if (err) throw err;
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
-        minifiedVendors['./vendor/' + vendor] = name;
+        minifiedVendors['./src/vendor/' + vendor] = name;
         fs.writeFile('dist/' + name, result.text, 'utf8', callback);
     });
 };
@@ -92,7 +92,6 @@ var ignoreDirectories = [
     'spacetime/node_modules',
     'spacetime/src',
     'spacetime/test',
-    'spacetime/vendor',
 ];
 
 var buildAllHtml = function (buildCallback) {
@@ -218,7 +217,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                 if (!src) {
                     return;
                 }
-                if (src.indexOf('./vendor/') === 0) {
+                if (src.indexOf('./src/vendor/') === 0) {
                     $(this).attr('src', '/' + minifiedVendors[src]);
                 } else if (first) {
                     $(this).attr('src', '/' + name);
