@@ -8,8 +8,6 @@ global.$hashTable = HashTable.create(4, random);
 global.$packData = PackData.create(128);
 global.$fileCache = FileCache.create(2, 128);
 
-PackIndex.initialize();
-
 var clone = function (original) {
     return {
         hashOffset: -1,

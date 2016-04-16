@@ -11,7 +11,7 @@ Gitmem.initialize = function () {
 
     Blob.initialize();
     Tree.initialize();
-    PackIndex.initialize();
+    Unpack.initialize();
 
     if (bootHeap.capacity !== 1024 || bootHeap.nextOffset !== bootHeap.capacity) {
         throw new Error('Unexpected boot heap size: ' + bootHeap.nextOffset);

@@ -8,7 +8,7 @@ global.$hashTable = HashTable.create(4, random);
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(2, 22);
 
-PackIndex.initialize();
+Unpack.initialize();
 
 var fooRange = Blob.create('foo', []);
 var fooStart = fooRange[0];
@@ -49,7 +49,7 @@ log(hash(inputPack, inputPackHashOffset));
 
 $packData.nextOffset = 123;
 
-PackIndex.indexPack(inputPack);
+Unpack.unpack(inputPack);
 
 log($fileCache.firstIndex, $fileCache.nextIndex);
 //=> 1 0

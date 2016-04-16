@@ -1,10 +1,10 @@
 'use strict';
-global.PackIndex = {};
+global.Unpack = {};
 (function () {
 
 var tempHashOffset = -1;
 
-PackIndex.initialize = function () {
+Unpack.initialize = function () {
     $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
     tempHashOffset = $heap.nextOffset;
     $heap.nextOffset += 20;
@@ -12,7 +12,7 @@ PackIndex.initialize = function () {
 
 var fileRange = new Uint32Array(2);
 
-PackIndex.indexPack = function (pack) {
+Unpack.unpack = function (pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
 
     var j = 12;

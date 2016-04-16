@@ -8,8 +8,6 @@ global.$hashTable = HashTable.create(8, random);
 global.$fileCache = FileCache.create(3, 128);
 global.$packData = PackData.create(512);
 
-PackIndex.initialize();
-
 var valueObject = Value.createObject('foo bar');
 log(valueObject.value);
 //=> foo bar

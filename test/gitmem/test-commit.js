@@ -8,7 +8,6 @@ global.$hashTable = HashTable.create(8, random);
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(8, 2048);
 
-PackIndex.initialize();
 CommitFile.initialize();
 Commit.initialize();
 
