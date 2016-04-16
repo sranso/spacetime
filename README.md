@@ -70,7 +70,7 @@ command -nargs=0 Test execute 'silent !dev/run-test-for-vim.sh %' | redraw!
 
 ## License and Copyright
 
-The license is available at [LICENSE.txt](https://github.com/getspacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [LICENSES directory](https://github.com/getspacetime/spacetime/tree/master/LICENSES).
+The license is available at [LICENSE.txt](https://github.com/getspacetime/spacetime/blob/master/LICENSE.txt). Licenses for libraries used in this project are available in the [docs/LICENSES directory](https://github.com/getspacetime/spacetime/tree/master/docs/LICENSES).
 
 Copyright &copy; 2015  Jacob Sandlund
 
