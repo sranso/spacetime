@@ -2,22 +2,6 @@
 global.Blob = {};
 (function () {
 
-Blob.emptyHashOffset = -1;
-
-Blob.initialize = function () {
-    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
-    Blob.emptyHashOffset = $heap.nextOffset;
-    $heap.nextOffset += 20;
-    var emptyBlobRange = Blob.create('', new Uint32Array(2));
-    var emptyStart = emptyBlobRange[0];
-    var emptyEnd = emptyBlobRange[1];
-
-    var $h = $heap.array;
-    Sha1.hash($fileCache.array, emptyStart, emptyEnd, $h, Blob.emptyHashOffset);
-    log(hash($h, Blob.emptyHashOffset));
-    //=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
-};
-
 var blobPrefix = Convert.stringToArray('blob ');
 
 Blob.create = function (string, blobRange) {

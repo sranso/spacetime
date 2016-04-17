@@ -2,10 +2,6 @@
 require('../../test/helper');
 
 global.$fileCache = FileCache.create(6, 256);
-global.$heap = Heap.create(256);
-var $h = $heap.array;
-
-Blob.initialize();
 
 
 var offsets = {};
@@ -13,7 +9,7 @@ var treeRange = Tree.create({}, offsets, []);
 var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
 log(treeStart, treeEnd);
-//=> 7 14
+//=> 0 7
 log(pretty($fileCache.array, treeStart, treeEnd));
 //=> tree 0\x00
 var hashArray = new Uint8Array(20);
@@ -31,7 +27,7 @@ treeRange = Tree.create({
 treeStart = treeRange[0];
 treeEnd = treeRange[1];
 log(treeStart, treeEnd);
-//=> 14 114
+//=> 7 107
 log(pretty($fileCache.array, treeStart, treeEnd));
 //=> tree 92\x0040000 bar\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00100644 foo\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00100644 www\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 log(offsets.bar, offsets.foo, offsets.www);
@@ -44,29 +40,24 @@ log(hash($fileCache.array, treeStart + offsets.www));
 //=> 0000000000000000000000000000000000000000
 
 
-var fooStart = $heap.nextOffset;
-Convert.stringToExistingArray($h, fooStart, 'foo');
-$heap.nextOffset += 3;
+var foo = Convert.stringToArray('foo');
 
-Sha1.hash($h, fooStart, $heap.nextOffset, $fileCache.array, treeStart + offsets.foo);
+Sha1.hash(foo, 0, foo.length, $fileCache.array, treeStart + offsets.foo);
 log(hash($fileCache.array, treeStart + offsets.foo));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
 
-var barStart = $heap.nextOffset;
-Convert.stringToExistingArray($h, barStart, 'bar');
-$heap.nextOffset += 3;
-var barHashOffset = $heap.nextOffset;
-$heap.nextOffset += 20;
-Sha1.hash($h, barStart, $heap.nextOffset, $h, barHashOffset);
-log(hash($h, barHashOffset));
-//=> ab48e8a80caa10695287570c66633692b2058b77
-Tree.setHash($fileCache.array, treeStart + offsets.bar, $h, barHashOffset);
+var bar = Convert.stringToArray('bar');
+var barHash = new Uint8Array(20);
+Sha1.hash(bar, 0, bar.length, barHash, 0);
+log(hash(barHash, 0));
+//=> 62cdb7020ff920e5aa642c3d4066950dd1f01f4d
+Tree.setHash($fileCache.array, treeStart + offsets.bar, barHash, 0);
 log(hash($fileCache.array, treeStart + offsets.bar));
-//=> ab48e8a80caa10695287570c66633692b2058b77
+//=> 62cdb7020ff920e5aa642c3d4066950dd1f01f4d
 
 
 log(prettyTree($fileCache.array, treeStart, treeEnd));
-//=> 040000 tree ab48e8a80caa10695287570c66633692b2058b77    bar
+//=> 040000 tree 62cdb7020ff920e5aa642c3d4066950dd1f01f4d    bar
 //=> 100644 blob 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33    foo
 //=> 100644 blob 0000000000000000000000000000000000000000    www
