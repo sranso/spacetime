@@ -7,7 +7,6 @@ var random = Random.create(29923321);
 global.$hashTable = HashTable.create(16, random);
 global.$fileCache = FileCache.create(8, 128);
 
-Tree.initialize();
 FastSet.initialize();
 
 var Thing = {};
@@ -35,12 +34,15 @@ var types = {
 Thing.none = null;
 var offsets = {};
 
+var hashOffset = $heap.nextOffset;
+$heap.nextOffset += 20;
+
 Thing.initialize = function () {
     var noneValues = {
         string: '',
         number: 0,
         bool: false,
-        object: {hashOffset: Tree.emptyHashOffset},
+        object: {hashOffset: hashOffset},
     };
 
     var none = clone(noneValues);
@@ -76,12 +78,12 @@ log('"' + none.string + '"', none.number, none.bool);
 //=> "" 0 false
 
 log(none.fileStart, none.fileEnd, none.fileEnd - none.fileStart);
-//=> 148 290 142
+//=> 49 191 142
 
 log(hash($h, none.fileStart + offsets.bool));
 //=> 02e4a84d62c4b0fe9cca60bba7b9799f78f1f7ed
 
-var hashOffset = HashTable.findHashOffset($hashTable, $h, none.fileStart + offsets.bool);
+hashOffset = HashTable.findHashOffset($hashTable, $h, none.fileStart + offsets.bool);
 var objectIndex = HashTable.objectIndex(hashOffset);
 var gotBool = $hashTable.objects[objectIndex].value;
 log(gotBool, typeof gotBool);

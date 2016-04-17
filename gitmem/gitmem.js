@@ -10,7 +10,6 @@ Gitmem.initialize = function () {
     global.$ = bootHeap.array;
 
     Blob.initialize();
-    Tree.initialize();
     Unpack.initialize();
 
     if (bootHeap.capacity !== 1024 || bootHeap.nextOffset !== bootHeap.capacity) {
