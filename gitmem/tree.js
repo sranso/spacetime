@@ -6,7 +6,7 @@ var treePrefix = Convert.stringToArray('tree ');
 var treeMode = Convert.stringToArray('40000');
 var blobMode = Convert.stringToArray('100644');
 
-Tree.create = function (props, offsets, treeRange) {
+Tree.create = function (props, treeRange) {
     var names = Object.keys(props);
     names.sort();
 
@@ -65,7 +65,6 @@ Tree.create = function (props, offsets, treeRange) {
         $f[tree_j + i] = 0;
 
         tree_j += i + 1;
-        offsets[name] = tree_j - treeStart;
         for (i = 0; i < 20; i++) {
             $f[tree_j + i] = 0;
         }
