@@ -3,20 +3,6 @@ require('../../test/helper');
 
 global.$fileCache = FileCache.create(6, 256);
 
-
-var treeRange = Tree.create({}, []);
-var treeStart = treeRange[0];
-var treeEnd = treeRange[1];
-log(treeStart, treeEnd);
-//=> 0 7
-log(pretty($fileCache.array, treeStart, treeEnd));
-//=> tree 0\x00
-var hashArray = new Uint8Array(20);
-Sha1.hash($fileCache.array, treeStart, treeEnd, hashArray, 0);
-log(hash(hashArray, 0));
-//=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
-
-
 treeRange = Tree.create({
     foo: 'blob',
     bar: 'tree',
