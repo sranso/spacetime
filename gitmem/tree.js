@@ -23,15 +23,15 @@ Tree.initialize = function () {
     Tree.emptyStart = treeRange[0];
     Tree.emptyEnd = treeRange[1];
     var hashOffset = Tree.emptyStart + offsets['.empty'];
-    Tree.setHash($h, hashOffset, $h, Blob.emptyHashOffset);
-    Sha1.hash($h, Tree.emptyStart, Tree.emptyEnd, $h, Tree.emptyHashOffset);
+    Tree.setHash($fileCache.array, hashOffset, $h, Blob.emptyHashOffset);
+    Sha1.hash($fileCache.array, Tree.emptyStart, Tree.emptyEnd, $h, Tree.emptyHashOffset);
     log(hash($h, Tree.emptyHashOffset));
     //=> 70bfe9793f3fc43d2a2306a58186fe0c88b86999
 
     treeRange = Tree.create({}, offsets, []);
     Tree._actuallyEmptyStart = treeRange[0];
     Tree._actuallyEmptyEnd = treeRange[1];
-    Sha1.hash($h, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
+    Sha1.hash($fileCache.array, Tree._actuallyEmptyStart, Tree._actuallyEmptyEnd, $h, Tree._actuallyEmptyHashOffset);
     log(hash($h, Tree._actuallyEmptyHashOffset));
     //=> 4b825dc642cb6eb9a060e54bf8d69288fbee4904
 };
@@ -59,26 +59,24 @@ Tree.create = function (props, offsets, treeRange) {
     var lengthString = '' + length;
     var headerLength = treePrefix.length + lengthString.length + 1;
     var treeLength = headerLength + length;
-    if ($heap.nextOffset + treeLength > $heap.capacity) {
-        throw new Error('Heap is full');
-    }
-    var treeStart = $heap.nextOffset;
+    FileCache.malloc($fileCache, treeLength);
+    var treeStart = $fileCache.nextArrayOffset;
     var treeEnd = treeStart + treeLength;
-    $heap.nextOffset = treeEnd;
+    $fileCache.nextArrayOffset = treeEnd;
 
-    var $h = $heap.array;
+    var $f = $fileCache.array;
 
     var tree_j = treeStart;
     var i;
     for (i = 0; i < treePrefix.length; i++) {
-        $h[tree_j + i] = treePrefix[i];
+        $f[tree_j + i] = treePrefix[i];
     }
 
     tree_j += i;
     for (i = 0; i < lengthString.length; i++) {
-        $h[tree_j + i] = lengthString.charCodeAt(i);
+        $f[tree_j + i] = lengthString.charCodeAt(i);
     }
-    $h[tree_j + i] = 0;
+    $f[tree_j + i] = 0;
 
     tree_j += i + 1;
     for (n = 0; n < names.length; n++) {
@@ -92,20 +90,20 @@ Tree.create = function (props, offsets, treeRange) {
         }
 
         for (i = 0; i < mode.length; i++) {
-            $h[tree_j + i] = mode[i];
+            $f[tree_j + i] = mode[i];
         }
-        $h[tree_j + i] = 0x20;
+        $f[tree_j + i] = 0x20;
 
         tree_j += i + 1;
         for (i = 0; i < name.length; i++) {
-            $h[tree_j + i] = name.charCodeAt(i);
+            $f[tree_j + i] = name.charCodeAt(i);
         }
-        $h[tree_j + i] = 0;
+        $f[tree_j + i] = 0;
 
         tree_j += i + 1;
         offsets[name] = tree_j - treeStart;
         for (i = 0; i < 20; i++) {
-            $h[tree_j + i] = $h[hashOffset + i];
+            $f[tree_j + i] = $heap.array[hashOffset + i];
         }
 
         tree_j += 20;
