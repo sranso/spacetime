@@ -7,6 +7,7 @@ var blobPrefix = Convert.stringToArray('blob ');
 Blob.create = function (string, blobRange) {
     var lengthString = '' + string.length;
     var blobLength = blobPrefix.length + lengthString.length + 1 + string.length;
+
     FileCache.malloc($fileCache, blobLength);
     var blobStart = $fileCache.nextArrayOffset;
     var blobEnd = blobStart + blobLength;

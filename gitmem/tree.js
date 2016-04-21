@@ -25,6 +25,7 @@ Tree.create = function (props, treeRange) {
     var lengthString = '' + length;
     var headerLength = treePrefix.length + lengthString.length + 1;
     var treeLength = headerLength + length;
+
     FileCache.malloc($fileCache, treeLength);
     var treeStart = $fileCache.nextArrayOffset;
     var treeEnd = treeStart + treeLength;
