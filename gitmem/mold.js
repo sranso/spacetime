@@ -51,7 +51,7 @@ var holeOffsets = new Uint32Array(6);
 
 Mold.process = function (mold, fileStart, fileEnd) {
     if (fileEnd - fileStart > 255) {
-        throw new Error('File is too large to make mold: ', fileEnd - fileStart);
+        throw new Error('File is too large to make mold: ' + (fileEnd - fileStart));
     }
 
     // Find hole offsets in file
@@ -64,6 +64,9 @@ Mold.process = function (mold, fileStart, fileEnd) {
         holeIndex++;
     }
     var numHoles = holeIndex;
+    if (numHoles > 5) {
+        throw new Error('Too many holes in mold: ' + numHoles);
+    }
 
     // Compute FNV-1a hash
     var hash = Fnv1a.startHash;

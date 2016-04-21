@@ -50,3 +50,13 @@ log(mold.table[2], mold.table[3]);
 moldIndex = Mold.process(mold, treeStart, treeEnd);
 log(moldIndex);
 //=> 2
+
+treeRange = Tree.create({
+    food: 'blob',
+    baz: 'tree',
+}, []);
+var treeStart = treeRange[0];
+var treeEnd = treeRange[1];
+moldIndex = Mold.process(mold, treeStart, treeEnd);
+log(moldIndex);
+//=> 3
