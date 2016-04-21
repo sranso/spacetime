@@ -48,6 +48,7 @@ log(hex(packData.array, packOffset, packData.nextOffset));
 
 
 var fileRange = [];
+$fileCache.array[21] = 42; // This is where the NUL byte will go
 var nextPackOffset = PackData.extractFile(packData.array, packOffset, fileRange);
 var fileStart = fileRange[0];
 var fileEnd = fileRange[1];

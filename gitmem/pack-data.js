@@ -137,6 +137,7 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     for (i = 0; i < lengthString.length; i++) {
         $fileCache.array[$fileCache.nextArrayOffset + i] = lengthString.charCodeAt(i);
     }
+    $fileCache.array[$fileCache.nextArrayOffset + i] = 0;
 
     $fileCache.nextArrayOffset += i + 1;
 
