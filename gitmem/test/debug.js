@@ -44,7 +44,7 @@ global.hex = function (array, start, end) {
     return hex.join('');
 };
 
-global.hash = function (array, hashOffset) {
+global.hexHash = function (array, hashOffset) {
     if (typeof hashOffset !== 'number') {
         throw new Error('hashOffset must be a number');
     }

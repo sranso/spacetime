@@ -19,26 +19,26 @@ var offsets = {
     bar: 18,
     foo: 49,
 };
-log(hash($fileCache.array, treeStart + offsets.bar));
+log(hexHash($fileCache.array, treeStart + offsets.bar));
 //=> 0000000000000000000000000000000000000000
-log(hash($fileCache.array, treeStart + offsets.foo));
+log(hexHash($fileCache.array, treeStart + offsets.foo));
 //=> 0000000000000000000000000000000000000000
 
 
 var foo = Convert.stringToArray('foo');
 
 Sha1.hash(foo, 0, foo.length, $fileCache.array, treeStart + offsets.foo);
-log(hash($fileCache.array, treeStart + offsets.foo));
+log(hexHash($fileCache.array, treeStart + offsets.foo));
 //=> 0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33
 
 
 var bar = Convert.stringToArray('bar');
 var barHash = new Uint8Array(20);
 Sha1.hash(bar, 0, bar.length, barHash, 0);
-log(hash(barHash, 0));
+log(hexHash(barHash, 0));
 //=> 62cdb7020ff920e5aa642c3d4066950dd1f01f4d
 Tree.setHash($fileCache.array, treeStart + offsets.bar, barHash, 0);
-log(hash($fileCache.array, treeStart + offsets.bar));
+log(hexHash($fileCache.array, treeStart + offsets.bar));
 //=> 62cdb7020ff920e5aa642c3d4066950dd1f01f4d
 
 

@@ -17,7 +17,7 @@ var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
 var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
 var treeHash = new Uint8Array(20);
 Sha1.hash($mold.fileArray, fileStart, fileEnd, treeHash, 0);
-log(hash(treeHash, 0));
+log(hexHash(treeHash, 0));
 //=> 4f6c3684ecbfbdb53e78302549bae39be9024550
 
 var barHash = new Uint8Array([0x44,0x26,0xd3,0xa5,0xbb,0xf5,0x7d,0x7f,0xae,0xcc,0xe6,0xc5,0x5d,0xd4,0xf9,0xf2,0x57,0x34,0x5b,0x32]);
@@ -39,7 +39,7 @@ var tree1 = set(treeHashOffset,
                 2, wwwHashOffset);
 
 var dataOffset = tree1 >> 2;
-log(hash($hashTable.hashes8, tree1));
+log(hexHash($hashTable.hashes8, tree1));
 //=> 708acb9d9bc0d41784aeb81d5b3c4b0425cb9f97
 log($hashTable.data32[dataOffset + 0], barHashOffset);
 //=> 68 68
@@ -50,7 +50,7 @@ log($hashTable.data32[dataOffset + 2], wwwHashOffset);
 
 var tree2 = set(tree1, 1, wwwHashOffset);
 dataOffset = tree2 >> 2;
-log(hash($hashTable.hashes8, tree2));
+log(hexHash($hashTable.hashes8, tree2));
 //=> b38c79cd518e1cd225d738604d57b999670d8b14
 log($hashTable.data32[dataOffset + 0], barHashOffset);
 //=> 68 68

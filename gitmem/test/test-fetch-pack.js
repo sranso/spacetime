@@ -73,7 +73,7 @@ commit1.message = 'Initial commit\n';
 commit1.file = CommitFile.create(commit1);
 commit1.hash = new Uint8Array(20);
 Sha1.hash(commit1.file, commit1.hash, 0);
-log(hex(commit1.hash));
+log(hexHash(commit1.hash));
 //=> b11da54dece45e24d1bfefdba6b5e5ce38ec126b
 
 var commit2 = Commit.clone(commit1);

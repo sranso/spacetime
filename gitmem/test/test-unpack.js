@@ -17,7 +17,7 @@ var fooEnd = fooRange[1];
 var fooHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, fooStart, fooEnd, $h, fooHashOffset);
-log(hash($h, fooHashOffset));
+log(hexHash($h, fooHashOffset));
 //=> 19102815663d23f8b75a47e7a01965dcdc96468c
 
 var barRange = Blob.create('bar', []);
@@ -26,7 +26,7 @@ var barEnd = barRange[1];
 var barHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, barStart, barEnd, $h, barHashOffset);
-log(hash($h, barHashOffset));
+log(hexHash($h, barHashOffset));
 //=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
 
 var treeRange = Tree.create({
@@ -48,7 +48,7 @@ log(pretty($fileCache.array, treeStart, treeEnd));
 var treeHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, treeStart, treeEnd, $h, treeHashOffset);
-log(hash($h, treeHashOffset));
+log(hexHash($h, treeHashOffset));
 //=> df16029e64d49b34861f2c31f6f7cd9fa252a24d
 
 
@@ -64,7 +64,7 @@ log(inputPackData.nextOffset);
 //=> 140
 var inputPack = inputPackData.array;
 Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
-log(hash(inputPack, inputPackHashOffset));
+log(hexHash(inputPack, inputPackHashOffset));
 //=> 2b2ead7e8ab2a99c6b65469323667ed7b48b3ca2
 
 
@@ -87,7 +87,7 @@ log($fileCache.nextArrayOffset);
 // foo
 var hashOffset = HashTable.findHashOffset($hashTable, $h, fooHashOffset);
 fooHashOffset = hashOffset;
-log(hashOffset, hash($hashTable.hashes8, hashOffset));
+log(hashOffset, hexHash($hashTable.hashes8, hashOffset));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
 var flags = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(flags & HashTable.isFileCached);
@@ -109,7 +109,7 @@ hashOffset = HashTable.findHashOffset($hashTable, $h, barHashOffset);
 barHashOffset = hashOffset;
 log(hashOffset);
 //=> 68
-log(hash($hashTable.hashes8, hashOffset));
+log(hexHash($hashTable.hashes8, hashOffset));
 //=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
 flags = $hashTable.hashes8[HashTable.typeOffset(hashOffset)];
 log(flags & HashTable.isFileCached);
@@ -134,7 +134,7 @@ log(pretty($fileCache.array, fileStart, fileEnd));
 hashOffset = HashTable.findHashOffset($hashTable, $h, treeHashOffset);
 log(hashOffset);
 //=> 24
-log(hash($hashTable.hashes8, hashOffset));
+log(hexHash($hashTable.hashes8, hashOffset));
 //=> df16029e64d49b34861f2c31f6f7cd9fa252a24d
 var moldIndex = $hashTable.data8[HashTable.typeOffset(hashOffset)];
 log(moldIndex);

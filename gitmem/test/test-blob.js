@@ -22,7 +22,7 @@ log(pretty($fileCache.array, blobStart, blobEnd));
 //=> blob 0\x00
 var hashArray = new Uint8Array(20);
 Sha1.hash($fileCache.array, blobStart, blobEnd, hashArray, 0);
-log(hash(hashArray, 0));
+log(hexHash(hashArray, 0));
 //=> e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
 
 blobRange = Blob.create('bar', []);

@@ -28,7 +28,7 @@ Sha1.hash($fileCache.array, fooStart, fooEnd, $h, fooHashOffset);
 var treeHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($h, treeStart, treeEnd, $h, treeHashOffset);
-log(hash($h, treeHashOffset));
+log(hexHash($h, treeHashOffset));
 //=> 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
 var hashOffset = ~HashTable.findHashOffset($hashTable, $h, treeHashOffset);
 HashTable.setHash($hashTable, hashOffset, $h, treeHashOffset);
@@ -72,13 +72,13 @@ log(pretty($fileCache.array, fileStart, fileEnd));
 //=>
 //=> Initial commit
 //=>
-log(hash($hashTable.hashes8, commit.hashOffset));
+log(hexHash($hashTable.hashes8, commit.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 var searchHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, fileStart, fileEnd, $h, searchHashOffset);
 var hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
-log(hashOffset, hash($hashTable.hashes8, hashOffset));
+log(hashOffset, hexHash($hashTable.hashes8, hashOffset));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
 var objectIndex = HashTable.objectIndex(commit.hashOffset);
 var savedCommit = $hashTable.objects[objectIndex];
@@ -93,12 +93,12 @@ var secondCommit = Commit.setAll(commit, {
     parent: commit,
 });
 
-log(secondCommit.hashOffset, hash($hashTable.hashes8, secondCommit.hashOffset));
+log(secondCommit.hashOffset, hexHash($hashTable.hashes8, secondCommit.hashOffset));
 //=> 132 '46a0cef9b97fb229a4b763b29a6ec9fb24b298e6'
 
 log(secondCommit.authorName, secondCommit.authorTimezoneOffset);
 //=> snakes 480
-log(hash($hashTable.hashes8, secondCommit.parent.hashOffset));
+log(hexHash($hashTable.hashes8, secondCommit.parent.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 
 cacheIndex = $hashTable.data32[(secondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
@@ -141,7 +141,7 @@ PackData.packFile($packData, $fileCache.array, fooStart, fooEnd);
 
 
 var gotSecondCommit = Commit.checkout(oldHashArray, secondCommit.hashOffset);
-log(hash($hashTable.hashes8, gotSecondCommit.hashOffset));
+log(hexHash($hashTable.hashes8, gotSecondCommit.hashOffset));
 //=> 46a0cef9b97fb229a4b763b29a6ec9fb24b298e6
 type = $hashTable.hashes8[HashTable.typeOffset(gotSecondCommit.hashOffset)];
 log(type & HashTable.isFileCached);
@@ -168,7 +168,7 @@ Commit.checkoutParents(gotSecondCommit);
 var gotCommit = gotSecondCommit.parent;
 log(gotCommit === commit);
 //=> true
-log(hash($hashTable.hashes8, gotCommit.hashOffset));
+log(hexHash($hashTable.hashes8, gotCommit.hashOffset));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 log(gotCommit.authorName, gotCommit.committerEmail);
 //=> Jake Sandlund jake@jakesandlund.com

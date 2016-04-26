@@ -17,7 +17,7 @@ log(pretty($h, CommitFile._initialStart, CommitFile._initialEnd));
 //=> Initial commit
 //=>
 
-log(hash($h, CommitFile.initialHashOffset));
+log(hexHash($h, CommitFile.initialHashOffset));
 //=> 362f278d085c99a7adfbb1d74a57dd68db0109a9
 
 log(CommitFile.timezoneString(360));
@@ -41,7 +41,7 @@ var hashesNextOffset = 0;
 var treeHashOffset = hashesNextOffset;
 hashesNextOffset += 20;
 Sha1.hash($h, treeStart, treeEnd, $hashTable.hashes8, treeHashOffset);
-log(hash($hashTable.hashes8, treeHashOffset));
+log(hexHash($hashTable.hashes8, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
 var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
@@ -83,19 +83,19 @@ log(pretty($fileCache.array, commitStart, commitEnd));
 var commitHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 Sha1.hash($fileCache.array, commitStart, commitEnd, $h, commitHashOffset);
-log(hash($h, commitHashOffset));
+log(hexHash($h, commitHashOffset));
 //=> dbcb62b19db062d928144514502df45e86d91eac
 
 treeHashOffset = $heap.nextOffset;
 $heap.nextOffset += 20;
 CommitFile.parseTree($fileCache.array, commitStart, commitEnd, $h, treeHashOffset);
-log(hash($h, treeHashOffset));
+log(hexHash($h, treeHashOffset));
 //=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
 
 var parentHashesOffset = $heap.nextOffset;
 $heap.nextOffset += 2 * 20;
 var nParents = CommitFile.parseParents($fileCache.array, commitStart, commitEnd, $h, parentHashesOffset);
-log(nParents, hash($h, parentHashesOffset));
+log(nParents, hexHash($h, parentHashesOffset));
 //=> 1 '4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf'
 
 var gotCommit = {};
@@ -127,7 +127,7 @@ Convert.stringToExistingArray($h, secondParentStart, secondParentString);
 var secondParentHashOffset = hashesNextOffset;
 hashesNextOffset += 20;
 Sha1.hash($h, secondParentStart, secondParentEnd, $hashTable.hashes8, secondParentHashOffset);
-log(hash($hashTable.hashes8, secondParentHashOffset));
+log(hexHash($hashTable.hashes8, secondParentHashOffset));
 //=> 06d3749d842b0a2f56f5368932fd616f89f7cf58
 commitObject.mergeParent = {hashOffset: secondParentHashOffset};
 commitObject.committerTime = 1454897681000;
@@ -151,7 +151,7 @@ log(pretty($fileCache.array, mergeCommitStart, mergeCommitEnd));
 nParents = CommitFile.parseParents($fileCache.array, mergeCommitStart, mergeCommitEnd, $h, parentHashesOffset);
 log(nParents);
 //=> 2
-log(hash($h, parentHashesOffset));
+log(hexHash($h, parentHashesOffset));
 //=> 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
-log(hash($h, parentHashesOffset + 20));
+log(hexHash($h, parentHashesOffset + 20));
 //=> 06d3749d842b0a2f56f5368932fd616f89f7cf58

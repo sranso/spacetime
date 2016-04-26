@@ -22,7 +22,7 @@ log(hashTable.objects[0], hashTable.objects[3]);
 Convert.stringToExistingArray($h, 0, 'abc');
 var searchHashOffset = 3;
 Sha1.hash($h, 0, 3, $h, searchHashOffset);
-log(hash($h, searchHashOffset));
+log(hexHash($h, searchHashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
 var hashOffset = HashTable.findHashOffset(hashTable, $h, searchHashOffset);
@@ -37,7 +37,7 @@ log(HashTable.typeOffset(hashOffset));
 //=> 65
 
 HashTable.setHash(hashTable, hashOffset, $h, searchHashOffset);
-log(hash(hashTable.hashes8, hashOffset));
+log(hexHash(hashTable.hashes8, hashOffset));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 hashOffset = HashTable.findHashOffset(hashTable, $h, searchHashOffset);
 log(hashOffset);

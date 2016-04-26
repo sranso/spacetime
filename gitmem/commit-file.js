@@ -30,7 +30,7 @@ CommitFile.initialize = function () {
     CommitFile.initialHashOffset = $heap.nextOffset;
     $heap.nextOffset += 20;
     Sha1.hash($h, CommitFile._initialStart, CommitFile._initialEnd, $h, CommitFile.initialHashOffset);
-    log(hash($h, CommitFile.initialHashOffset));
+    log(hexHash($h, CommitFile.initialHashOffset));
     //=> 362f278d085c99a7adfbb1d74a57dd68db0109a9
 };
 

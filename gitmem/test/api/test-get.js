@@ -21,7 +21,7 @@ Tree.setHash($mold.fileArray, fileStart + $mold.data8[holeOffsets + 0], fooHash,
 Tree.setHash($mold.fileArray, fileStart + $mold.data8[holeOffsets + 1], barHash, 0);
 var treeHash = new Uint8Array(20);
 Sha1.hash($mold.fileArray, fileStart, fileEnd, treeHash, 0);
-log(hash(treeHash, 0));
+log(hexHash(treeHash, 0));
 //=> d5bec1220e8ac3041ad459339d079abc7c21133c
 
 var barHashOffset = ~HashTable.findHashOffset($hashTable, barHash, 0);
@@ -30,7 +30,7 @@ var treeHashOffset = ~HashTable.findHashOffset($hashTable, treeHash, 0);
 HashTable.setHash($hashTable, barHashOffset, barHash, 0);
 HashTable.setHash($hashTable, fooHashOffset, fooHash, 0);
 HashTable.setHash($hashTable, treeHashOffset, treeHash, 0);
-log(hash($hashTable.hashes8, treeHashOffset));
+log(hexHash($hashTable.hashes8, treeHashOffset));
 //=> d5bec1220e8ac3041ad459339d079abc7c21133c
 var dataOffset = treeHashOffset >> 2;
 $hashTable.data32[dataOffset + 0] = barHashOffset;
