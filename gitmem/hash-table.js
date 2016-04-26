@@ -39,18 +39,17 @@ HashTable.create = function (n, random) {
 };
 
 HashTable.findHashOffset = function (hashTable, $s, searchHashOffset) {
-    var h1 = Math.imul(hashTable.a,
+    var h = Math.imul(hashTable.a,
         ($s[searchHashOffset] << 24) |
         ($s[searchHashOffset + 1] << 16) |
         ($s[searchHashOffset + 2] << 8) |
         $s[searchHashOffset + 3]
     ) >>> hashTable.hashBitsToShift;
-    var h = h1;
     var i;
     var j;
     var k;
 
-    for (j = 1; j < 1000; j++) {
+    for (j = 0; j < 1000; j++) {
         var blockOffset = 64 * Math.floor(h / 3);
         var setHashes = hashTable.hashes8[blockOffset] & 3;
 
@@ -76,7 +75,7 @@ HashTable.findHashOffset = function (hashTable, $s, searchHashOffset) {
             $s[searchHashOffset + 7] |
             1
         );
-        h = (h1 + Math.imul(j, h2)) & hashTable.mask;
+        h = (h + h2) & hashTable.mask;
     }
 
     throw new Error('Reached maximum iterations searching for hash');
