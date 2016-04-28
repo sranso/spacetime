@@ -4,24 +4,25 @@
   <meta charset="utf-8">
   <title>Mouse Movement</title>
   <style>
-    #start {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      width: 100px;
-      height: 30px;
-      margin-left: -50px;
-      margin-top: -15px;
-      font-size: 20px;
+    body {
+      margin: 0;
+    }
+    #canvas-top, #canvas-bottom {
+      position: absolute;
+      width: 100%;
+      height: 500px;
+      border: solid 1px black;
+      cursor: none;
     }
   </style>
 </head>
 <body>
 
 <h1>Mouse Movement</h1>
-<p>Open the console and use profiling tools to test. See <a href="./mouse-movement.js">dev/misc/mouse-movement.js</a> for information.</p>
+<p>Click the canvas to start, and view the console for results. See <a href="./mouse-movement.js">dev/misc/mouse-movement.js</a> for information.</p>
 
-<button id="start" type="button">Start</button>
+<canvas id="canvas-bottom"></canvas>
+<canvas id="canvas-top"></canvas>
 
 <script src="./mouse-movement.js"></script>
 </body>

@@ -43,8 +43,6 @@
 //
 //     1.1 MB in 10 min   (14.6 * 60 * 10      * 128)
 //     6.7 MB in  1 hr    (14.6 * 60 * 60      * 128)
-//    27.  MB in  1 day   (14.6 * 60 * 60 * 24 * 128)
-//   161.  MB in  1 day   (14.6 * 60 * 60 * 24 * 128)
 //   161.  MB in  1 day   (14.6 * 60 * 60 * 24 * 128)
 // 1.43 GB    in ~9 days  (14.6 * 60 * 60 * 24 * 128 * 9) = max in one hash table (1.33 GiB)
 //
@@ -122,32 +120,159 @@
 // In conclusion, it's not looking like the fine+coarse distinction
 // is worth it.
 
-var startX = 0;
+//
+// Another space saver: inexact mouse positions
+// If quantizing the differences by this pattern
+// (number at level / quantization):
+// 10+10/2+15/4+25/8+50/16+100/32 ~= 28
+//   (sum of numerators == 210)
+// So max would be 2 * 28 * 28 * 28 * 28 * 128 = 157 MB
+// Realistically it would be way less.
+// Now can also quantize keyframes and get significant
+// savings there.
+// Could for example, quantize to nearest 10, and then
+// use the first value of offsets to do +/- 5 to get
+// to exact pixel.
+// Complete guess at cost now:
+//    0.5 at lowest level (0 to 1 out of 12)
+//    1.0 for keyframes (58% repeated out of 2.4)
+//    2.0 for second level (16.7% repeated out of 2.4)
+//    0.5 for third level (0% repeated)
+//    0.5 for second level keyframes (0% repeated)
+//    0.1 for fourth level (0% repeated)
+//    0.1 for third level keyframes (0% repeated)
+//    0.05 for all remaining levels combined
+//  = 4.75 total for one coordinate (for active mouse.)
+//  = 9.5 total for both coordinates.
+//
+// How quickly will 9.5 hashes per second fill up?
+//
+//     0.7 MB in 10 min   (9.5 * 60 * 10      * 128)
+//     4.4 MB in  1 hr    (9.5 * 60 * 60      * 128)
+//   105.  MB in  1 day   (9.5 * 60 * 60 * 24 * 128)
+// 1.43 GB  in 13.6 days  (9.5 * 60 * 60 * 24 * 128 * 9) = max in one hash table (1.33 GiB)
+
 var x = 0;
+var y = 0;
 var len = 80;
 var i = len;
 
-var startButton = document.getElementById('start');
-startButton.addEventListener('click', function (event) {
-    x = startX = event.clientX;
+var canvasTop = document.getElementById('canvas-top');
+canvasTop.addEventListener('click', function (event) {
+    x = event.clientX;
+    y = event.clientY;
     i = 0;
+    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
+    ctxBottom.clearRect(0, 0, canvasTop.width, canvasTop.height);
 });
+canvasTop.width = canvasTop.offsetWidth;
+canvasTop.height = canvasTop.offsetHeight;
+
+var canvasBottom = document.getElementById('canvas-bottom');
+canvasBottom.width = canvasBottom.offsetWidth;
+canvasBottom.height = canvasBottom.offsetHeight;
+
+var ctxTop = canvasTop.getContext('2d');
+var ctxBottom = canvasBottom.getContext('2d');
 
 window.addEventListener('mousemove', function (event) {
     x = event.clientX;
+    y = event.clientY;
+});
+
+var spaceToggle = false;
+
+window.addEventListener('keydown', function (event) {
+    if (event.keyCode === 32 && (event.shiftKey || event.ctrlKey)) {
+        spaceToggle = !spaceToggle;
+        event.preventDefault();
+    } else {
+        spaceToggle = false;
+    }
+    canvasTop.style.opacity = +(event.shiftKey === spaceToggle);
+    canvasBottom.style.opacity = +(event.ctrlKey === spaceToggle);
+});
+
+window.addEventListener('keyup', function (event) {
+    if (event.keyCode === 32) {
+        return;
+    }
+    if (!event.shiftKey) {
+        canvasTop.style.opacity = 1;
+    }
+    if (!event.ctrlKey) {
+        canvasBottom.style.opacity = 1;
+    }
 });
 
 var xs = [];
 
+var lastX = 0;
+var lastAdjustedX = 0;
+var lastY = 0;
+
+var boxSize = 10;
+
+ctxBottom.fillStyle = '#ff5555';
+ctxTop.fillStyle = '#000000';
+var offsetLeft = canvasTop.offsetLeft;
+var offsetTop = canvasTop.offsetTop;
+
+var quantizeAtEachLevel = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,15, 17, 19, 22, 25, 27, 30, 34, 38, 42, 46, 50, 54];
+var countsAtEachLevel =   [18, 8, 6, 4, 3, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1];
+
+var countsTotal = function () {
+    var sum = 0;
+    var i;
+    return countsAtEachLevel.map(function (count, i) {
+        var lastSum = sum;
+        sum += count * quantizeAtEachLevel[i];
+        return lastSum;
+    });
+};
+
 var go = function (now) {
+    // Test quantized
+// 10+10/2+15/4+25/8+50/16+100/32 ~= 28
+    var exactDiff = x - lastX; // diff for velocity
+    var adjustedDiff = x - lastAdjustedX; // diff for position
+    var diff = (exactDiff + adjustedDiff) / 2;
+    var absDiff = Math.abs(diff);
+    if (-10 <= diff && diff <= 10) {
+        var quantizedDiff = Math.round(diff);
+    } else if (-20 <= diff && diff <= 20) {
+        var quantizedDiff = 2 * Math.round(diff / 2);
+    } else if (-35 <= diff && diff <= 35) {
+        var quantizedDiff = 4 * Math.round(diff / 4);
+    } else if (-60 <= diff && diff <= 60) {
+        var quantizedDiff = 8 * Math.round(diff / 8);
+    } else if (-110 <= diff && diff <= 110) {
+        var quantizedDiff = 16 * Math.round(diff / 16);
+    } else {
+        var quantizedDiff = 32 * Math.round(diff / 32);
+    }
+
+    // Test exact
+    // var quantizedDiff = diff;
+
+    var adjustedX = lastAdjustedX + quantizedDiff;
+
     if (i < len) {
-        xs[i] = x;
+        xs[i] = adjustedX;
         i++;
         if (i === len) {
             results();
         }
     }
+
+    ctxBottom.fillRect(x - offsetLeft, y - offsetTop + document.body.scrollTop, boxSize, boxSize);
+    ctxTop.fillRect(adjustedX - offsetLeft, y - offsetTop + document.body.scrollTop, boxSize, boxSize);
+
     window.requestAnimationFrame(go);
+
+    lastY = y;
+    lastX = x;
+    lastAdjustedX = adjustedX;
 };
 
 var keyBy = 5;
@@ -163,7 +288,7 @@ var line = function (j) {
 
     var i;
     var lastX = key;
-    for (i = 1; i < keyBy; i++) {
+    for (i = 0; i < keyBy; i++) {
         var x = xs[j + i];
         text += pad(x - lastX) + ' ';
         lastX = x;
@@ -172,13 +297,8 @@ var line = function (j) {
 };
 
 var block = function (j) {
-    var keyBySquared = keyBy * keyBy
-    var key = xs[j];
-    var previousKey = j > 0 ? xs[j - keyBySquared] : key;
-    console.log(key - previousKey);
-
     var i;
-    for (i = 1; i < keyBy; i++) {
+    for (i = 0; i < keyBy; i++) {
         line(j + keyBy * i);
     }
 };
@@ -186,12 +306,12 @@ var block = function (j) {
 var results = function () {
     var keyBySquared = keyBy * keyBy
 
+    console.log('---------');
+    console.log('');
     var j;
     for (j = 0; j <= (len - keyBySquared); j += keyBySquared) {
         block(j);
     }
-    console.log('---------');
-    console.log('');
 };
 
 go();
