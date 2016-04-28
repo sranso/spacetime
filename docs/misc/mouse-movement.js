@@ -150,18 +150,38 @@
 //     0.7 MB in 10 min   (9.5 * 60 * 10      * 128)
 //     4.4 MB in  1 hr    (9.5 * 60 * 60      * 128)
 //   105.  MB in  1 day   (9.5 * 60 * 60 * 24 * 128)
-// 1.43 GB  in 13.6 days  (9.5 * 60 * 60 * 24 * 128 * 9) = max in one hash table (1.33 GiB)
+// 1.43 GB  in 13.6 days  (9.5 * 60 * 60 * 24 * 128 * 13.6) = max in one hash table (1.33 GiB)
+//
+// What if only record keyframes every 15625 frames (4.3 min)?
+//    0.5 at lowest level (0 to 1 out of 12)
+//    0.004 for keyframes (0% repeated)
+//    2.0 for second level (16.7% repeated out of 2.4)
+//    0.5 for third level (0% repeated)
+//    0.1 for fourth level (0% repeated)
+//    0.024 for all remaining levels combined
+//  = 3.13 total for one coordinate (for active mouse.)
+//  = 6.26 total for both coordinates.
+//
+// How quickly will 6.26 hashes per second fill up?
+//
+//     0.5 MB in 10 min   (6.26 * 60 * 10      * 128)
+//     2.9 MB in  1 hr    (6.26 * 60 * 60      * 128)
+//    69.  MB in  1 day   (6.26 * 60 * 60 * 24 * 128)
+// 1.43 GB  in 20.7 days  (6.26 * 60 * 60 * 24 * 128 * 20.7) = max in one hash table (1.33 GiB)
 
 var x = 0;
 var y = 0;
 var len = 80;
-var i = len;
+var positionIndex = len;
 
 var canvasTop = document.getElementById('canvas-top');
 canvasTop.addEventListener('click', function (event) {
+    console.log('Recording...\n\n\n\n\n\n\n');
     x = event.clientX;
     y = event.clientY;
-    i = 0;
+    lastAdjustedX = x;
+    lastAdjustedY = y;
+    positionIndex = 0;
     ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
     ctxBottom.clearRect(0, 0, canvasTop.width, canvasTop.height);
 });
@@ -205,112 +225,172 @@ window.addEventListener('keyup', function (event) {
     }
 });
 
-var xs = [];
+var positions = [];
+var velocities = [];
+var accelerations = [];
 
 var lastX = 0;
 var lastAdjustedX = 0;
 var lastY = 0;
+var lastAdjustedY = 0;
 
 var boxSize = 10;
 
-ctxBottom.fillStyle = '#ff5555';
+ctxBottom.fillStyle = '#ff0000';
 ctxTop.fillStyle = '#000000';
 var offsetLeft = canvasTop.offsetLeft;
 var offsetTop = canvasTop.offsetTop;
 
-var quantizeAtEachLevel = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,15, 17, 19, 22, 25, 27, 30, 34, 38, 42, 46, 50, 54];
-var countsAtEachLevel =   [18, 8, 6, 4, 3, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1];
+var quantizeAtEachLevel = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,15, 17, 19, 22, 25, 29, 33, 38, 44, 51, 59, 68, 78, 90, /* not used */ 90];
+var countsAtEachLevel =   [20, 5, 4, 2, 2, 2, 2, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 9];
 
-var countsTotal = function () {
-    var sum = 0;
+// levelRanges
+//   0   20   30   42   50   60   72   86   94  103  113  124  136  149  164  181  200  222  247  276  309  347  391  442  501  569  647
+// quantizedLevels
+//   0   20   25   29   31   33   35   37   38   39   40   41   42   43   44   45   46   47   48   49   50   51   52   53   54   55   56
+// errors
+//4.76 4.76 4.55 4.76 4.76 4.64 4.44 4.57 4.63 4.64 4.62 4.56 4.79 4.93 4.99 5.21 5.33 5.54 5.64 5.79 5.96 6.12 6.26 6.36 6.41  6.5    3
+
+var calcQuantization = function () {
+    var lastSum = 0;
+    var levelRanges = [];
+    var quantizedLevels = [];
+    var lastQuantizedCount = 0;
+    var errors = [];
     var i;
-    return countsAtEachLevel.map(function (count, i) {
-        var lastSum = sum;
-        sum += count * quantizeAtEachLevel[i];
-        return lastSum;
-    });
+    for (i = 0; i < countsAtEachLevel.length; i++) {
+        var quantize = quantizeAtEachLevel[i];
+        var count = countsAtEachLevel[i];
+
+        quantizedLevels[i] = lastQuantizedCount;
+        lastQuantizedCount += count;
+
+        var sum = lastSum + count * quantize;
+        levelRanges[i] = lastSum;
+        lastSum = sum;
+
+        var nextQuantize = quantizeAtEachLevel[i + 1];
+        var error = nextQuantize / 2;
+        var errorFraction = 100 * error / (sum + error);
+        var errorRound = Math.round(100 * errorFraction) / 100;
+        errors[i] = errorRound;
+    }
+    console.log(quantizeAtEachLevel.map(pad).join(''));
+    console.log(countsAtEachLevel.map(pad).join(''));
+    console.log(levelRanges.map(pad).join(''));
+    console.log(quantizedLevels.map(pad).join(''));
+    console.log(errors.map(pad).join(''));
+};
+
+var quantizeDiff = function (velocity, positionDiff) {
+    var diff = (2 * velocity + 3 * positionDiff) / 5;
+    var absDiff = Math.abs(diff);
+    var i;
+    var min = 0;
+    for (i = 0; i < countsAtEachLevel.length; i++) {
+        var quantize = quantizeAtEachLevel[i];
+        var max = min + quantize * countsAtEachLevel[i];
+        if (absDiff < max) {
+            var overBy = absDiff - min;
+            var level = Math.round(overBy / quantize);
+            var quantizedDiff = min + quantize * level;
+            if (diff < 0) {
+                quantizedDiff = -quantizedDiff;
+            }
+            return quantizedDiff;
+        }
+        min = max;
+    }
 };
 
 var go = function (now) {
     // Test quantized
-// 10+10/2+15/4+25/8+50/16+100/32 ~= 28
-    var exactDiff = x - lastX; // diff for velocity
-    var adjustedDiff = x - lastAdjustedX; // diff for position
-    var diff = (exactDiff + adjustedDiff) / 2;
-    var absDiff = Math.abs(diff);
-    if (-10 <= diff && diff <= 10) {
-        var quantizedDiff = Math.round(diff);
-    } else if (-20 <= diff && diff <= 20) {
-        var quantizedDiff = 2 * Math.round(diff / 2);
-    } else if (-35 <= diff && diff <= 35) {
-        var quantizedDiff = 4 * Math.round(diff / 4);
-    } else if (-60 <= diff && diff <= 60) {
-        var quantizedDiff = 8 * Math.round(diff / 8);
-    } else if (-110 <= diff && diff <= 110) {
-        var quantizedDiff = 16 * Math.round(diff / 16);
-    } else {
-        var quantizedDiff = 32 * Math.round(diff / 32);
-    }
+    var velocity = x - lastX;
+    var positionDiff = x - lastAdjustedX;
+    var adjustedX = lastAdjustedX + quantizeDiff(velocity, positionDiff);
+    velocity = y - lastY;
+    positionDiff = y - lastAdjustedY;
+    var adjustedY = lastAdjustedY + quantizeDiff(velocity, positionDiff);
 
     // Test exact
-    // var quantizedDiff = diff;
+    //var adjustedX = x;
+    //var adjustedY = y;
 
-    var adjustedX = lastAdjustedX + quantizedDiff;
-
-    if (i < len) {
-        xs[i] = adjustedX;
-        i++;
-        if (i === len) {
+    if (positionIndex < len) {
+        positions[positionIndex] = adjustedX;
+        positionIndex++;
+        if (positionIndex === len) {
             results();
         }
     }
 
     ctxBottom.fillRect(x - offsetLeft, y - offsetTop + document.body.scrollTop, boxSize, boxSize);
-    ctxTop.fillRect(adjustedX - offsetLeft, y - offsetTop + document.body.scrollTop, boxSize, boxSize);
+    ctxTop.fillRect(adjustedX - offsetLeft, adjustedY - offsetTop + document.body.scrollTop, boxSize, boxSize);
 
     window.requestAnimationFrame(go);
 
     lastY = y;
     lastX = x;
     lastAdjustedX = adjustedX;
+    lastAdjustedY = adjustedY;
 };
-
-var keyBy = 5;
 
 var pad = function (num) {
-    return ('   ' + num).slice(-4);
+    return ('    ' + num).slice(-5);
 };
 
-var line = function (j) {
-    var key = xs[j];
-    var previousKey = j > 0 ? xs[j - keyBy] : key;
-    var text = pad(key - previousKey) + ' | ';
+var lastPosition = 0;
+var lastVelocity = 0;
 
-    var i;
-    var lastX = key;
-    for (i = 0; i < keyBy; i++) {
-        var x = xs[j + i];
-        text += pad(x - lastX) + ' ';
-        lastX = x;
+var groupSize = 5;
+var lineSize = 6 * groupSize;
+
+var line = function (k, displayType) {
+    var text = '';
+    var j;
+    for (j = 0; j < lineSize; j += groupSize) {
+        var i;
+        for (i = 0; i < groupSize; i++) {
+            var value;
+            if (displayType === 'position') {
+                value = positions[k + j + i];
+            } else if (displayType === 'velocity') {
+                value = velocities[k + j + i];
+            } else if (displayType === 'acceleration') {
+                value = accelerations[k + j + i];
+            }
+
+            text += pad(value);
+        }
+        text += '  ';
     }
     console.log(text);
 };
 
-var block = function (j) {
-    var i;
-    for (i = 0; i < keyBy; i++) {
-        line(j + keyBy * i);
-    }
-};
-
 var results = function () {
-    var keyBySquared = keyBy * keyBy
-
     console.log('---------');
     console.log('');
-    var j;
-    for (j = 0; j <= (len - keyBySquared); j += keyBySquared) {
-        block(j);
+
+    var i;
+    var lastPosition = positions[0];
+    var lastVelocity = 0;
+    for (i = 0; i < positions.length; i++) {
+        var position = positions[i];
+        var velocity = position - lastPosition;
+        var acceleration = velocity - lastVelocity;
+        velocities[i] = velocity;
+        accelerations[i] = acceleration;
+
+        lastPosition = position;
+        lastVelocity = velocity;
+    }
+
+
+    var k;
+    for (k = 0; k <= (len - lineSize); k += lineSize) {
+        line(k, 'position');
+        line(k, 'velocity');
+        line(k, 'acceleration');
     }
 };
 
