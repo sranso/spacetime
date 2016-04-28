@@ -9,13 +9,12 @@ Type.commit = 2;
 Type.tag = 3;
 Type.blob = 4;
 
-Type.longStringBlob = 5;
-Type.shortStringBlob = 6;
-Type.integerBlob = 7;
-Type.floatBlob = 8;
-Type.booleanBlob = 9;
-Type.functionBlob = 10;
+Type.string = 4;
+Type.string20 = 5;
+Type.integer = 6;
+Type.float = 7;
+Type.boolean = 8;
 
-Type.minTree = 12;
+Type.minTree = 9;
 
 })();

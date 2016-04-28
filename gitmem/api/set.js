@@ -1,5 +1,4 @@
 'use strict';
-global.Set = {};
 (function () {
 
 var newHashOffsets = new Uint32Array(5);
