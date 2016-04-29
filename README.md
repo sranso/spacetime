@@ -33,7 +33,7 @@ Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the cl
 ``` bash
 $ rm dev/fcgiwrap.sock  # if it exists already
 $ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
-$ nginx -c /Users/jakesandlund/getspacetime/spacetime/dev/nginx.conf
+$ nginx -c /Users/jakesandlund/spacetime/dev/nginx.conf
 ```
 
 Add a bare repository to `dev/local-git` and test pushing to it:
