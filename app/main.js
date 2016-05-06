@@ -30,9 +30,9 @@ var logStats = function () {
 };
 
 Main.initialize = function () {
-    Gitmem.initialize();
-    var gitmem = Gitmem.create();
-    Gitmem.load(gitmem);
+    // Gitmem.initialize();
+    // var gitmem = Gitmem.create();
+    // Gitmem.load(gitmem);
 
     // $Project = buildFilledProject();
     $Project = buildEmptyProject();
