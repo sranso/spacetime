@@ -5,7 +5,7 @@ set -e
 tag=$1
 
 if [ -z "$tag" ]; then
-    echo 'Usage: ./deploy.sh tag'
+    echo 'Usage: ./deploy.sh [root] tag'
     exit 1
 fi
 
@@ -15,6 +15,7 @@ if [ "$tag" = root ]; then
 else
     root=false
 fi
+branch=$(echo "$tag" | sed 's/[^a-z0-9].*//')
 
 ./init.sh
 
@@ -27,11 +28,9 @@ git checkout "$tag"
 if git symbolic-ref HEAD 1>/dev/null 2>&1; then
     git checkout "origin/$tag"
 fi
-cd ..
-../build.js
-cd ..
+cd ../..
+./build.js $branch
 
-branch=$(echo "$tag" | sed 's/[^a-z0-9].*//')
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/:/_/g')
 release="$timestamp--$tag"
 

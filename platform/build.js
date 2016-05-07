@@ -9,7 +9,14 @@ var cheerio = require('cheerio');
 var CleanCSS = require('clean-css');
 var UglifyJS = require('uglify-js');
 
+var versionBranch = process.argv[2];
+var PREFIX = '/';
+if (versionBranch) {
+    PREFIX += versionBranch + '/';
+}
+
 var buildAll = function (buildCallback) {
+    process.chdir('workspace');
     async.series([
         async.apply(fs.mkdir, 'dist'),
         async.apply(fs.mkdir, 'dist/vendor'),
@@ -86,11 +93,10 @@ var minifyStyles = function (styles, callback) {
 
 var ignoreDirectories = [
     'spacetime/.git',
-    'spacetime/LICENSES',
-    'spacetime/dev',
-    'spacetime/log',
-    'spacetime/node_modules',
     'spacetime/app',
+    'spacetime/dev',
+    'spacetime/gitmem',
+    'spacetime/platform',
     'spacetime/test',
 ];
 
@@ -172,7 +178,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
     var scripts = [];
     $('script').each(function () {
         var src = $(this).attr('src');
-        if (src && src.indexOf('./app/') === 0) {
+        if (src && src.indexOf('/vendor/') === -1) {
             scripts.push(path.join(dir, src));
         }
     });
@@ -197,7 +203,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
             $('link').each(function () {
                 if ($(this).attr('type') === 'text/css') {
                     if (first) {
-                        $(this).attr('href', '/' + name);
+                        $(this).attr('href', PREFIX + name);
                         first = false;
                     } else {
                         $(this).remove();
@@ -218,9 +224,9 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                     return;
                 }
                 if (src.indexOf('./app/vendor/') === 0) {
-                    $(this).attr('src', '/' + minifiedVendors[src]);
+                    $(this).attr('src', PREFIX + minifiedVendors[src]);
                 } else if (first) {
-                    $(this).attr('src', '/' + name);
+                    $(this).attr('src', PREFIX + name);
                     first = false;
                 } else {
                     $(this).remove();

@@ -5,5 +5,5 @@ if [ ! -d workspace ]; then
     mkdir releases
     mkdir releases/all
     mkdir releases/current
-    git clone git@github.com:spacetimeup/spacetime.git workspace/spacetime
+    git clone git@github.com:getspacetime/spacetime.git workspace/spacetime
 fi
