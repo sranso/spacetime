@@ -19,15 +19,13 @@ var current = {
 };
 var last = cloneState(current);
 
-var positions = new Array(80);
-var positionIndex = positions.length;
-
+var results;
 var quantizations;
+var animationRequestId;
 
 Runner.initialize = function () {
     quantizations = Quantizer.generateQuantizations();
     Ui.initialize();
-    window.requestAnimationFrame(Runner.run);
 };
 
 Runner.start = function (startX, startY) {
@@ -37,7 +35,13 @@ Runner.start = function (startX, startY) {
     current.adjustedY = startY;
     last = cloneState(current);
 
-    positionIndex = 0;
+    results = Results.create();
+    Runner.run();
+};
+
+Runner.stop = function () {
+    window.cancelAnimationFrame(animationRequestId);
+    Results.output(results);
 };
 
 Runner.updatePosition = function (newX, newY) {
@@ -52,22 +56,14 @@ var adjust = function (x, lastX, lastAdjustedX) {
     return lastAdjustedX + diff;
 };
 
-Runner.run = function (now) {
+Runner.run = function () {
     current.adjustedX = adjust(current.x, last.x, last.adjustedX);
     current.adjustedY = adjust(current.y, last.y, last.adjustedY);
 
-    if (positionIndex < positions.length) {
-        positions[positionIndex] = current.x;
-        positionIndex++;
-        if (positionIndex === positions.length) {
-            var results = Results.create(positions);
-            Results.output(results);
-        }
-    }
-
+    Results.collect(results, current.x);
     Ui.draw(current);
 
-    window.requestAnimationFrame(Runner.run);
+    animationRequestId = window.requestAnimationFrame(Runner.run);
 
     last = cloneState(current);
 };

@@ -11,6 +11,7 @@ var ctxBottom = canvasBottom.getContext('2d');
 
 var shiftDown = false;
 var spaceToggle = false;
+var running = false;
 
 Ui.initialize = function () {
     canvasTop.width = canvasTop.offsetWidth;
@@ -23,12 +24,19 @@ Ui.initialize = function () {
     ctxTop.fillStyle = '#000000';
 
     canvasTop.addEventListener('click', function (event) {
-        console.log('Recording...\n\n\n\n\n\n\n');
+        if (running) {
+            Runner.stop();
+            document.body.className = '';
+        } else {
+            Runner.start(event.clientX, event.clientY);
+            document.body.className = 'running';
 
-        Runner.start(event.clientX, event.clientY);
+            console.log('Recording...\n\n\n\n\n\n\n');
 
-        ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
-        ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
+            ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
+            ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
+        }
+        running = !running;
     });
 
     canvasTop.addEventListener('mousemove', function (event) {
