@@ -58,7 +58,7 @@ var concatenate = function (scripts, callback) {
 var ignoreDirectories = [
     'spacetime/.git',
     'spacetime/app',
-    'spacetime/dev',
+    'spacetime/local-dev',
     'spacetime/gitmem',
     'spacetime/platform',
     'spacetime/test',

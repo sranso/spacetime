@@ -25,21 +25,21 @@ Install nginx and fcgiwrap
 ``` bash
 $ brew install nginx
 $ brew install fcgiwrap
-$ cp dev/nginx.example.conf dev/nginx.conf
+$ cp local-dev/nginx.example.conf local-dev/nginx.conf
 ```
 
-Edit the `dev/nginx.conf` for paths to `spacetime` and optionally fill in the client secret. Start nginx and fcgiwrap:
+Edit the `local-dev/nginx.conf` for paths to `spacetime` and optionally fill in the client secret. Start nginx and fcgiwrap:
 
 ``` bash
-$ rm dev/fcgiwrap.sock  # if it exists already
-$ /usr/local/sbin/fcgiwrap -s unix:./dev/fcgiwrap.sock
-$ nginx -c /Users/jakesandlund/spacetime/dev/nginx.conf
+$ rm local-dev/fcgiwrap.sock  # if it exists already
+$ /usr/local/sbin/fcgiwrap -s unix:./local-dev/fcgiwrap.sock
+$ nginx -c /Users/jakesandlund/spacetime/local-dev/nginx.conf
 ```
 
-Add a bare repository to `dev/local-git` and test pushing to it:
+Add a bare repository to `local-dev/git-repos` and test pushing to it:
 
 ``` bash
-$ cd dev/local-git
+$ cd local-dev/git-repos
 $ git init --bare testrepo.git
 $ cd testrepo.git
 $ git config http.receivepack true  # allow unauthenticated pushes
@@ -65,7 +65,7 @@ If you are using Vim, the following adds a keyboard shortcut (`<leader>r`) to ru
 
 ``` vim
 nnoremap <leader>r :w<CR>:Test<CR>:e<CR>
-command -nargs=0 Test execute 'silent !dev/run-test-for-vim.sh %' | redraw!
+command -nargs=0 Test execute 'silent !local-dev/run-test-for-vim.sh %' | redraw!
 ```
 
 ## License and Copyright
