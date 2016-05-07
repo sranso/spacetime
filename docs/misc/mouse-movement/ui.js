@@ -61,11 +61,11 @@ var showHideCanvases = function () {
     canvasBottom.style.opacity = +!spaceToggle;
 };
 
-Ui.draw = function (x, y, adjustedX, adjustedY) {
+Ui.draw = function (state) {
     var offsetLeft = canvasTop.offsetLeft;
     var offsetTop = canvasTop.offsetTop - document.body.scrollTop;
-    ctxBottom.fillRect(x - offsetLeft, y - offsetTop, boxSize, boxSize);
-    ctxTop.fillRect(adjustedX - offsetLeft, adjustedY - offsetTop, boxSize, boxSize);
+    ctxBottom.fillRect(state.x - offsetLeft, state.y - offsetTop, boxSize, boxSize);
+    ctxTop.fillRect(state.adjustedX - offsetLeft, state.adjustedY - offsetTop, boxSize, boxSize);
 };
 
 })();

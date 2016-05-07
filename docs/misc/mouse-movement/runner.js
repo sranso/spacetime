@@ -2,12 +2,22 @@
 var Runner = {};
 (function () {
 
-var x = 0;
-var y = 0;
-var lastX = 0;
-var lastY = 0;
-var lastAdjustedX = 0;
-var lastAdjustedY = 0;
+var cloneState = function (state) {
+    return {
+        x: state.x,
+        y: state.y,
+        adjustedX: state.adjustedX,
+        adjustedY: state.adjustedY,
+    };
+};
+
+var current = {
+    x: 0,
+    y: 0,
+    adjustedX: 0,
+    adjustedY: 0,
+};
+var last = cloneState(current);
 
 var positions = new Array(80);
 var positionIndex = positions.length;
@@ -21,34 +31,33 @@ Runner.initialize = function () {
 };
 
 Runner.start = function (startX, startY) {
-    x = startX;
-    y = startY;
-    lastX = x;
-    lastY = y;
-    lastAdjustedX = x;
-    lastAdjustedY = y;
+    current.x = startX;
+    current.y = startY;
+    current.adjustedX = startX;
+    current.adjustedY = startY;
+    last = cloneState(current);
 
     positionIndex = 0;
 };
 
 Runner.updatePosition = function (newX, newY) {
-    x = newX;
-    y = newY;
+    current.x = newX;
+    current.y = newY;
+};
+
+var adjust = function (x, lastX, lastAdjustedX) {
+    var positionDiff = x - lastX;
+    var velocity = x - lastAdjustedX;
+    var diff = Quantizer.quantize(quantizations, positionDiff, velocity);
+    return lastAdjustedX + diff;
 };
 
 Runner.run = function (now) {
-    var positionDiff = x - lastAdjustedX;
-    var velocity = x - lastX;
-    var diffX = Quantizer.quantize(quantizations, positionDiff, velocity);
-    var adjustedX = lastAdjustedX + diffX;
-
-    positionDiff = y - lastAdjustedY;
-    velocity = y - lastY;
-    var diffY = Quantizer.quantize(quantizations, positionDiff, velocity);
-    var adjustedY = lastAdjustedY + diffY;
+    current.adjustedX = adjust(current.x, last.x, last.adjustedX);
+    current.adjustedY = adjust(current.y, last.y, last.adjustedY);
 
     if (positionIndex < positions.length) {
-        positions[positionIndex] = x;
+        positions[positionIndex] = current.x;
         positionIndex++;
         if (positionIndex === positions.length) {
             var results = Results.create(positions);
@@ -56,14 +65,11 @@ Runner.run = function (now) {
         }
     }
 
-    Ui.draw(x, y, adjustedX, adjustedY);
+    Ui.draw(current);
 
     window.requestAnimationFrame(Runner.run);
 
-    lastY = y;
-    lastX = x;
-    lastAdjustedX = adjustedX;
-    lastAdjustedY = adjustedY;
+    last = cloneState(current);
 };
 
 Runner.initialize();
