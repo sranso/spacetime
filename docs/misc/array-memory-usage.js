@@ -1,25 +1,25 @@
 // Results:
 //
-// baseTest(10,000,000)
+// memBaseTest(10,000,000)
 // before: 4.6 MiB
 // after:  196 MiB
 // difference: 191 MiB
 // calculated: 200 MB (or 191 MiB)
 // per hash: 20 bytes
 //
-// baseTestArray(10,000,000)
+// memBaseTestArray(10,000,000)
 // before: 4.5 MiB
 // after:  272 MiB
 // difference: 268 MiB
 // per hash: 28 bytes
 //
-// testArrayOfArray(1,000,000)
+// memTestArrayOfArray(1,000,000)
 // before: 4.5 MiB
 // after:  42.9 MiB
 // difference: 38 MiB
 // per index: 40 bytes (40 - 8 == 32 bytes for object)
 //
-// testWithOffset(10,000,000)
+// memTestWithOffset(10,000,000)
 // before: 5.4 MB
 // after:  654 MB
 // per hash: 68 bytes
@@ -27,28 +27,28 @@
 //        40 byte obj = 8 hash ptr + 8 hashOffset + 24 byte overhead
 // note: simply typing 'all.length' took 30 seconds or so.
 //
-// testWithOffset(1,000,000)
+// memTestWithOffset(1,000,000)
 // before: 4.5 MB
 // after: 69.6 MB
 // per hash: 68 bytes
 //
-// testDataAndOffset(1,000,000)
+// memTestDataAndOffset(1,000,000)
 // before: 4.5 MB
 // after: 84.8 MB
 // per hash: 84 bytes (16 bytes (2 * 8) more than WithOffset)
 //
-// testNoOffset(1,000,000) and testBufferNoOffset(1,000,000)
+// memTestNoOffset(1,000,000) and memTestBufferNoOffset(1,000,000)
 // before: 4.5 MB
 // after:  169 MB
 // per hash: 172 bytes (104 bytes larger than above, so 112 bytes for a new Uint8Array)
 //
-// testSubarrayOnly(1,000,000)
+// memTestSubarrayOnly(1,000,000)
 // before: 4.5 MB
 // after:  138 MB
 // per hash: 140 bytes (28 + for hash and ptr + 112 bytes for Uint8Array)
 // second time: 272 (272 - 138 == 134)
 //
-// testSlicedArrayOnly(1,000,000)
+// memTestSlicedArrayOnly(1,000,000)
 // before: 4.5 MB
 // after:  203 MB
 // per hash: 208 bytes (28 + for hash and ptr + 112 bytes for Uint8Array + 20 bytes for hash a second time + 42 remaining)
@@ -99,11 +99,11 @@ noOrginal.hash = new Uint8Array(20);
 var all;
 var hashes;
 
-var baseTest = function (num) {
+var memBaseTest = function (num) {
     hashes = new Uint8Array(num * 20);
 };
 
-var baseTestArray = function (num) {
+var memBaseTestArray = function (num) {
     all = new Array(num);
     hashes = new Uint8Array(num * 20);
     var i;
@@ -112,7 +112,7 @@ var baseTestArray = function (num) {
     }
 };
 
-var testArrayOfArray = function (num) {
+var memTestArrayOfArray = function (num) {
     all = new Array(num);
     var i;
     for (i = 0; i < num; i++) {
@@ -120,7 +120,7 @@ var testArrayOfArray = function (num) {
     }
 };
 
-var testWithOffset = function (num) {
+var memTestWithOffset = function (num) {
     all = new Array(num);
     var hashes = new Uint8Array(num * 20);
     var i;
@@ -132,7 +132,7 @@ var testWithOffset = function (num) {
     }
 };
 
-var testDataAndOffset = function (num) {
+var memTestDataAndOffset = function (num) {
     all = new Array(num);
     var hashes = new Uint8Array(num * 20);
     var i;
@@ -144,7 +144,7 @@ var testDataAndOffset = function (num) {
     }
 };
 
-var testNoOffset = function (num) {
+var memTestNoOffset = function (num) {
     all = new Array(num);
     var hashes = new Uint8Array(num * 20);
     var i;
@@ -155,7 +155,7 @@ var testNoOffset = function (num) {
     }
 };
 
-var testBufferNoOffset = function (num) {
+var memTestBufferNoOffset = function (num) {
     all = new Array(num);
     var hashBuffer = new ArrayBuffer(num * 20);
     var i;
@@ -166,7 +166,7 @@ var testBufferNoOffset = function (num) {
     }
 };
 
-var testSubarrayOnly = function (num) {
+var memTestSubarrayOnly = function (num) {
     all = new Array(num);
     var hashes = new Uint8Array(num * 20);
     var i;
@@ -175,7 +175,7 @@ var testSubarrayOnly = function (num) {
     }
 };
 
-var testSlicedArrayOnly = function (num) {
+var memTestSlicedArrayOnly = function (num) {
     all = new Array(num);
     var hashes = new Uint8Array(num * 20);
     var i;

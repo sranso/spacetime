@@ -39,7 +39,7 @@
 //       2 MB * 3 ns/B                    6 ms
 //       1 MB * 3 ns/B                    3 ms
 
-var runTests = function () {
+var runArrayCopyPerformance = function () {
     var length = 67108864; // 64 MiB
     var lengthMask = length - 1;
     var cacheMask = ~63;

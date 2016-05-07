@@ -39,7 +39,7 @@
 //        50,000 entries                     130 us
 //        10,000 entries                      26 us
 
-var runTests = function (length, probability, bustCache) {
+var runArrayScanForBit = function (length, probability, bustCache) {
     var array = new Uint32Array(length);
 
     var i;
