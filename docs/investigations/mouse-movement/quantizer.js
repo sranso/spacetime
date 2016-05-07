@@ -55,7 +55,7 @@ Quantizer.quantize = function (quantizations, positionDiff, velocity) {
     var sign = diff < 0 ? -1 : +1;
 
     var low = Math.floor(absDiff);
-    var high = Math.floor(absDiff + 0.0000001);
+    var high = Math.ceil(absDiff + 0.0000001);
     while (quantizations[low] === 0) {
         low--;
     }
