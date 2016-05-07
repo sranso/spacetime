@@ -11,7 +11,7 @@ var UglifyJS = require('uglify-js');
 
 var versionBranch = process.argv[2];
 var PREFIX = '/';
-if (versionBranch) {
+if (versionBranch && versionBranch !== 'root') {
     PREFIX += versionBranch + '/';
 }
 

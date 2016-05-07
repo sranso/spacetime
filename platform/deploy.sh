@@ -16,6 +16,11 @@ else
     root=false
 fi
 branch=$(echo "$tag" | sed 's/[^a-z0-9].*//')
+build_branch=$branch
+if [ $root = true ]; then
+    build_branch=root
+fi
+
 
 ./init.sh
 
@@ -29,7 +34,7 @@ if git symbolic-ref HEAD 1>/dev/null 2>&1; then
     git checkout "origin/$tag"
 fi
 cd ../..
-./build.js $branch
+./build.js $build_branch
 
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ" | sed 's/:/_/g')
 release="$timestamp--$tag"
