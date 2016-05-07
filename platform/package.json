@@ -4,8 +4,6 @@
     "private": true,
     "dependencies": {
         "async": "1.5.0",
-        "cheerio": "0.19.0",
-        "clean-css": "3.4.8",
-        "uglify-js": "2.6.1"
+        "cheerio": "0.19.0"
     }
 }

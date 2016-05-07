@@ -3,11 +3,10 @@
 var fs = require('fs');
 var path = require('path');
 var crypto = require('crypto');
+var child_process = require('child_process');
 
 var async = require('async');
 var cheerio = require('cheerio');
-var CleanCSS = require('clean-css');
-var UglifyJS = require('uglify-js');
 
 var versionBranch = process.argv[2];
 var PREFIX = '/';
@@ -30,64 +29,29 @@ var buildAll = function (buildCallback) {
     ], buildCallback);
 };
 
-var minifiedStyleShas = {};
-var minifiedScriptShas = {};
-var minifiedVendors = {};
+var concatenatedShas = {};
+var concatenatedVendors = {};
 
 var buildVendor = function (vendor, callback) {
-    minifyScripts(['spacetime/app/vendor/' + vendor], function (err, result) {
+    concatenate(['spacetime/app/vendor/' + vendor], function (err, result) {
         if (err) throw err;
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
-        minifiedVendors['./app/vendor/' + vendor] = name;
+        concatenatedVendors['./app/vendor/' + vendor] = name;
         fs.writeFile('dist/' + name, result.text, 'utf8', callback);
     });
 };
 
-// See uglify-save-license (https://github.com/shinnn/uglify-save-license)
-var keepLicense = function (state, node, comment) {
-    if (comment.file !== state.previousFile) {
-        state.previousLine = 0;
-    }
-    state.previousFile = comment.file;
-
-    if (comment.line === state.previousLine + 1) {
-        state.previousLine = comment.line;
-        return true;
-    }
-};
-
-var minifyScripts = function (scripts, callback) {
+var concatenate = function (scripts, callback) {
     var key = scripts.join(';');
-    var sha = minifiedScriptShas[key];
+    var sha = concatenatedShas[key];
     if (sha) {
         return callback(null, {text: null, sha: sha});
     }
-    var options = {
-        output: {
-            comments: async.apply(keepLicense, {}),
-        }
-    };
-    var text = UglifyJS.minify(scripts, options).code;
+    var cat = 'cat ' + scripts.join(' ');
+    var text = child_process.execSync(cat, {encoding: 'utf-8'});
     sha = crypto.createHash('sha1').update(text).digest('hex');
-    minifiedScriptShas[key] = sha;
-    callback(null, {text: text, sha: sha});
-};
-
-var minifyStyles = function (styles, callback) {
-    var key = styles.join(';');
-    var sha = minifiedStyleShas[key];
-    if (sha) {
-        return callback(null, {text: null, sha: sha});
-    }
-    var minified = new CleanCSS().minify(styles);
-    if (minified.errors.length) {
-        return callback(new Error(minified.errors.join('; ')));
-    }
-
-    var text = minified.styles;
-    sha = crypto.createHash('sha1').update(text).digest('hex');
-    minifiedStyleShas[key] = sha;
+    concatenatedShas[key] = sha;
     callback(null, {text: text, sha: sha});
 };
 
@@ -186,11 +150,11 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
     async.parallel({
         styles: function (callback) {
             if (!styles.length) return callback(null, null);
-            minifyStyles(styles, callback);
+            concatenate(styles, callback);
         },
         scripts: function (callback) {
             if (!scripts.length) return callback(null, null);
-            minifyScripts(scripts, callback);
+            concatenate(scripts, callback);
         },
     }, function (err, result) {
         if (err) throw err;
@@ -224,7 +188,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                     return;
                 }
                 if (src.indexOf('./app/vendor/') === 0) {
-                    $(this).attr('src', PREFIX + minifiedVendors[src]);
+                    $(this).attr('src', PREFIX + concatenatedVendors[src]);
                 } else if (first) {
                     $(this).attr('src', PREFIX + name);
                     first = false;
