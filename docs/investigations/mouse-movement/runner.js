@@ -64,8 +64,8 @@ Runner.updatePosition = function (newX, newY) {
 };
 
 var adjust = function (x, lastX, lastAdjustedX) {
-    var positionDiff = x - lastX;
-    var velocity = x - lastAdjustedX;
+    var positionDiff = x - lastAdjustedX;
+    var velocity = x - lastX;
     var diff = Quantizer.quantize(quantizations, positionDiff, velocity);
     return lastAdjustedX + diff;
 };
