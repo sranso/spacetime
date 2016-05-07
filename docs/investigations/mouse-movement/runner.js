@@ -19,6 +19,7 @@ var current = {
 };
 var last = cloneState(current);
 
+var running = false;
 var results;
 var quantizations;
 var animationRequestId;
@@ -28,18 +29,31 @@ Runner.initialize = function () {
     Ui.initialize();
 };
 
-Runner.start = function (startX, startY) {
-    current.x = startX;
-    current.y = startY;
-    current.adjustedX = startX;
-    current.adjustedY = startY;
+Runner.toggleRunning = function (x, y) {
+    if (running) {
+        stop();
+    } else {
+        start(x, y);
+    }
+    running = !running;
+};
+
+var start = function (x, y) {
+    current.x = x;
+    current.y = y;
+    current.adjustedX = x;
+    current.adjustedY = y;
     last = cloneState(current);
+
+    console.log('Recording...\n\n\n\n\n\n\n');
+    Ui.startRunning();
 
     results = Results.create();
     Runner.run();
 };
 
-Runner.stop = function () {
+var stop = function () {
+    Ui.stopRunning();
     window.cancelAnimationFrame(animationRequestId);
     Results.output(results);
 };

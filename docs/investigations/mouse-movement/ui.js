@@ -9,9 +9,7 @@ var canvasBottom = document.getElementById('canvas-bottom');
 var ctxTop = canvasTop.getContext('2d');
 var ctxBottom = canvasBottom.getContext('2d');
 
-var shiftDown = false;
 var spaceToggle = false;
-var running = false;
 
 Ui.initialize = function () {
     canvasTop.width = canvasTop.offsetWidth;
@@ -24,19 +22,7 @@ Ui.initialize = function () {
     ctxTop.fillStyle = '#000000';
 
     canvasTop.addEventListener('click', function (event) {
-        if (running) {
-            Runner.stop();
-            document.body.className = '';
-        } else {
-            Runner.start(event.clientX, event.clientY);
-            document.body.className = 'running';
-
-            console.log('Recording...\n\n\n\n\n\n\n');
-
-            ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
-            ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
-        }
-        running = !running;
+        Runner.toggleRunning(event.clientX, event.clientY);
     });
 
     canvasTop.addEventListener('mousemove', function (event) {
@@ -45,28 +31,36 @@ Ui.initialize = function () {
 
     window.addEventListener('keydown', function (event) {
         if (event.shiftKey) {
-            shiftDown = true;
-
             if (event.keyCode === 32) {
                 spaceToggle = !spaceToggle;
                 event.preventDefault();
             }
-            showHideCanvases();
+            showHideCanvases(event.shiftKey);
         }
     });
 
     window.addEventListener('keyup', function (event) {
         if (!event.shiftKey) {
-            shiftDown = false;
             spaceToggle = false;
-            showHideCanvases();
+            showHideCanvases(event.shiftKey);
         }
     });
 };
 
-var showHideCanvases = function () {
+var showHideCanvases = function (shiftDown) {
     canvasTop.style.opacity = +(shiftDown === spaceToggle);
     canvasBottom.style.opacity = +!spaceToggle;
+};
+
+Ui.startRunning = function () {
+    document.body.className = 'running';
+
+    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
+    ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
+};
+
+Ui.stopRunning = function () {
+    document.body.className = '';
 };
 
 Ui.draw = function (state) {
