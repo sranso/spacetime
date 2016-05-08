@@ -16,11 +16,11 @@ Quantizer.generateQuantizations = function () {
 
         var j;
         for (j = 0; j < count; j++) {
-            quantizations.push(1);
+            quantizations.push(true);
 
             var i;
             for (i = 1; i < gap; i++) {
-                quantizations.push(0);
+                quantizations.push(false);
             }
         }
     }
@@ -78,10 +78,10 @@ var quantize = function (quantizations, targetDiff) {
 
     var low = Math.floor(absDiff);
     var high = Math.ceil(absDiff + 0.0000001);
-    while (quantizations[low] === 0) {
+    while (!quantizations[low]) {
         low--;
     }
-    while (quantizations[high] === 0) {
+    while (!quantizations[high]) {
         high++;
     }
 
