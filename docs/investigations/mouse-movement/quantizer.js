@@ -49,10 +49,17 @@ Quantizer.generateQuantizations = function () {
     return quantizations;
 };
 
-Quantizer.quantize = function (quantizations, positionDiff, velocity) {
-    var diff = (2 * velocity + 3 * positionDiff) / 5;
-    var absDiff = Math.abs(diff);
-    var sign = diff < 0 ? -1 : +1;
+Quantizer.adjust = function (quantizations, position, lastPosition, lastAdjusted) {
+    var positionDiff = position - lastAdjusted;
+    var velocity = position - lastAdjusted;
+    var targetDiff = (2 * velocity + 3 * positionDiff) / 5;
+    var quantizedDiff = quantize(quantizations, targetDiff);
+    return lastAdjusted + quantizedDiff;
+};
+
+var quantize = function (quantizations, targetDiff) {
+    var absDiff = Math.abs(targetDiff);
+    var sign = targetDiff < 0 ? -1 : +1;
 
     var low = Math.floor(absDiff);
     var high = Math.ceil(absDiff + 0.0000001);
@@ -63,7 +70,9 @@ Quantizer.quantize = function (quantizations, positionDiff, velocity) {
         high++;
     }
 
-    if (absDiff - low < high - absDiff) {
+    var lowDiff = absDiff - low;
+    var highDiff = high - absDiff;
+    if (lowDiff < highDiff) {
         return sign * low;
     } else {
         return sign * high;

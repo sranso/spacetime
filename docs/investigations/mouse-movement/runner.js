@@ -2,6 +2,19 @@
 var Runner = {};
 (function () {
 
+var current = {
+    x: 0,
+    y: 0,
+    adjustedX: 0,
+    adjustedY: 0,
+};
+var last = current;
+
+var running = false;
+var results;
+var quantizations;
+var animationRequestId;
+
 var cloneState = function (state) {
     return {
         x: state.x,
@@ -10,19 +23,6 @@ var cloneState = function (state) {
         adjustedY: state.adjustedY,
     };
 };
-
-var current = {
-    x: 0,
-    y: 0,
-    adjustedX: 0,
-    adjustedY: 0,
-};
-var last = cloneState(current);
-
-var running = false;
-var results;
-var quantizations;
-var animationRequestId;
 
 Runner.initialize = function () {
     quantizations = Quantizer.generateQuantizations();
@@ -63,16 +63,9 @@ Runner.updatePosition = function (newX, newY) {
     current.y = newY;
 };
 
-var adjust = function (x, lastX, lastAdjustedX) {
-    var positionDiff = x - lastAdjustedX;
-    var velocity = x - lastX;
-    var diff = Quantizer.quantize(quantizations, positionDiff, velocity);
-    return lastAdjustedX + diff;
-};
-
 Runner.run = function () {
-    current.adjustedX = adjust(current.x, last.x, last.adjustedX);
-    current.adjustedY = adjust(current.y, last.y, last.adjustedY);
+    current.adjustedX = Quantizer.adjust(quantizations, current.x, last.x, last.adjustedX);
+    current.adjustedY = Quantizer.adjust(quantizations, current.y, last.y, last.adjustedY);
 
     Results.collect(results, current.x);
     Ui.draw(current);
