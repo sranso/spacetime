@@ -2,34 +2,39 @@
 var Quantize = {};
 (function () {
 
-// These arrays are hand-crafted using trial and error.
-var gapAtEachLevel    = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14,15, 17, 19, 22, 25, 29, 33, 38, 44, 51, 59, 68, 78, 90];
-var countsAtEachLevel = [18, 5, 3, 2, 2, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  9];
-
-// `quantizations` is an array with `true` at all allowed mouse
-// difference values (absolute values), and `false` otherwise.
+// Quantize takes a change in a mouse coordinate (delta x or y)
+// and constrains it to a predetermined set of allowed changes.
+// The central data structure is the `quantizations` array,
+// with `true` at all allowed mouse deltas (absolute deltas),
+// and `false` otherwise.
 // To quantize the mouse movement, find the nearest index with
 // a `true` value in the `quantizations` array, starting with
-// the index equal to the mouse difference value.
+// the index equal to the delta.
 //
 // Example:
-//                      0     1     2      3     4      5     6
-//   quantizations = [true, true, false, true, false, false, true]
+//                      0     1     2      3     4      5
+//   quantizations = [true, false, true, false, false, true]
 //
-//   If mouse x moves by 1, then start at index 1, and because
-//   quantizations[1] is true, the quantized difference value is
-//   also 1.
-//   If mouse x moves by 4, then start at index 4. quantizations[4]
+//   If mouse x moves by 3, then start at index 3. quantizations[3]
 //   is false, so search for the nearest true index. In this
-//   case it is 3, which becomes the quantized difference.
+//   case it is 2, which becomes the quantized change.
+
+
+// These two arrays are used to build the `quantizations` array,
+// which is done in `Quantize.generateQuantizations`.
+// The `quantizationStats` are used to help adjust them.
+// These arrays and the next two methods aren't essential for
+// understand the rest of the program.
+var gapBetweenQuantizations = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14,15, 17, 19, 22, 25, 29, 33, 38, 44, 51, 59, 68, 78, 90];
+var countsAtEachGapAmount   = [18, 5, 3, 2, 2, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  9];
 
 Quantize.generateQuantizations = function () {
     var quantizations = [];
 
     var k;
-    for (k = 0; k < countsAtEachLevel.length; k++) {
-        var count = countsAtEachLevel[k];
-        var gap = gapAtEachLevel[k];
+    for (k = 0; k < countsAtEachGapAmount.length; k++) {
+        var count = countsAtEachGapAmount[k];
+        var gap = gapBetweenQuantizations[k];
 
         var j;
         for (j = 0; j < count; j++) {
@@ -47,8 +52,6 @@ Quantize.generateQuantizations = function () {
     return quantizations;
 };
 
-// These stats are used for feedback to adjust gapsAtEachLevel
-// and countsAtEachLevel (by hand).
 var quantizationStats = function () {
     var levelRanges = [];
     var numLevels = [];
@@ -57,9 +60,9 @@ var quantizationStats = function () {
     var numLevelsSum = 0;
 
     var k;
-    for (k = 0; k < countsAtEachLevel.length; k++) {
-        var count = countsAtEachLevel[k];
-        var gap = gapAtEachLevel[k];
+    for (k = 0; k < countsAtEachGapAmount.length; k++) {
+        var count = countsAtEachGapAmount[k];
+        var gap = gapBetweenQuantizations[k];
 
         var error = gap / 2;
         var errorFraction = error / (sum + error);
@@ -74,8 +77,8 @@ var quantizationStats = function () {
         numLevels[k] = numLevelsSum;
     }
 
-    console.log(gapAtEachLevel.map(Analysis.pad).join(''));
-    console.log(countsAtEachLevel.map(Analysis.pad).join(''));
+    console.log(gapBetweenQuantizations.map(Analysis.pad).join(''));
+    console.log(countsAtEachGapAmount.map(Analysis.pad).join(''));
     console.log(levelRanges.map(Analysis.pad).join(''));
     console.log(numLevels.map(Analysis.pad).join(''));
     console.log(errors.map(Analysis.pad).join(''));
