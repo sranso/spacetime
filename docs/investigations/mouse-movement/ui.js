@@ -22,11 +22,11 @@ Ui.initialize = function () {
     ctxTop.fillStyle = '#000000';
 
     canvasTop.addEventListener('click', function (event) {
-        Runner.toggleRunning(event.clientX, event.clientY);
+        Main.toggleRunning(event.clientX, event.clientY);
     });
 
     canvasTop.addEventListener('mousemove', function (event) {
-        Runner.updatePosition(event.clientX, event.clientY);
+        Main.updatePosition(event.clientX, event.clientY);
     });
 
     window.addEventListener('keydown', function (event) {

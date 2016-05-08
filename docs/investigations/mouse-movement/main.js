@@ -1,5 +1,5 @@
 'use strict';
-var Runner = {};
+var Main = {};
 (function () {
 
 // adjusted{X,Y} are the x/y values after the
@@ -26,12 +26,12 @@ var cloneState = function (state) {
     };
 };
 
-Runner.initialize = function () {
+Main.initialize = function () {
     quantizations = Quantize.generateQuantizations();
     Ui.initialize();
 };
 
-Runner.toggleRunning = function (x, y) {
+Main.toggleRunning = function (x, y) {
     if (running) {
         stop();
     } else {
@@ -50,7 +50,7 @@ var start = function (x, y) {
     analysis = Analysis.create();
 
     Ui.startRunning();
-    Runner.run();
+    Main.run();
 };
 
 var stop = function () {
@@ -59,23 +59,23 @@ var stop = function () {
     Analysis.outputResults(analysis, quantizations);
 };
 
-Runner.updatePosition = function (newX, newY) {
+Main.updatePosition = function (newX, newY) {
     current.x = newX;
     current.y = newY;
 };
 
-Runner.run = function () {
+Main.run = function () {
     current.adjustedX = Quantize.adjustPosition(quantizations, current.x, last.x, last.adjustedX);
     current.adjustedY = Quantize.adjustPosition(quantizations, current.y, last.y, last.adjustedY);
 
     Analysis.collect(analysis, current.adjustedX);
     Ui.draw(current);
 
-    animationRequestId = window.requestAnimationFrame(Runner.run);
+    animationRequestId = window.requestAnimationFrame(Main.run);
 
     last = cloneState(current);
 };
 
-Runner.initialize();
+Main.initialize();
 
 })();
