@@ -6,8 +6,8 @@ var boxSize = 10;
 
 var canvasTop = document.getElementById('canvas-top');
 var canvasBottom = document.getElementById('canvas-bottom');
-var ctxTop = canvasTop.getContext('2d');
-var ctxBottom = canvasBottom.getContext('2d');
+var contextTop = canvasTop.getContext('2d');
+var contextBottom = canvasBottom.getContext('2d');
 
 var spaceToggle = false;
 
@@ -18,8 +18,8 @@ Ui.initialize = function () {
     canvasBottom.width = canvasBottom.offsetWidth;
     canvasBottom.height = canvasBottom.offsetHeight;
 
-    ctxBottom.fillStyle = '#ff0000';
-    ctxTop.fillStyle = '#000000';
+    contextBottom.fillStyle = '#ff0000';
+    contextTop.fillStyle = '#000000';
 
     canvasTop.addEventListener('click', function (event) {
         Main.toggleRunning(event.clientX, event.clientY);
@@ -55,8 +55,8 @@ var showHideCanvases = function (shiftDown) {
 Ui.startRunning = function () {
     document.body.className = 'running';
 
-    ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
-    ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
+    contextTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
+    contextBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
 
     console.log('Recording...\n\n\n\n\n\n\n');
 };
@@ -69,8 +69,8 @@ Ui.draw = function (state) {
     var offsetLeft = canvasTop.offsetLeft;
     var offsetTop = canvasTop.offsetTop - document.body.scrollTop;
 
-    ctxBottom.fillRect(state.x - offsetLeft, state.y - offsetTop, boxSize, boxSize);
-    ctxTop.fillRect(state.adjustedX - offsetLeft, state.adjustedY - offsetTop, boxSize, boxSize);
+    contextBottom.fillRect(state.x - offsetLeft, state.y - offsetTop, boxSize, boxSize);
+    contextTop.fillRect(state.adjustedX - offsetLeft, state.adjustedY - offsetTop, boxSize, boxSize);
 };
 
 })();

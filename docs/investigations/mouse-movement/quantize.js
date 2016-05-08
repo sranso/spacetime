@@ -17,14 +17,12 @@ var Quantize = {};
 //
 //   If mouse x moves by 3, then start at index 3. quantizations[3]
 //   is false, so search for the nearest true index. In this
-//   case it is 2, which becomes the quantized change.
+//   case it is 2, so 2 is the quantized change.
 
 
-// These two arrays are used to build the `quantizations` array,
-// which is done in `Quantize.generateQuantizations`.
-// The `quantizationStats` are used to help adjust them.
-// These arrays and the next two methods aren't essential for
-// understand the rest of the program.
+// These two arrays and next two functions are used to build
+// the `quantizations` array, so they aren't essential for
+// understanding the rest of the program.
 var gapBetweenQuantizations = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14,15, 17, 19, 22, 25, 29, 33, 38, 44, 51, 59, 68, 78, 90];
 var countsAtEachGapAmount   = [18, 5, 3, 2, 2, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  9];
 
@@ -84,12 +82,19 @@ var quantizationStats = function () {
     console.log(errors.map(Analysis.pad).join(''));
 };
 
-Quantize.adjustPosition = function (quantizations, position, lastPosition, lastAdjusted) {
-    var positionDiff = position - lastAdjusted;
-    var velocity = position - lastAdjusted;
+
+Quantize.adjustPosition = function (quantizations, position, lastPosition, lastAdjustedPosition) {
+    var positionDiff = position - lastAdjustedPosition;
+    var velocity = position - lastPosition;
+
+    // Setting targetDiff to velocity mirrors the gaps between
+    // the position and the last position as best as possible,
+    // but introduces drift. Setting targetDiff to positionDiff
+    // tries to match the position as best as possible, but can
+    // cause gaps to alternate between too large and too small.
     var targetDiff = (2 * velocity + 3 * positionDiff) / 5;
     var quantizedDiff = quantize(quantizations, targetDiff);
-    return lastAdjusted + quantizedDiff;
+    return lastAdjustedPosition + quantizedDiff;
 };
 
 var quantize = function (quantizations, targetDiff) {

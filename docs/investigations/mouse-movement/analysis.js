@@ -43,10 +43,11 @@ Analysis.outputResults = function (analysis, quantizations) {
 
     var k;
     for (k = 0; k < positions.length; k += lineSize) {
-        line(positions, k);
-        line(velocities, k);
-        // line(accelerations, k);
-        line(quantizationLevels, k);
+        // Comment or uncomment the below as desired.
+        outputLine(positions, k);
+        outputLine(velocities, k);
+        // outputLine(accelerations, k);
+        outputLine(quantizationLevels, k);
     }
 };
 
@@ -54,7 +55,7 @@ Analysis.pad = function (num) {
     return ('    ' + num).slice(-5);
 };
 
-var line = function (values, k) {
+var outputLine = function (values, k) {
     var text = '';
     var j;
     for (j = 0; j < lineSize; j += groupSize) {

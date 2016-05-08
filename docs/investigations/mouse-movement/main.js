@@ -56,6 +56,7 @@ var start = function (x, y) {
 var stop = function () {
     Ui.stopRunning();
     window.cancelAnimationFrame(animationRequestId);
+
     Analysis.outputResults(analysis, quantizations);
 };
 
