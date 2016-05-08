@@ -72,9 +72,8 @@ Main.run = function () {
     Analysis.collect(analysis, current.adjustedX);
     Ui.draw(current);
 
-    animationRequestId = window.requestAnimationFrame(Main.run);
-
     last = cloneState(current);
+    animationRequestId = window.requestAnimationFrame(Main.run);
 };
 
 Main.initialize();

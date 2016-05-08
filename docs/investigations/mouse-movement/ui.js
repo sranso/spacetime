@@ -18,8 +18,8 @@ Ui.initialize = function () {
     canvasBottom.width = canvasBottom.offsetWidth;
     canvasBottom.height = canvasBottom.offsetHeight;
 
-    contextBottom.fillStyle = '#ff0000';
-    contextTop.fillStyle = '#000000';
+    contextBottom.fillStyle = 'red';
+    contextTop.fillStyle = 'black';
 
     canvasTop.addEventListener('click', function (event) {
         Main.toggleRunning(event.clientX, event.clientY);
