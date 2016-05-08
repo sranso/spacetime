@@ -102,7 +102,7 @@ var quantize = function (quantizations, targetDiff) {
     var sign = targetDiff < 0 ? -1 : +1;
 
     var low = Math.floor(absDiff);
-    var high = Math.ceil(absDiff + 0.0000001);
+    var high = Math.ceil(absDiff);
     while (!quantizations[low]) {
         low--;
     }
