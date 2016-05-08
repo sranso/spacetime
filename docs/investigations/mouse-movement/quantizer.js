@@ -6,6 +6,23 @@ var Quantizer = {};
 var gapAtEachLevel    = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14,15, 17, 19, 22, 25, 29, 33, 38, 44, 51, 59, 68, 78, 90];
 var countsAtEachLevel = [18, 5, 3, 2, 2, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  9];
 
+// `quantizations` is an array with `true` at all allowed mouse
+// difference values (absolute values), and `false` otherwise.
+// To quantize the mouse movement, find the nearest index with
+// a `true` value in the `quantizations` array, starting with
+// the index equal to the mouse difference value.
+//
+// Example:
+//                      0     1     2      3     4      5     6
+//   quantizations = [true, true, false, true, false, false, true]
+//
+//   If mouse x moves by 1, then start at index 1, and because
+//   quantizations[1] is true, the quantized difference value is
+//   also 1.
+//   If mouse x moves by 4, then start at index 4. quantizations[4]
+//   is false, so search for the nearest true index. In this
+//   case it is 3, which becomes the quantized difference.
+
 Quantizer.generateQuantizations = function () {
     var quantizations = [];
 
