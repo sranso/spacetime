@@ -11,7 +11,7 @@ var current = {
 var last = current;
 
 var running = false;
-var results;
+var analysis;
 var quantizations;
 var animationRequestId;
 
@@ -25,7 +25,7 @@ var cloneState = function (state) {
 };
 
 Runner.initialize = function () {
-    quantizations = Quantizer.generateQuantizations();
+    quantizations = Quantize.generateQuantizations();
     Ui.initialize();
 };
 
@@ -45,17 +45,16 @@ var start = function (x, y) {
     current.adjustedY = y;
     last = cloneState(current);
 
-    console.log('Recording...\n\n\n\n\n\n\n');
-    Ui.startRunning();
+    analysis = Analysis.create();
 
-    results = Results.create();
+    Ui.startRunning();
     Runner.run();
 };
 
 var stop = function () {
     Ui.stopRunning();
     window.cancelAnimationFrame(animationRequestId);
-    Results.output(results);
+    Analysis.output(analysis);
 };
 
 Runner.updatePosition = function (newX, newY) {
@@ -64,10 +63,10 @@ Runner.updatePosition = function (newX, newY) {
 };
 
 Runner.run = function () {
-    current.adjustedX = Quantizer.adjust(quantizations, current.x, last.x, last.adjustedX);
-    current.adjustedY = Quantizer.adjust(quantizations, current.y, last.y, last.adjustedY);
+    current.adjustedX = Quantize.adjust(quantizations, current.x, last.x, last.adjustedX);
+    current.adjustedY = Quantize.adjust(quantizations, current.y, last.y, last.adjustedY);
 
-    Results.collect(results, current.x);
+    Analysis.collect(analysis, current.x);
     Ui.draw(current);
 
     animationRequestId = window.requestAnimationFrame(Runner.run);

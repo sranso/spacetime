@@ -1,11 +1,11 @@
 'use strict';
-var Results = {};
+var Analysis = {};
 (function () {
 
 var groupSize = 5;
 var lineSize = 6 * groupSize;
 
-Results.create = function () {
+Analysis.create = function () {
     return {
         positions: [],
         velocities: [],
@@ -13,23 +13,23 @@ Results.create = function () {
     };
 };
 
-Results.collect = function (results, x) {
-    results.positions.push(x);
+Analysis.collect = function (analysis, x) {
+    analysis.positions.push(x);
 };
 
-Results.output = function (results) {
+Analysis.output = function (analysis) {
 
     ///////// Calculate results
 
     var i;
-    var lastPosition = results.positions[0];
+    var lastPosition = analysis.positions[0];
     var lastVelocity = 0;
-    for (i = 0; i < results.positions.length; i++) {
-        var position = results.positions[i];
+    for (i = 0; i < analysis.positions.length; i++) {
+        var position = analysis.positions[i];
         var velocity = position - lastPosition;
         var acceleration = velocity - lastVelocity;
-        results.velocities[i] = velocity;
-        results.accelerations[i] = acceleration;
+        analysis.velocities[i] = velocity;
+        analysis.accelerations[i] = acceleration;
 
         lastPosition = position;
         lastVelocity = velocity;
@@ -38,14 +38,14 @@ Results.output = function (results) {
     ///////// Output results
 
     var k;
-    for (k = 0; k < results.positions.length; k += lineSize) {
-        line(results.positions, k);
-        line(results.velocities, k);
-        line(results.accelerations, k);
+    for (k = 0; k < analysis.positions.length; k += lineSize) {
+        line(analysis.positions, k);
+        line(analysis.velocities, k);
+        line(analysis.accelerations, k);
     }
 };
 
-Results.pad = function (num) {
+Analysis.pad = function (num) {
     return ('    ' + num).slice(-5);
 };
 
@@ -56,7 +56,7 @@ var line = function (values, k) {
         var i;
         for (i = 0; i < groupSize; i++) {
             var value = values[k + j + i] || 0;
-            text += Results.pad(value);
+            text += Analysis.pad(value);
         }
         text += '  ';
     }

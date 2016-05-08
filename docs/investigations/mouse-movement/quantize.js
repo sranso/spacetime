@@ -1,5 +1,5 @@
 'use strict';
-var Quantizer = {};
+var Quantize = {};
 (function () {
 
 // These arrays are hand-crafted using trial and error.
@@ -23,7 +23,7 @@ var countsAtEachLevel = [18, 5, 3, 2, 2, 2, 1, 1, 1,  1,  1,  1,  1, 1,  1,  1, 
 //   is false, so search for the nearest true index. In this
 //   case it is 3, which becomes the quantized difference.
 
-Quantizer.generateQuantizations = function () {
+Quantize.generateQuantizations = function () {
     var quantizations = [];
 
     var k;
@@ -74,14 +74,14 @@ var quantizationStats = function () {
         numLevels[k] = numLevelsSum;
     }
 
-    console.log(gapAtEachLevel.map(Results.pad).join(''));
-    console.log(countsAtEachLevel.map(Results.pad).join(''));
-    console.log(levelRanges.map(Results.pad).join(''));
-    console.log(numLevels.map(Results.pad).join(''));
-    console.log(errors.map(Results.pad).join(''));
+    console.log(gapAtEachLevel.map(Analysis.pad).join(''));
+    console.log(countsAtEachLevel.map(Analysis.pad).join(''));
+    console.log(levelRanges.map(Analysis.pad).join(''));
+    console.log(numLevels.map(Analysis.pad).join(''));
+    console.log(errors.map(Analysis.pad).join(''));
 };
 
-Quantizer.adjust = function (quantizations, position, lastPosition, lastAdjusted) {
+Quantize.adjust = function (quantizations, position, lastPosition, lastAdjusted) {
     var positionDiff = position - lastAdjusted;
     var velocity = position - lastAdjusted;
     var targetDiff = (2 * velocity + 3 * positionDiff) / 5;

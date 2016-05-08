@@ -57,6 +57,8 @@ Ui.startRunning = function () {
 
     ctxTop.clearRect(0, 0, canvasTop.width, canvasTop.height);
     ctxBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
+
+    console.log('Recording...\n\n\n\n\n\n\n');
 };
 
 Ui.stopRunning = function () {
