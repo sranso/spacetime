@@ -17,7 +17,7 @@ Analysis.collect = function (analysis, x) {
     analysis.positions.push(x);
 };
 
-Analysis.output = function (analysis) {
+Analysis.outputResults = function (analysis) {
 
     ///////// Calculate results
 

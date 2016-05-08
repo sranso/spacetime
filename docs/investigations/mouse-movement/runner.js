@@ -2,6 +2,8 @@
 var Runner = {};
 (function () {
 
+// adjusted{X,Y} are the x/y values after the
+// change in x/y has been quantized.
 var current = {
     x: 0,
     y: 0,
@@ -54,7 +56,7 @@ var start = function (x, y) {
 var stop = function () {
     Ui.stopRunning();
     window.cancelAnimationFrame(animationRequestId);
-    Analysis.output(analysis);
+    Analysis.outputResults(analysis);
 };
 
 Runner.updatePosition = function (newX, newY) {
@@ -63,8 +65,8 @@ Runner.updatePosition = function (newX, newY) {
 };
 
 Runner.run = function () {
-    current.adjustedX = Quantize.adjust(quantizations, current.x, last.x, last.adjustedX);
-    current.adjustedY = Quantize.adjust(quantizations, current.y, last.y, last.adjustedY);
+    current.adjustedX = Quantize.adjustPosition(quantizations, current.x, last.x, last.adjustedX);
+    current.adjustedY = Quantize.adjustPosition(quantizations, current.y, last.y, last.adjustedY);
 
     Analysis.collect(analysis, current.x);
     Ui.draw(current);

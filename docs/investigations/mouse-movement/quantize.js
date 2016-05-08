@@ -81,7 +81,7 @@ var quantizationStats = function () {
     console.log(errors.map(Analysis.pad).join(''));
 };
 
-Quantize.adjust = function (quantizations, position, lastPosition, lastAdjusted) {
+Quantize.adjustPosition = function (quantizations, position, lastPosition, lastAdjusted) {
     var positionDiff = position - lastAdjusted;
     var velocity = position - lastAdjusted;
     var targetDiff = (2 * velocity + 3 * positionDiff) / 5;
