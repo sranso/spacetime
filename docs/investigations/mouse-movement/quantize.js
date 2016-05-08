@@ -114,4 +114,21 @@ var quantize = function (quantizations, targetDiff) {
     }
 };
 
+// The quantization `level` is the number of allowed
+// quantizations up to the current value. It is useful for
+// analyzing the variability of the mouse changes.
+// TODO: do this analysis.
+Quantize.levelFromDiff = function (quantizations, diff) {
+    var absDiff = Math.abs(diff);
+    var level = 0;
+    var i;
+    for (i = 0; i < absDiff; i++) {
+        if (quantizations[i]) {
+            level++;
+        }
+    }
+
+    return diff < 0 ? -level : level;
+};
+
 })();

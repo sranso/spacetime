@@ -68,6 +68,7 @@ Ui.stopRunning = function () {
 Ui.draw = function (state) {
     var offsetLeft = canvasTop.offsetLeft;
     var offsetTop = canvasTop.offsetTop - document.body.scrollTop;
+
     ctxBottom.fillRect(state.x - offsetLeft, state.y - offsetTop, boxSize, boxSize);
     ctxTop.fillRect(state.adjustedX - offsetLeft, state.adjustedY - offsetTop, boxSize, boxSize);
 };

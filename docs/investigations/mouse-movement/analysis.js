@@ -8,8 +8,6 @@ var lineSize = 6 * groupSize;
 Analysis.create = function () {
     return {
         positions: [],
-        velocities: [],
-        accelerations: [],
     };
 };
 
@@ -17,19 +15,25 @@ Analysis.collect = function (analysis, x) {
     analysis.positions.push(x);
 };
 
-Analysis.outputResults = function (analysis) {
+Analysis.outputResults = function (analysis, quantizations) {
 
     ///////// Calculate results
 
+    var positions = analysis.positions;
+    var velocities = [];
+    var accelerations = [];
+    var quantizationLevels = [];
+
     var i;
-    var lastPosition = analysis.positions[0];
+    var lastPosition = positions[0];
     var lastVelocity = 0;
-    for (i = 0; i < analysis.positions.length; i++) {
-        var position = analysis.positions[i];
+    for (i = 0; i < positions.length; i++) {
+        var position = positions[i];
         var velocity = position - lastPosition;
         var acceleration = velocity - lastVelocity;
-        analysis.velocities[i] = velocity;
-        analysis.accelerations[i] = acceleration;
+        velocities[i] = velocity;
+        accelerations[i] = acceleration;
+        quantizationLevels[i] = Quantize.levelFromDiff(quantizations, velocity);
 
         lastPosition = position;
         lastVelocity = velocity;
@@ -38,10 +42,11 @@ Analysis.outputResults = function (analysis) {
     ///////// Output results
 
     var k;
-    for (k = 0; k < analysis.positions.length; k += lineSize) {
-        line(analysis.positions, k);
-        line(analysis.velocities, k);
-        line(analysis.accelerations, k);
+    for (k = 0; k < positions.length; k += lineSize) {
+        line(positions, k);
+        line(velocities, k);
+        // line(accelerations, k);
+        line(quantizationLevels, k);
     }
 };
 

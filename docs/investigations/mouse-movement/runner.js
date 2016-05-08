@@ -56,7 +56,7 @@ var start = function (x, y) {
 var stop = function () {
     Ui.stopRunning();
     window.cancelAnimationFrame(animationRequestId);
-    Analysis.outputResults(analysis);
+    Analysis.outputResults(analysis, quantizations);
 };
 
 Runner.updatePosition = function (newX, newY) {
@@ -68,7 +68,7 @@ Runner.run = function () {
     current.adjustedX = Quantize.adjustPosition(quantizations, current.x, last.x, last.adjustedX);
     current.adjustedY = Quantize.adjustPosition(quantizations, current.y, last.y, last.adjustedY);
 
-    Analysis.collect(analysis, current.x);
+    Analysis.collect(analysis, current.adjustedX);
     Ui.draw(current);
 
     animationRequestId = window.requestAnimationFrame(Runner.run);
