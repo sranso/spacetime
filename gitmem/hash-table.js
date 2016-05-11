@@ -7,7 +7,8 @@ HashTable.isFileCached = 1 << 7;
 
 HashTable.data32_packOffset = 0;
 HashTable.data32_cacheIndex = 4;
-HashTable.data8_stringLength = 19;
+HashTable.data8_stringLength = 0;
+HashTable.data8_stringStart = 1;
 
 HashTable.create = function (n, random) {
     var hashBitsToShift = 32;

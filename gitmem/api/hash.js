@@ -9,15 +9,11 @@ global.hash = function (value) {
     var type;
     switch (typeof value) {
     case 'string':
-        if (value.length > 20) {
+        if (value.length > 19) {
             throw new Error('String too long: ' + value.length);
         }
         blob = Blob.create('"' + value, fileRange);
-        if (value.length === 20) {
-            type = Type.string20;
-        } else {
-            type = Type.string;
-        }
+        type = Type.string;
         break;
     case 'number':
         blob = Blob.create('' + value, fileRange);
@@ -47,10 +43,10 @@ global.hash = function (value) {
     switch (type) {
     case Type.string:
         $hashTable.data8[hashOffset + HashTable.data8_stringLength] = value.length;
-    case Type.string20:
+        var stringOffset = hashOffset + HashTable.data8_stringStart;
         var i;
         for (i = 0; i < value.length; i++) {
-            $hashTable.data8[hashOffset + i] = value.charCodeAt(i);
+            $hashTable.data8[stringOffset + i] = value.charCodeAt(i);
         }
         break;
     case Type.integer:
