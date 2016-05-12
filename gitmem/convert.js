@@ -25,15 +25,6 @@ Convert.arrayToExistingArray = function ($e, existingOffset, fromArray) {
     }
 };
 
-Convert.hashToString = function ($h, hashOffset) {
-    var str = [];
-    for (var i = 0; i < 20; i++) {
-        var hex = '00' + $h[hashOffset + i].toString(16);
-        str.push(hex.slice(-2));
-    }
-    return str.join('');
-};
-
 var hexCharacters = Convert.stringToArray('0123456789abcdef');
 
 Convert.hashToHex = function (hashArray, hashOffset, hexArray, hexOffset) {
