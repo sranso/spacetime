@@ -19,7 +19,7 @@ var author = {
 };
 
 var commitObject = {
-    tree: {hash: Tree._actuallyEmptyTreeHash, hashOffset: 0},
+    tree: {hash: Tree._actuallyEmptyTreeHash, pointer: 0},
     parents: [],
     committer: author,
     author: author,

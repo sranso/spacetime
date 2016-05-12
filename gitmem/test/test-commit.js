@@ -4,7 +4,7 @@ require('../../test/helper');
 global.$heap = Heap.create(4096);
 var $h = $heap.array;
 var random = Random.create(28591);
-global.$hashTable = HashTable.create(8, random);
+global.$table = Table.create(8, random);
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(8, 2048);
 
@@ -22,24 +22,24 @@ var treeRange = Tree.create({
 var treeStart = treeRange[0];
 var treeEnd = treeRange[1];
 
-var fooHashOffset = treeStart + offsets.foo;
-Sha1.hash($fileCache.array, fooStart, fooEnd, $h, fooHashOffset);
+var fooPointer = treeStart + offsets.foo;
+Sha1.hash($fileCache.array, fooStart, fooEnd, $h, fooPointer);
 
-var treeHashOffset = $heap.nextOffset;
+var treePointer = $heap.nextOffset;
 $heap.nextOffset += 20;
-Sha1.hash($h, treeStart, treeEnd, $h, treeHashOffset);
-log(hexHash($h, treeHashOffset));
+Sha1.hash($h, treeStart, treeEnd, $h, treePointer);
+log(hexHash($h, treePointer));
 //=> 83eb8cbb4c40875b937d27dd3224c1ceb36e449a
-var hashOffset = ~HashTable.findHashOffset($hashTable, $h, treeHashOffset);
-HashTable.setHash($hashTable, hashOffset, $h, treeHashOffset);
-treeHashOffset = hashOffset;
+var pointer = ~Table.findPointer($table, $h, treePointer);
+Table.setHash($table, pointer, $h, treePointer);
+treePointer = pointer;
 
-var parentHashOffset = ~HashTable.findHashOffset($hashTable, $h, CommitFile.initialHashOffset);
-HashTable.setHash($hashTable, parentHashOffset, $h, CommitFile.initialHashOffset);
+var parentPointer = ~Table.findPointer($table, $h, CommitFile.initialPointer);
+Table.setHash($table, parentPointer, $h, CommitFile.initialPointer);
 
 var commit = Commit.setAll(Commit.none, {
-    tree: {hashOffset: treeHashOffset},
-    parent: {hashOffset: parentHashOffset},
+    tree: {pointer: treePointer},
+    parent: {pointer: parentPointer},
 
     authorName: 'Jake Sandlund',
     authorEmail: 'jake@jakesandlund.com',
@@ -56,12 +56,12 @@ var commit = Commit.setAll(Commit.none, {
 
 log(commit.authorName, commit.committerEmail);
 //=> Jake Sandlund jake@jakesandlund.com
-var type = $hashTable.hashes8[HashTable.typeOffset(commit.hashOffset)];
-log(type & HashTable.isObject);
+var type = $table.hashes8[Table.typeOffset(commit.pointer)];
+log(type & Table.isObject);
 //=> 64
-log(type & HashTable.isFileCached);
+log(type & Table.isFileCached);
 //=> 128
-var cacheIndex = $hashTable.data32[(hashOffset >> 2) + HashTable.data32_cacheIndex];
+var cacheIndex = $table.data32[(pointer >> 2) + Table.data32_cacheIndex];
 var fileStart = $fileCache.fileRanges[2 * cacheIndex];
 var fileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
 log(pretty($fileCache.array, fileStart, fileEnd));
@@ -72,16 +72,16 @@ log(pretty($fileCache.array, fileStart, fileEnd));
 //=>
 //=> Initial commit
 //=>
-log(hexHash($hashTable.hashes8, commit.hashOffset));
+log(hexHash($table.hashes8, commit.pointer));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
-var searchHashOffset = $heap.nextOffset;
+var searchPointer = $heap.nextOffset;
 $heap.nextOffset += 20;
-Sha1.hash($fileCache.array, fileStart, fileEnd, $h, searchHashOffset);
-var hashOffset = HashTable.findHashOffset($hashTable, $h, searchHashOffset);
-log(hashOffset, hexHash($hashTable.hashes8, hashOffset));
+Sha1.hash($fileCache.array, fileStart, fileEnd, $h, searchPointer);
+var pointer = Table.findPointer($table, $h, searchPointer);
+log(pointer, hexHash($table.hashes8, pointer));
 //=> 68 '265810bdf30c4e41cf5cc72f27a2e8559752b6a8'
-var objectIndex = HashTable.objectIndex(commit.hashOffset);
-var savedCommit = $hashTable.objects[objectIndex];
+var objectIndex = Table.objectIndex(commit.pointer);
+var savedCommit = $table.objects[objectIndex];
 log(savedCommit.authorTime, savedCommit === commit);
 //=> 1454907687000 true
 
@@ -93,15 +93,15 @@ var secondCommit = Commit.setAll(commit, {
     parent: commit,
 });
 
-log(secondCommit.hashOffset, hexHash($hashTable.hashes8, secondCommit.hashOffset));
+log(secondCommit.pointer, hexHash($table.hashes8, secondCommit.pointer));
 //=> 132 '46a0cef9b97fb229a4b763b29a6ec9fb24b298e6'
 
 log(secondCommit.authorName, secondCommit.authorTimezoneOffset);
 //=> snakes 480
-log(hexHash($hashTable.hashes8, secondCommit.parent.hashOffset));
+log(hexHash($table.hashes8, secondCommit.parent.pointer));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 
-cacheIndex = $hashTable.data32[(secondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
+cacheIndex = $table.data32[(secondCommit.pointer >> 2) + Table.data32_cacheIndex];
 var secondFileStart = $fileCache.fileRanges[2 * cacheIndex];
 var secondFileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
 
@@ -113,40 +113,40 @@ var secondFileEnd = $fileCache.fileRanges[2 * cacheIndex + 1];
 
 
 // Pack all the above
-var oldHashArray = $hashTable.hashes8;
-global.$hashTable = HashTable.create(8, random);
+var oldHashArray = $table.hashes8;
+global.$table = Table.create(8, random);
 
-hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, secondCommit.hashOffset);
-HashTable.setHash($hashTable, hashOffset, oldHashArray, secondCommit.hashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
-$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
+pointer = ~Table.findPointer($table, oldHashArray, secondCommit.pointer);
+Table.setHash($table, pointer, oldHashArray, secondCommit.pointer);
+objectIndex = Table.objectIndex(pointer);
+$table.data32[(pointer >> 2) + Table.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, secondFileStart, secondFileEnd);
 
-hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, commit.hashOffset);
-HashTable.setHash($hashTable, hashOffset, oldHashArray, commit.hashOffset);
-objectIndex = HashTable.objectIndex(hashOffset);
+pointer = ~Table.findPointer($table, oldHashArray, commit.pointer);
+Table.setHash($table, pointer, oldHashArray, commit.pointer);
+objectIndex = Table.objectIndex(pointer);
 // Save first commit
-$hashTable.objects[objectIndex] = commit;
-$hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
+$table.objects[objectIndex] = commit;
+$table.hashes8[Table.typeOffset(pointer)] |= Table.isObject;
 
-hashOffset = ~HashTable.findHashOffset($hashTable, oldHashArray, treeHashOffset);
-HashTable.setHash($hashTable, hashOffset, oldHashArray, treeHashOffset);
-$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
+pointer = ~Table.findPointer($table, oldHashArray, treePointer);
+Table.setHash($table, pointer, oldHashArray, treePointer);
+$table.data32[(pointer >> 2) + Table.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $h, treeStart, treeEnd);
 
-hashOffset = ~HashTable.findHashOffset($hashTable, $h, fooHashOffset);
-HashTable.setHash($hashTable, hashOffset, $h, fooHashOffset);
-$hashTable.data32[(hashOffset >> 2) + HashTable.data32_packOffset] = $packData.nextOffset;
+pointer = ~Table.findPointer($table, $h, fooPointer);
+Table.setHash($table, pointer, $h, fooPointer);
+$table.data32[(pointer >> 2) + Table.data32_packOffset] = $packData.nextOffset;
 PackData.packFile($packData, $fileCache.array, fooStart, fooEnd);
 
 
-var gotSecondCommit = Commit.checkout(oldHashArray, secondCommit.hashOffset);
-log(hexHash($hashTable.hashes8, gotSecondCommit.hashOffset));
+var gotSecondCommit = Commit.checkout(oldHashArray, secondCommit.pointer);
+log(hexHash($table.hashes8, gotSecondCommit.pointer));
 //=> 46a0cef9b97fb229a4b763b29a6ec9fb24b298e6
-type = $hashTable.hashes8[HashTable.typeOffset(gotSecondCommit.hashOffset)];
-log(type & HashTable.isFileCached);
+type = $table.hashes8[Table.typeOffset(gotSecondCommit.pointer)];
+log(type & Table.isFileCached);
 //=> 128
-var cacheIndex = $hashTable.data32[(gotSecondCommit.hashOffset >> 2) + HashTable.data32_cacheIndex];
+var cacheIndex = $table.data32[(gotSecondCommit.pointer >> 2) + Table.data32_cacheIndex];
 log(cacheIndex);
 //=> 2
 fileStart = $fileCache.fileRanges[2 * cacheIndex];
@@ -168,7 +168,7 @@ Commit.checkoutParents(gotSecondCommit);
 var gotCommit = gotSecondCommit.parent;
 log(gotCommit === commit);
 //=> true
-log(hexHash($hashTable.hashes8, gotCommit.hashOffset));
+log(hexHash($table.hashes8, gotCommit.pointer));
 //=> 265810bdf30c4e41cf5cc72f27a2e8559752b6a8
 log(gotCommit.authorName, gotCommit.committerEmail);
 //=> Jake Sandlund jake@jakesandlund.com

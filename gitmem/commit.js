@@ -4,7 +4,7 @@ global.Commit = {};
 
 var clone = function (original) {
     return {
-        hashOffset: -1,
+        pointer: -1,
 
         tree: original.tree,
         parent: original.parent,
@@ -25,9 +25,9 @@ var clone = function (original) {
 };
 
 Commit.none = null;
-var parentHashOffset = -1;
-var mergeParentHashOffset = -1;
-var tempHashOffset = -1;
+var parentPointer = -1;
+var mergeParentPointer = -1;
+var tempPointer = -1;
 
 Commit.initialize = function () {
     Commit.none = clone({
@@ -48,11 +48,11 @@ Commit.initialize = function () {
         message: 'Initial commit\n',
     });
 
-    tempHashOffset = $heap.nextOffset;
+    tempPointer = $heap.nextOffset;
     $heap.nextOffset += 20;
-    parentHashOffset = $heap.nextOffset;
+    parentPointer = $heap.nextOffset;
     $heap.nextOffset += 20;
-    mergeParentHashOffset = $heap.nextOffset;
+    mergeParentPointer = $heap.nextOffset;
     $heap.nextOffset += 20;
 };
 
@@ -71,25 +71,25 @@ Commit.setAll = function (original, modifications) {
     var fileStart = fileRange[0];
     var fileEnd = fileRange[1];
 
-    Sha1.hash($fileCache.array, fileStart, fileEnd, $h, tempHashOffset);
-    var hashOffset = HashTable.findHashOffset($hashTable, $h, tempHashOffset);
-    if (hashOffset < 0) {
-        hashOffset = ~hashOffset;
-        HashTable.setHash($hashTable, hashOffset, $h, tempHashOffset);
-        $hashTable.objects[HashTable.objectIndex(hashOffset)] = commit;
-        $hashTable.hashes8[HashTable.typeOffset(hashOffset)] |= HashTable.isObject;
-        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
+    Sha1.hash($fileCache.array, fileStart, fileEnd, $h, tempPointer);
+    var pointer = Table.findPointer($table, $h, tempPointer);
+    if (pointer < 0) {
+        pointer = ~pointer;
+        Table.setHash($table, pointer, $h, tempPointer);
+        $table.objects[Table.objectIndex(pointer)] = commit;
+        $table.hashes8[Table.typeOffset(pointer)] |= Table.isObject;
+        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, pointer);
     } else {
-        var typeOffset = HashTable.typeOffset(hashOffset);
-        if ($hashTable.hashes8[typeOffset] & HashTable.isObject) {
-            return $hashTable.objects[HashTable.objectIndex(hashOffset)];
+        var typeOffset = Table.typeOffset(pointer);
+        if ($table.hashes8[typeOffset] & Table.isObject) {
+            return $table.objects[Table.objectIndex(pointer)];
         }
-        $hashTable.objects[HashTable.objectIndex(hashOffset)] = commit;
-        $hashTable.hashes8[typeOffset] |= HashTable.isObject;
-        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
+        $table.objects[Table.objectIndex(pointer)] = commit;
+        $table.hashes8[typeOffset] |= Table.isObject;
+        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, pointer);
     }
 
-    commit.hashOffset = hashOffset;
+    commit.pointer = pointer;
 
     return commit;
 };
@@ -102,30 +102,30 @@ var checkoutFile = function ($f, fileStart, fileEnd) {
     return commit;
 };
 
-Commit.checkout = function ($s, searchHashOffset) {
-    return FastCheckout.checkout($s, searchHashOffset, checkoutFile);
+Commit.checkout = function ($s, searchPointer) {
+    return FastCheckout.checkout($s, searchPointer, checkoutFile);
 };
 
 Commit.checkoutTree = function (commit, packIndices, table) {
     var $h = $heap.array;
-    CommitFile.parseTree($fileCache.array, commit.fileStart, commit.fileEnd, $h, tempHashOffset);
-    commit.tree = Project.checkout(treeHashOffset);
+    CommitFile.parseTree($fileCache.array, commit.fileStart, commit.fileEnd, $h, tempPointer);
+    commit.tree = Project.checkout(treePointer);
 };
 
 Commit.checkoutParents = function (commit) {
     var $h = $heap.array;
-    var data32_offset = (commit.hashOffset >> 2) + HashTable.data32_cacheIndex;
-    var cacheIndex = $hashTable.data32[data32_offset];
+    var data32_offset = (commit.pointer >> 2) + Table.data32_cacheIndex;
+    var cacheIndex = $table.data32[data32_offset];
     var doubleIndex = 2 * cacheIndex;
     var fileStart = $fileCache.fileRanges[doubleIndex];
     var fileEnd = $fileCache.fileRanges[doubleIndex + 1];
-    var numParents = CommitFile.parseParents($fileCache.array, fileStart, fileEnd, $h, parentHashOffset);
+    var numParents = CommitFile.parseParents($fileCache.array, fileStart, fileEnd, $h, parentPointer);
 
     if (numParents >= 1) {
-        commit.parent = Commit.checkout($h, parentHashOffset);
+        commit.parent = Commit.checkout($h, parentPointer);
     }
     if (numParents >= 2) {
-        commit.mergeParent = Commit.checkout($h, mergeParentHashOffset);
+        commit.mergeParent = Commit.checkout($h, mergeParentPointer);
     }
 };
 

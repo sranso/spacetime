@@ -28,33 +28,33 @@ global.hash = function (value) {
     }
 
     Sha1.hash($file, 0, blobLength, tempHash, 0);
-    var hashOffset = HashTable.findHashOffset($hashTable, tempHash, 0);
+    var pointer = Table.findPointer($table, tempHash, 0);
 
-    if (hashOffset > 0) {
-        return hashOffset;
+    if (pointer > 0) {
+        return pointer;
     }
 
-    hashOffset = ~hashOffset;
-    HashTable.setHash($hashTable, hashOffset, tempHash, 0);
-    $hashTable.data8[HashTable.typeOffset(hashOffset)] = type;
+    pointer = ~pointer;
+    Table.setHash($table, pointer, tempHash, 0);
+    $table.data8[Table.typeOffset(pointer)] = type;
 
     switch (type) {
     case Type.string:
-        $hashTable.data8[hashOffset + HashTable.data8_stringLength] = value.length;
+        $table.data8[pointer + Table.data8_stringLength] = value.length;
         var i;
         for (i = 0; i < value.length; i++) {
-            $hashTable.data8[hashOffset + i] = value.charCodeAt(i);
+            $table.data8[pointer + i] = value.charCodeAt(i);
         }
         break;
     case Type.integer:
-        $hashTable.dataInt32[hashOffset >> 2] = value;
+        $table.dataInt32[pointer >> 2] = value;
         break;
     case Type.float:
-        $hashTable.dataFloat64[(hashOffset + 4) >> 3] = value;
+        $table.dataFloat64[(pointer + 4) >> 3] = value;
         break;
     }
 
-    return hashOffset;
+    return pointer;
 };
 
 })();

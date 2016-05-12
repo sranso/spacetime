@@ -2,7 +2,7 @@
 require('../../test/helper');
 
 var random = Random.create(526926);
-global.$hashTable = HashTable.create(4, random);
+global.$table = Table.create(4, random);
 global.$file = new Uint8Array(128);
 global.$mold = Mold.create(32, 128);
 
@@ -45,12 +45,12 @@ log(hexHash(treeHash, 0));
 PackData.packFile(inputPackData, $file, 0, treeLength);
 
 
-var inputPackHashOffset = inputPackData.nextOffset;
+var inputPackPointer = inputPackData.nextOffset;
 log(inputPackData.nextOffset);
 //=> 140
 var inputPack = inputPackData.array;
-Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
-log(hexHash(inputPack, inputPackHashOffset));
+Sha1.hash(inputPack, 0, inputPackPointer, inputPack, inputPackPointer);
+log(hexHash(inputPack, inputPackPointer));
 //=> 2b2ead7e8ab2a99c6b65469323667ed7b48b3ca2
 
 
@@ -66,15 +66,15 @@ $packData.nextOffset = 123;
 Unpack.unpack(inputPack);
 
 // foo
-var hashOffset = HashTable.findHashOffset($hashTable, fooHash, 0);
-var fooHashOffset = hashOffset;
-log(hashOffset, hexHash($hashTable.hashes8, hashOffset));
+var pointer = Table.findPointer($table, fooHash, 0);
+var fooPointer = pointer;
+log(pointer, hexHash($table.hashes8, pointer));
 //=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
-var type = $hashTable.data8[HashTable.typeOffset(hashOffset)];
+var type = $table.data8[Table.typeOffset(pointer)];
 log(type, Type.blob);
 //=> 4 4
-var dataOffset = hashOffset >> 2;
-var packOffset = $hashTable.data32[dataOffset + HashTable.data32_packOffset];
+var pointer32 = pointer >> 2;
+var packOffset = $table.data32[pointer32 + Table.data32_packOffset];
 log(packOffset);
 //=> 123
 var extractFileOutput = [];
@@ -88,17 +88,17 @@ log(pretty($file, 0, fileLength));
 
 
 // bar
-hashOffset = HashTable.findHashOffset($hashTable, barHash, 0);
-var barHashOffset = hashOffset;
-log(hashOffset);
+pointer = Table.findPointer($table, barHash, 0);
+var barPointer = pointer;
+log(pointer);
 //=> 68
-log(hexHash($hashTable.hashes8, hashOffset));
+log(hexHash($table.hashes8, pointer));
 //=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
-type = $hashTable.data8[HashTable.typeOffset(hashOffset)];
+type = $table.data8[Table.typeOffset(pointer)];
 log(type, Type.blob);
 //=> 4 4
-dataOffset = hashOffset >> 2;
-packOffset = $hashTable.data32[dataOffset + HashTable.data32_packOffset];
+pointer32 = pointer >> 2;
+packOffset = $table.data32[pointer32 + Table.data32_packOffset];
 log(packOffset);
 //=> 135
 extractFileOutput = [];
@@ -112,16 +112,16 @@ log(pretty($file, 0, fileLength));
 
 
 // tree
-hashOffset = HashTable.findHashOffset($hashTable, treeHash, 0);
-log(hashOffset);
+pointer = Table.findPointer($table, treeHash, 0);
+log(pointer);
 //=> 24
-log(hexHash($hashTable.hashes8, hashOffset));
+log(hexHash($table.hashes8, pointer));
 //=> df16029e64d49b34861f2c31f6f7cd9fa252a24d
-type = $hashTable.data8[HashTable.typeOffset(hashOffset)];
+type = $table.data8[Table.typeOffset(pointer)];
 log(type, Type.tree);
 //=> 8 8
-dataOffset = hashOffset >> 2;
-var moldIndex = $hashTable.data32[dataOffset + HashTable.data32_moldIndex];
+pointer32 = pointer >> 2;
+var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
 //=> 1
 var data32_index = Mold.data32_size * moldIndex;
@@ -133,16 +133,16 @@ var data8_index = Mold.data8_size * moldIndex;
 var numChildren = $mold.data8[data8_index + Mold.data8_numChildren];
 log(numChildren);
 //=> 3
-var childHashOffset = $hashTable.data32[dataOffset + 0];
-log(childHashOffset, barHashOffset);
+var childPointer = $table.data32[pointer32 + 0];
+log(childPointer, barPointer);
 //=> 68 68
-childHashOffset = $hashTable.data32[dataOffset + 1];
-log(childHashOffset, fooHashOffset);
+childPointer = $table.data32[pointer32 + 1];
+log(childPointer, fooPointer);
 //=> 4 4
-var missingHashOffset = HashTable.findHashOffset($hashTable, missingHash, 0);
-childHashOffset = $hashTable.data32[dataOffset + 2];
-log(childHashOffset, missingHashOffset);
+var missingPointer = Table.findPointer($table, missingHash, 0);
+childPointer = $table.data32[pointer32 + 2];
+log(childPointer, missingPointer);
 //=> 44 44
-type = $hashTable.data8[HashTable.typeOffset(missingHashOffset)];
+type = $table.data8[Table.typeOffset(missingPointer)];
 log(type, Type.pending);
 //=> 1 1

@@ -10,7 +10,7 @@ var committerPrefix = Convert.stringToArray('committer ');
 
 CommitFile._initialStart = -1;
 CommitFile._initialEnd = -1;
-CommitFile.initialHashOffset = -1;
+CommitFile.initialPointer = -1;
 
 CommitFile.initialize = function () {
     var $h = $heap.array;
@@ -27,10 +27,10 @@ CommitFile.initialize = function () {
     CommitFile._initialEnd = CommitFile._initialStart + initialCommitString.length;
     $heap.nextOffset = CommitFile._initialEnd;
 
-    CommitFile.initialHashOffset = $heap.nextOffset;
+    CommitFile.initialPointer = $heap.nextOffset;
     $heap.nextOffset += 20;
-    Sha1.hash($h, CommitFile._initialStart, CommitFile._initialEnd, $h, CommitFile.initialHashOffset);
-    log(hexHash($h, CommitFile.initialHashOffset));
+    Sha1.hash($h, CommitFile._initialStart, CommitFile._initialEnd, $h, CommitFile.initialPointer);
+    log(hexHash($h, CommitFile.initialPointer));
     //=> 362f278d085c99a7adfbb1d74a57dd68db0109a9
 };
 
@@ -98,7 +98,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($hashTable.hashes8, commit.tree.hashOffset, $f, commit_j);
+    Convert.hashToHex($table.hashes8, commit.tree.pointer, $f, commit_j);
     $f[commit_j + 40] = 0x0a;
 
     // parent
@@ -108,7 +108,7 @@ CommitFile.create = function (commit, fileRange) {
     }
 
     commit_j += i;
-    Convert.hashToHex($hashTable.hashes8, commit.parent.hashOffset, $f, commit_j);
+    Convert.hashToHex($table.hashes8, commit.parent.pointer, $f, commit_j);
     $f[commit_j + 40] = 0x0a;
 
     // mergeParent
@@ -119,7 +119,7 @@ CommitFile.create = function (commit, fileRange) {
         }
 
         commit_j += i;
-        Convert.hashToHex($hashTable.hashes8, commit.mergeParent.hashOffset, $f, commit_j);
+        Convert.hashToHex($table.hashes8, commit.mergeParent.pointer, $f, commit_j);
         $f[commit_j + 40] = 0x0a;
     }
 
@@ -198,9 +198,9 @@ CommitFile.create = function (commit, fileRange) {
     return fileRange;
 };
 
-CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treeHashOffset) {
+CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treePointer) {
     var hexOffset = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
-    Convert.hexToHash($c, hexOffset, $t, treeHashOffset);
+    Convert.hexToHash($c, hexOffset, $t, treePointer);
 };
 
 CommitFile.parseParents = function ($c, commitStart, commitEnd, $p, parentHashesOffset) {

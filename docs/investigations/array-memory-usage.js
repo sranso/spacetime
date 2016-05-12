@@ -24,7 +24,7 @@
 // after:  654 MB
 // per hash: 68 bytes
 // guess: 68 bytes = 20 byte hash + 8 byte array + 40 byte object
-//        40 byte obj = 8 hash ptr + 8 hashOffset + 24 byte overhead
+//        40 byte obj = 8 hash ptr + 8 pointer + 24 byte overhead
 // note: simply typing 'all.length' took 30 seconds or so.
 //
 // memTestWithOffset(1,000,000)
@@ -57,7 +57,7 @@
 var cloneWithOffset = function (original) {
     return {
         hash: null,
-        hashOffset: 0,
+        pointer: 0,
     };
 };
 
@@ -66,7 +66,7 @@ var cloneDataAndOffset = function (original) {
         data: original.data,
         file: original.file,
         hash: null,
-        hashOffset: 0,
+        pointer: 0,
     };
 };
 
@@ -78,7 +78,7 @@ var cloneNoOffset = function (original) {
 
 var withOriginal = cloneWithOffset({
     hash: null,
-    hashOffset: 0,
+    pointer: 0,
 });
 withOriginal.hash = new Uint8Array(20);
 
@@ -86,13 +86,13 @@ var dataOriginal = cloneDataAndOffset({
     data: 42,
     file: new Uint8Array(0),
     hash: null,
-    hashOffset: 0,
+    pointer: 0,
 });
 dataOriginal.hash = new Uint8Array(20);
 
 var noOrginal = cloneNoOffset({
     hash: null,
-    hashOffset: 0,
+    pointer: 0,
 });
 noOrginal.hash = new Uint8Array(20);
 
@@ -127,7 +127,7 @@ var memTestWithOffset = function (num) {
     for (i = 0; i < num; i++) {
         var clone = cloneWithOffset(withOriginal);
         clone.hash = hashes;
-        clone.hashOffset = i * 20;
+        clone.pointer = i * 20;
         all[i] = clone;
     }
 };
@@ -139,7 +139,7 @@ var memTestDataAndOffset = function (num) {
     for (i = 0; i < num; i++) {
         var clone = cloneDataAndOffset(dataOriginal);
         clone.hash = hashes;
-        clone.hashOffset = i * 20;
+        clone.pointer = i * 20;
         all[i] = clone;
     }
 };

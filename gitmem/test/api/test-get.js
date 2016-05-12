@@ -2,7 +2,7 @@
 require('../../../test/helper');
 
 var random = Random.create(189869);
-global.$hashTable = HashTable.create(4, random);
+global.$table = Table.create(4, random);
 global.$file = new Uint8Array(128);
 global.$mold = Mold.create(4, 128);
 
@@ -24,23 +24,23 @@ Sha1.hash($mold.fileArray, fileStart, fileEnd, treeHash, 0);
 log(hexHash(treeHash, 0));
 //=> d5bec1220e8ac3041ad459339d079abc7c21133c
 
-var barHashOffset = ~HashTable.findHashOffset($hashTable, barHash, 0);
-var fooHashOffset = ~HashTable.findHashOffset($hashTable, fooHash, 0);
-var treeHashOffset = ~HashTable.findHashOffset($hashTable, treeHash, 0);
-HashTable.setHash($hashTable, barHashOffset, barHash, 0);
-HashTable.setHash($hashTable, fooHashOffset, fooHash, 0);
-HashTable.setHash($hashTable, treeHashOffset, treeHash, 0);
-log(hexHash($hashTable.hashes8, treeHashOffset));
+var barPointer = ~Table.findPointer($table, barHash, 0);
+var fooPointer = ~Table.findPointer($table, fooHash, 0);
+var treePointer = ~Table.findPointer($table, treeHash, 0);
+Table.setHash($table, barPointer, barHash, 0);
+Table.setHash($table, fooPointer, fooHash, 0);
+Table.setHash($table, treePointer, treeHash, 0);
+log(hexHash($table.hashes8, treePointer));
 //=> d5bec1220e8ac3041ad459339d079abc7c21133c
-var dataOffset = treeHashOffset >> 2;
-$hashTable.data32[dataOffset + 0] = barHashOffset;
-$hashTable.data32[dataOffset + 1] = fooHashOffset;
-$hashTable.data32[dataOffset + HashTable.data32_moldIndex] = moldIndex;
-$hashTable.data8[HashTable.typeOffset(treeHashOffset)] = Type.tree;
+var pointer32 = treePointer >> 2;
+$table.data32[pointer32 + 0] = barPointer;
+$table.data32[pointer32 + 1] = fooPointer;
+$table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
+$table.data8[Table.typeOffset(treePointer)] = Type.tree;
 
-log(get(treeHashOffset, 0), barHashOffset);
+log(get(treePointer, 0), barPointer);
 //=> 68 68
-log(get(treeHashOffset, 1), fooHashOffset);
+log(get(treePointer, 1), fooPointer);
 //=> 4 4
-log(get(treeHashOffset, 2));
+log(get(treePointer, 2));
 //=> 0

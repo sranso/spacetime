@@ -67,7 +67,7 @@ commit1.author = commit1.committer = {
     time: 1454907687000,
     timezoneOffset: 360,
 };
-commit1.tree = {hash: Tree._actuallyEmptyTreeHash, hashOffset: 0};
+commit1.tree = {hash: Tree._actuallyEmptyTreeHash, pointer: 0};
 commit1.parents = [];
 commit1.message = 'Initial commit\n';
 commit1.file = CommitFile.create(commit1);
@@ -110,7 +110,7 @@ log(hex(commit3.hash));
 var pack = Pack.create([commit3.file, commit2.file, commit1.file, Tree._actuallyEmptyTree]);
 var index = PackIndex.create(pack);
 var random = Random.create(1159769);
-var table = HashTable.create(random);
+var table = Table.create(random);
 
 log(FetchPack.postPath);
 //=> /git-upload-pack

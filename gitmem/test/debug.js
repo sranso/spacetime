@@ -51,18 +51,18 @@ global.hexHash = function (array, hashOffset) {
     return hex(array, hashOffset, hashOffset + 20);
 };
 
-global.prettyObjectList = function (hashTable) {
+global.prettyObjectList = function (table) {
     var pretty = [];
     var i;
-    for (i = 0; i < hashTable.objects.length; i++) {
-        var object = hashTable.objects[i];
+    for (i = 0; i < table.objects.length; i++) {
+        var object = table.objects[i];
         if (object) {
             var value;
             if (object.hasOwnProperty('value')) {
                 value = '' + object.value;
             } else {
                 var keys = Object.keys(object);
-                var ignoreKeys = ['flags', 'fileStart', 'fileEnd', 'hashOffset'];
+                var ignoreKeys = ['flags', 'fileStart', 'fileEnd', 'pointer'];
                 keys = keys.filter(function (key) {
                     return ignoreKeys.indexOf(key) === -1;
                 });
@@ -71,7 +71,7 @@ global.prettyObjectList = function (hashTable) {
                     return clamp(key, 6) + '=' + clamp(d, 6);
                 }).join(' ');
             }
-            var hash = Convert.hashToString(hashTable.hashes8, object.hashOffset);
+            var hash = Convert.hashToString(table.hashes8, object.pointer);
             pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
         }
     }

@@ -1,12 +1,12 @@
 'use strict';
-global.HashTable = {};
+global.Table = {};
 (function () {
 
-HashTable.data32_packOffset = 0;
-HashTable.data32_moldIndex = 4;
-HashTable.data8_stringLength = 19;
+Table.data32_packOffset = 0;
+Table.data32_moldIndex = 4;
+Table.data8_stringLength = 19;
 
-HashTable.create = function (n, random) {
+Table.create = function (n, random) {
     var hashBitsToShift = 32;
     var i = n;
     while (i > 1) {
@@ -38,70 +38,70 @@ HashTable.create = function (n, random) {
     };
 };
 
-HashTable.findHashOffset = function (hashTable, $s, searchHashOffset) {
-    var h = Math.imul(hashTable.a,
-        ($s[searchHashOffset] << 24) |
-        ($s[searchHashOffset + 1] << 16) |
-        ($s[searchHashOffset + 2] << 8) |
-        $s[searchHashOffset + 3]
-    ) >>> hashTable.hashBitsToShift;
+Table.findPointer = function (table, $s, searchPointer) {
+    var h = Math.imul(table.a,
+        ($s[searchPointer] << 24) |
+        ($s[searchPointer + 1] << 16) |
+        ($s[searchPointer + 2] << 8) |
+        $s[searchPointer + 3]
+    ) >>> table.hashBitsToShift;
     var i;
     var j;
     var k;
 
     for (j = 0; j < 1000; j++) {
         var blockOffset = 64 * Math.floor(h / 3);
-        var setHashes = hashTable.hashes8[blockOffset] & 3;
+        var setHashes = table.hashes8[blockOffset] & 3;
 
         searchBlock:
         for (k = 0; k < setHashes; k++) {
-            var hashOffset = blockOffset + 4 + 20 * k;
+            var pointer = blockOffset + 4 + 20 * k;
             for (i = 0; i < 20; i++) {
-                if (hashTable.hashes8[hashOffset + i] !== $s[searchHashOffset + i]) {
+                if (table.hashes8[pointer + i] !== $s[searchPointer + i]) {
                     continue searchBlock;
                 }
             }
-            return hashOffset;
+            return pointer;
         }
         if (setHashes < 3) {
-            var hashOffset = blockOffset + 4 + 20 * k;
-            return ~hashOffset;
+            var pointer = blockOffset + 4 + 20 * k;
+            return ~pointer;
         }
 
         var h2 = (
-            ($s[searchHashOffset + 4] << 24) |
-            ($s[searchHashOffset + 5] << 16) |
-            ($s[searchHashOffset + 6] << 8) |
-            $s[searchHashOffset + 7] |
+            ($s[searchPointer + 4] << 24) |
+            ($s[searchPointer + 5] << 16) |
+            ($s[searchPointer + 6] << 8) |
+            $s[searchPointer + 7] |
             1
         );
-        h = (h + h2) & hashTable.mask;
+        h = (h + h2) & table.mask;
     }
 
     throw new Error('Reached maximum iterations searching for hash');
 };
 
-HashTable.objectIndex = function (hashOffset) {
-    return 3 * (hashOffset >>> 6) + ((hashOffset >>> 4) & 3);
+Table.objectIndex = function (pointer) {
+    return 3 * (pointer >>> 6) + ((pointer >>> 4) & 3);
 };
 
 var blockMask = ~63;
 
-HashTable.typeOffset = function (hashOffset) {
-    return (hashOffset & blockMask) + ((hashOffset >>> 4) & 3) + 1;
+Table.typeOffset = function (pointer) {
+    return (pointer & blockMask) + ((pointer >>> 4) & 3) + 1;
 };
 
-HashTable.setHash = function (hashTable, hashOffset, $s, sourceHashOffset) {
-    var blockOffset = hashOffset & blockMask;
-    var setByte = hashTable.hashes8[blockOffset];
+Table.setHash = function (table, pointer, $s, sourcePointer) {
+    var blockOffset = pointer & blockMask;
+    var setByte = table.hashes8[blockOffset];
     var setHashes = (setByte & 3) + 1;
-    hashTable.hashes8[blockOffset] = (setByte & ~3) | setHashes;
+    table.hashes8[blockOffset] = (setByte & ~3) | setHashes;
 
     var i;
     for (i = 0; i < 20; i++) {
-        hashTable.hashes8[hashOffset + i] = $s[sourceHashOffset + i];
+        table.hashes8[pointer + i] = $s[sourcePointer + i];
     }
-    hashTable.load++;
+    table.load++;
 };
 
 })();

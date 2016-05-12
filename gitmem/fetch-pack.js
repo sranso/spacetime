@@ -152,7 +152,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         }
 
         j += i;
-        Convert.hashToHex(have.hash, have.hashOffset, body, j);
+        Convert.hashToHex(have.hash, have.pointer, body, j);
         body[j + 40] = 0x0a;
 
         j += 40 + 1;

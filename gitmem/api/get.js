@@ -1,9 +1,9 @@
 'use strict';
 (function () {
 
-global.get = function (hashOffset, childIndex) {
-    var dataOffset = hashOffset >> 2;
-    return $hashTable.data32[dataOffset + childIndex];
+global.get = function (pointer, childIndex) {
+    var pointer32 = pointer >> 2;
+    return $table.data32[pointer32 + childIndex];
 };
 
 })();

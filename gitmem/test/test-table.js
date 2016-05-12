@@ -2,18 +2,18 @@
 require('../../test/helper');
 
 var random = Random.create(42);
-var hashTable = HashTable.create(16, random);
-log(hashTable.hashes8.length);
+var table = Table.create(16, random);
+log(table.hashes8.length);
 //=> 384
-log(hashTable.data8.length, hashTable.data32.length);
+log(table.data8.length, table.data32.length);
 //=> 384 96
-log(hashTable.n);
+log(table.n);
 //=> 16
-log(hashTable.hashBitsToShift);
+log(table.hashBitsToShift);
 //=> 28
-log(hashTable.objects.length);
+log(table.objects.length);
 //=> 16
-log(hashTable.objects[0], hashTable.objects[3]);
+log(table.objects[0], table.objects[3]);
 //=> null null
 
 var abc = Convert.stringToArray('abc');
@@ -22,22 +22,22 @@ Sha1.hash(abc, 0, abc.length, searchHash, 0);
 log(hexHash(searchHash, 0));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
 
-var hashOffset = HashTable.findHashOffset(hashTable, searchHash, 0);
-log(hashOffset, ~hashOffset);
+var pointer = Table.findPointer(table, searchHash, 0);
+log(pointer, ~pointer);
 //=> -197 196
-hashOffset = ~hashOffset;
+pointer = ~pointer;
 
-log(HashTable.objectIndex(hashOffset));
+log(Table.objectIndex(pointer));
 //=> 9
 
-log(HashTable.typeOffset(hashOffset));
+log(Table.typeOffset(pointer));
 //=> 193
 
-HashTable.setHash(hashTable, hashOffset, searchHash, 0);
-log(hexHash(hashTable.hashes8, hashOffset));
+Table.setHash(table, pointer, searchHash, 0);
+log(hexHash(table.hashes8, pointer));
 //=> a9993e364706816aba3e25717850c26c9cd0d89d
-hashOffset = HashTable.findHashOffset(hashTable, searchHash, 0);
-log(hashOffset);
+pointer = Table.findPointer(table, searchHash, 0);
+log(pointer);
 //=> 196
 
 
@@ -55,48 +55,48 @@ var hashInNextBlock3 = new Uint8Array([0x3e,0x7c,0x4b,0x99,0xe9,0xb4,0xe1,0x68,0
 var hashInLastBlock1 = new Uint8Array([0xf8,0xad,0x8a,0x6d,0xc7,0xb1,0x31,0xf9,0x5c,0x38,0xc4,0x1e,0x79,0x3d,0x2b,0x70,0x0f,0xb7,0x07,0x51]);
 
 // hashInBlock1
-log(hashOffset, HashTable.objectIndex(hashOffset));
+log(pointer, Table.objectIndex(pointer));
 //=> 196 9
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInBlock2, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+pointer = ~Table.findPointer(table, hashInBlock2, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 216 10
-HashTable.setHash(hashTable, hashOffset, hashInBlock2, 0);
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInBlock3, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+Table.setHash(table, pointer, hashInBlock2, 0);
+pointer = ~Table.findPointer(table, hashInBlock3, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 236 11
-HashTable.setHash(hashTable, hashOffset, hashInBlock3, 0);
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInNextBlock1, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+Table.setHash(table, pointer, hashInBlock3, 0);
+pointer = ~Table.findPointer(table, hashInNextBlock1, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 4 0
-HashTable.setHash(hashTable, hashOffset, hashInNextBlock1, 0);
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInNextBlock2, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+Table.setHash(table, pointer, hashInNextBlock1, 0);
+pointer = ~Table.findPointer(table, hashInNextBlock2, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 24 1
-HashTable.setHash(hashTable, hashOffset, hashInNextBlock2, 0);
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInNextBlock3, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+Table.setHash(table, pointer, hashInNextBlock2, 0);
+pointer = ~Table.findPointer(table, hashInNextBlock3, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 44 2
-HashTable.setHash(hashTable, hashOffset, hashInNextBlock3, 0);
-hashOffset = ~HashTable.findHashOffset(hashTable, hashInLastBlock1, 0);
-log(hashOffset, HashTable.objectIndex(hashOffset));
+Table.setHash(table, pointer, hashInNextBlock3, 0);
+pointer = ~Table.findPointer(table, hashInLastBlock1, 0);
+log(pointer, Table.objectIndex(pointer));
 //=> 68 3
-HashTable.setHash(hashTable, hashOffset, hashInLastBlock1, 0);
+Table.setHash(table, pointer, hashInLastBlock1, 0);
 
 
 
 
 var object1 = {
-    hashOffset: hashOffset,
+    pointer: pointer,
     foo: 'bar',
 };
-hashOffset = HashTable.findHashOffset(hashTable, searchHash, 0);
+pointer = Table.findPointer(table, searchHash, 0);
 var object2 = {
-    hashOffset: hashOffset,
+    pointer: pointer,
     some: 'thing',
 };
 
-hashTable.objects[0] = object1;
-hashTable.objects[3] = object2;
-log(prettyObjectList(hashTable));
+table.objects[0] = object1;
+table.objects[3] = object2;
+log(prettyObjectList(table));
 //=> 0: #<f8ad8a foo=bar>
 //=> 3: #<a9993e some=thing>

@@ -2,7 +2,7 @@
 Loader.loadWeb('../..', function (event) {
 
 var random = Random.create(9699637);
-var loadHashTable = HashTable.create(random);
+var loadTable = Table.create(random);
 
 global.Thing = {};
 
@@ -11,7 +11,7 @@ Thing.clone = function (original) {
         name: original.name,
         file: original.file.slice(),
         hash: null,
-        hashOffset: 0,
+        pointer: 0,
     };
 };
 
@@ -19,7 +19,7 @@ Thing.none = Thing.clone({
     name: '',
     file: new Uint8Array(0),
     hash: new Uint8Array(20),
-    hashOffset: 0,
+    pointer: 0,
 });
 
 Thing.offsets = {};
@@ -33,21 +33,21 @@ Thing.none.file = Tree.createSkeleton(Thing.offsets, {
 // BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
 // Thing.none.hash = new Uint8Array(20);
 // Sha1.hash(Thing.none.file, Thing.none.hash, 0);
-// HashTable.save($hashTable, Thing.none);
+// Table.save($table, Thing.none);
 
-Thing.checkout = function (packIndices, table, hash, hashOffset) {
-    var thing = HashTable.get(table, hash, hashOffset);
+Thing.checkout = function (packIndices, table, hash, pointer) {
+    var thing = Table.get(table, hash, pointer);
     if (thing) {
         return thing;
     }
 
-    var file = PackIndex.lookupFileMultiple(packIndices, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packIndices, hash, pointer);
 
     thing = Thing.clone(Thing.none);
     thing.file = file;
     thing.hash = hash;
-    thing.hashOffset = hashOffset;
-    HashTable.save(table, thing);
+    thing.pointer = pointer;
+    Table.save(table, thing);
 
     thing.name = Value.checkoutString(packIndices, table, file, Thing.offsets.name);
 
@@ -66,7 +66,7 @@ Project.clone = function (original) {
         hasStuff: original.hasStuff,
         file: original.file.slice(),
         hash: null,
-        hashOffset: 0,
+        pointer: 0,
     };
 };
 
@@ -77,7 +77,7 @@ Project.none = Project.clone({
     hasStuff: false,
     file: new Uint8Array(0),
     hash: new Uint8Array(20),
-    hashOffset: 0,
+    pointer: 0,
 });
 
 Project.offsets = {};
@@ -89,21 +89,21 @@ Project.none.file = Tree.createSkeleton(Project.offsets, {
     xPosition: 'blob',
 });
 
-Project.checkout = function (packIndices, table, hash, hashOffset) {
-    var project = HashTable.get(table, hash, hashOffset);
+Project.checkout = function (packIndices, table, hash, pointer) {
+    var project = Table.get(table, hash, pointer);
     if (project) {
         return project;
     }
 
     var packs = packIndices;
-    var file = PackIndex.lookupFileMultiple(packs, hash, hashOffset);
+    var file = PackIndex.lookupFileMultiple(packs, hash, pointer);
 
     var ofs = Project.offsets;
     project = Project.clone(Project.none);
     project.file = file;
     project.hash = hash;
-    project.hashOffset = hashOffset;
-    HashTable.save(table, project);
+    project.pointer = pointer;
+    Table.save(table, project);
 
     project.thing = Thing.checkout(packs, table, file, ofs.thing);
     project.text = Value.checkoutString(packs, table, file, ofs.text);
@@ -198,8 +198,8 @@ var firstPush = function () {
     Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
 
     thing.hash = project.file;
-    thing.hashOffset = Project.offsets.thing;
-    Sha1.hash(thing.file, thing.hash, thing.hashOffset);
+    thing.pointer = Project.offsets.thing;
+    Sha1.hash(thing.file, thing.hash, thing.pointer);
 
     project.thing = thing;
     project.text = (
@@ -330,17 +330,17 @@ var fetchPost = function (atCommit, refs, callback) {
 
 var afterClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var commit = Commit.checkout([index], loadHashTable, refHash, 0);
+    var commit = Commit.checkout([index], loadTable, refHash, 0);
     console.log('[afterClone] commit message: ' + commit.message);
     console.log('[afterClone] commit time: ' + new Date(commit.committer.time));
 
-    Commit.checkoutTree(commit, [index], loadHashTable);
+    Commit.checkoutTree(commit, [index], loadTable);
 
     console.log('[afterClone] loaded tree:', hex(commit.tree.hash));
     console.log('[afterClone] project text:', commit.tree.text.slice(0, 12) + '...');
     console.log('[afterClone] project x:', commit.tree.xPosition);
     console.log('[afterClone] project hasStuff:', commit.tree.hasStuff);
-    console.log('[afterClone] thing hashOffset:', commit.tree.thing.hashOffset);
+    console.log('[afterClone] thing pointer:', commit.tree.thing.pointer);
     console.log('[afterClone] thing name type:', typeof commit.tree.thing.name);
 
     var project = Project.clone(commit.tree);
@@ -351,8 +351,8 @@ var afterClone = function (refHash, pack) {
     Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
 
     thing.hash = project.file;
-    thing.hashOffset = Project.offsets.thing;
-    Sha1.hash(thing.file, thing.hash, thing.hashOffset);
+    thing.pointer = Project.offsets.thing;
+    Sha1.hash(thing.file, thing.hash, thing.pointer);
 
     project.thing = thing;
     project.text = (
@@ -413,20 +413,20 @@ var afterClone = function (refHash, pack) {
 
 var afterFetch = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var commit = Commit.checkout([index], loadHashTable, refHash, 0);
+    var commit = Commit.checkout([index], loadTable, refHash, 0);
     console.log('[afterFetch] commit message: ' + commit.message);
     console.log('[afterFetch] commit time: ' + new Date(commit.committer.time));
 
-    Commit.checkoutTree(commit, [index], loadHashTable);
+    Commit.checkoutTree(commit, [index], loadTable);
 
     console.log('[afterFetch] loaded tree:', hex(commit.tree.hash));
     console.log('[afterFetch] project text:', commit.tree.text.slice(0, 12) + '...');
     console.log('[afterFetch] project x:', commit.tree.xPosition);
     console.log('[afterFetch] project hasStuff:', commit.tree.hasStuff);
-    console.log('[afterFetch] thing hashOffset:', commit.tree.thing.hashOffset);
+    console.log('[afterFetch] thing pointer:', commit.tree.thing.pointer);
     console.log('[afterFetch] thing name:', commit.tree.thing.name);
 
-    Commit.checkoutParents(commit, [index], loadHashTable);
+    Commit.checkoutParents(commit, [index], loadTable);
     var parentCommit = commit.parents[0];
     console.log('[afterFetch] commit parent hash:', hex(parentCommit.hash));
     console.log('[afterFetch] commit parent message:', parentCommit.message);
@@ -438,7 +438,7 @@ var afterFetch = function (refHash, pack) {
 var lastClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
     var random = Random.create(868869);
-    var table = HashTable.create(random);
+    var table = Table.create(random);
     var commit = Commit.checkout([index], table, refHash, 0);
     console.log('[lastClone] commit message: ' + commit.message);
     console.log('[lastClone] commit time: ' + new Date(commit.committer.time));

@@ -17,11 +17,11 @@ Unpack.unpack = function (pack) {
         var nextPackOffset = extractFileOutput[1];
 
         Sha1.hash($file, 0, fileLength, tempHash, 0);
-        var hashOffset = HashTable.findHashOffset($hashTable, tempHash, 0);
+        var pointer = Table.findPointer($table, tempHash, 0);
 
-        if (hashOffset < 0) {
-            hashOffset = ~hashOffset;
-            HashTable.setHash($hashTable, hashOffset, tempHash, 0);
+        if (pointer < 0) {
+            pointer = ~pointer;
+            Table.setHash($table, pointer, tempHash, 0);
         }
 
         if ($file[1] === 'r'.charCodeAt(0)) {
@@ -34,33 +34,33 @@ Unpack.unpack = function (pack) {
             var data8_index = Mold.data8_size * moldIndex;
             var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
             var numHoles = $mold.data8[data8_index + Mold.data8_numHoles];
-            var dataOffset = hashOffset >> 2;
-            $hashTable.data8[HashTable.typeOffset(hashOffset)] = Type.tree;
-            $hashTable.data32[dataOffset + HashTable.data32_moldIndex] = moldIndex;
+            var pointer32 = pointer >> 2;
+            $table.data8[Table.typeOffset(pointer)] = Type.tree;
+            $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
 
             var i;
             for (i = 0; i < numHoles; i++) {
                 var holeOffset = $mold.data8[data8_holeOffsets + i];
-                var childHashOffset = HashTable.findHashOffset($hashTable, $file, holeOffset);
-                if (childHashOffset < 0) {
-                    childHashOffset = ~childHashOffset;
-                    HashTable.setHash($hashTable, childHashOffset, $file, holeOffset);
-                    var childTypeOffset = HashTable.typeOffset(childHashOffset);
-                    $hashTable.data8[childTypeOffset] = Type.pending;
+                var childPointer = Table.findPointer($table, $file, holeOffset);
+                if (childPointer < 0) {
+                    childPointer = ~childPointer;
+                    Table.setHash($table, childPointer, $file, holeOffset);
+                    var childTypeOffset = Table.typeOffset(childPointer);
+                    $table.data8[childTypeOffset] = Type.pending;
                 }
 
-                $hashTable.data32[dataOffset + i] = childHashOffset;
+                $table.data32[pointer32 + i] = childPointer;
             }
         } else {
 
             // Save blob or commit in PackData
-            var typeOffset = HashTable.typeOffset(hashOffset);
+            var typeOffset = Table.typeOffset(pointer);
             if ($file[0] === 'b'.charCodeAt(0)) {
-                $hashTable.data8[typeOffset] = Type.blob;
+                $table.data8[typeOffset] = Type.blob;
             } else if ($file[0] === 'c'.charCodeAt(0)) {
-                $hashTable.data8[typeOffset] = Type.commit;
+                $table.data8[typeOffset] = Type.commit;
             } else {
-                $hashTable.data8[typeOffset] = Type.tag;
+                $table.data8[typeOffset] = Type.tag;
             }
 
             var deflatedLength = nextPackOffset - j;
@@ -68,8 +68,8 @@ Unpack.unpack = function (pack) {
                 PackData.resize($packData, deflatedLength);
             }
 
-            var data32_offset = (hashOffset >> 2) + HashTable.data32_packOffset;
-            $hashTable.data32[data32_offset] = $packData.nextOffset;
+            var data32_offset = (pointer >> 2) + Table.data32_packOffset;
+            $table.data32[data32_offset] = $packData.nextOffset;
 
             var i;
             for (i = 0; i < deflatedLength; i++) {
