@@ -2,16 +2,6 @@
 (function () {
 
 global.pretty = function (array, start, end) {
-    if (!(array instanceof Uint8Array)) {
-        throw new Error('array must be Uint8Array');
-    }
-    if (arguments.length >= 2 && typeof start !== 'number') {
-        throw new Error('start must be a number');
-    }
-    if (arguments.length >= 3 && typeof end !== 'number') {
-        throw new Error('end must be a number');
-    }
-
     array = array.subarray(start, end);
     var pretty = [];
     var i;
@@ -26,15 +16,6 @@ global.pretty = function (array, start, end) {
 };
 
 global.hex = function (array, start, end) {
-    if (!(array instanceof Uint8Array)) {
-        throw new Error('array must be Uint8Array');
-    }
-    if (arguments.length >= 2 && typeof start !== 'number') {
-        throw new Error('start must be a number');
-    }
-    if (arguments.length >= 3 && typeof end !== 'number') {
-        throw new Error('end must be a number');
-    }
     array = array.subarray(start, end);
     var hex = [];
     var i;
@@ -57,36 +38,6 @@ var clamp = function (d, length) {
     } else {
         return d;
     }
-};
-
-global.prettyTree = function ($t, treeStart, treeEnd) {
-    var pretty = [];
-    var j = $t.indexOf(0, treeStart + 6) + 1;
-    while (j < treeEnd) {
-        var modeEnd = $t.indexOf(0x20, j + 5);
-        var filenameEnd = $t.indexOf(0, modeEnd + 2);
-
-        var mode = String.fromCharCode.apply(null, $t.subarray(j, modeEnd));
-        if (mode === '100644') {
-            var type = 'blob';
-        } else if (mode === '40000') {
-            mode = '040000';
-            var type = 'tree';
-        } else {
-            var type = 'unknown';
-        }
-
-        j = modeEnd + 1;
-        var filename = String.fromCharCode.apply(null, $t.subarray(j, filenameEnd));
-
-        j = filenameEnd + 1;
-        var hash = Convert.hashToString($t, j);
-        pretty.push([mode, type, hash, '  ', filename].join(' '));
-
-        j += 20;
-    }
-
-    return pretty.join('\n');
 };
 
 })();

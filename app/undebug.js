@@ -6,4 +6,3 @@ if (!global.log) {
 global.pretty = function () {};
 global.hex = function () {};
 global.hexHash = function () {};
-global.prettyTree = function () {};
