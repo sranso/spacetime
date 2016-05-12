@@ -2,15 +2,9 @@
 global.Unpack = {};
 (function () {
 
-var tempHashOffset = -1;
+var tempHash = new Uint8Array(20);
 
-Unpack.initialize = function () {
-    $heap.nextOffset = 64 * Math.ceil($heap.nextOffset / 64);
-    tempHashOffset = $heap.nextOffset;
-    $heap.nextOffset += 20;
-};
-
-var fileRange = new Uint32Array(2);
+var extractFileOutput = new Uint32Array(2);
 
 Unpack.unpack = function (pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
@@ -18,40 +12,39 @@ Unpack.unpack = function (pack) {
     var j = 12;
     var k;
     for (k = 0; k < numFiles; k++) {
-        var nextPackOffset = PackData.extractFile(pack, j, fileRange);
-        var fileStart = fileRange[0];
-        var fileEnd = fileRange[1];
+        PackData.extractFile(pack, j, extractFileOutput);
+        var fileLength = extractFileOutput[0];
+        var nextPackOffset = extractFileOutput[1];
 
-        Sha1.hash($fileCache.array, fileStart, fileEnd, $heap.array, tempHashOffset);
-        var hashOffset = HashTable.findHashOffset($hashTable, $heap.array, tempHashOffset);
+        Sha1.hash($file, 0, fileLength, tempHash, 0);
+        var hashOffset = HashTable.findHashOffset($hashTable, tempHash, 0);
 
         if (hashOffset < 0) {
             hashOffset = ~hashOffset;
-            HashTable.setHash($hashTable, hashOffset, $heap.array, tempHashOffset);
+            HashTable.setHash($hashTable, hashOffset, tempHash, 0);
         }
 
-        var dataOffset = hashOffset >> 2;
-
-        if ($fileCache.array[fileStart + 1] === 'r'.charCodeAt(0)) {
+        if ($file[1] === 'r'.charCodeAt(0)) {
 
             // Unpack tree
-            var moldIndex = Mold.process($mold, fileStart, fileEnd);
+            var moldIndex = Mold.process($mold, fileLength);
             var data32_index = Mold.data32_size * moldIndex;
             var moldFileStart = $mold.data32[data32_index + Mold.data32_fileStart];
             var moldFileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
             var data8_index = Mold.data8_size * moldIndex;
             var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
             var numHoles = $mold.data8[data8_index + Mold.data8_numHoles];
-            $hashTable.data8[HashTable.typeOffset(hashOffset)] = moldIndex;
+            var dataOffset = hashOffset >> 2;
+            $hashTable.data8[HashTable.typeOffset(hashOffset)] = Type.tree;
+            $hashTable.data32[dataOffset + HashTable.data32_moldIndex] = moldIndex;
 
             var i;
             for (i = 0; i < numHoles; i++) {
                 var holeOffset = $mold.data8[data8_holeOffsets + i];
-                var searchHashOffset = fileStart + holeOffset;
-                var childHashOffset = HashTable.findHashOffset($hashTable, $fileCache.array, searchHashOffset);
+                var childHashOffset = HashTable.findHashOffset($hashTable, $file, holeOffset);
                 if (childHashOffset < 0) {
                     childHashOffset = ~childHashOffset;
-                    HashTable.setHash($hashTable, childHashOffset, $fileCache.array, searchHashOffset);
+                    HashTable.setHash($hashTable, childHashOffset, $file, holeOffset);
                     var childTypeOffset = HashTable.typeOffset(childHashOffset);
                     $hashTable.data8[childTypeOffset] = Type.pending;
                 }
@@ -62,9 +55,9 @@ Unpack.unpack = function (pack) {
 
             // Save blob or commit in PackData
             var typeOffset = HashTable.typeOffset(hashOffset);
-            if ($fileCache.array[fileStart] === 'b'.charCodeAt(0)) {
+            if ($file[0] === 'b'.charCodeAt(0)) {
                 $hashTable.data8[typeOffset] = Type.blob;
-            } else if ($fileCache.array[fileStart] === 'c'.charCodeAt(0)) {
+            } else if ($file[0] === 'c'.charCodeAt(0)) {
                 $hashTable.data8[typeOffset] = Type.commit;
             } else {
                 $hashTable.data8[typeOffset] = Type.tag;
@@ -84,8 +77,6 @@ Unpack.unpack = function (pack) {
             }
             $packData.nextOffset += i;
         }
-
-        FileCache.registerCachedFile($fileCache, fileStart, fileEnd, hashOffset);
 
         j = nextPackOffset;
     }

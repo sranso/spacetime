@@ -98,7 +98,7 @@ var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packDataArray, packOffset, fileRange) {
+PackData.extractFile = function (packDataArray, packOffset, extractFileOutput) {
     var pack_j = packOffset;
     var typeBits = packDataArray[pack_j] & 0x70;
     var prefix;
@@ -124,22 +124,18 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
 
-    FileCache.malloc($fileCache, fileLength);
-    var fileStart = $fileCache.nextArrayOffset;
-    var fileEnd = fileStart + fileLength;
-
     var i;
     for (i = 0; i < prefix.length; i++) {
-        $fileCache.array[$fileCache.nextArrayOffset + i] = prefix[i];
+        $file[i] = prefix[i];
     }
 
-    $fileCache.nextArrayOffset += i;
+    var j = i;
     for (i = 0; i < lengthString.length; i++) {
-        $fileCache.array[$fileCache.nextArrayOffset + i] = lengthString.charCodeAt(i);
+        $file[j + i] = lengthString.charCodeAt(i);
     }
-    $fileCache.array[$fileCache.nextArrayOffset + i] = 0;
+    $file[j + i] = 0;
 
-    $fileCache.nextArrayOffset += i + 1;
+    j += i + 1;
 
     if (length < 32768) {
         // Try to only need one chunk.
@@ -150,24 +146,24 @@ PackData.extractFile = function (packDataArray, packOffset, fileRange) {
     }
 
     var inflate = new pako.Inflate({chunkSize: chunkSize});
+    inflate.j = j;
     inflate.onData = onInflateData;
     inflate.onEnd = onEnd;
 
     inflate.push(packDataArray.subarray(pack_j), true);
 
     var nextPackOffset = pack_j + inflate.strm.next_in;
-
-    fileRange[0] = fileStart;
-    fileRange[1] = fileEnd;
-    return nextPackOffset;
+    extractFileOutput[0] = fileLength;
+    extractFileOutput[1] = nextPackOffset;
 };
 
 var onInflateData = function (chunk) {
+    var j = this.j;
     var i;
     for (i = 0; i < chunk.length; i++) {
-        $fileCache.array[$fileCache.nextArrayOffset + i] = chunk[i];
+        $file[j + i] = chunk[i];
     }
-    $fileCache.nextArrayOffset += i;
+    this.j += i;
 };
 
 })();

@@ -2,7 +2,7 @@
 global.Mold = {};
 (function () {
 
-Mold.create = function (n, arrayCapacity, indexStart) {
+Mold.create = function (n, arrayCapacity) {
     var hashBits = 0;
     var i = 2 * n;
     while (i > 1) {
@@ -20,7 +20,7 @@ Mold.create = function (n, arrayCapacity, indexStart) {
         data32: new Uint32Array(dataBuffer),
         data8: new Uint8Array(dataBuffer),
         n: n,
-        nextIndex: indexStart,
+        nextIndex: 1,
         nextArrayOffset: 0,
         hashBits: hashBits,
         hashMask: -1 >>> (32 - hashBits),
@@ -30,8 +30,9 @@ Mold.create = function (n, arrayCapacity, indexStart) {
 // data32/8 layout (in bytes):
 //
 // |-- 4 --|-- 4 --|-1-|-1-|-1-|-1-|-1-|-1-|-1-|-1-|
-// |       |       |   |   |   |                   |
-// |       |       |   |   |   | holeOffsets (x5) = data8[11 - 15]
+// |       |       |   |   |   |               |
+// |       |       |   |   |   |               | unused
+// |       |       |   |   |   | holeOffsets (x4) = data8[11 - 14]
 // |       |       |   |   | treeHeight = data8[10]
 // |       |       |   | numChildren = data8[9]
 // |       |       | numHoles = data8[8]
@@ -47,33 +48,33 @@ Mold.data8_numChildren = 9;
 Mold.data8_treeHeight = 10;
 Mold.data8_holeOffsets = 11;
 
-var holeOffsets = new Uint32Array(6);
+var holeOffsets = new Uint32Array(10);
 
-Mold.process = function (mold, fileStart, fileEnd) {
-    if (fileEnd - fileStart > 255) {
-        throw new Error('File is too large to make mold: ' + (fileEnd - fileStart));
+Mold.process = function (mold, fileLength) {
+    if (fileLength > 255) {
+        throw new Error('File is too large to make mold: ' + fileLength);
     }
 
     // Find hole offsets in file
     var holeIndex = 0;
-    var j = $fileCache.array.indexOf(0, fileStart + 6) + 1;
-    while (j < fileEnd) {
-        j = $fileCache.array.indexOf(0, j + 7) + 1;
+    var j = $file.indexOf(0, 6) + 1;
+    while (j < fileLength) {
+        j = $file.indexOf(0, j + 7) + 1;
         holeOffsets[holeIndex] = j;
         j += 20;
         holeIndex++;
     }
     var numHoles = holeIndex;
-    if (numHoles > 5) {
+    if (numHoles > 4) {
         throw new Error('Too many holes in mold: ' + numHoles);
     }
 
     // Compute FNV-1a hash
     var hash = Fnv1a.startHash;
-    var previousOffset = fileStart - 20;
+    var previousOffset = -20;
     for (j = 0; j < numHoles; j++) {
         var start = previousOffset + 20;
-        hash = Fnv1a.update(hash, $fileCache.array, start, holeOffsets[j]);
+        hash = Fnv1a.update(hash, $file, start, holeOffsets[j]);
         previousOffset = holeOffsets[j];
     }
 
@@ -107,13 +108,13 @@ Mold.process = function (mold, fileStart, fileEnd) {
         var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
         for (j = 0; j < numHoles; j++) {
             var moldHoleOffset = mold.data8[data8_holeOffsets + j];
-            if (moldHoleOffset !== (holeOffsets[j] - fileStart)) {
+            if (moldHoleOffset !== holeOffsets[j]) {
                 continue searchTable;
             }
 
             var i;
             for (i = previousOffset + 20; i < moldHoleOffset; i++) {
-                if ($fileCache.array[fileStart + i] !== mold.fileArray[moldFileStart + i]) {
+                if ($file[i] !== mold.fileArray[moldFileStart + i]) {
                     continue searchTable;
                 }
             }
@@ -130,7 +131,6 @@ Mold.process = function (mold, fileStart, fileEnd) {
         throw new Error('Too many molds: ' + moldIndex);
     }
 
-    var fileLength = fileEnd - fileStart;
     var moldFileStart = mold.nextArrayOffset;
     var moldFileEnd = moldFileStart + fileLength;
     if (moldFileEnd >= mold.fileArray.length) {
@@ -141,7 +141,7 @@ Mold.process = function (mold, fileStart, fileEnd) {
     // Copy mold file
     var i;
     for (i = 0; i < fileLength; i++) {
-        mold.fileArray[moldFileStart + i] = $fileCache.array[fileStart + i];
+        mold.fileArray[moldFileStart + i] = $file[i];
     }
 
     // Save data
@@ -154,7 +154,7 @@ Mold.process = function (mold, fileStart, fileEnd) {
 
     var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
     for (j = 0; j < numHoles; j++) {
-        mold.data8[data8_holeOffsets + j] = holeOffsets[j] - fileStart;
+        mold.data8[data8_holeOffsets + j] = holeOffsets[j];
     }
 
     mold.table[h] = moldIndex;

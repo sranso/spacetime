@@ -5,18 +5,18 @@ var fileRange = new Uint32Array(2);
 var tempHash = new Uint8Array(20);
 
 global.hash = function (value) {
-    var blob;
+    var blobLength;
     var type;
     switch (typeof value) {
     case 'string':
         if (value.length > 19) {
             throw new Error('String too long: ' + value.length);
         }
-        blob = Blob.create('"' + value, fileRange);
+        blobLength = Blob.create('"' + value);
         type = Type.string;
         break;
     case 'number':
-        blob = Blob.create('' + value, fileRange);
+        blobLength = Blob.create('' + value);
         if (value === (value | 0)) {
             type = Type.integer;
         } else {
@@ -27,9 +27,7 @@ global.hash = function (value) {
         throw new Error('Unsupported type: ' + (typeof value));
     }
 
-    var blobStart = fileRange[0];
-    var blobEnd = fileRange[1];
-    Sha1.hash($fileCache.array, blobStart, blobEnd, tempHash, 0);
+    Sha1.hash($file, 0, blobLength, tempHash, 0);
     var hashOffset = HashTable.findHashOffset($hashTable, tempHash, 0);
 
     if (hashOffset > 0) {
@@ -43,10 +41,9 @@ global.hash = function (value) {
     switch (type) {
     case Type.string:
         $hashTable.data8[hashOffset + HashTable.data8_stringLength] = value.length;
-        var stringOffset = hashOffset + HashTable.data8_stringStart;
         var i;
         for (i = 0; i < value.length; i++) {
-            $hashTable.data8[stringOffset + i] = value.charCodeAt(i);
+            $hashTable.data8[hashOffset + i] = value.charCodeAt(i);
         }
         break;
     case Type.integer:

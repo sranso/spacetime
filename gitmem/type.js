@@ -14,6 +14,6 @@ Type.integer = 5;
 Type.float = 6;
 Type.boolean = 7;
 
-Type.minTree = 8;
+Type.tree = 8;
 
 })();

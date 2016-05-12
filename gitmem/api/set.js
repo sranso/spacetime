@@ -6,7 +6,7 @@ var tempHash = new Uint8Array(20);
 
 global.set = function (hashOffset) {
     var dataOffset = hashOffset >> 2;
-    var moldIndex = $hashTable.data8[HashTable.typeOffset(hashOffset)];
+    var moldIndex = $hashTable.data32[dataOffset + HashTable.data32_moldIndex];
     var data8_index = moldIndex * Mold.data8_size;
     var numChildren = $mold.data8[data8_index + Mold.data8_numChildren];
 
@@ -47,8 +47,9 @@ global.set = function (hashOffset) {
 
     hashOffset = ~hashOffset;
     HashTable.setHash($hashTable, hashOffset, tempHash, 0);
-    $hashTable.data8[HashTable.typeOffset(hashOffset)] = moldIndex;
     dataOffset = hashOffset >> 2;
+    $hashTable.data8[HashTable.typeOffset(hashOffset)] = moldIndex;
+    $hashTable.data32[dataOffset + HashTable.data32_moldIndex] = moldIndex;
     for (j = 0; j < numChildren; j++) {
         $hashTable.data32[dataOffset + j] = newHashOffsets[j];
     }

@@ -3,15 +3,15 @@ require('../../../test/helper');
 
 var random = Random.create(29923321);
 global.$hashTable = HashTable.create(16, random);
-global.$fileCache = FileCache.create(8, 128);
-global.$mold = Mold.create(4, 128, 1);
+global.$file = new Uint8Array(128);
+global.$mold = Mold.create(4, 128);
 
-var treeRange = Tree.create({
+var treeLength = Tree.create({
     bar: 'blob',
     foo: 'blob',
     www: 'blob',
-}, []);
-var moldIndex = Mold.process($mold, treeRange[0], treeRange[1]);
+});
+var moldIndex = Mold.process($mold, treeLength);
 var data32_index = Mold.data32_size * moldIndex;
 var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
 var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
@@ -31,7 +31,9 @@ HashTable.setHash($hashTable, barHashOffset, barHash, 0);
 HashTable.setHash($hashTable, fooHashOffset, fooHash, 0);
 HashTable.setHash($hashTable, treeHashOffset, wwwHash, 0);
 HashTable.setHash($hashTable, treeHashOffset, treeHash, 0);
-$hashTable.data8[HashTable.typeOffset(treeHashOffset)] = moldIndex;
+var treeDataOffset = treeHashOffset >> 2;
+$hashTable.data8[HashTable.typeOffset(treeHashOffset)] = Type.tree;
+$hashTable.data32[treeDataOffset + HashTable.data32_moldIndex] = moldIndex;
 
 var tree1 = set(treeHashOffset,
                 0, barHashOffset,
@@ -47,6 +49,8 @@ log($hashTable.data32[dataOffset + 1], fooHashOffset);
 //=> 196 196
 log($hashTable.data32[dataOffset + 2], wwwHashOffset);
 //=> 4 4
+log($hashTable.data32[dataOffset + HashTable.data32_moldIndex], moldIndex);
+//=> 1 1
 
 var tree2 = set(tree1, 1, wwwHashOffset);
 dataOffset = tree2 >> 2;

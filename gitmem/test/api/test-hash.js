@@ -3,7 +3,7 @@ require('../../../test/helper');
 
 var random = Random.create(5000162);
 global.$hashTable = HashTable.create(16, random);
-global.$fileCache = FileCache.create(8, 128);
+global.$file = new Uint8Array(32);
 
 var foo = hash('I <3 short messages');
 log(foo, hexHash($hashTable.hashes8, foo));
@@ -12,12 +12,11 @@ log($hashTable.data8[HashTable.typeOffset(foo)], Type.string);
 //=> 4 4
 log($hashTable.data8[foo + HashTable.data8_stringLength]);
 //=> 19
-var stringOffset = foo + HashTable.data8_stringStart;
-log($hashTable.data8[stringOffset + 0], 'I'.charCodeAt(0));
+log($hashTable.data8[foo + 0], 'I'.charCodeAt(0));
 //=> 73 73
-log($hashTable.data8[stringOffset + 1], ' '.charCodeAt(0));
+log($hashTable.data8[foo + 1], ' '.charCodeAt(0));
 //=> 32 32
-log($hashTable.data8[stringOffset + 18], 's'.charCodeAt(0));
+log($hashTable.data8[foo + 18], 's'.charCodeAt(0));
 //=> 115 115
 
 var num1 = hash(42);

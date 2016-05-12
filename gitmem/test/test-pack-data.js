@@ -1,14 +1,10 @@
 'use strict';
 require('../../test/helper');
 
-global.$heap = Heap.create(64);
-var $h = $heap.array;
-global.$fileCache = FileCache.create(2, 32);
+global.$file = new Uint8Array(16);
 
-var blobRange = Blob.create('foo bar\n', []);
-var blobStart = blobRange[0];
-var blobEnd = blobRange[1];
-var blob = $fileCache.array.subarray(blobStart, blobEnd);
+var blobLength = Blob.create('foo bar\n');
+var blob = $file.subarray(0, blobLength);
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
 log(hex(deflated));
@@ -30,13 +26,13 @@ var packData = PackData.create(32);
 log(packData.nextOffset, packData.array.length);
 //=> 0 32
 
-var packOffset = PackData.packFile(packData, $fileCache.array, blobStart, blobEnd);
+var packOffset = PackData.packFile(packData, $file, 0, blobLength);
 log(packOffset, packData.nextOffset, packData.array.length);
 //=> 0 17 32
 log(hex(packData.array, packOffset, packData.nextOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
-packOffset = PackData.packFile(packData, $fileCache.array, blobStart, blobEnd);
+packOffset = PackData.packFile(packData, $file, 0, blobLength);
 log(packOffset, packData.nextOffset, packData.array.length);
 //=> 17 34 64
 log(hex(packData.array, packOffset, packData.nextOffset));
@@ -47,15 +43,13 @@ log(hex(packData.array, packOffset, packData.nextOffset));
 
 
 
-var fileRange = [];
-$fileCache.array[21] = 42; // This is where the NUL byte will go
-var nextPackOffset = PackData.extractFile(packData.array, packOffset, fileRange);
-var fileStart = fileRange[0];
-var fileEnd = fileRange[1];
-log(fileStart, fileEnd, nextPackOffset);
-//=> 15 30 34
-log($fileCache.nextArrayOffset);
-//=> 30
-log(pretty($fileCache.array, fileStart, fileEnd));
+$file[6] = 123; // This is where the NUL byte will go
+var extractFileOutput = [];
+PackData.extractFile(packData.array, packOffset, extractFileOutput);
+var fileLength = extractFileOutput[0];
+var nextPackOffset = extractFileOutput[1];
+log(fileLength, nextPackOffset);
+//=> 15 34
+log(pretty($file, 0, fileLength));
 //=> blob 8\x00foo bar
 //=>
