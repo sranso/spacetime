@@ -1,8 +1,7 @@
 'use strict';
 Loader.loadWeb('../..', function (event) {
 
-var random = Random.create(9699637);
-var loadTable = Table.create(random);
+var loadTable = Table.create(Random.create(9699637));
 
 global.Thing = {};
 
@@ -437,8 +436,7 @@ var afterFetch = function (refHash, pack) {
 
 var lastClone = function (refHash, pack) {
     var index = PackIndex.create(pack);
-    var random = Random.create(868869);
-    var table = Table.create(random);
+    var table = Table.create(Random.create(868869));
     var commit = Commit.checkout([index], table, refHash, 0);
     console.log('[lastClone] commit message: ' + commit.message);
     console.log('[lastClone] commit time: ' + new Date(commit.committer.time));

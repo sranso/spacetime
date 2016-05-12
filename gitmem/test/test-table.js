@@ -1,8 +1,7 @@
 'use strict';
 require('../../test/helper');
 
-var random = Random.create(42);
-var table = Table.create(16, random);
+var table = Table.create(16, Random.create(42));
 log(table.hashes8.length);
 //=> 384
 log(table.data8.length, table.data32.length);

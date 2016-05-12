@@ -302,8 +302,7 @@ var files = objects.map(function (a) {
 });
 var pack = Pack.create(files);
 var index = PackIndex.create(pack);
-var random = Random.create(518917);
-var newTable = Table.create(random);
+var newTable = Table.create(Random.create(518917));
 
 var gotGrid = Grid.checkout([index], newTable, grid2.hash, grid2.pointer);
 log(hex(gotGrid.hash));

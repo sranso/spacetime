@@ -1,8 +1,7 @@
 'use strict';
 require('../../../test/helper');
 
-var random = Random.create(5000162);
-global.$table = Table.create(16, random);
+global.$table = Table.create(16, Random.create(5000162));
 global.$file = new Uint8Array(32);
 
 var foo = hash('I <3 short messages');

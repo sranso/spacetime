@@ -3,8 +3,7 @@ require('../../test/helper');
 
 global.$heap = Heap.create(4096);
 var $h = $heap.array;
-var random = Random.create(28591);
-global.$table = Table.create(8, random);
+global.$table = Table.create(8, Random.create(28591));
 global.$packData = PackData.create(512);
 global.$fileCache = FileCache.create(8, 2048);
 
