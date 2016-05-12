@@ -14,12 +14,6 @@ Table.create = function (n, random) {
         hashBitsToShift--;
     }
 
-    var objects = new Array(n);
-    var i;
-    for (i = 0; i < n; i++) {
-        objects[i] = null;
-    }
-
     var capacity = 64 * Math.ceil(n / 3);
     var dataBuffer = new ArrayBuffer(capacity);
 
@@ -29,7 +23,6 @@ Table.create = function (n, random) {
         data32: new Uint32Array(dataBuffer),
         dataInt32: new Int32Array(dataBuffer),
         dataFloat64: new Float64Array(dataBuffer),
-        objects: objects,
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,
@@ -79,10 +72,6 @@ Table.findPointer = function (table, $s, searchPointer) {
     }
 
     throw new Error('Reached maximum iterations searching for hash');
-};
-
-Table.objectIndex = function (pointer) {
-    return 3 * (pointer >>> 6) + ((pointer >>> 4) & 3);
 };
 
 var blockMask = ~63;

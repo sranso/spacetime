@@ -11,10 +11,6 @@ log(table.n);
 //=> 16
 log(table.hashBitsToShift);
 //=> 28
-log(table.objects.length);
-//=> 16
-log(table.objects[0], table.objects[3]);
-//=> null null
 
 var abc = Convert.stringToArray('abc');
 var searchHash = new Uint8Array(20);
@@ -26,9 +22,6 @@ var pointer = Table.findPointer(table, searchHash, 0);
 log(pointer, ~pointer);
 //=> -197 196
 pointer = ~pointer;
-
-log(Table.objectIndex(pointer));
-//=> 9
 
 log(Table.typeOffset(pointer));
 //=> 193
@@ -55,48 +48,29 @@ var hashInNextBlock3 = new Uint8Array([0x3e,0x7c,0x4b,0x99,0xe9,0xb4,0xe1,0x68,0
 var hashInLastBlock1 = new Uint8Array([0xf8,0xad,0x8a,0x6d,0xc7,0xb1,0x31,0xf9,0x5c,0x38,0xc4,0x1e,0x79,0x3d,0x2b,0x70,0x0f,0xb7,0x07,0x51]);
 
 // hashInBlock1
-log(pointer, Table.objectIndex(pointer));
-//=> 196 9
+log(pointer);
+//=> 196
 pointer = ~Table.findPointer(table, hashInBlock2, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 216 10
+log(pointer);
+//=> 216
 Table.setHash(table, pointer, hashInBlock2, 0);
 pointer = ~Table.findPointer(table, hashInBlock3, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 236 11
+log(pointer);
+//=> 236
 Table.setHash(table, pointer, hashInBlock3, 0);
 pointer = ~Table.findPointer(table, hashInNextBlock1, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 4 0
+log(pointer);
+//=> 4
 Table.setHash(table, pointer, hashInNextBlock1, 0);
 pointer = ~Table.findPointer(table, hashInNextBlock2, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 24 1
+log(pointer);
+//=> 24
 Table.setHash(table, pointer, hashInNextBlock2, 0);
 pointer = ~Table.findPointer(table, hashInNextBlock3, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 44 2
+log(pointer);
+//=> 44
 Table.setHash(table, pointer, hashInNextBlock3, 0);
 pointer = ~Table.findPointer(table, hashInLastBlock1, 0);
-log(pointer, Table.objectIndex(pointer));
-//=> 68 3
+log(pointer);
+//=> 68
 Table.setHash(table, pointer, hashInLastBlock1, 0);
-
-
-
-
-var object1 = {
-    pointer: pointer,
-    foo: 'bar',
-};
-pointer = Table.findPointer(table, searchHash, 0);
-var object2 = {
-    pointer: pointer,
-    some: 'thing',
-};
-
-table.objects[0] = object1;
-table.objects[3] = object2;
-log(prettyObjectList(table));
-//=> 0: #<f8ad8a foo=bar>
-//=> 3: #<a9993e some=thing>

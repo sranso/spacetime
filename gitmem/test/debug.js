@@ -51,34 +51,6 @@ global.hexHash = function (array, hashOffset) {
     return hex(array, hashOffset, hashOffset + 20);
 };
 
-global.prettyObjectList = function (table) {
-    var pretty = [];
-    var i;
-    for (i = 0; i < table.objects.length; i++) {
-        var object = table.objects[i];
-        if (object) {
-            var value;
-            if (object.hasOwnProperty('value')) {
-                value = '' + object.value;
-            } else {
-                var keys = Object.keys(object);
-                var ignoreKeys = ['flags', 'fileStart', 'fileEnd', 'pointer'];
-                keys = keys.filter(function (key) {
-                    return ignoreKeys.indexOf(key) === -1;
-                });
-                value = keys.map(function (key) {
-                    var d = '' + object[key];
-                    return clamp(key, 6) + '=' + clamp(d, 6);
-                }).join(' ');
-            }
-            var hash = Convert.hashToString(table.hashes8, object.pointer);
-            pretty.push(i + ': #<' + hash.slice(0, 6) + ' ' + clamp(value, 36) + '>');
-        }
-    }
-
-    return pretty.join('\n');
-};
-
 var clamp = function (d, length) {
     if (d.length > length) {
         return d.slice(0, length - 2) + '..';
