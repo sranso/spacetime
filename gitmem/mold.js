@@ -96,18 +96,17 @@ Mold.process = function (mold, fileLength) {
         }
 
         // Make sure mold matches
-        var data8_index = moldIndex * Mold.data8_size;
-        var data32_index = moldIndex * Mold.data32_size;
-        var moldNumHoles = mold.data8[data8_index + Mold.data8_numHoles];
-        if (moldNumHoles !== numHoles) {
+        var mold8 = moldIndex * Mold.data8_size;
+        var mold32 = moldIndex * Mold.data32_size;
+        if (mold.data8[mold8 + Mold.data8_numHoles] !== numHoles) {
             continue;
         }
 
-        var moldFileStart = mold.data32[data32_index + Mold.data32_fileStart];
+        var moldFileStart = mold.data32[mold32 + Mold.data32_fileStart];
         var previousOffset = -20;
-        var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
+        var mold8Holes = mold8 + Mold.data8_holeOffsets;
         for (j = 0; j < numHoles; j++) {
-            var moldHoleOffset = mold.data8[data8_holeOffsets + j];
+            var moldHoleOffset = mold.data8[mold8Holes + j];
             if (moldHoleOffset !== holeOffsets[j]) {
                 continue searchTable;
             }
@@ -145,16 +144,16 @@ Mold.process = function (mold, fileLength) {
     }
 
     // Save data
-    var data8_index = moldIndex * Mold.data8_size;
-    var data32_index = moldIndex * Mold.data32_size;
-    mold.data32[data32_index + Mold.data32_fileStart] = moldFileStart;
-    mold.data32[data32_index + Mold.data32_fileEnd] = moldFileEnd;
-    mold.data8[data8_index + Mold.data8_numHoles] = numHoles;
-    mold.data8[data8_index + Mold.data8_numChildren] = numHoles;
+    var mold8 = moldIndex * Mold.data8_size;
+    var mold32 = moldIndex * Mold.data32_size;
+    mold.data32[mold32 + Mold.data32_fileStart] = moldFileStart;
+    mold.data32[mold32 + Mold.data32_fileEnd] = moldFileEnd;
+    mold.data8[mold8 + Mold.data8_numHoles] = numHoles;
+    mold.data8[mold8 + Mold.data8_numChildren] = numHoles;
 
-    var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
+    var mold8Holes = mold8 + Mold.data8_holeOffsets;
     for (j = 0; j < numHoles; j++) {
-        mold.data8[data8_holeOffsets + j] = holeOffsets[j];
+        mold.data8[mold8Holes + j] = holeOffsets[j];
     }
 
     mold.table[h] = moldIndex;

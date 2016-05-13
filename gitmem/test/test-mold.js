@@ -23,21 +23,21 @@ var treeLength = Tree.create({
 var moldIndex = Mold.process(mold, treeLength);
 log(moldIndex, mold.nextIndex);
 //=> 1 2
-var data32_index = Mold.data32_size * moldIndex;
-var fileStart = mold.data32[data32_index + Mold.data32_fileStart];
-var fileEnd = mold.data32[data32_index + Mold.data32_fileEnd];
+var mold32 = Mold.data32_size * moldIndex;
+var fileStart = mold.data32[mold32 + Mold.data32_fileStart];
+var fileEnd = mold.data32[mold32 + Mold.data32_fileEnd];
 log(fileStart, fileEnd);
 //=> 0 69
 log(pretty(mold.fileArray, fileStart, fileEnd));
 //=> tree 61\x0040000 bar\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00100644 foo\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 
-var data8_index = Mold.data8_size * moldIndex;
-var numHoles = mold.data8[data8_index + Mold.data8_numHoles];
+var mold8 = Mold.data8_size * moldIndex;
+var numHoles = mold.data8[mold8 + Mold.data8_numHoles];
 log(numHoles);
 //=> 2
-log(mold.data8[data8_index + Mold.data8_holeOffsets + 0]);
+log(mold.data8[mold8 + Mold.data8_holeOffsets + 0]);
 //=> 18
-log(mold.data8[data8_index + Mold.data8_holeOffsets + 1]);
+log(mold.data8[mold8 + Mold.data8_holeOffsets + 1]);
 //=> 49
 
 log(mold.table[2], mold.table[3]);

@@ -123,13 +123,13 @@ pointer32 = pointer >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
 //=> 1
-var data32_index = Mold.data32_size * moldIndex;
-var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
-var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
+var mold32 = Mold.data32_size * moldIndex;
+var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 log(pretty($mold.fileArray, fileStart, fileEnd));
 //=> tree 96\x00100644 bar\x00\xba\x0e\x16.\x1cGF\x9e?\xe4\xb3\x93\xa8\xbf\x8cV\x9f0\x21\x16100644 foo\x00\x19\x10\x28\x15f=\x23\xf8\xb7ZG\xe7\xa0\x19e\xdc\xdc\x96F\x8c40000 missing\x00\x1d\xbf\xb8\xa3s\x21\x96d\xf5\xae\xd3\xa6r\xac\xf4\xbf9\xc8\xfbR
-var data8_index = Mold.data8_size * moldIndex;
-var numChildren = $mold.data8[data8_index + Mold.data8_numChildren];
+var mold8 = Mold.data8_size * moldIndex;
+var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 log(numChildren);
 //=> 3
 var childPointer = $table.data32[pointer32 + 0];

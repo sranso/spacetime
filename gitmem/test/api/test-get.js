@@ -10,9 +10,9 @@ var treeLength = Tree.create({
     foo: 'blob',
 });
 var moldIndex = Mold.process($mold, treeLength);
-var data32_index = Mold.data32_size * moldIndex;
-var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
-var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
+var mold32 = Mold.data32_size * moldIndex;
+var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 var holeOffsets = Mold.data8_size * moldIndex + Mold.data8_holeOffsets;
 var barHash = new Uint8Array([0x44,0x26,0xd3,0xa5,0xbb,0xf5,0x7d,0x7f,0xae,0xcc,0xe6,0xc5,0x5d,0xd4,0xf9,0xf2,0x57,0x34,0x5b,0x32]);
 var fooHash = new Uint8Array([0x20,0xff,0xd3,0xc6,0xdc,0xf3,0x3e,0x56,0x14,0xb8,0x18,0xe3,0x24,0x25,0x4f,0xd5,0x1c,0xc9,0x21,0xf6]);

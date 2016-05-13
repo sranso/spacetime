@@ -28,25 +28,22 @@ Unpack.unpack = function (pack) {
 
             // Unpack tree
             var moldIndex = Mold.process($mold, fileLength);
-            var data32_index = Mold.data32_size * moldIndex;
-            var moldFileStart = $mold.data32[data32_index + Mold.data32_fileStart];
-            var moldFileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
-            var data8_index = Mold.data8_size * moldIndex;
-            var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
-            var numHoles = $mold.data8[data8_index + Mold.data8_numHoles];
+            var mold32 = Mold.data32_size * moldIndex;
+            var mold8 = Mold.data8_size * moldIndex;
+            var mold8Holes = mold8 + Mold.data8_holeOffsets;
+            var numHoles = $mold.data8[mold8 + Mold.data8_numHoles];
             var pointer32 = pointer >> 2;
             $table.data8[Table.typeOffset(pointer)] = Type.tree;
             $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
 
             var i;
             for (i = 0; i < numHoles; i++) {
-                var holeOffset = $mold.data8[data8_holeOffsets + i];
+                var holeOffset = $mold.data8[mold8Holes + i];
                 var childPointer = Table.findPointer($table, $file, holeOffset);
                 if (childPointer < 0) {
                     childPointer = ~childPointer;
                     Table.setHash($table, childPointer, $file, holeOffset);
-                    var childTypeOffset = Table.typeOffset(childPointer);
-                    $table.data8[childTypeOffset] = Type.pending;
+                    $table.data8[Table.typeOffset(childPointer)] = Type.pending;
                 }
 
                 $table.data32[pointer32 + i] = childPointer;

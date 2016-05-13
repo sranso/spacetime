@@ -7,8 +7,8 @@ var tempHash = new Uint8Array(20);
 global.set = function (pointer) {
     var pointer32 = pointer >> 2;
     var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
-    var data8_index = moldIndex * Mold.data8_size;
-    var numChildren = $mold.data8[data8_index + Mold.data8_numChildren];
+    var mold8 = moldIndex * Mold.data8_size;
+    var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 
     // Set newPointers
     var j;
@@ -25,13 +25,13 @@ global.set = function (pointer) {
     }
 
     // Write to mold
-    var data32_index = moldIndex * Mold.data32_size;
-    var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
-    var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
-    var data8_holeOffsets = data8_index + Mold.data8_holeOffsets;
+    var mold32 = moldIndex * Mold.data32_size;
+    var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+    var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
+    var holeOffsets = mold8 + Mold.data8_holeOffsets;
     for (j = 0; j < numChildren; j++) {
         var childPointer = newPointers[j];
-        var holeOffset = fileStart + $mold.data8[data8_holeOffsets + j];
+        var holeOffset = fileStart + $mold.data8[holeOffsets + j];
         var i;
         for (i = 0; i < 20; i++) {
             $mold.fileArray[holeOffset + i] = $table.hashes8[pointer + i];

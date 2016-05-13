@@ -11,9 +11,9 @@ var treeLength = Tree.create({
     www: 'blob',
 });
 var moldIndex = Mold.process($mold, treeLength);
-var data32_index = Mold.data32_size * moldIndex;
-var fileStart = $mold.data32[data32_index + Mold.data32_fileStart];
-var fileEnd = $mold.data32[data32_index + Mold.data32_fileEnd];
+var mold32 = Mold.data32_size * moldIndex;
+var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 var treeHash = new Uint8Array(20);
 Sha1.hash($mold.fileArray, fileStart, fileEnd, treeHash, 0);
 log(hexHash(treeHash, 0));
