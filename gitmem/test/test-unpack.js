@@ -1,125 +1,119 @@
 'use strict';
 require('../../test/helper');
 
-global.$table = Table.create(4, Random.create(526926));
-global.$file = new Uint8Array(128);
-global.$mold = Mold.create(32, 128);
+global.$table = Table.create(8, Random.create(526926));
+global.$file = new Uint8Array(256);
+global.$mold = Mold.create(4, 256);
 
-var inputPackData = PackData.create(160);
-inputPackData.array[11] = 3;  // Number of packed files.
+var inputPackData = PackData.create(237);
+inputPackData.array[11] = 4;  // Number of packed files.
 inputPackData.nextOffset = 12;
 
-var fooLength = Blob.create('foo', []);
-var fooHash = new Uint8Array(20);
-Sha1.hash($file, 0, fooLength, fooHash, 0);
-log(hexHash(fooHash, 0));
-//=> 19102815663d23f8b75a47e7a01965dcdc96468c
-PackData.packFile(inputPackData, $file, 0, fooLength);
+var messageLength = Blob.create('"I <3 short messages');
+var messageHash = new Uint8Array(20);
+Sha1.hash($file, 0, messageLength, messageHash, 0);
+log(hexHash(messageHash, 0));
+//=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
+PackData.packFile(inputPackData, $file, 0, messageLength);
 
-var barLength = Blob.create('bar', []);
-var barHash = new Uint8Array(20);
-Sha1.hash($file, 0, barLength, barHash, 0);
-log(hexHash(barHash, 0));
-//=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
-PackData.packFile(inputPackData, $file, 0, barLength);
+var answerLength = Blob.create('42');
+var answerHash = new Uint8Array(20);
+Sha1.hash($file, 0, answerLength, answerHash, 0);
+log(hexHash(answerHash, 0));
+//=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
+PackData.packFile(inputPackData, $file, 0, answerLength);
+
+var piLength = Blob.create('3.141592653589793');
+var piHash = new Uint8Array(20);
+Sha1.hash($file, 0, piLength, piHash, 0);
+log(hexHash(piHash, 0));
+//=> e5c1cebcacfc81cf51a61c031e716d874981360e
+PackData.packFile(inputPackData, $file, 0, piLength);
 
 var treeLength = Tree.create({
-    foo: 'blob',
-    bar: 'blob',
+    answer: 'blob',
+    message: 'blob',
     missing: 'tree',
+    pi: 'blob',
 });
 var missingHash = new Uint8Array([0x1d,0xbf,0xb8,0xa3,0x73,0x21,0x96,0x64,0xf5,0xae,0xd3,0xa6,0x72,0xac,0xf4,0xbf,0x39,0xc8,0xfb,0x52]);
-var barOffset = $file.indexOf(0, 12) + 1;
-var fooOffset = $file.indexOf(0, barOffset + 20) + 1;
-var missingOffset = $file.indexOf(0, fooOffset + 20) + 1;
-Tree.setHash($file, barOffset, barHash, 0);
-Tree.setHash($file, fooOffset, fooHash, 0);
+var answerOffset = $file.indexOf(0, 12) + 1;
+var messageOffset = $file.indexOf(0, answerOffset + 20) + 1;
+var missingOffset = $file.indexOf(0, messageOffset + 20) + 1;
+var piOffset = $file.indexOf(0, missingOffset + 20) + 1;
+Tree.setHash($file, answerOffset, answerHash, 0);
+Tree.setHash($file, messageOffset, messageHash, 0);
 Tree.setHash($file, missingOffset, missingHash, 0);
+Tree.setHash($file, piOffset, piHash, 0);
 log(pretty($file, 0, treeLength));
-//=> tree 96\x00100644 bar\x00\xba\x0e\x16.\x1cGF\x9e?\xe4\xb3\x93\xa8\xbf\x8cV\x9f0\x21\x16100644 foo\x00\x19\x10\x28\x15f=\x23\xf8\xb7ZG\xe7\xa0\x19e\xdc\xdc\x96F\x8c40000 missing\x00\x1d\xbf\xb8\xa3s\x21\x96d\xf5\xae\xd3\xa6r\xac\xf4\xbf9\xc8\xfbR
+//=> tree 133\x00100644 answer\x00\xf7\x0d\x7b\xbaJ\xe1\xf0v\x82\xe05\x8b\xd7\xa2\x06\x80\x94\xfc\x02;100644 message\x00K\xca\xa359/O\x0f\xb3_\xdaX\x01\x7dA\xfa\x07\xdd\xeb\x8b40000 missing\x00\x1d\xbf\xb8\xa3s\x21\x96d\xf5\xae\xd3\xa6r\xac\xf4\xbf9\xc8\xfbR100644 pi\x00\xe5\xc1\xce\xbc\xac\xfc\x81\xcfQ\xa6\x1c\x03\x1eqm\x87I\x816\x0e
 var treeHash = new Uint8Array(20);
 Sha1.hash($file, 0, treeLength, treeHash, 0);
 log(hexHash(treeHash, 0));
-//=> df16029e64d49b34861f2c31f6f7cd9fa252a24d
+//=> e92993fcf3ac79777e33c872279a15956a3df4d9
 PackData.packFile(inputPackData, $file, 0, treeLength);
 
-
-var inputPackPointer = inputPackData.nextOffset;
+var inputPackHashOffset = inputPackData.nextOffset;
 log(inputPackData.nextOffset);
-//=> 140
+//=> 217
 var inputPack = inputPackData.array;
-Sha1.hash(inputPack, 0, inputPackPointer, inputPack, inputPackPointer);
-log(hexHash(inputPack, inputPackPointer));
-//=> 2b2ead7e8ab2a99c6b65469323667ed7b48b3ca2
+Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
+log(hexHash(inputPack, inputPackHashOffset));
+//=> fc12e2b509d3920c95f1d53a4838fd429b40987b
 
 
 
 
 
 
-
-
-global.$packData = PackData.create(512);
-$packData.nextOffset = 123;
 
 Unpack.unpack(inputPack);
 
-// foo
-var pointer = Table.findPointer($table, fooHash, 0);
-var fooPointer = pointer;
-log(pointer, hexHash($table.hashes8, pointer));
-//=> 4 '19102815663d23f8b75a47e7a01965dcdc96468c'
-var type = $table.data8[Table.typeOffset(pointer)];
-log(type, Type.blob);
+// message
+var message = Table.findPointer($table, messageHash, 0);
+log(message, hexHash($table.hashes8, message));
+//=> 4 '4bcaa335392f4f0fb35fda58017d41fa07ddeb8b'
+log($table.data8[Table.typeOffset(message)], Type.string);
 //=> 4 4
-var pointer32 = pointer >> 2;
-var packOffset = $table.data32[pointer32 + Table.data32_packOffset];
-log(packOffset);
-//=> 123
-var extractFileOutput = [];
-PackData.extractFile($packData.array, packOffset, extractFileOutput);
-var fileLength = extractFileOutput[0];
-var nextPackOffset = extractFileOutput[1];
-log(fileLength, nextPackOffset);
-//=> 10 135
-log(pretty($file, 0, fileLength));
-//=> blob 3\x00foo
+log($table.data8[message + Table.data8_stringLength]);
+//=> 19
+log($table.data8[message + 0], 'I'.charCodeAt(0));
+//=> 73 73
+log($table.data8[message + 1], ' '.charCodeAt(0));
+//=> 32 32
+log($table.data8[message + 18], 's'.charCodeAt(0));
+//=> 115 115
 
 
-// bar
-pointer = Table.findPointer($table, barHash, 0);
-var barPointer = pointer;
-log(pointer);
-//=> 68
-log(hexHash($table.hashes8, pointer));
-//=> ba0e162e1c47469e3fe4b393a8bf8c569f302116
-type = $table.data8[Table.typeOffset(pointer)];
-log(type, Type.blob);
-//=> 4 4
-pointer32 = pointer >> 2;
-packOffset = $table.data32[pointer32 + Table.data32_packOffset];
-log(packOffset);
-//=> 135
-extractFileOutput = [];
-PackData.extractFile($packData.array, packOffset, extractFileOutput);
-fileLength = extractFileOutput[0];
-nextPackOffset = extractFileOutput[1];
-log(fileLength, nextPackOffset);
-//=> 10 147
-log(pretty($file, 0, fileLength));
-//=> blob 3\x00bar
+// answer
+var answer = Table.findPointer($table, answerHash, 0);
+var answerPointer = answer;
+log(answer, hexHash($table.hashes8, answer));
+//=> 24 'f70d7bba4ae1f07682e0358bd7a2068094fc023b'
+log($table.data8[Table.typeOffset(answer)], Type.integer);
+//=> 5 5
+log($table.dataInt32[(answer >> 2) + 0]);
+//=> 42
+
+
+// pi
+var pi = Table.findPointer($table, piHash, 0);
+var piPointer = pi;
+log(pi, hexHash($table.hashes8, pi));
+//=> 44 'e5c1cebcacfc81cf51a61c031e716d874981360e'
+log($table.data8[Table.typeOffset(pi)], Type.float);
+//=> 6 6
+log($table.dataFloat64[(pi + 4) >> 3]);
+//=> 3.141592653589793
 
 
 // tree
-pointer = Table.findPointer($table, treeHash, 0);
-log(pointer);
-//=> 24
-log(hexHash($table.hashes8, pointer));
-//=> df16029e64d49b34861f2c31f6f7cd9fa252a24d
-type = $table.data8[Table.typeOffset(pointer)];
-log(type, Type.tree);
+var tree = Table.findPointer($table, treeHash, 0);
+log(tree, hexHash($table.hashes8, tree));
+//=> 132 'e92993fcf3ac79777e33c872279a15956a3df4d9'
+log($table.data8[Table.typeOffset(tree)], Type.tree);
 //=> 8 8
-pointer32 = pointer >> 2;
+var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
 //=> 1
@@ -127,21 +121,23 @@ var mold32 = Mold.data32_size * moldIndex;
 var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
 var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 log(pretty($mold.fileArray, fileStart, fileEnd));
-//=> tree 96\x00100644 bar\x00\xba\x0e\x16.\x1cGF\x9e?\xe4\xb3\x93\xa8\xbf\x8cV\x9f0\x21\x16100644 foo\x00\x19\x10\x28\x15f=\x23\xf8\xb7ZG\xe7\xa0\x19e\xdc\xdc\x96F\x8c40000 missing\x00\x1d\xbf\xb8\xa3s\x21\x96d\xf5\xae\xd3\xa6r\xac\xf4\xbf9\xc8\xfbR
+//=> tree 133\x00100644 answer\x00\xf7\x0d\x7b\xbaJ\xe1\xf0v\x82\xe05\x8b\xd7\xa2\x06\x80\x94\xfc\x02;100644 message\x00K\xca\xa359/O\x0f\xb3_\xdaX\x01\x7dA\xfa\x07\xdd\xeb\x8b40000 missing\x00\x1d\xbf\xb8\xa3s\x21\x96d\xf5\xae\xd3\xa6r\xac\xf4\xbf9\xc8\xfbR100644 pi\x00\xe5\xc1\xce\xbc\xac\xfc\x81\xcfQ\xa6\x1c\x03\x1eqm\x87I\x816\x0e
 var mold8 = Mold.data8_size * moldIndex;
 var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 log(numChildren);
-//=> 3
+//=> 4
 var childPointer = $table.data32[pointer32 + 0];
-log(childPointer, barPointer);
-//=> 68 68
+log(childPointer, answer);
+//=> 24 24
 childPointer = $table.data32[pointer32 + 1];
-log(childPointer, fooPointer);
+log(childPointer, message);
 //=> 4 4
-var missingPointer = Table.findPointer($table, missingHash, 0);
+var missing = Table.findPointer($table, missingHash, 0);
 childPointer = $table.data32[pointer32 + 2];
-log(childPointer, missingPointer);
-//=> 44 44
-type = $table.data8[Table.typeOffset(missingPointer)];
-log(type, Type.pending);
+log(childPointer, missing);
+//=> 68 68
+log($table.data8[Table.typeOffset(missing)], Type.pending);
 //=> 1 1
+childPointer = $table.data32[pointer32 + 3];
+log(childPointer, pi);
+//=> 44 44

@@ -23,19 +23,21 @@ Unpack.unpack = function (pack) {
             pointer = ~pointer;
             Table.setHash($table, pointer, tempHash, 0);
         }
+        var pointer32 = pointer >> 2;
 
-        if ($file[1] === 'r'.charCodeAt(0)) {
+        if ($file[1] === 'r'.charCodeAt(0)) { // tRee
 
-            // Unpack tree
+            //////// Unpack tree
+
             var moldIndex = Mold.process($mold, fileLength);
             var mold32 = Mold.data32_size * moldIndex;
             var mold8 = Mold.data8_size * moldIndex;
             var mold8Holes = mold8 + Mold.data8_holeOffsets;
             var numHoles = $mold.data8[mold8 + Mold.data8_numHoles];
-            var pointer32 = pointer >> 2;
             $table.data8[Table.typeOffset(pointer)] = Type.tree;
             $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
 
+            // Set child pointers
             var i;
             for (i = 0; i < numHoles; i++) {
                 var holeOffset = $mold.data8[mold8Holes + i];
@@ -48,31 +50,45 @@ Unpack.unpack = function (pack) {
 
                 $table.data32[pointer32 + i] = childPointer;
             }
-        } else {
 
-            // Save blob or commit in PackData
-            var typeOffset = Table.typeOffset(pointer);
-            if ($file[0] === 'b'.charCodeAt(0)) {
-                $table.data8[typeOffset] = Type.blob;
-            } else if ($file[0] === 'c'.charCodeAt(0)) {
-                $table.data8[typeOffset] = Type.commit;
+        } else if ($file[0] === 'b'.charCodeAt(0)) {
+
+            //////// Unpack blob
+
+            var dataStart = $file.indexOf(0, 6) + 1;
+            if ($file[dataStart] === '"'.charCodeAt(0)) {
+
+                // Unpack string
+                var stringStart = dataStart + 1;
+                var length = fileLength - stringStart;
+                if (length > 19) {
+                    throw new Error('String too long: ' + length);
+                }
+                $table.data8[pointer + Table.data8_stringLength] = length;
+                var i;
+                for (i = 0; i < length; i++) {
+                    $table.data8[pointer + i] = $file[stringStart + i];
+                }
+                $table.data8[Table.typeOffset(pointer)] = Type.string;
             } else {
-                $table.data8[typeOffset] = Type.tag;
+
+                // Unpack number
+                var array = $file.subarray(dataStart, fileLength);
+                var number = Number(String.fromCharCode.apply(null, array));
+                if (isNaN(number)) {
+                    throw new Error('Got NaN instead of number');
+                } else if (number === (number | 0)) {
+                    $table.dataInt32[pointer32] = number;
+                    $table.data8[Table.typeOffset(pointer)] = Type.integer;
+                } else {
+                    $table.dataFloat64[(pointer + 4) >> 3] = number;
+                    $table.data8[Table.typeOffset(pointer)] = Type.float;
+                }
             }
 
-            var deflatedLength = nextPackOffset - j;
-            if ($packData.nextOffset + deflatedLength > $packData.array.length) {
-                PackData.resize($packData, deflatedLength);
-            }
 
-            var data32_offset = (pointer >> 2) + Table.data32_packOffset;
-            $table.data32[data32_offset] = $packData.nextOffset;
-
-            var i;
-            for (i = 0; i < deflatedLength; i++) {
-                $packData.array[$packData.nextOffset + i] = pack[j + i];
-            }
-            $packData.nextOffset += i;
+        } else {
+            throw new Error('Commit and Tag not implemented, yet');
         }
 
         j = nextPackOffset;

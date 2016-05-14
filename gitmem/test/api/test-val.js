@@ -19,28 +19,28 @@ log(val(message));
 log(val(message).length, messageString.length);
 //=> 19 19
 
-var num1Number = 42;
-var num1BlobLength = Blob.create('' + num1Number);
-var num1Hash = new Uint8Array(20);
-Sha1.hash($file, 0, num1BlobLength, num1Hash, 0);
+var answerValue = 42;
+var answerBlobLength = Blob.create('' + answerValue);
+var answerHash = new Uint8Array(20);
+Sha1.hash($file, 0, answerBlobLength, answerHash, 0);
 
-var num1 = ~Table.findPointer($table, num1Hash, 0);
-Table.setHash($table, num1, num1Hash, 0);
-Convert.stringToExistingArray($table.data8, num1, '' + num1Number);
-$table.data8[Table.typeOffset(num1)] = Type.integer;
-$table.dataInt32[num1 >> 2] = num1Number;
-log(val(num1), val(num1) === num1Number);
+var answer = ~Table.findPointer($table, answerHash, 0);
+Table.setHash($table, answer, answerHash, 0);
+Convert.stringToExistingArray($table.data8, answer, '' + answerValue);
+$table.data8[Table.typeOffset(answer)] = Type.integer;
+$table.dataInt32[answer >> 2] = answerValue;
+log(val(answer), val(answer) === answerValue);
 //=> 42 true
 
-var num2Number = 375.20351695201254;
-var num2BlobLength = Blob.create('' + num2Number);
-var num2Hash = new Uint8Array(20);
-Sha1.hash($file, 0, num2BlobLength, num2Hash, 0);
+var piValue = 3.141592653589793;
+var piBlobLength = Blob.create('' + piValue);
+var piHash = new Uint8Array(20);
+Sha1.hash($file, 0, piBlobLength, piHash, 0);
 
-var num2 = ~Table.findPointer($table, num2Hash, 0);
-Table.setHash($table, num2, num2Hash, 0);
-Convert.stringToExistingArray($table.data8, num2, '' + num2Number);
-$table.data8[Table.typeOffset(num2)] = Type.float;
-$table.dataFloat64[(num2 + 4) >> 3] = num2Number;
-log(val(num2), val(num2) === num2Number);
+var pi = ~Table.findPointer($table, piHash, 0);
+Table.setHash($table, pi, piHash, 0);
+Convert.stringToExistingArray($table.data8, pi, '' + piValue);
+$table.data8[Table.typeOffset(pi)] = Type.float;
+$table.dataFloat64[(pi + 4) >> 3] = piValue;
+log(val(pi), val(pi) === piValue);
 //=> 375.20351695201254 true
