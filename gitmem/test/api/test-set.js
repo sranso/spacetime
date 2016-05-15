@@ -41,7 +41,9 @@ var tree1 = set(treePointer,
 
 var pointer32 = tree1 >> 2;
 log(hexHash($table.hashes8, tree1));
-//=> 708acb9d9bc0d41784aeb81d5b3c4b0425cb9f97
+//=> e70eb20e74bfacdca9dd49af2aa2e5bc0a2c8597
+log($table.data8[Table.typeOffset(tree1)], Type.tree);
+//=> 8 8
 log($table.data32[pointer32 + 0], barPointer);
 //=> 68 68
 log($table.data32[pointer32 + 1], fooPointer);
@@ -54,7 +56,9 @@ log($table.data32[pointer32 + Table.data32_moldIndex], moldIndex);
 var tree2 = set(tree1, 1, wwwPointer);
 pointer32 = tree2 >> 2;
 log(hexHash($table.hashes8, tree2));
-//=> b38c79cd518e1cd225d738604d57b999670d8b14
+//=> 8c5d6b2c2c278711f5fe6102a9b594d222790566
+log($table.data8[Table.typeOffset(tree2)], Type.tree);
+//=> 8 8
 log($table.data32[pointer32 + 0], barPointer);
 //=> 68 68
 log($table.data32[pointer32 + 1], wwwPointer);
@@ -64,4 +68,4 @@ log($table.data32[pointer32 + 2], wwwPointer);
 
 var tree3 = set(tree1, 1, wwwPointer);
 log(tree3, tree2);
-//=> 344 344
+//=> 132 132
