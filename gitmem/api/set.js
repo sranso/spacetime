@@ -12,17 +12,17 @@ global.set = function (pointer) {
     var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 
     // Set newPointers
-    var j;
-    for (j = 0; j < numChildren; j++) {
-        newPointers[j] = $table.data32[pointer32 + j];
+    var i;
+    for (i = 0; i < numChildren; i++) {
+        newPointers[i] = $table.data32[pointer32 + i];
     }
 
-    for (j = 1; j < arguments.length; j += 2) {
-        var childIndex = arguments[j];
+    for (i = 1; i < arguments.length; i += 2) {
+        var childIndex = arguments[i];
         if (childIndex >= numChildren) {
             throw new Error('Trying to set child ' + childIndex + ' out of ' + numChildren);
         }
-        newPointers[childIndex] = arguments[j + 1];
+        newPointers[childIndex] = arguments[i + 1];
     }
 
     return ApiSet._create(moldIndex, newPointers);

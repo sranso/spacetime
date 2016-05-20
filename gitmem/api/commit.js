@@ -22,12 +22,14 @@ Commit.defaults = 0;
 Commit.Info.defaults = 0;
 Commit.User.defaults = 0;
 
+var newPointers = new Uint32Array(5);
+var tempHash = new Uint8Array(20);
 
 Commit.initialize = function () {
     var user = createDefaults({
         email: hash('test@example.com'),
         name: hash('User Name'),
-        timezoneOffset: hash(360),
+        timezoneOffset: Constants.zero,
     });
     Commit.User.defaults = user;
 
@@ -37,37 +39,76 @@ Commit.initialize = function () {
         committer: user,
     });
 
-    var message = hash('Commit message');
+    newPointers[Commit.committerTime] = Constants.zero;
+    newPointers[Commit.info] = Commit.Info.defaults;
+    newPointers[Commit.message] = hash('Commit message');
+    newPointers[Commit.parent] = 0;
+    newPointers[Commit.tree] = Constants.emptyTree;
+    Commit.defaults = create();
+};
+
+global.commit = function (pointer) {
+    var pointer32 = pointer >> 2;
+    var i;
+    for (i = 0; i < 5; i++) {
+        newPointers[i] = $table.data32[pointer32 + i];
+    }
+
+    for (i = 1; i < arguments.length; i += 2) {
+        var childIndex = arguments[i];
+        if (childIndex >= 5) {
+            throw new Error('Trying to set child ' + childIndex + ' out of 5');
+        }
+        newPointers[childIndex] = arguments[i + 1];
+    }
+
+    return create();
+};
+
+var create = function () {
+    var info = newPointers[Commit.info];
+    var author = get(info, Commit.Info.author);
+    var committer = get(info, Commit.Info.committer);
+
+    var committerTime = val(newPointers[Commit.committerTime]);
+    var authorTime = val(get(info, Commit.Info.authorTime)) || committerTime;
+
+    // Create commit file
     var commitLength = CommitFile.create({
-        tree: Constants.emptyTree,
-        parent: 0,
+        tree: newPointers[Commit.tree],
+        parent: newPointers[Commit.parent],
         mergeParent: 0,
 
-        authorName: val(get(user, Commit.User.name)),
-        authorEmail: val(get(user, Commit.User.email)),
-        authorTime: Constants.zero,
-        authorTimezoneOffset: val(get(user, Commit.User.timezoneOffset)),
+        authorName: val(get(author, Commit.User.name)),
+        authorEmail: val(get(author, Commit.User.email)),
+        authorTime: authorTime,
+        authorTimezoneOffset: val(get(author, Commit.User.timezoneOffset)),
 
-        committerName: val(get(user, Commit.User.name)),
-        committerEmail: val(get(user, Commit.User.email)),
-        committerTime: Constants.zero,
-        committerTimezoneOffset: val(get(user, Commit.User.timezoneOffset)),
+        committerName: val(get(committer, Commit.User.name)),
+        committerEmail: val(get(committer, Commit.User.email)),
+        committerTime: committerTime,
+        committerTimezoneOffset: val(get(committer, Commit.User.timezoneOffset)),
 
-        message: message,
+        message: val(newPointers[Commit.message]),
     });
 
-    var commitHash = new Uint8Array(20);
-    Sha1.hash($file, 0, commitLength, commitHash, 0);
-    Commit.defaults = ~Table.findPointer($table, commitHash, 0);
-    Table.setHash($table, Commit.defaults, commitHash, 0);
-    $table.data8[Table.typeOffset(Commit.defaults)] = Type.commit;
+    // Hash and store in table
+    Sha1.hash($file, 0, commitLength, tempHash, 0);
+    var pointer = Table.findPointer($table, tempHash, 0);
+    if (pointer > 0) {
+        return pointer;
+    }
 
-    var pointer32 = Commit.defaults >> 2;
-    $table.data32[pointer32 + Commit.committerTime] = Constants.zero;
-    $table.data32[pointer32 + Commit.info] = Commit.Info.defaults;
-    $table.data32[pointer32 + Commit.message] = message;
-    $table.data32[pointer32 + Commit.parent] = 0;
-    $table.data32[pointer32 + Commit.tree] = Constants.emptyTree;
+    pointer = ~pointer;
+    Table.setHash($table, pointer, tempHash, 0);
+    var pointer32 = pointer >> 2;
+    $table.data8[Table.typeOffset(pointer)] = Type.commit;
+    var i;
+    for (i = 0; i < 5; i++) {
+        $table.data32[pointer32 + i] = newPointers[i];
+    }
+
+    return pointer;
 };
 
 })();
