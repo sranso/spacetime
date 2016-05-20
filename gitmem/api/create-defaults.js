@@ -31,7 +31,7 @@ global.createDefaults = function (defaults) {
 
     var treeLength = Tree.create(treeConfig);
     var moldIndex = Mold.process($mold, treeLength);
-    return set._create(moldIndex, pointers);
+    return ApiSet._create(moldIndex, pointers);
 };
 
 })();

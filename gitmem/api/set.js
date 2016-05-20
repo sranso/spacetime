@@ -1,4 +1,5 @@
 'use strict';
+global.ApiSet = {};
 (function () {
 
 var newPointers = new Uint32Array(4);
@@ -24,10 +25,10 @@ global.set = function (pointer) {
         newPointers[childIndex] = arguments[j + 1];
     }
 
-    return set._create(moldIndex, newPointers);
+    return ApiSet._create(moldIndex, newPointers);
 };
 
-set._create = function (moldIndex, newPointers) {
+ApiSet._create = function (moldIndex, newPointers) {
     var mold8 = moldIndex * Mold.data8_size;
     var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 
