@@ -5,8 +5,8 @@ global.$table = Table.create(8, Random.create(526926));
 global.$file = new Uint8Array(256);
 global.$mold = Mold.create(4, 256);
 
-var inputPackData = PackData.create(237);
-inputPackData.array[11] = 4;  // Number of packed files.
+var inputPackData = PackData.create(268);
+inputPackData.array[11] = 5;  // Number of packed files.
 inputPackData.nextOffset = 12;
 
 var messageLength = Blob.create('"I <3 short messages');
@@ -15,6 +15,13 @@ Sha1.hash($file, 0, messageLength, messageHash, 0);
 log(hexHash(messageHash, 0));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
 PackData.packFile(inputPackData, $file, 0, messageLength);
+
+var longMessageLength = Blob.create('"I am a long message!');
+var longMessageHash = new Uint8Array(20);
+Sha1.hash($file, 0, longMessageLength, longMessageHash, 0);
+log(hexHash(longMessageHash, 0));
+//=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
+PackData.packFile(inputPackData, $file, 0, longMessageLength);
 
 var answerLength = Blob.create('42');
 var answerHash = new Uint8Array(20);
@@ -55,11 +62,11 @@ PackData.packFile(inputPackData, $file, 0, treeLength);
 
 var inputPackHashOffset = inputPackData.nextOffset;
 log(inputPackData.nextOffset);
-//=> 217
+//=> 248
 var inputPack = inputPackData.array;
 Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
 log(hexHash(inputPack, inputPackHashOffset));
-//=> fc12e2b509d3920c95f1d53a4838fd429b40987b
+//=> 020dbb4f7410b166c2db39be9779a7bc76184c5a
 
 
 
@@ -85,13 +92,26 @@ log($table.data8[message + 18], 's'.charCodeAt(0));
 //=> 115 115
 
 
+// longMessage
+var longMessage = Table.findPointer($table, longMessageHash, 0);
+log(longMessage, hexHash($table.hashes8, longMessage));
+//=> 68 '1bdef86a177d4feccf0a534ee7257255ba89e8ec'
+log($table.data8[Table.typeOffset(longMessage)], Type.longString);
+//=> 5 5
+var longStringI = $table.data32[(longMessage >> 2) + 0];
+log(longStringI);
+//=> 0
+log($table.dataLongStrings[longStringI]);
+//=> I am a long message!
+
+
 // answer
 var answer = Table.findPointer($table, answerHash, 0);
 var answerPointer = answer;
 log(answer, hexHash($table.hashes8, answer));
 //=> 24 'f70d7bba4ae1f07682e0358bd7a2068094fc023b'
 log($table.data8[Table.typeOffset(answer)], Type.integer);
-//=> 5 5
+//=> 6 6
 log($table.dataInt32[(answer >> 2) + 0]);
 //=> 42
 
@@ -102,7 +122,7 @@ var piPointer = pi;
 log(pi, hexHash($table.hashes8, pi));
 //=> 44 'e5c1cebcacfc81cf51a61c031e716d874981360e'
 log($table.data8[Table.typeOffset(pi)], Type.float);
-//=> 6 6
+//=> 7 7
 log($table.dataFloat64[(pi + 4) >> 3]);
 //=> 3.141592653589793
 
@@ -112,7 +132,7 @@ var tree = Table.findPointer($table, treeHash, 0);
 log(tree, hexHash($table.hashes8, tree));
 //=> 132 'e92993fcf3ac79777e33c872279a15956a3df4d9'
 log($table.data8[Table.typeOffset(tree)], Type.tree);
-//=> 8 8
+//=> 9 9
 var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
@@ -135,7 +155,7 @@ log(childPointer, message);
 var missing = Table.findPointer($table, missingHash, 0);
 childPointer = $table.data32[pointer32 + 2];
 log(childPointer, missing);
-//=> 68 68
+//=> 88 88
 log($table.data8[Table.typeOffset(missing)], Type.pending);
 //=> 1 1
 childPointer = $table.data32[pointer32 + 3];

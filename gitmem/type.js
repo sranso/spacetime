@@ -10,10 +10,11 @@ Type.tag = 3;
 Type.blob = 4;
 
 Type.string = 4;
-Type.integer = 5;
-Type.float = 6;
-Type.boolean = 7;
+Type.longString = 5;
+Type.integer = 6;
+Type.float = 7;
+Type.boolean = 8;
 
-Type.tree = 8;
+Type.tree = 9;
 
 })();

@@ -19,6 +19,22 @@ log(val(message));
 log(val(message).length, messageString.length);
 //=> 19 19
 
+var longMessageString = 'I am a long message!';
+var longMessageBlobLength = Blob.create('"' + longMessageString);
+var longMessageHash = new Uint8Array(20);
+Sha1.hash($file, 0, longMessageBlobLength, longMessageHash, 0);
+
+var longMessage = ~Table.findPointer($table, longMessageHash, 0);
+Table.setHash($table, longMessage, longMessageHash, 0);
+Convert.stringToExistingArray($table.data8, longMessage, longMessageString);
+$table.data8[Table.typeOffset(longMessage)] = Type.longString;
+$table.data32[longMessage >> 2] = $table.dataLongStrings.length;
+$table.dataLongStrings.push(longMessageString);
+log(val(longMessage));
+//=> I am a long message!
+log(val(longMessage).length, longMessageString.length);
+//=> 20 20
+
 var answerValue = 42;
 var answerBlobLength = Blob.create('' + answerValue);
 var answerHash = new Uint8Array(20);
@@ -43,4 +59,4 @@ Convert.stringToExistingArray($table.data8, pi, '' + piValue);
 $table.data8[Table.typeOffset(pi)] = Type.float;
 $table.dataFloat64[(pi + 4) >> 3] = piValue;
 log(val(pi), val(pi) === piValue);
-//=> 375.20351695201254 true
+//=> 3.141592653589793 true

@@ -23,6 +23,7 @@ Table.create = function (n, random) {
         data32: new Uint32Array(dataBuffer),
         dataInt32: new Int32Array(dataBuffer),
         dataFloat64: new Float64Array(dataBuffer),
+        dataLongStrings: [],
         n: n,
         load: 0,
         hashBitsToShift: hashBitsToShift,

@@ -9,11 +9,12 @@ global.hash = function (value) {
     var type;
     switch (typeof value) {
     case 'string':
-        if (value.length > 19) {
-            throw new Error('String too long: ' + value.length);
-        }
         blobLength = Blob.create('"' + value);
-        type = Type.string;
+        if (value.length > Table.data8_stringLength) {
+            type = Type.longString;
+        } else {
+            type = Type.string;
+        }
         break;
     case 'number':
         blobLength = Blob.create('' + value);
@@ -45,6 +46,10 @@ global.hash = function (value) {
         for (i = 0; i < value.length; i++) {
             $table.data8[pointer + i] = value.charCodeAt(i);
         }
+        break;
+    case Type.longString:
+        $table.data32[pointer >> 2] = $table.dataLongStrings.length;
+        $table.dataLongStrings.push(value);
         break;
     case Type.integer:
         $table.dataInt32[pointer >> 2] = value;

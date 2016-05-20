@@ -61,15 +61,20 @@ Unpack.unpack = function (pack) {
                 // Unpack string
                 var stringStart = dataStart + 1;
                 var length = fileLength - stringStart;
-                if (length > 19) {
-                    throw new Error('String too long: ' + length);
+                if (length > Table.data8_stringLength) {
+                    $table.data8[Table.typeOffset(pointer)] = Type.longString;
+                    var array = $file.subarray(stringStart, fileLength);
+                    var string = String.fromCharCode.apply(null, array);
+                    $table.data32[pointer32] = $table.dataLongStrings.length;
+                    $table.dataLongStrings.push(string);
+                } else {
+                    $table.data8[Table.typeOffset(pointer)] = Type.string;
+                    $table.data8[pointer + Table.data8_stringLength] = length;
+                    var i;
+                    for (i = 0; i < length; i++) {
+                        $table.data8[pointer + i] = $file[stringStart + i];
+                    }
                 }
-                $table.data8[pointer + Table.data8_stringLength] = length;
-                var i;
-                for (i = 0; i < length; i++) {
-                    $table.data8[pointer + i] = $file[stringStart + i];
-                }
-                $table.data8[Table.typeOffset(pointer)] = Type.string;
             } else {
 
                 // Unpack number

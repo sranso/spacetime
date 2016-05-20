@@ -44,7 +44,7 @@ var projectDefaults = createDefaults({
 });
 
 var user = set(Commit.User.defaults,
-               Commit.User.email, hash('jake@jakesandlund.c'),
+               Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
@@ -60,12 +60,12 @@ var pointer = commit(Commit.defaults,
                      Commit.parent, Commit.defaults);
 
 log(hexHash($table.hashes8, pointer));
-//=> 882c785c4e2728853f223038dc77dd9cc9b68ca5
-log(pretty($file, 0, 237));
-//=> commit 226\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
+//=> 29f063bc9c3067dcd732c192400b853652b50cdc
+log(pretty($file, 0, 241));
+//=> commit 230\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
 //=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
-//=> author Jake Sandlund <jake@jakesandlund.c> 1463772 -0600
-//=> committer Jake Sandlund <jake@jakesandlund.c> 1463772 -0600
+//=> author Jake Sandlund <jake@jakesandlund.com> 1463772 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1463772 -0600
 //=>
 //=> My test commit
 log(val(get(pointer, Commit.message)));
@@ -77,4 +77,4 @@ log(val(get(get(pointer, Commit.tree), 0)));
 log(val(get(get(pointer, Commit.parent), Commit.message)));
 //=> Commit message
 log(val(get(get(get(pointer, Commit.info), Commit.Info.author), Commit.User.email)));
-//=> jake@jakesandlund.c
+//=> jake@jakesandlund.com
