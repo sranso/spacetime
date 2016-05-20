@@ -66,31 +66,8 @@ global.commit = function (pointer) {
 };
 
 var create = function () {
-    var info = newPointers[Commit.info];
-    var author = get(info, Commit.Info.author);
-    var committer = get(info, Commit.Info.committer);
-
-    var committerTime = val(newPointers[Commit.committerTime]);
-    var authorTime = val(get(info, Commit.Info.authorTime)) || committerTime;
-
     // Create commit file
-    var commitLength = CommitFile.create({
-        tree: newPointers[Commit.tree],
-        parent: newPointers[Commit.parent],
-        mergeParent: 0,
-
-        authorName: val(get(author, Commit.User.name)),
-        authorEmail: val(get(author, Commit.User.email)),
-        authorTime: authorTime,
-        authorTimezoneOffset: val(get(author, Commit.User.timezoneOffset)),
-
-        committerName: val(get(committer, Commit.User.name)),
-        committerEmail: val(get(committer, Commit.User.email)),
-        committerTime: committerTime,
-        committerTimezoneOffset: val(get(committer, Commit.User.timezoneOffset)),
-
-        message: val(newPointers[Commit.message]),
-    });
+    var commitLength = CommitFile.create(newPointers, 0);
 
     // Hash and store in table
     Sha1.hash($file, 0, commitLength, tempHash, 0);

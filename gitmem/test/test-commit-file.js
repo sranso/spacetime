@@ -1,9 +1,12 @@
 'use strict';
 require('../../test/helper');
 
-global.$file = new Uint8Array(512);
-global.$table = {hashes8: new Uint8Array(128)};
-var hashesNextOffset = 4;
+global.$table = Table.create(32, Random.create(73440121));
+global.$file = new Uint8Array(256);
+global.$mold = Mold.create(8, 1024);
+
+Constants.initialize();
+Commit.initialize();
 
 log(CommitFile.timezoneString(360));
 //=> -0600
@@ -11,62 +14,46 @@ log(CommitFile.timezoneString(360));
 log(CommitFile.timezoneString(-90));
 //=> +0130
 
-// Recreate a real commit.
-
-var blobLength = Blob.create('foo\n');
-var blobHash = new Uint8Array(20);
-Sha1.hash($file, 0, blobLength, blobHash, 0);
-
-var treeLength = Tree.create({
-    foo: 'blob',
+var tree = createDefaults({
+    bar: hash('bar'),
+    foo: hash('foo'),
 });
-var fooOffset = $file.indexOf(0, 10) + 1;
-Tree.setHash($file, fooOffset, blobHash, 0);
-var treeHash = new Uint8Array(20);
-var treePointer = hashesNextOffset;
-hashesNextOffset += 20;
-Sha1.hash($file, 0, treeLength, $table.hashes8, treePointer);
-log(hexHash($table.hashes8, treePointer));
-//=> 205f6b799e7d5c2524468ca006a0131aa57ecce7
+log(hexHash($table.hashes8, tree));
+//=> d222b927f53e49a12986fb4a7a87c51924e513b9
 
-var parentHash = new Uint8Array([0x4e,0x72,0x11,0x0c,0xbb,0x91,0xdd,0x87,0xf7,0xb7,0xee,0xa2,0x2f,0x5f,0x0b,0xcb,0x23,0x3e,0x95,0xbf]);
-var parentPointer = hashesNextOffset;
-hashesNextOffset += 20;
-Convert.arrayToExistingArray($table.hashes8, parentPointer, parentHash);
+var user = set(Commit.User.defaults,
+               Commit.User.email, hash('jake@jakesandlund.com'),
+               Commit.User.timezoneOffset, hash(360),
+               Commit.User.name, hash('Jake Sandlund'));
 
-var commitObject = {
-    tree: treePointer,
-    parent: parentPointer,
-    mergeParent: 0,
+var info = set(Commit.Info.defaults,
+               Commit.Info.author, user,
+               Commit.Info.committer, user);
 
-    authorName: 'Jake Sandlund',
-    authorEmail: 'jake@jakesandlund.com',
-    authorTime: 1454274859000,
-    authorTimezoneOffset: 360,
+var parentCommit = Commit.defaults;
+log(hexHash($table.hashes8, parentCommit));
+//=> efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
 
-    committerName: 'Jake Sandlund',
-    committerEmail: 'jake@jakesandlund.com',
-    committerTime: 1454274859000,
-    committerTimezoneOffset: 360,
+var data32 = new Uint32Array(5);
+data32[Commit.message] = hash("My test commit");
+data32[Commit.committerTime] = hash(1463772798);
+data32[Commit.tree] = tree;
+data32[Commit.info] = info;
+data32[Commit.parent] = parentCommit;
 
-    message: 'Foo commit\n',
-};
-
-var commitLength = CommitFile.create(commitObject);
-
+var commitLength = CommitFile.create(data32, 0);
 log(pretty($file, 0, commitLength));
-//=> commit 233\x00tree 205f6b799e7d5c2524468ca006a0131aa57ecce7
-//=> parent 4e72110cbb91dd87f7b7eea22f5f0bcb233e95bf
-//=> author Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
-//=> committer Jake Sandlund <jake@jakesandlund.com> 1454274859 -0600
+//=> commit 236\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
+//=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
+//=> author Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
-//=> Foo commit
-//=>
+//=> My test commit
 
 var commitHash = new Uint8Array(20);
 Sha1.hash($file, 0, commitLength, commitHash, 0);
 log(hexHash(commitHash, 0));
-//=> dbcb62b19db062d928144514502df45e86d91eac
+//=> 63020ad316949de76b718821be2f504c2bf4c706
 
 var parsedTreeHash = new Uint8Array(20);
 CommitFile.parseTree($file, 0, commitLength, parsedTreeHash, 0);

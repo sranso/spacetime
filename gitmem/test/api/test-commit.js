@@ -38,7 +38,7 @@ log(get(Commit.defaults, Commit.tree), Constants.emptyTree);
 //=> 196 196
 
 
-var projectDefaults = createDefaults({
+var tree = createDefaults({
     bar: hash('bar'),
     foo: hash('foo'),
 });
@@ -55,17 +55,17 @@ var info = set(Commit.Info.defaults,
 var pointer = commit(Commit.defaults,
                      Commit.message, hash("My test commit"),
                      Commit.committerTime, hash(1463772798),
-                     Commit.tree, projectDefaults,
+                     Commit.tree, tree,
                      Commit.info, info,
                      Commit.parent, Commit.defaults);
 
 log(hexHash($table.hashes8, pointer));
-//=> 29f063bc9c3067dcd732c192400b853652b50cdc
-log(pretty($file, 0, 241));
-//=> commit 230\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
+//=> 63020ad316949de76b718821be2f504c2bf4c706
+log(pretty($file, 0, 247));
+//=> commit 236\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
 //=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
-//=> author Jake Sandlund <jake@jakesandlund.com> 1463772 -0600
-//=> committer Jake Sandlund <jake@jakesandlund.com> 1463772 -0600
+//=> author Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
 //=> My test commit
 log(val(get(pointer, Commit.message)));
