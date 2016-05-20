@@ -5,6 +5,7 @@ global.Table = {};
 Table.data32_packOffset = 0;
 Table.data32_moldIndex = 4;
 Table.data8_stringLength = 19;
+Table.dataLongStrings_maxLength = 255;
 
 Table.create = function (n, random) {
     var hashBitsToShift = 32;

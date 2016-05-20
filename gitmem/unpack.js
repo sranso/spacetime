@@ -24,6 +24,7 @@ Unpack.unpack = function (pack) {
             Table.setHash($table, pointer, tempHash, 0);
         }
         var pointer32 = pointer >> 2;
+        var dataStart = $file.indexOf(0, 6) + 1;
 
         if ($file[1] === 'r'.charCodeAt(0)) { // tRee
 
@@ -51,46 +52,44 @@ Unpack.unpack = function (pack) {
                 $table.data32[pointer32 + i] = childPointer;
             }
 
-        } else if ($file[0] === 'b'.charCodeAt(0)) {
+        } else if ($file[dataStart] === '"'.charCodeAt(0)) {
 
-            //////// Unpack blob
+            /////// Unpack string
 
-            var dataStart = $file.indexOf(0, 6) + 1;
-            if ($file[dataStart] === '"'.charCodeAt(0)) {
-
-                // Unpack string
-                var stringStart = dataStart + 1;
-                var length = fileLength - stringStart;
-                if (length > Table.data8_stringLength) {
-                    $table.data8[Table.typeOffset(pointer)] = Type.longString;
-                    var array = $file.subarray(stringStart, fileLength);
-                    var string = String.fromCharCode.apply(null, array);
-                    $table.data32[pointer32] = $table.dataLongStrings.length;
-                    $table.dataLongStrings.push(string);
-                } else {
-                    $table.data8[Table.typeOffset(pointer)] = Type.string;
-                    $table.data8[pointer + Table.data8_stringLength] = length;
-                    var i;
-                    for (i = 0; i < length; i++) {
-                        $table.data8[pointer + i] = $file[stringStart + i];
-                    }
-                }
+            var stringStart = dataStart + 1;
+            var length = fileLength - stringStart;
+            if (length > Table.dataLongStrings_maxLength) {
+                throw new Error('String too long: ' + length);
+            } else if (length > Table.data8_stringLength) {
+                $table.data8[Table.typeOffset(pointer)] = Type.longString;
+                var array = $file.subarray(stringStart, fileLength);
+                var string = String.fromCharCode.apply(null, array);
+                $table.data32[pointer32] = $table.dataLongStrings.length;
+                $table.dataLongStrings.push(string);
             } else {
-
-                // Unpack number
-                var array = $file.subarray(dataStart, fileLength);
-                var number = Number(String.fromCharCode.apply(null, array));
-                if (isNaN(number)) {
-                    throw new Error('Got NaN instead of number');
-                } else if (number === (number | 0)) {
-                    $table.dataInt32[pointer32] = number;
-                    $table.data8[Table.typeOffset(pointer)] = Type.integer;
-                } else {
-                    $table.dataFloat64[(pointer + 4) >> 3] = number;
-                    $table.data8[Table.typeOffset(pointer)] = Type.float;
+                $table.data8[Table.typeOffset(pointer)] = Type.string;
+                $table.data8[pointer + Table.data8_stringLength] = length;
+                var i;
+                for (i = 0; i < length; i++) {
+                    $table.data8[pointer + i] = $file[stringStart + i];
                 }
             }
 
+        } else if ($file[0] === 'b'.charCodeAt(0)) { // Blob
+
+            /////// Unpack number
+
+            var array = $file.subarray(dataStart, fileLength);
+            var number = Number(String.fromCharCode.apply(null, array));
+            if (isNaN(number)) {
+                throw new Error('Got NaN instead of number');
+            } else if (number === (number | 0)) {
+                $table.dataInt32[pointer32] = number;
+                $table.data8[Table.typeOffset(pointer)] = Type.integer;
+            } else {
+                $table.dataFloat64[(pointer + 4) >> 3] = number;
+                $table.data8[Table.typeOffset(pointer)] = Type.float;
+            }
 
         } else {
             throw new Error('Commit and Tag not implemented, yet');

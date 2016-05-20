@@ -23,6 +23,8 @@ log(longMessage, hexHash($table.hashes8, longMessage));
 //=> 68 '1bdef86a177d4feccf0a534ee7257255ba89e8ec'
 log($table.data8[Table.typeOffset(longMessage)], Type.longString);
 //=> 5 5
+log($table.data8[longMessage + Table.data8_stringLength]);
+//=> 20
 var longStringI = $table.data32[(longMessage >> 2) + 0];
 log(longStringI);
 //=> 0

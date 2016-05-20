@@ -10,7 +10,9 @@ global.hash = function (value) {
     switch (typeof value) {
     case 'string':
         blobLength = Blob.create('"' + value);
-        if (value.length > Table.data8_stringLength) {
+        if (value.length > Table.dataLongStrings_maxLength) {
+            throw new Error('String too long: ' + value.length);
+        } else if (value.length > Table.data8_stringLength) {
             type = Type.longString;
         } else {
             type = Type.string;
@@ -48,6 +50,7 @@ global.hash = function (value) {
         }
         break;
     case Type.longString:
+        $table.data8[pointer + Table.data8_stringLength] = value.length;
         $table.data32[pointer >> 2] = $table.dataLongStrings.length;
         $table.dataLongStrings.push(value);
         break;
