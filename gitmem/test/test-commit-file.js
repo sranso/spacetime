@@ -36,7 +36,7 @@ Convert.arrayToExistingArray($table.hashes8, parentPointer, parentHash);
 
 var commitObject = {
     tree: treePointer,
-    parent:  parentPointer,
+    parent: parentPointer,
     mergeParent: 0,
 
     authorName: 'Jake Sandlund',

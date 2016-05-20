@@ -38,7 +38,7 @@ CommitFile.create = function (commit) {
     var length = constantLength;
     if (commit.mergeParent) {
         length += 2 * perParentLength;
-    } else {
+    } else if (commit.parent) {
         length += 1 * perParentLength;
     }
     length += authorName.length + authorEmail.length + authorTime.length;
@@ -69,14 +69,16 @@ CommitFile.create = function (commit) {
     $file[commit_j + 40] = 0x0a;
 
     // parent
-    commit_j += 40 + 1;
-    for (i = 0; i < parentPrefix.length; i++) {
-        $file[commit_j + i] = parentPrefix[i];
-    }
+    if (commit.parent) {
+        commit_j += 40 + 1;
+        for (i = 0; i < parentPrefix.length; i++) {
+            $file[commit_j + i] = parentPrefix[i];
+        }
 
-    commit_j += i;
-    Convert.hashToHex($table.hashes8, commit.parent, $file, commit_j);
-    $file[commit_j + 40] = 0x0a;
+        commit_j += i;
+        Convert.hashToHex($table.hashes8, commit.parent, $file, commit_j);
+        $file[commit_j + 40] = 0x0a;
+    }
 
     // mergeParent
     if (commit.mergeParent) {
