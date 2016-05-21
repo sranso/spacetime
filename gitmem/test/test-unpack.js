@@ -3,7 +3,7 @@ require('../../test/helper');
 
 global.$table = Table.create(32, Random.create(526926));
 global.$file = new Uint8Array(256);
-global.$mold = Mold.create(8, 1024);
+global.$mold = Mold.create(8, 512);
 
 Constants.initialize();
 Commit.initialize();
@@ -189,7 +189,7 @@ log(type & Type.onServer);
 var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
-//=> 6
+//=> 4
 var mold32 = Mold.data32_size * moldIndex;
 var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
 var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];

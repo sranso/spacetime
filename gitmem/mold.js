@@ -117,6 +117,7 @@ Mold.process = function (mold, fileLength) {
                     continue searchTable;
                 }
             }
+            previousOffset = i;
         }
 
         // Mold found

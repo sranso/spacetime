@@ -35,7 +35,8 @@ var mold8 = Mold.data8_size * moldIndex;
 var numHoles = mold.data8[mold8 + Mold.data8_numHoles];
 log(numHoles);
 //=> 2
-log(mold.data8[mold8 + Mold.data8_holeOffsets + 0]);
+var holeOffset = mold.data8[mold8 + Mold.data8_holeOffsets + 0];
+log(holeOffset);
 //=> 18
 log(mold.data8[mold8 + Mold.data8_holeOffsets + 1]);
 //=> 49
@@ -45,6 +46,7 @@ log(mold.table[2], mold.table[3]);
 
 
 
+mold.fileArray[fileStart + holeOffset] = 123;
 moldIndex = Mold.process(mold, treeLength);
 log(moldIndex);
 //=> 1
