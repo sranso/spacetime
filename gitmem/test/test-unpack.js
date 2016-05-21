@@ -4,41 +4,41 @@ require('../../test/helper');
 global.$table = Table.create(32, Random.create(526926));
 global.$file = new Uint8Array(256);
 global.$mold = Mold.create(8, 512);
+global.$pack = new Uint8Array(425);
 
 Constants.initialize();
 Commit.initialize();
 
-var inputPackData = PackData.create(425);
-inputPackData.array[11] = 6;  // Number of packed files.
-inputPackData.nextOffset = 12;
+$pack[11] = 6;  // Number of packed files.
+var packOffset = 12;
 
 var messageLength = Blob.create('"I <3 short messages');
 var messageHash = new Uint8Array(20);
 Sha1.hash($file, 0, messageLength, messageHash, 0);
 log(hexHash(messageHash, 0));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
-PackData.packFile(inputPackData, $file, 0, messageLength);
+packOffset = PackData.packFile(packOffset, messageLength);
 
 var longMessageLength = Blob.create('"I am a long message!');
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageLength, longMessageHash, 0);
 log(hexHash(longMessageHash, 0));
 //=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
-PackData.packFile(inputPackData, $file, 0, longMessageLength);
+packOffset = PackData.packFile(packOffset, longMessageLength);
 
 var answerLength = Blob.create('42');
 var answerHash = new Uint8Array(20);
 Sha1.hash($file, 0, answerLength, answerHash, 0);
 log(hexHash(answerHash, 0));
 //=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
-PackData.packFile(inputPackData, $file, 0, answerLength);
+packOffset = PackData.packFile(packOffset, answerLength);
 
 var piLength = Blob.create('3.141592653589793');
 var piHash = new Uint8Array(20);
 Sha1.hash($file, 0, piLength, piHash, 0);
 log(hexHash(piHash, 0));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
-PackData.packFile(inputPackData, $file, 0, piLength);
+packOffset = PackData.packFile(packOffset, piLength);
 
 var treeLength = Tree.create({
     answer: 'blob',
@@ -63,7 +63,7 @@ log(hexHash(treeHash, 0));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
 var treePointer = ~Table.findPointer($table, treeHash, 0);
 Table.setHash($table, treePointer, treeHash, 0);
-PackData.packFile(inputPackData, $file, 0, treeLength);
+packOffset = PackData.packFile(packOffset, treeLength);
 
 var user = set(Commit.User.defaults,
                Commit.User.email, hash('jake@jakesandlund.com'),
@@ -92,14 +92,12 @@ log(pretty($file, 0, commitLength));
 //=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
 //=> My test commit
-PackData.packFile(inputPackData, $file, 0, commitLength);
+packOffset = PackData.packFile(packOffset, commitLength);
 
-var inputPackHashOffset = inputPackData.nextOffset;
-log(inputPackData.nextOffset);
+log(packOffset);
 //=> 405
-var inputPack = inputPackData.array;
-Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
-log(hexHash(inputPack, inputPackHashOffset));
+Sha1.hash($pack, 0, packOffset, $pack, packOffset);
+log(hexHash($pack, packOffset));
 //=> 77b564343bdc0356a608f813473bef1f6f271c66
 
 
@@ -112,7 +110,7 @@ global.$table = Table.create(32, Random.create(15962822));
 Constants.initialize();
 Commit.initialize();
 
-Unpack.unpack(inputPack);
+Unpack.unpack($pack);
 
 // message
 var message = Table.findPointer($table, messageHash, 0);

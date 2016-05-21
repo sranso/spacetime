@@ -6,101 +6,77 @@ var blobPrefix = Convert.stringToArray('blob ');
 var treePrefix = Convert.stringToArray('tree ');
 var commitPrefix = Convert.stringToArray('commit ');
 
-PackData.create = function (capacity) {
-    return {
-        array: new Uint8Array(capacity),
-        nextOffset: 0,
-    };
-};
-
+var pakoOptions = {level: 6, chunkSize: 4096};
 var maxPackHeaderSize = 8;
 
-PackData.resize = function (packData, mallocSize) {
-    var capacity = packData.array.length;
-    var minimumCapacity = packData.nextOffset + mallocSize;
-    capacity *= 2;
-    while (capacity < minimumCapacity) {
-        capacity *= 2;
-    }
-
-    var oldArray = packData.array;
-    var array = new Uint8Array(capacity);
+var resizePack = function () {
+    var newPack = new Uint8Array($pack.length * 2);
     var i;
-    for (i = 0; i < packData.nextOffset; i++) {
-        array[i] = oldArray[i];
+    for (i = 0; i < $pack.length; i++) {
+        newPack[i] = $pack[i];
     }
 
-    packData.array = array;
+    global.$pack = newPack;
 };
 
-PackData.packFile = function (packData, $f, fileStart, fileEnd) {
-    var contentStart = $f.indexOf(0, fileStart + 5) + 1;
-    var length = fileEnd - contentStart;
-
-    if (length < 32768) {
-        // Try to only need one chunk.
-        var chunkSize = 4096 * ((length >>> 13) + 1);
-    } else {
-        // Shoot for 1/4 of the inflated size to reduce overhead.
-        var chunkSize = 8192 * (((length / 4) >>> 13) + 1);
-    }
+PackData.packFile = function (packOffset, fileLength) {
+    var contentStart = $file.indexOf(0, 5) + 1;
+    var length = fileLength - contentStart;
 
     var typeBits;
-    if ($f[fileStart] === blobPrefix[0]) {
+    if ($file[0] === blobPrefix[0]) {
         typeBits = 0x30;
-    } else if ($f[fileStart + 1] === treePrefix[1]) {
+    } else if ($file[1] === treePrefix[1]) {
         typeBits = 0x20;
-    } else if ($f[fileStart] === commitPrefix[0]) {
+    } else if ($file[0] === commitPrefix[0]) {
         typeBits = 0x10;
     } else {
-        throw new Error('Unknown type: ' + $f.slice(fileStart, fileStart + 4).join(','));
+        throw new Error('Unknown type: ' + $file.slice(0, 4).join(','));
     }
 
-    if (packData.nextOffset + maxPackHeaderSize > packData.array.length) {
-        PackData.resize(packData, maxPackHeaderSize);
+    if (packOffset + maxPackHeaderSize > $pack.length) {
+        resizePack();
     }
-    var deflatedOffset = packData.nextOffset;
     var c = typeBits | (length & 0xf);
 
     length >>>= 4;
     while (length) {
-        packData.array[packData.nextOffset] = c | 0x80;
+        $pack[packOffset] = c | 0x80;
         c = length & 0x7f;
         length >>>= 7;
-        packData.nextOffset++;
+        packOffset++;
     }
-    packData.array[packData.nextOffset] = c;
-    packData.nextOffset++;
+    $pack[packOffset] = c;
+    packOffset++;
 
-    var deflate = new pako.Deflate({level: 6, chunkSize: chunkSize});
+    var deflate = new pako.Deflate(pakoOptions);
     deflate.onData = onDeflateData;
     deflate.onEnd = onEnd;
-    deflate.packData = packData;
-    deflate.push($f.subarray(contentStart, fileEnd), true);
+    deflate.packOffset = packOffset;
+    deflate.push($file.subarray(contentStart, fileLength), true);
 
-    return deflatedOffset;
+    return deflate.packOffset;
 };
 
 var onDeflateData = function (chunk) {
-    var packData = this.packData;
-    if (packData.nextOffset + chunk.length > packData.array.length) {
-        PackData.resize(packData, chunk.length);
+    var packOffset = this.packOffset;
+    if (packOffset + chunk.length > $pack.length) {
+        resizePack();
     }
-    var array = packData.array;
     var i;
     for (i = 0; i < chunk.length; i++) {
-        array[packData.nextOffset + i] = chunk[i];
+        $pack[packOffset + i] = chunk[i];
     }
-    packData.nextOffset += i;
+    this.packOffset += i;
 };
 
 var onEnd = function (status) {
     if (status !== 0) throw new Error(this.strm.msg);
 }
 
-PackData.extractFile = function (packDataArray, packOffset, extractFileOutput) {
+PackData.extractFile = function (pack, packOffset, extractFileOutput) {
     var pack_j = packOffset;
-    var typeBits = packDataArray[pack_j] & 0x70;
+    var typeBits = pack[pack_j] & 0x70;
     var prefix;
     if (typeBits === 0x30) {
         prefix = blobPrefix;
@@ -112,11 +88,11 @@ PackData.extractFile = function (packDataArray, packOffset, extractFileOutput) {
         throw new Error('Unknown type: 0x' + typeBits.toString(16));
     }
 
-    var length = packDataArray[pack_j] & 0xf;
+    var length = pack[pack_j] & 0xf;
     var shift = 4;
-    while (packDataArray[pack_j] & 0x80) {
+    while (pack[pack_j] & 0x80) {
         pack_j++;
-        length |= (packDataArray[pack_j] & 0x7f) << shift;
+        length |= (pack[pack_j] & 0x7f) << shift;
         shift += 7;
     }
     pack_j++;
@@ -137,20 +113,12 @@ PackData.extractFile = function (packDataArray, packOffset, extractFileOutput) {
 
     j += i + 1;
 
-    if (length < 32768) {
-        // Try to only need one chunk.
-        var chunkSize = 4096 * ((length >>> 13) + 1);
-    } else {
-        // Shoot for 1/4 of the inflated size to reduce overhead.
-        var chunkSize = 8192 * (((length / 4) >>> 13) + 1);
-    }
-
-    var inflate = new pako.Inflate({chunkSize: chunkSize});
+    var inflate = new pako.Inflate(pakoOptions);
     inflate.j = j;
     inflate.onData = onInflateData;
     inflate.onEnd = onEnd;
 
-    inflate.push(packDataArray.subarray(pack_j), true);
+    inflate.push(pack.subarray(pack_j), true);
 
     var nextPackOffset = pack_j + inflate.strm.next_in;
     extractFileOutput[0] = fileLength;
