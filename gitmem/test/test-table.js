@@ -31,6 +31,8 @@ log(hexHash(table.hashes8, pointer));
 pointer = Table.findPointer(table, searchHash, 0);
 log(pointer);
 //=> 196
+log(table.load);
+//=> 1
 
 
 

@@ -60,19 +60,29 @@ log(hexHash(commitHash, 0));
 
 
 
-var gotData32 = new Uint32Array(5);
-CommitFile.unpack(commitLength, gotData32, 0);
-log(gotData32[Commit.message], data32[Commit.message]);
-//=> 492 492
-log(val(gotData32[Commit.message]));
+data32 = new Uint32Array(5);
+global.$table = Table.create(32, Random.create(73440121));
+var oldFile = $file;
+global.$file = new Uint8Array(256);
+Constants.initialize();
+Commit.initialize();
+global.$file = oldFile;
+
+CommitFile.unpack(commitLength, data32, 0);
+
+log(val(data32[Commit.message]));
 //=> My test commit
-log(gotData32[Commit.committerTime], data32[Commit.committerTime]);
-//=> 536 536
-log(gotData32[Commit.tree], data32[Commit.tree]);
+log(val(data32[Commit.committerTime]));
+//=> 1463772798
+log($table.data8[Table.typeOffset(data32[Commit.tree])], Type.pending);
+//=> 1 1
+var tree = createDefaults({
+    bar: hash('bar'),
+    foo: hash('foo'),
+});
+log(data32[Commit.tree], tree);
 //=> 428 428
-log(gotData32[Commit.parent], data32[Commit.parent]);
+log(data32[Commit.parent], Commit.defaults);
 //=> 324 324
-log(gotData32[Commit.info], data32[Commit.info]);
-//=> 152 152
-log(val(get(get(gotData32[Commit.info], Commit.Info.author), Commit.User.name)));
+log(val(get(get(data32[Commit.info], Commit.Info.author), Commit.User.name)));
 //=> Jake Sandlund
