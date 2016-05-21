@@ -2,7 +2,7 @@
 (function () {
 
 global.val = function (pointer) {
-    var type = $table.data8[Table.typeOffset(pointer)];
+    var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
     switch (type) {
     case Type.string:
         var length = $table.data8[pointer + Table.data8_stringLength];

@@ -43,7 +43,7 @@ Sha1.hash($file, 0, answerBlobLength, answerHash, 0);
 var answer = ~Table.findPointer($table, answerHash, 0);
 Table.setHash($table, answer, answerHash, 0);
 Convert.stringToExistingArray($table.data8, answer, '' + answerValue);
-$table.data8[Table.typeOffset(answer)] = Type.integer;
+$table.data8[Table.typeOffset(answer)] = Type.integer | Type.onServer;
 $table.dataInt32[answer >> 2] = answerValue;
 log(val(answer), val(answer) === answerValue);
 //=> 42 true

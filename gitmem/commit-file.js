@@ -161,18 +161,20 @@ CommitFile.create = function (data32, pointer32) {
 
 var writeString = function (commit_j, pointer) {
     var i;
-    var type = $table.data8[Table.typeOffset(pointer)];
+    var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
     if (type === Type.longString) {
         var longStringI = $table.data32[pointer >> 2];
         var string = $table.dataLongStrings[longStringI];
         for (i = 0; i < string.length; i++) {
             $file[commit_j + i] = string.charCodeAt(i);
         }
-    } else {
+    } else if (type === Type.string) {
         var length = $table.data8[pointer + Table.data8_stringLength];
         for (i = 0; i < length; i++) {
             $file[commit_j + i] = $table.data8[pointer + i];
         }
+    } else {
+        throw new Error('Trying to write non-string type: ' + type);
     }
     return commit_j + i;
 };
@@ -185,6 +187,7 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
     if (tree < 0) {
         tree = ~tree;
         Table.setHash($table, tree, tempHash, 0);
+        $table.data8[Table.typeOffset(tree)] = Type.pending;
     }
     data32[pointer32 + Commit.tree] = tree;
 
@@ -197,6 +200,7 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
         if (parent < 0) {
             parent = ~parent;
             Table.setHash($table, parent, tempHash, 0);
+            $table.data8[Table.typeOffset(parent)] = Type.pending;
         }
         data32[pointer32 + Commit.parent] = parent;
         j += 40 + 1;

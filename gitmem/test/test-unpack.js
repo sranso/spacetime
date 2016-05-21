@@ -118,8 +118,11 @@ Unpack.unpack(inputPack);
 var message = Table.findPointer($table, messageHash, 0);
 log(hexHash($table.hashes8, message));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
-log($table.data8[Table.typeOffset(message)], Type.string);
+var type = $table.data8[Table.typeOffset(message)];
+log(type & Type.mask, Type.string);
 //=> 4 4
+log(type & Type.onServer);
+//=> 128
 log($table.data8[message + Table.data8_stringLength]);
 //=> 19
 log($table.data8[message + 0], 'I'.charCodeAt(0));
@@ -134,8 +137,11 @@ log($table.data8[message + 18], 's'.charCodeAt(0));
 var longMessage = Table.findPointer($table, longMessageHash, 0);
 log(hexHash($table.hashes8, longMessage));
 //=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
-log($table.data8[Table.typeOffset(longMessage)], Type.longString);
+var type = $table.data8[Table.typeOffset(longMessage)];
+log(type & Type.mask, Type.longString);
 //=> 5 5
+log(type & Type.onServer);
+//=> 128
 var longStringI = $table.data32[(longMessage >> 2) + 0];
 log(longStringI);
 //=> 0
@@ -148,8 +154,11 @@ var answer = Table.findPointer($table, answerHash, 0);
 var answerPointer = answer;
 log(hexHash($table.hashes8, answer));
 //=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
-log($table.data8[Table.typeOffset(answer)], Type.integer);
+var type = $table.data8[Table.typeOffset(answer)];
+log(type & Type.mask, Type.integer);
 //=> 6 6
+log(type & Type.onServer);
+//=> 128
 log($table.dataInt32[(answer >> 2) + 0]);
 //=> 42
 
@@ -159,8 +168,11 @@ var pi = Table.findPointer($table, piHash, 0);
 var piPointer = pi;
 log(hexHash($table.hashes8, pi));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
-log($table.data8[Table.typeOffset(pi)], Type.float);
+var type = $table.data8[Table.typeOffset(pi)];
+log(type & Type.mask, Type.float);
 //=> 7 7
+log(type & Type.onServer);
+//=> 128
 log($table.dataFloat64[(pi + 4) >> 3]);
 //=> 3.141592653589793
 
@@ -169,8 +181,11 @@ log($table.dataFloat64[(pi + 4) >> 3]);
 var tree = Table.findPointer($table, treeHash, 0);
 log(hexHash($table.hashes8, tree));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
-log($table.data8[Table.typeOffset(tree)], Type.tree);
+var type = $table.data8[Table.typeOffset(tree)];
+log(type & Type.mask, Type.tree);
 //=> 9 9
+log(type & Type.onServer);
+//=> 128
 var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
@@ -207,8 +222,11 @@ log(commitPointer);
 //=> 580
 log(hexHash($table.hashes8, commitPointer));
 //=> 5552caf314b68a6d96764b2ef3bde75112520993
-log($table.data8[Table.typeOffset(commitPointer)], Type.commit);
+var type = $table.data8[Table.typeOffset(commitPointer)];
+log(type & Type.mask, Type.commit);
 //=> 2 2
+log(type & Type.onServer);
+//=> 128
 log(val(get(commitPointer, Commit.message)));
 //=> My test commit
 log(val(get(commitPointer, Commit.committerTime)));

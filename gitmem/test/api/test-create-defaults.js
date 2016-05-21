@@ -5,9 +5,12 @@ global.$table = Table.create(16, Random.create(29923321));
 global.$file = new Uint8Array(128);
 global.$mold = Mold.create(4, 256);
 
+var answer = hash(42);
+$table.data8[Table.typeOffset(answer)] |= Type.onServer;
+
 var defaults = createDefaults({
     message: hash('I <3 short messages'),
-    answer: hash(42),
+    answer: answer,
     pi: hash(3.141592653589793),
 });
 
@@ -23,9 +26,9 @@ var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 log(pretty($mold.fileArray, fileStart, fileEnd));
 //=> tree 99\x00100644 answer\x00\xf7\x0d\x7b\xbaJ\xe1\xf0v\x82\xe05\x8b\xd7\xa2\x06\x80\x94\xfc\x02;100644 message\x00K\xca\xa359/O\x0f\xb3_\xdaX\x01\x7dA\xfa\x07\xdd\xeb\x8b100644 pi\x00\xe5\xc1\xce\xbc\xac\xfc\x81\xcfQ\xa6\x1c\x03\x1eqm\x87I\x816\x0e
 log($table.data8[Table.typeOffset(defaults)], Type.tree);
-//=> 8 8
+//=> 9 9
 log($table.data32[pointer32 + 0], get(defaults, 0), hash(42));
-//=> 280 280 280
+//=> 260 260 260
 log(val(get(defaults, 0)));
 //=> 42
 log(val(get(defaults, 1)));

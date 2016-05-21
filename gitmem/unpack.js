@@ -25,6 +25,7 @@ Unpack.unpack = function (pack) {
         }
         var pointer32 = pointer >> 2;
         var dataStart = $file.indexOf(0, 6) + 1;
+        var typeOffset = Table.typeOffset(pointer);
 
         if ($file[1] === 'r'.charCodeAt(0)) { // tRee
 
@@ -35,7 +36,7 @@ Unpack.unpack = function (pack) {
             var mold8 = Mold.data8_size * moldIndex;
             var mold8Holes = mold8 + Mold.data8_holeOffsets;
             var numHoles = $mold.data8[mold8 + Mold.data8_numHoles];
-            $table.data8[Table.typeOffset(pointer)] = Type.tree;
+            $table.data8[typeOffset] = Type.tree | Type.onServer;
             $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
 
             // Set child pointers
@@ -61,13 +62,13 @@ Unpack.unpack = function (pack) {
             if (length > Table.dataLongStrings_maxLength) {
                 throw new Error('String too long: ' + length);
             } else if (length > Table.data8_stringLength) {
-                $table.data8[Table.typeOffset(pointer)] = Type.longString;
+                $table.data8[typeOffset] = Type.longString | Type.onServer;
                 var array = $file.subarray(stringStart, fileLength);
                 var string = String.fromCharCode.apply(null, array);
                 $table.data32[pointer32] = $table.dataLongStrings.length;
                 $table.dataLongStrings.push(string);
             } else {
-                $table.data8[Table.typeOffset(pointer)] = Type.string;
+                $table.data8[typeOffset] = Type.string | Type.onServer;
                 $table.data8[pointer + Table.data8_stringLength] = length;
                 var i;
                 for (i = 0; i < length; i++) {
@@ -85,17 +86,17 @@ Unpack.unpack = function (pack) {
                 throw new Error('Got NaN instead of number');
             } else if (number === (number | 0)) {
                 $table.dataInt32[pointer32] = number;
-                $table.data8[Table.typeOffset(pointer)] = Type.integer;
+                $table.data8[typeOffset] = Type.integer | Type.onServer;
             } else {
                 $table.dataFloat64[(pointer + 4) >> 3] = number;
-                $table.data8[Table.typeOffset(pointer)] = Type.float;
+                $table.data8[typeOffset] = Type.float | Type.onServer;
             }
 
         } else if ($file[0] === 'c'.charCodeAt(0)) { // Commit
 
             /////// Unpack commit
             CommitFile.unpack(fileLength, $table.data32, pointer32);
-            $table.data8[Table.typeOffset(pointer)] = Type.commit;
+            $table.data8[typeOffset] = Type.commit | Type.onServer;
 
         } else {
             throw new Error('Commit and Tag not implemented, yet');

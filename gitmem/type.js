@@ -2,12 +2,14 @@
 global.Type = {};
 (function () {
 
+Type.mask = 0xf;
+Type.onServer = 1 << 7;
+
 Type.deleted = 0;
 Type.pending = 1;
 
 Type.commit = 2;
 Type.tag = 3;
-Type.blob = 4;
 
 Type.string = 4;
 Type.longString = 5;

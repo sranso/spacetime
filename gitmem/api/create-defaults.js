@@ -14,7 +14,7 @@ global.createDefaults = function (defaults) {
         var pointer = defaults[name];
         pointers[i] = pointer;
 
-        var type = $table.data8[Table.typeOffset(pointer)];
+        var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
         switch (type) {
         case Type.string:
         case Type.integer:
