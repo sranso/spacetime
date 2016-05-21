@@ -91,6 +91,12 @@ Unpack.unpack = function (pack) {
                 $table.data8[Table.typeOffset(pointer)] = Type.float;
             }
 
+        } else if ($file[0] === 'c'.charCodeAt(0)) { // Commit
+
+            /////// Unpack commit
+            CommitFile.unpack(fileLength, $table.data32, pointer32);
+            $table.data8[Table.typeOffset(pointer)] = Type.commit;
+
         } else {
             throw new Error('Commit and Tag not implemented, yet');
         }

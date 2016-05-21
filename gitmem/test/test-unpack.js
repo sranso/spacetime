@@ -1,12 +1,15 @@
 'use strict';
 require('../../test/helper');
 
-global.$table = Table.create(8, Random.create(526926));
+global.$table = Table.create(32, Random.create(526926));
 global.$file = new Uint8Array(256);
-global.$mold = Mold.create(4, 256);
+global.$mold = Mold.create(8, 1024);
 
-var inputPackData = PackData.create(268);
-inputPackData.array[11] = 5;  // Number of packed files.
+Constants.initialize();
+Commit.initialize();
+
+var inputPackData = PackData.create(425);
+inputPackData.array[11] = 6;  // Number of packed files.
 inputPackData.nextOffset = 12;
 
 var messageLength = Blob.create('"I <3 short messages');
@@ -58,28 +61,63 @@ var treeHash = new Uint8Array(20);
 Sha1.hash($file, 0, treeLength, treeHash, 0);
 log(hexHash(treeHash, 0));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
+var treePointer = ~Table.findPointer($table, treeHash, 0);
+Table.setHash($table, treePointer, treeHash, 0);
 PackData.packFile(inputPackData, $file, 0, treeLength);
+
+var user = set(Commit.User.defaults,
+               Commit.User.email, hash('jake@jakesandlund.com'),
+               Commit.User.timezoneOffset, hash(360),
+               Commit.User.name, hash('Jake Sandlund'));
+
+var info = set(Commit.Info.defaults,
+               Commit.Info.author, user,
+               Commit.Info.committer, user);
+
+var commitPointer = commit(Commit.defaults,
+                           Commit.message, hash("My test commit"),
+                           Commit.committerTime, hash(1463772798),
+                           Commit.tree, treePointer,
+                           Commit.info, info,
+                           Commit.parent, Commit.defaults);
+var commitHash = $table.hashes8.slice(commitPointer, commitPointer + 20);
+log(hexHash(commitHash, 0));
+//=> 5552caf314b68a6d96764b2ef3bde75112520993
+var commitParentHash = $table.hashes8.slice(Commit.defaults, Commit.defaults + 20);
+var commitLength = 247;
+log(pretty($file, 0, commitLength));
+//=> commit 236\x00tree e92993fcf3ac79777e33c872279a15956a3df4d9
+//=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
+//=> author Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
+//=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
+//=>
+//=> My test commit
+PackData.packFile(inputPackData, $file, 0, commitLength);
 
 var inputPackHashOffset = inputPackData.nextOffset;
 log(inputPackData.nextOffset);
-//=> 248
+//=> 405
 var inputPack = inputPackData.array;
 Sha1.hash(inputPack, 0, inputPackHashOffset, inputPack, inputPackHashOffset);
 log(hexHash(inputPack, inputPackHashOffset));
-//=> 020dbb4f7410b166c2db39be9779a7bc76184c5a
+//=> 77b564343bdc0356a608f813473bef1f6f271c66
 
 
 
 
 
 
+
+global.$table = Table.create(32, Random.create(15962822));
+Constants.initialize();
+Commit.initialize();
 
 Unpack.unpack(inputPack);
 
 // message
 var message = Table.findPointer($table, messageHash, 0);
-log(message, hexHash($table.hashes8, message));
-//=> 4 '4bcaa335392f4f0fb35fda58017d41fa07ddeb8b'
+log(hexHash($table.hashes8, message));
+//=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
 log($table.data8[Table.typeOffset(message)], Type.string);
 //=> 4 4
 log($table.data8[message + Table.data8_stringLength]);
@@ -94,8 +132,8 @@ log($table.data8[message + 18], 's'.charCodeAt(0));
 
 // longMessage
 var longMessage = Table.findPointer($table, longMessageHash, 0);
-log(longMessage, hexHash($table.hashes8, longMessage));
-//=> 68 '1bdef86a177d4feccf0a534ee7257255ba89e8ec'
+log(hexHash($table.hashes8, longMessage));
+//=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
 log($table.data8[Table.typeOffset(longMessage)], Type.longString);
 //=> 5 5
 var longStringI = $table.data32[(longMessage >> 2) + 0];
@@ -108,8 +146,8 @@ log($table.dataLongStrings[longStringI]);
 // answer
 var answer = Table.findPointer($table, answerHash, 0);
 var answerPointer = answer;
-log(answer, hexHash($table.hashes8, answer));
-//=> 24 'f70d7bba4ae1f07682e0358bd7a2068094fc023b'
+log(hexHash($table.hashes8, answer));
+//=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
 log($table.data8[Table.typeOffset(answer)], Type.integer);
 //=> 6 6
 log($table.dataInt32[(answer >> 2) + 0]);
@@ -119,8 +157,8 @@ log($table.dataInt32[(answer >> 2) + 0]);
 // pi
 var pi = Table.findPointer($table, piHash, 0);
 var piPointer = pi;
-log(pi, hexHash($table.hashes8, pi));
-//=> 44 'e5c1cebcacfc81cf51a61c031e716d874981360e'
+log(hexHash($table.hashes8, pi));
+//=> e5c1cebcacfc81cf51a61c031e716d874981360e
 log($table.data8[Table.typeOffset(pi)], Type.float);
 //=> 7 7
 log($table.dataFloat64[(pi + 4) >> 3]);
@@ -129,14 +167,14 @@ log($table.dataFloat64[(pi + 4) >> 3]);
 
 // tree
 var tree = Table.findPointer($table, treeHash, 0);
-log(tree, hexHash($table.hashes8, tree));
-//=> 132 'e92993fcf3ac79777e33c872279a15956a3df4d9'
+log(hexHash($table.hashes8, tree));
+//=> e92993fcf3ac79777e33c872279a15956a3df4d9
 log($table.data8[Table.typeOffset(tree)], Type.tree);
 //=> 9 9
 var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
-//=> 1
+//=> 6
 var mold32 = Mold.data32_size * moldIndex;
 var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
 var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
@@ -148,16 +186,36 @@ log(numChildren);
 //=> 4
 var childPointer = $table.data32[pointer32 + 0];
 log(childPointer, answer);
-//=> 24 24
+//=> 364 364
 childPointer = $table.data32[pointer32 + 1];
 log(childPointer, message);
-//=> 4 4
+//=> 152 152
 var missing = Table.findPointer($table, missingHash, 0);
 childPointer = $table.data32[pointer32 + 2];
 log(childPointer, missing);
-//=> 88 88
+//=> 408 408
 log($table.data8[Table.typeOffset(missing)], Type.pending);
 //=> 1 1
 childPointer = $table.data32[pointer32 + 3];
 log(childPointer, pi);
-//=> 44 44
+//=> 24 24
+
+
+// commit
+var commitPointer = Table.findPointer($table, commitHash, 0);
+log(commitPointer);
+//=> 580
+log(hexHash($table.hashes8, commitPointer));
+//=> 5552caf314b68a6d96764b2ef3bde75112520993
+log($table.data8[Table.typeOffset(commitPointer)], Type.commit);
+//=> 2 2
+log(val(get(commitPointer, Commit.message)));
+//=> My test commit
+log(val(get(commitPointer, Commit.committerTime)));
+//=> 1463772798
+log(val(get(get(commitPointer, Commit.tree), 1))); // message
+//=> I <3 short messages
+log(get(commitPointer, Commit.parent), Commit.defaults);
+//=> 452 452
+log(val(get(get(get(commitPointer, Commit.info), Commit.Info.author), Commit.User.email)));
+//=> jake@jakesandlund.com

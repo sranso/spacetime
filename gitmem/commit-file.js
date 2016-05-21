@@ -2,6 +2,8 @@
 global.CommitFile = {};
 (function () {
 
+var tempHash = new Uint8Array(20);
+
 var commitPrefix = Convert.stringToArray('commit ');
 var treePrefix = Convert.stringToArray('tree ');
 var parentPrefix = Convert.stringToArray('parent ');
@@ -71,6 +73,7 @@ CommitFile.create = function (data32, pointer32) {
     }
     $file[commit_j + i] = 0;
 
+    // tree
     commit_j += i + 1;
     for (i = 0; i < treePrefix.length; i++) {
         $file[commit_j + i] = treePrefix[i];
@@ -149,6 +152,7 @@ CommitFile.create = function (data32, pointer32) {
     $file[commit_j + i] = 0x0a;
     $file[commit_j + i + 1] = 0x0a;
 
+    // message
     commit_j += i + 2;
     writeString(commit_j, message);
 
@@ -173,72 +177,104 @@ var writeString = function (commit_j, pointer) {
     return commit_j + i;
 };
 
-CommitFile.parseTree = function ($c, commitStart, commitEnd, $t, treeHashOffset) {
-    var hexOffset = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length;
-    Convert.hexToHash($c, hexOffset, $t, treeHashOffset);
-};
+CommitFile.unpack = function (fileLength, data32, pointer32) {
+    // tree
+    var j = $file.indexOf(0, 7) + 1 + treePrefix.length;
+    Convert.hexToHash($file, j, tempHash, 0);
+    var tree = Table.findPointer($table, tempHash, 0);
+    if (tree < 0) {
+        tree = ~tree;
+        Table.setHash($table, tree, tempHash, 0);
+    }
+    data32[pointer32 + Commit.tree] = tree;
 
-CommitFile.parseParents = function ($c, commitStart, commitEnd, $p, parentHashesOffset) {
-    var j = $c.indexOf(0, commitStart + 7) + 1 + treePrefix.length + 40 + 1;
-    var n = 0;
-    while ($c[j] === parentPrefix[0]) {
+    // parent
+    j += 40 + 1;
+    if ($file[j] === parentPrefix[0]) {
         j += parentPrefix.length;
-        Convert.hexToHash($c, j, $p, parentHashesOffset);
+        Convert.hexToHash($file, j, tempHash, 0);
+        var parent = Table.findPointer($table, tempHash, 0);
+        if (parent < 0) {
+            parent = ~parent;
+            Table.setHash($table, parent, tempHash, 0);
+        }
+        data32[pointer32 + Commit.parent] = parent;
         j += 40 + 1;
-        parentHashesOffset += 20;
-        n++;
     }
 
-    return n;
-};
-
-CommitFile.parse = function ($f, fileStart, fileEnd, commit) {
-    var j = $f.indexOf(0, fileStart + 7) + 1 + treePrefix.length + 40 + 1;
-    while ($f[j] === parentPrefix[0]) {
-        j += parentPrefix.length + 40 + 1;
+    if ($file[j] === parentPrefix[0]) {
+        throw new Error('Merge commits not supported, yet');
     }
 
     // author
     j += authorPrefix.length;
-    var nameArray = $f.subarray(j, $f.indexOf('<'.charCodeAt(0), j) - 1);
-    commit.authorName = String.fromCharCode.apply(null, nameArray);
+    var nameArray = $file.subarray(j, $file.indexOf('<'.charCodeAt(0), j) - 1);
+    var authorName = String.fromCharCode.apply(null, nameArray);
 
     j += nameArray.length + 1 + 1;
-    var emailArray = $f.subarray(j, $f.indexOf('>'.charCodeAt(0), j));
-    commit.authorEmail = String.fromCharCode.apply(null, emailArray);
+    var emailArray = $file.subarray(j, $file.indexOf('>'.charCodeAt(0), j));
+    var authorEmail = String.fromCharCode.apply(null, emailArray);
 
     j += emailArray.length + 1 + 1;
-    var secondsArray = $f.subarray(j, $f.indexOf(0x20, j + 8));
+    var secondsArray = $file.subarray(j, $file.indexOf(0x20, j + 8));
     var seconds = String.fromCharCode.apply(null, secondsArray);
-    commit.authorTime = Number(seconds) * 1000;
+    var authorTime = Number(seconds);
 
     j += secondsArray.length + 1;
-    var timezoneArray = $f.subarray(j, j + 5);
+    var timezoneArray = $file.subarray(j, j + 5);
     var timezone = String.fromCharCode.apply(null, timezoneArray);
-    commit.authorTimezoneOffset = timezoneOffsetFromString(timezone);
+    var authorTimezoneOffset = timezoneOffsetFromString(timezone);
 
     // committer
     j += timezoneArray.length + 1 + committerPrefix.length;
-    nameArray = $f.subarray(j, $f.indexOf('<'.charCodeAt(0), j) - 1);
-    commit.committerName = String.fromCharCode.apply(null, nameArray);
+    nameArray = $file.subarray(j, $file.indexOf('<'.charCodeAt(0), j) - 1);
+    var committerName = String.fromCharCode.apply(null, nameArray);
 
     j += nameArray.length + 1 + 1;
-    emailArray = $f.subarray(j, $f.indexOf('>'.charCodeAt(0), j));
-    commit.committerEmail = String.fromCharCode.apply(null, emailArray);
+    emailArray = $file.subarray(j, $file.indexOf('>'.charCodeAt(0), j));
+    var committerEmail = String.fromCharCode.apply(null, emailArray);
 
     j += emailArray.length + 1 + 1;
-    secondsArray = $f.subarray(j, $f.indexOf(0x20, j + 8));
+    secondsArray = $file.subarray(j, $file.indexOf(0x20, j + 8));
     seconds = String.fromCharCode.apply(null, secondsArray);
-    commit.committerTime = Number(seconds) * 1000;
+    var committerTime = Number(seconds);
 
     j += secondsArray.length + 1;
-    timezoneArray = $f.subarray(j, j + 5);
+    timezoneArray = $file.subarray(j, j + 5);
     timezone = String.fromCharCode.apply(null, timezoneArray);
-    commit.committerTimezoneOffset = timezoneOffsetFromString(timezone);
+    var committerTimezoneOffset = timezoneOffsetFromString(timezone);
 
+    // message
     j += timezoneArray.length + 1 + 1;
-    var messageArray = $f.subarray(j, fileEnd);
-    commit.message = String.fromCharCode.apply(null, messageArray);
+    var messageArray = $file.subarray(j, fileLength);
+    var message = String.fromCharCode.apply(null, messageArray);
+
+
+    // build info
+    var author = set(Commit.User.defaults,
+                     Commit.User.name, hash(authorName),
+                     Commit.User.email, hash(authorEmail),
+                     Commit.User.timezoneOffset, hash(authorTimezoneOffset));
+
+    var committer = set(Commit.User.defaults,
+                        Commit.User.name, hash(committerName),
+                        Commit.User.email, hash(committerEmail),
+                        Commit.User.timezoneOffset, hash(committerTimezoneOffset));
+
+    if (authorTime === committerTime) {
+        authorTime = Constants.zero;
+    } else {
+        authorTime = hash(authorTime);
+    }
+    var info = set(Commit.Info.defaults,
+                   Commit.Info.author, author,
+                   Commit.Info.committer, committer,
+                   Commit.Info.authorTime, authorTime);
+
+    // save back to data32
+    data32[pointer32 + Commit.info] = info;
+    data32[pointer32 + Commit.committerTime] = hash(committerTime);
+    data32[pointer32 + Commit.message] = hash(message);
 };
 
 var timezoneOffsetFromString = function (timezone) {
