@@ -3,17 +3,17 @@ require('../../../test/helper');
 
 global.$file = new Uint8Array(256);
 global.$ = new Uint32Array(32);
-$.nextIndex = 5;
+global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(7961050));
 global.$mold = Mold.create(4, 256);
 
 Constants.initialize(-6, 10);
 
 log($.nextIndex);
-//=> 26
+//=> 21
 
 log(Constants.emptyString, $[Constants.emptyString]);
-//=> 5 4
+//=> 0 4
 log(hexHash($table.hashes8, $[Constants.emptyString]));
 //=> 9d68933c44f13985b9eb19159da6eb3ff0e574bf
 log($[Constants.emptyString], hash(''));
@@ -22,6 +22,8 @@ var emptyString = val($[Constants.emptyString]);
 log(emptyString.length, typeof emptyString);
 //=> 0 'string'
 
+log(Constants.emptyTree);
+//=> 1
 log(hexHash($table.hashes8, $[Constants.emptyTree]));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 log(numChildren($[Constants.emptyTree]));

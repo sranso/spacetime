@@ -4,7 +4,7 @@ require('../../test/helper');
 global.$file = new Uint8Array(256);
 global.$pack = new Uint8Array(256);
 global.$ = new Uint32Array(32);
-$.nextIndex = 0;
+global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(6889162));
 global.$mold = Mold.create(8, 512);
 
@@ -88,7 +88,7 @@ log($table.data8[Table.typeOffset(tree2)] & Type.onServer);
 
 global.$table = Table.create(32, Random.create(622009831));
 global.$ = new Uint32Array(32);
-$.nextIndex = 0;
+global.$.nextIndex = 0;
 Constants.initialize(-1, 1);
 Commit.initialize();
 

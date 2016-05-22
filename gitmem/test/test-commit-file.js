@@ -3,7 +3,7 @@ require('../../test/helper');
 
 global.$file = new Uint8Array(256);
 global.$ = new Uint32Array(32);
-$.nextIndex = 0;
+global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(73440121));
 global.$mold = Mold.create(8, 512);
 

@@ -6,8 +6,8 @@ var helper = require('./helper');
 helper.logToTerminal = false;
 
 var paths = [
-    path.join(__dirname, '../app/test'),
     path.join(__dirname, '../gitmem/test'),
+    path.join(__dirname, '../app/test'),
 ].join(' ');
 
 exec('find ' + paths + ' -type f -name "test-*"', function (err, stdout) {
