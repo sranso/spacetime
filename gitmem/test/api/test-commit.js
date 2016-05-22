@@ -2,6 +2,8 @@
 require('../../../test/helper');
 
 global.$file = new Uint8Array(256);
+global.$ = new Uint32Array(32);
+$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(28591));
 global.$mold = Mold.create(8, 512);
 
@@ -39,7 +41,7 @@ log(message.length, typeof message);
 //=> 0 'string'
 log(get(Commit.zero, Commit.parent));
 //=> 0
-log(get(Commit.zero, Commit.tree), Constants.emptyTree);
+log(get(Commit.zero, Commit.tree), $[Constants.emptyTree]);
 //=> 196 196
 
 

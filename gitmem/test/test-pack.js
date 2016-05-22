@@ -3,6 +3,8 @@ require('../../test/helper');
 
 global.$file = new Uint8Array(256);
 global.$pack = new Uint8Array(256);
+global.$ = new Uint32Array(32);
+$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(6889162));
 global.$mold = Mold.create(8, 512);
 
@@ -45,7 +47,7 @@ var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 log(hexHash($table.hashes8, commit1));
 //=> 3368ce02c06b1bc2cfe8902ff9c8226953263986
 
-var tree2 = Constants.emptyTree;
+var tree2 = $[Constants.emptyTree];
 var tree2Hash = $table.hashes8.slice(tree2, tree2 + 20);
 log(hexHash($table.hashes8, tree2));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
@@ -85,6 +87,8 @@ log($table.data8[Table.typeOffset(tree2)] & Type.onServer);
 
 
 global.$table = Table.create(32, Random.create(622009831));
+global.$ = new Uint32Array(32);
+$.nextIndex = 0;
 Constants.initialize(-1, 1);
 Commit.initialize();
 
@@ -116,7 +120,7 @@ log(hexHash($table.hashes8, tree2));
 var empty = get(tree2, 0); // .empty
 log($table.data8[Table.typeOffset(empty)] & Type.onServer);
 //=> 128
-log(empty, Constants.emptyString);
+log(empty, $[Constants.emptyString]);
 //=> 260 260
 
 tree1 = Table.findPointer($table, tree1Hash, 0);

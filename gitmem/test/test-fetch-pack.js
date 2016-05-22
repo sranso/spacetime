@@ -3,6 +3,8 @@ require('../../test/helper');
 
 global.$file = new Uint8Array(256);
 global.$pack = new Uint8Array(256);
+global.$ = new Uint32Array(32);
+$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(6889162));
 global.$mold = Mold.create(8, 512);
 
@@ -89,7 +91,7 @@ var info = set(Commit.Info.zero,
 var commit1 = commit(Commit.zero,
                      Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
-                     Commit.tree, Constants.emptyTree,
+                     Commit.tree, $[Constants.emptyTree],
                      Commit.info, info,
                      Commit.parent, 0);
 log(hexHash($table.hashes8, commit1));
@@ -98,7 +100,7 @@ log(hexHash($table.hashes8, commit1));
 var commit2 = commit(Commit.zero,
                      Commit.message, hash('second commit'),
                      Commit.committerTime, hash(1463930072),
-                     Commit.tree, Constants.emptyTree,
+                     Commit.tree, $[Constants.emptyTree],
                      Commit.info, info,
                      Commit.parent, commit1);
 log(hexHash($table.hashes8, commit2));

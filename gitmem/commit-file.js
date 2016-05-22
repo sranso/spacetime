@@ -266,7 +266,7 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
                         Commit.User.timezoneOffset, hash(committerTimezoneOffset));
 
     if (authorTime === committerTime) {
-        authorTime = Constants.positive[0];
+        authorTime = $[Constants.positive[0]];
     } else {
         authorTime = hash(authorTime);
     }

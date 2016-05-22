@@ -8,6 +8,9 @@ GitMem.initialize = function () {
 };
 
 GitMem.create = function () {
+    global.$ = new Uint32Array(65536);
+    $.nextIndex = 0;
+
     var random = Random.create(GitMem._randomSeed());
     global.$table = Table.create(262144, random); // 11.1 MB
 
@@ -19,12 +22,14 @@ GitMem.create = function () {
     Commit.initialize();
 
     return {
+        $: $,
         table: $table,
         mold: $mold,
     };
 };
 
 GitMem.load = function (gitmem) {
+    global.$ = gitmem.$;
     global.$table = gitmem.table;
     global.$mold = gitmem.mold;
 };
