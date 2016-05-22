@@ -22,7 +22,7 @@ log(val(Constants.positive[0]));
 log(hexHash($table.hashes8, Constants.positive[1]));
 //=> 56a6051ca2b02b04ef92d5150c9ef600403cb1de
 log(Constants.positive[1], hash(1));
-//=> 24 24
+//=> 44 44
 log(val(Constants.positive[1]));
 //=> 1
 
@@ -58,3 +58,8 @@ log(hexHash($table.hashes8, Constants.emptyTree));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 log(numChildren(Constants.emptyTree));
 //=> 0
+
+log(hexHash($table.hashes8, Constants.zeroHash));
+//=> 0000000000000000000000000000000000000000
+log($table.data8[Table.typeOffset(Constants.zeroHash)], Type.pending);
+//=> 1 1
