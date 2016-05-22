@@ -163,4 +163,22 @@ Mold.process = function (mold, fileLength) {
     return moldIndex;
 };
 
+Mold.fillHoles = function (mold, moldIndex, data32, pointer32) {
+    var mold8 = moldIndex * Mold.data8_size;
+    var mold32 = moldIndex * Mold.data32_size;
+    var numChildren = mold.data8[mold8 + Mold.data8_numChildren];
+    var holeOffsets = mold8 + Mold.data8_holeOffsets;
+    var fileStart = mold.data32[mold32 + Mold.data32_fileStart];
+
+    var j;
+    for (j = 0; j < numChildren; j++) {
+        var childPointer = data32[pointer32 + j];
+        var holeOffset = fileStart + mold.data8[holeOffsets + j];
+        var i;
+        for (i = 0; i < 20; i++) {
+            mold.fileArray[holeOffset + i] = $table.hashes8[childPointer + i];
+        }
+    }
+};
+
 })();

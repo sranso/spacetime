@@ -43,7 +43,7 @@ var pointer32 = tree1 >> 2;
 log(hexHash($table.hashes8, tree1));
 //=> e70eb20e74bfacdca9dd49af2aa2e5bc0a2c8597
 log($table.data8[Table.typeOffset(tree1)], Type.tree);
-//=> 8 8
+//=> 9 9
 log($table.data32[pointer32 + 0], barPointer);
 //=> 68 68
 log($table.data32[pointer32 + 1], fooPointer);
@@ -58,7 +58,7 @@ pointer32 = tree2 >> 2;
 log(hexHash($table.hashes8, tree2));
 //=> 8c5d6b2c2c278711f5fe6102a9b594d222790566
 log($table.data8[Table.typeOffset(tree2)], Type.tree);
-//=> 8 8
+//=> 9 9
 log($table.data32[pointer32 + 0], barPointer);
 //=> 68 68
 log($table.data32[pointer32 + 1], wwwPointer);

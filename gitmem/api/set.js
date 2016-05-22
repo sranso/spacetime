@@ -36,16 +36,7 @@ ApiSet._create = function (moldIndex, newPointers) {
     var mold32 = moldIndex * Mold.data32_size;
     var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
     var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
-    var holeOffsets = mold8 + Mold.data8_holeOffsets;
-    var j;
-    for (j = 0; j < numChildren; j++) {
-        var childPointer = newPointers[j];
-        var holeOffset = fileStart + $mold.data8[holeOffsets + j];
-        var i;
-        for (i = 0; i < 20; i++) {
-            $mold.fileArray[holeOffset + i] = $table.hashes8[childPointer + i];
-        }
-    }
+    Mold.fillHoles($mold, moldIndex, newPointers, 0);
 
     // Hash and store in table
     Sha1.hash($mold.fileArray, fileStart, fileEnd, tempHash, 0);
@@ -59,8 +50,9 @@ ApiSet._create = function (moldIndex, newPointers) {
     var pointer32 = pointer >> 2;
     $table.data8[Table.typeOffset(pointer)] = Type.tree;
     $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
-    for (j = 0; j < numChildren; j++) {
-        $table.data32[pointer32 + j] = newPointers[j];
+    var i;
+    for (i = 0; i < numChildren; i++) {
+        $table.data32[pointer32 + i] = newPointers[i];
     }
 
     return pointer;
