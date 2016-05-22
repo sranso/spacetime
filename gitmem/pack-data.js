@@ -8,6 +8,7 @@ var commitPrefix = Convert.stringToArray('commit ');
 
 var pakoOptions = {level: 6, chunkSize: 4096};
 var maxPackHeaderSize = 8;
+var packExtraSize = maxPackHeaderSize + 20; // SHA-1 at end of pack
 
 var resizePack = function () {
     var newPack = new Uint8Array($pack.length * 2);
@@ -19,24 +20,21 @@ var resizePack = function () {
     global.$pack = newPack;
 };
 
-PackData.packFile = function (packOffset, fileLength) {
-    var contentStart = $file.indexOf(0, 5) + 1;
-    var length = fileLength - contentStart;
+PackData.packFile = function (packOffset, file, fileStart, fileEnd) {
+    var contentStart = file.indexOf(0, fileStart + 5) + 1;
+    var length = fileEnd - contentStart;
 
     var typeBits;
-    if ($file[0] === blobPrefix[0]) {
+    if (file[fileStart] === blobPrefix[0]) {
         typeBits = 0x30;
-    } else if ($file[1] === treePrefix[1]) {
+    } else if (file[fileStart + 1] === treePrefix[1]) {
         typeBits = 0x20;
-    } else if ($file[0] === commitPrefix[0]) {
+    } else if (file[fileStart] === commitPrefix[0]) {
         typeBits = 0x10;
     } else {
-        throw new Error('Unknown type: ' + $file.slice(0, 4).join(','));
+        throw new Error('Unknown type: ' + file.slice(fileStart, fileStart + 4).join(','));
     }
 
-    if (packOffset + maxPackHeaderSize > $pack.length) {
-        resizePack();
-    }
     var c = typeBits | (length & 0xf);
 
     length >>>= 4;
@@ -53,14 +51,14 @@ PackData.packFile = function (packOffset, fileLength) {
     deflate.onData = onDeflateData;
     deflate.onEnd = onEnd;
     deflate.packOffset = packOffset;
-    deflate.push($file.subarray(contentStart, fileLength), true);
+    deflate.push(file.subarray(contentStart, fileEnd), true);
 
     return deflate.packOffset;
 };
 
 var onDeflateData = function (chunk) {
     var packOffset = this.packOffset;
-    if (packOffset + chunk.length > $pack.length) {
+    if (packOffset + chunk.length + packExtraSize > $pack.length) {
         resizePack();
     }
     var i;

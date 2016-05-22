@@ -2,7 +2,7 @@
 require('../../test/helper');
 
 global.$file = new Uint8Array(16);
-global.$pack = new Uint8Array(32);
+global.$pack = new Uint8Array(50);
 
 var blobLength = Blob.create('foo bar\n');
 var blob = $file.subarray(0, blobLength);
@@ -24,15 +24,15 @@ log(inflate.strm.next_in);
 
 
 var packOffset = 0;
-packOffset = PackData.packFile(packOffset, blobLength);
+packOffset = PackData.packFile(packOffset, $file, 0, blobLength);
 log(packOffset, $pack.length);
-//=> 17 32
+//=> 17 50
 log(hex($pack, 0, packOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 
-var newPackOffset = PackData.packFile(packOffset, blobLength);
+var newPackOffset = PackData.packFile(packOffset, $file, 0, blobLength);
 log(newPackOffset, $pack.length);
-//=> 34 64
+//=> 34 100
 log(hex($pack, packOffset, newPackOffset));
 //=> 38789c4bcbcf57484a2ce202000d1402a4
 

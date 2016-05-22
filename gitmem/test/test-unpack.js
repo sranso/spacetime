@@ -17,28 +17,28 @@ var messageHash = new Uint8Array(20);
 Sha1.hash($file, 0, messageLength, messageHash, 0);
 log(hexHash(messageHash, 0));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
-packOffset = PackData.packFile(packOffset, messageLength);
+packOffset = PackData.packFile(packOffset, $file, 0, messageLength);
 
 var longMessageLength = Blob.create('"I am a long message!');
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageLength, longMessageHash, 0);
 log(hexHash(longMessageHash, 0));
 //=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
-packOffset = PackData.packFile(packOffset, longMessageLength);
+packOffset = PackData.packFile(packOffset, $file, 0, longMessageLength);
 
 var answerLength = Blob.create('42');
 var answerHash = new Uint8Array(20);
 Sha1.hash($file, 0, answerLength, answerHash, 0);
 log(hexHash(answerHash, 0));
 //=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
-packOffset = PackData.packFile(packOffset, answerLength);
+packOffset = PackData.packFile(packOffset, $file, 0, answerLength);
 
 var piLength = Blob.create('3.141592653589793');
 var piHash = new Uint8Array(20);
 Sha1.hash($file, 0, piLength, piHash, 0);
 log(hexHash(piHash, 0));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
-packOffset = PackData.packFile(packOffset, piLength);
+packOffset = PackData.packFile(packOffset, $file, 0, piLength);
 
 var treeLength = Tree.create({
     answer: 'blob',
@@ -63,7 +63,7 @@ log(hexHash(treeHash, 0));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
 var treePointer = ~Table.findPointer($table, treeHash, 0);
 Table.setHash($table, treePointer, treeHash, 0);
-packOffset = PackData.packFile(packOffset, treeLength);
+packOffset = PackData.packFile(packOffset, $file, 0, treeLength);
 
 var user = set(Commit.User.defaults,
                Commit.User.email, hash('jake@jakesandlund.com'),
@@ -92,7 +92,7 @@ log(pretty($file, 0, commitLength));
 //=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
 //=> My test commit
-packOffset = PackData.packFile(packOffset, commitLength);
+packOffset = PackData.packFile(packOffset, $file, 0, commitLength);
 
 log(packOffset);
 //=> 405
