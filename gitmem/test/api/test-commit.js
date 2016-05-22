@@ -17,7 +17,7 @@ var name = val(get(Commit.User.zero, Commit.User.name));
 log(name.length, typeof name);
 //=> 0 'string'
 log(get(Commit.User.zero, Commit.User.timezoneOffset), hash(360));
-//=> 388 4
+//=> 388 24
 log(val(get(Commit.User.zero, Commit.User.timezoneOffset)));
 //=> 0
 

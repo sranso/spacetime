@@ -70,35 +70,35 @@ Mold.process = function (mold, fileLength) {
     }
 
     // Compute FNV-1a hash
-    var hash = Fnv1a.startHash;
+    var fnv1a = Fnv1a.start;
     var previousOffset = -20;
     for (j = 0; j < numHoles; j++) {
         var start = previousOffset + 20;
-        hash = Fnv1a.update(hash, $file, start, holeOffsets[j]);
+        fnv1a = Fnv1a.update(fnv1a, $file, start, holeOffsets[j]);
         previousOffset = holeOffsets[j];
     }
 
     // Search table for matching hash
-    var h = 2 * (((hash >>> mold.hashBits) ^ hash) & mold.hashMask);
+    var h = 2 * (((fnv1a >>> mold.hashBits) ^ fnv1a) & mold.hashMask);
     var moldIndex;
 
     searchTable:
     while (moldIndex = mold.table[h]) {
-        var checkHash = mold.table[h + 1];
+        var checkFnv1a = mold.table[h + 1];
 
         h -= 2;
         if (h < 0) {
             h = mold.table.length - 2;
         }
 
-        if (checkHash !== hash) {
+        if (fnv1a !== checkFnv1a) {
             continue;
         }
 
         // Make sure mold matches
         var mold8 = moldIndex * Mold.data8_size;
         var mold32 = moldIndex * Mold.data32_size;
-        if (mold.data8[mold8 + Mold.data8_numHoles] !== numHoles) {
+        if (numHoles !== mold.data8[mold8 + Mold.data8_numHoles]) {
             continue;
         }
 
@@ -107,7 +107,7 @@ Mold.process = function (mold, fileLength) {
         var mold8Holes = mold8 + Mold.data8_holeOffsets;
         for (j = 0; j < numHoles; j++) {
             var moldHoleOffset = mold.data8[mold8Holes + j];
-            if (moldHoleOffset !== holeOffsets[j]) {
+            if (holeOffsets[j] !== moldHoleOffset) {
                 continue searchTable;
             }
 
@@ -158,7 +158,7 @@ Mold.process = function (mold, fileLength) {
     }
 
     mold.table[h] = moldIndex;
-    mold.table[h + 1] = hash;
+    mold.table[h + 1] = fnv1a;
 
     return moldIndex;
 };

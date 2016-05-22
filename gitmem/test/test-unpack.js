@@ -82,12 +82,12 @@ var commitPointer = commit(Commit.zero,
                            Commit.parent, Commit.zero);
 var commitHash = $table.hashes8.slice(commitPointer, commitPointer + 20);
 log(hexHash(commitHash, 0));
-//=> 5552caf314b68a6d96764b2ef3bde75112520993
+//=> eab45eefb16fc80f6276b62192229e41799d4c30
 var commitParentHash = $table.hashes8.slice(Commit.zero, Commit.zero + 20);
 var commitLength = 247;
 log(pretty($file, 0, commitLength));
 //=> commit 236\x00tree e92993fcf3ac79777e33c872279a15956a3df4d9
-//=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
+//=> parent cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
 //=> author Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
@@ -95,10 +95,10 @@ log(pretty($file, 0, commitLength));
 packOffset = PackData.packFile(packOffset, $file, 0, commitLength);
 
 log(packOffset);
-//=> 405
+//=> 406
 Sha1.hash($pack, 0, packOffset, $pack, packOffset);
 log(hexHash($pack, packOffset));
-//=> 77b564343bdc0356a608f813473bef1f6f271c66
+//=> 01be5bf82d0290f2e1de0c1bb54c50be09edf7e8
 
 
 
@@ -199,19 +199,19 @@ log(numChildren);
 //=> 4
 var childPointer = $table.data32[pointer32 + 0];
 log(childPointer, answer);
-//=> 364 364
+//=> 344 344
 childPointer = $table.data32[pointer32 + 1];
 log(childPointer, message);
 //=> 152 152
 var missing = Table.findPointer($table, missingHash, 0);
 childPointer = $table.data32[pointer32 + 2];
 log(childPointer, missing);
-//=> 408 408
+//=> 364 364
 log($table.data8[Table.typeOffset(missing)], Type.pending);
 //=> 1 1
 childPointer = $table.data32[pointer32 + 3];
 log(childPointer, pi);
-//=> 24 24
+//=> 44 44
 
 
 // commit
@@ -219,7 +219,7 @@ var commitPointer = Table.findPointer($table, commitHash, 0);
 log(commitPointer);
 //=> 580
 log(hexHash($table.hashes8, commitPointer));
-//=> 5552caf314b68a6d96764b2ef3bde75112520993
+//=> eab45eefb16fc80f6276b62192229e41799d4c30
 var type = $table.data8[Table.typeOffset(commitPointer)];
 log(type & Type.mask, Type.commit);
 //=> 2 2
@@ -232,6 +232,6 @@ log(val(get(commitPointer, Commit.committerTime)));
 log(val(get(get(commitPointer, Commit.tree), 1))); // message
 //=> I <3 short messages
 log(get(commitPointer, Commit.parent), Commit.zero);
-//=> 452 452
+//=> 88 88
 log(val(get(get(get(commitPointer, Commit.info), Commit.Info.author), Commit.User.email)));
 //=> jake@jakesandlund.com
