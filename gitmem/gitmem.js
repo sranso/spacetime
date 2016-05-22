@@ -1,58 +1,42 @@
 'use strict';
-global.Gitmem = {};
+global.GitMem = {};
 (function () {
 
-Gitmem.initialize = function () {
-    var bootHeap = Heap.create(1024);
-    var random = Random.create(Gitmem._randomSeed());
-
-    global.$heap = bootHeap;
-    global.$ = bootHeap.array;
-
-    Unpack.initialize();
-
-    if (bootHeap.capacity !== 1024 || bootHeap.nextOffset !== bootHeap.capacity) {
-        throw new Error('Unexpected boot heap size: ' + bootHeap.nextOffset);
-    }
-
-    global.$heap = null;
-    global.$ = null;
+GitMem.initialize = function () {
+    global.$file = new Uint8Array(4096);
+    global.$pack = new Uint8Array(4096);
 };
 
-Gitmem.create = function () {
-    global.$random = Random.create(Gitmem._randomSeed());
-    global.$heap = Heap.create(8388608); // 8 MiB
-    global.$ = $heap.array;
-    global.$table = Table.create(262144, $random);
-    global.$packData = PackData.create(8388608);
-    global.$fileCache = FileCache.create(8388608);
+GitMem.create = function () {
+    var random = Random.create(GitMem._randomSeed());
+    global.$table = Table.create(262144, random); // 11.1 MB
+
+    // 16384 is enough for 5 molds/day for the next ~9 years
+    // 140 is higher than average tree size
+    global.$mold = Mold.create(16384, 140 * 16384); // 2.8 MB
+
+    Constants.initialize(-1000, 1000);
+    Commit.initialize();
 
     return {
-        random: $random,
-        heap: $heap,
         table: $table,
-        packData: $packData,
-        fileCache: $fileCache,
+        mold: $mold,
     };
 };
 
-Gitmem.load = function (gitmem) {
-    global.$random = gitmem.random;
-    global.$heap = gitmem.heap;
-    global.$ = gitmem.heap.array;
+GitMem.load = function (gitmem) {
     global.$table = gitmem.table;
-    global.$packData = gitmem.packData;
-    global.$fileCache = gitmem.fileCache;
+    global.$mold = gitmem.mold;
 };
 
-Gitmem._randomSeed = function () {
+GitMem._randomSeed = function () {
     var array = new Uint32Array(1);
-    window.crypto.getRandomValues(array);
+    global.crypto.getRandomValues(array);
     var seed = array[0];
     if (seed !== 0) {
         return seed;
     } else {
-        return Gitmem._randomSeed();
+        return GitMem._randomSeed();
     }
 };
 
