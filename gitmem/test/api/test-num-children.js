@@ -1,8 +1,8 @@
 'use strict';
 require('../../../test/helper');
 
-global.$table = Table.create(4, Random.create(189869));
 global.$file = new Uint8Array(128);
+global.$table = Table.create(4, Random.create(189869));
 global.$mold = Mold.create(4, 128);
 
 var treeLength = Tree.create({

@@ -1,8 +1,8 @@
 'use strict';
 require('../../../test/helper');
 
-global.$table = Table.create(16, Random.create(926081));
 global.$file = new Uint8Array(32);
+global.$table = Table.create(16, Random.create(926081));
 
 var messageString = 'I <3 short messages';
 var messageBlobLength = Blob.create('"' + messageString);

@@ -1,8 +1,8 @@
 'use strict';
 require('../../../test/helper');
 
-global.$table = Table.create(16, Random.create(29923321));
 global.$file = new Uint8Array(128);
+global.$table = Table.create(16, Random.create(29923321));
 global.$mold = Mold.create(4, 256);
 
 var answer = hash(42);
