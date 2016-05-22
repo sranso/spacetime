@@ -29,17 +29,17 @@ Commit.initialize = function () {
     var user = createZero({
         email: hash('test@example.com'),
         name: hash('User Name'),
-        timezoneOffset: Constants.zero,
+        timezoneOffset: Constants.positive[0],
     });
     Commit.User.zero = user;
 
     Commit.Info.zero = createZero({
         author: user,
-        authorTime: Constants.zero,
+        authorTime: Constants.positive[0],
         committer: user,
     });
 
-    newPointers[Commit.committerTime] = Constants.zero;
+    newPointers[Commit.committerTime] = Constants.positive[0];
     newPointers[Commit.info] = Commit.Info.zero;
     newPointers[Commit.message] = hash('Commit message');
     newPointers[Commit.parent] = 0;

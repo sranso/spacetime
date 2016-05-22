@@ -6,7 +6,7 @@ global.$file = new Uint8Array(256);
 global.$mold = Mold.create(8, 512);
 global.$pack = new Uint8Array(256);
 
-Constants.initialize();
+Constants.initialize(-1, 1);
 Commit.initialize();
 
 var foo1 = hash('foo');
@@ -92,7 +92,7 @@ log($table.data8[Table.typeOffset(tree2)] & Type.onServer);
 
 
 global.$table = Table.create(32, Random.create(622009831));
-Constants.initialize();
+Constants.initialize(-1, 1);
 Commit.initialize();
 
 Unpack.unpack($pack);

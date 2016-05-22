@@ -6,7 +6,7 @@ global.$file = new Uint8Array(256);
 global.$mold = Mold.create(8, 512);
 global.$pack = new Uint8Array(64);
 
-Constants.initialize();
+Constants.initialize(-1, 1);
 Commit.initialize();
 
 $pack[11] = 6;  // Number of packed files.
@@ -107,7 +107,7 @@ log(hexHash($pack, packOffset));
 
 
 global.$table = Table.create(32, Random.create(15962822));
-Constants.initialize();
+Constants.initialize(-1, 1);
 Commit.initialize();
 
 Unpack.unpack($pack);
