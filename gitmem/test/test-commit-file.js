@@ -32,7 +32,7 @@ var info = set(Commit.Info.zero,
 
 var parentCommit = Commit.zero;
 log(hexHash($table.hashes8, parentCommit));
-//=> efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
+//=> cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
 
 var message = hash('My test commit');
 $table.data8[Table.typeOffset(message)] |= Type.onServer;
@@ -47,7 +47,7 @@ data32[Commit.parent] = parentCommit;
 var commitLength = CommitFile.create(data32, 0);
 log(pretty($file, 0, commitLength));
 //=> commit 236\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
-//=> parent efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
+//=> parent cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
 //=> author Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=> committer Jake Sandlund <jake@jakesandlund.com> 1463772798 -0600
 //=>
@@ -56,7 +56,7 @@ log(pretty($file, 0, commitLength));
 var commitHash = new Uint8Array(20);
 Sha1.hash($file, 0, commitLength, commitHash, 0);
 log(hexHash(commitHash, 0));
-//=> 63020ad316949de76b718821be2f504c2bf4c706
+//=> 3368ce02c06b1bc2cfe8902ff9c8226953263986
 
 
 
@@ -81,8 +81,8 @@ var tree = createZero({
     foo: hash('foo'),
 });
 log(data32[Commit.tree], tree);
-//=> 428 428
+//=> 388 388
 log(data32[Commit.parent], Commit.zero);
-//=> 324 324
+//=> 132 132
 log(val(get(get(data32[Commit.info], Commit.Info.author), Commit.User.name)));
 //=> Jake Sandlund

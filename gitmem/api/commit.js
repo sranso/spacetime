@@ -27,8 +27,8 @@ var tempHash = new Uint8Array(20);
 
 Commit.initialize = function () {
     var user = createZero({
-        email: hash('test@example.com'),
-        name: hash('User Name'),
+        email: Constants.emptyString,
+        name: Constants.emptyString,
         timezoneOffset: Constants.positive[0],
     });
     Commit.User.zero = user;
@@ -41,7 +41,7 @@ Commit.initialize = function () {
 
     newPointers[Commit.committerTime] = Constants.positive[0];
     newPointers[Commit.info] = Commit.Info.zero;
-    newPointers[Commit.message] = hash('Commit message');
+    newPointers[Commit.message] = Constants.emptyString;
     newPointers[Commit.parent] = 0;
     newPointers[Commit.tree] = Constants.emptyTree;
     Commit.zero = create();
