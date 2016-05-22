@@ -79,16 +79,16 @@ log(singleRef.length, singleRef[0][0]);
 
 
 
-var user = set(Commit.User.zero,
+var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.zero,
+var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commit1 = commit(Commit.zero,
+var commit1 = commit($[Commit.zero],
                      Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
                      Commit.tree, $[Constants.emptyTree],
@@ -97,7 +97,7 @@ var commit1 = commit(Commit.zero,
 log(hexHash($table.hashes8, commit1));
 //=> d445dd84cfb7cd6de47fc0c75bfb6943d7a7499a
 
-var commit2 = commit(Commit.zero,
+var commit2 = commit($[Commit.zero],
                      Commit.message, hash('second commit'),
                      Commit.committerTime, hash(1463930072),
                      Commit.tree, $[Constants.emptyTree],

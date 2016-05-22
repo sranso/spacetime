@@ -31,20 +31,23 @@ Commit.initialize = function () {
         name: $[Constants.emptyString],
         timezoneOffset: $[Constants.positive[0]],
     });
-    Commit.User.zero = user;
+    Commit.User.zero = $.nextIndex++;
+    $[Commit.User.zero] = user;
 
-    Commit.Info.zero = createZero({
+    Commit.Info.zero = $.nextIndex++;
+    $[Commit.Info.zero] = createZero({
         author: user,
         authorTime: $[Constants.positive[0]],
         committer: user,
     });
 
     newPointers[Commit.committerTime] = $[Constants.positive[0]];
-    newPointers[Commit.info] = Commit.Info.zero;
+    newPointers[Commit.info] = $[Commit.Info.zero];
     newPointers[Commit.message] = $[Constants.emptyString];
     newPointers[Commit.parent] = 0;
     newPointers[Commit.tree] = $[Constants.emptyTree];
-    Commit.zero = create();
+    Commit.zero = $.nextIndex++;
+    $[Commit.zero] = create();
 };
 
 global.commit = function (pointer) {

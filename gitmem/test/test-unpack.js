@@ -67,25 +67,25 @@ var treePointer = ~Table.findPointer($table, treeHash, 0);
 Table.setHash($table, treePointer, treeHash, 0);
 packOffset = PackData.packFile(packOffset, $file, 0, treeLength);
 
-var user = set(Commit.User.zero,
+var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.zero,
+var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commitPointer = commit(Commit.zero,
+var commitPointer = commit($[Commit.zero],
                            Commit.message, hash('My test commit'),
                            Commit.committerTime, hash(1463772798),
                            Commit.tree, treePointer,
                            Commit.info, info,
-                           Commit.parent, Commit.zero);
+                           Commit.parent, $[Commit.zero]);
 var commitHash = $table.hashes8.slice(commitPointer, commitPointer + 20);
 log(hexHash(commitHash, 0));
 //=> eab45eefb16fc80f6276b62192229e41799d4c30
-var commitParentHash = $table.hashes8.slice(Commit.zero, Commit.zero + 20);
+var commitParentHash = $table.hashes8.slice($[Commit.zero], $[Commit.zero] + 20);
 var commitLength = 247;
 log(pretty($file, 0, commitLength));
 //=> commit 236\x00tree e92993fcf3ac79777e33c872279a15956a3df4d9
@@ -235,7 +235,7 @@ log(val(get(commitPointer, Commit.committerTime)));
 //=> 1463772798
 log(val(get(get(commitPointer, Commit.tree), 1))); // message
 //=> I <3 short messages
-log(get(commitPointer, Commit.parent), Commit.zero);
+log(get(commitPointer, Commit.parent), $[Commit.zero]);
 //=> 88 88
 log(val(get(get(get(commitPointer, Commit.info), Commit.Info.author), Commit.User.email)));
 //=> jake@jakesandlund.com

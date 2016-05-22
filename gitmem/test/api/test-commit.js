@@ -10,38 +10,38 @@ global.$mold = Mold.create(8, 512);
 Constants.initialize(-1, 1);
 Commit.initialize();
 
-log(hexHash($table.hashes8, Commit.zero));
+log(hexHash($table.hashes8, $[Commit.zero]));
 //=> cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
-var email = val(get(Commit.User.zero, Commit.User.email));
+var email = val(get($[Commit.User.zero], Commit.User.email));
 log(email.length, typeof email);
 //=> 0 'string'
-var name = val(get(Commit.User.zero, Commit.User.name));
+var name = val(get($[Commit.User.zero], Commit.User.name));
 log(name.length, typeof name);
 //=> 0 'string'
-log(get(Commit.User.zero, Commit.User.timezoneOffset), hash(360));
+log(get($[Commit.User.zero], Commit.User.timezoneOffset), hash(360));
 //=> 388 24
-log(val(get(Commit.User.zero, Commit.User.timezoneOffset)));
+log(val(get($[Commit.User.zero], Commit.User.timezoneOffset)));
 //=> 0
 
-log(get(Commit.Info.zero, Commit.Info.author), Commit.User.zero);
+log(get($[Commit.Info.zero], Commit.Info.author), $[Commit.User.zero]);
 //=> 280 280
-log(get(Commit.Info.zero, Commit.Info.committer), Commit.User.zero);
+log(get($[Commit.Info.zero], Commit.Info.committer), $[Commit.User.zero]);
 //=> 280 280
-log(val(get(Commit.Info.zero, Commit.Info.authorTime)));
+log(val(get($[Commit.Info.zero], Commit.Info.authorTime)));
 //=> 0
 
-log($table.data8[Table.typeOffset(Commit.zero)], Type.commit);
+log($table.data8[Table.typeOffset($[Commit.zero])], Type.commit);
 //=> 2 2
-log(val(get(Commit.zero, Commit.committerTime)));
+log(val(get($[Commit.zero], Commit.committerTime)));
 //=> 0
-log(get(Commit.zero, Commit.info), Commit.Info.zero);
+log(get($[Commit.zero], Commit.info), $[Commit.Info.zero]);
 //=> 324 324
-var message = val(get(Commit.zero, Commit.message));
+var message = val(get($[Commit.zero], Commit.message));
 log(message.length, typeof message);
 //=> 0 'string'
-log(get(Commit.zero, Commit.parent));
+log(get($[Commit.zero], Commit.parent));
 //=> 0
-log(get(Commit.zero, Commit.tree), $[Constants.emptyTree]);
+log(get($[Commit.zero], Commit.tree), $[Constants.emptyTree]);
 //=> 196 196
 
 
@@ -52,21 +52,21 @@ var tree = createZero({
 log(hexHash($table.hashes8, tree));
 //=> d222b927f53e49a12986fb4a7a87c51924e513b9
 
-var user = set(Commit.User.zero,
+var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.zero,
+var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var pointer = commit(Commit.zero,
+var pointer = commit($[Commit.zero],
                      Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
                      Commit.tree, tree,
                      Commit.info, info,
-                     Commit.parent, Commit.zero);
+                     Commit.parent, $[Commit.zero]);
 
 log(hexHash($table.hashes8, pointer));
 //=> 3368ce02c06b1bc2cfe8902ff9c8226953263986

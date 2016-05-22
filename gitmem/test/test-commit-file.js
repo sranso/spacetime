@@ -23,16 +23,16 @@ var tree = createZero({
 log(hexHash($table.hashes8, tree));
 //=> d222b927f53e49a12986fb4a7a87c51924e513b9
 
-var user = set(Commit.User.zero,
+var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.zero,
+var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var parentCommit = Commit.zero;
+var parentCommit = $[Commit.zero];
 log(hexHash($table.hashes8, parentCommit));
 //=> cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
 
@@ -84,7 +84,7 @@ var tree = createZero({
 });
 log(data32[Commit.tree], tree);
 //=> 388 388
-log(data32[Commit.parent], Commit.zero);
+log(data32[Commit.parent], $[Commit.zero]);
 //=> 132 132
 log(val(get(get(data32[Commit.info], Commit.Info.author), Commit.User.name)));
 //=> Jake Sandlund

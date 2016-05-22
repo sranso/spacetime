@@ -21,16 +21,16 @@ var tree = createZero({
     foo: hash('foo'),
 });
 
-var user = set(Commit.User.zero,
+var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.zero,
+var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commitPointer = commit(Commit.zero,
+var commitPointer = commit($[Commit.zero],
                            Commit.message, hash('My test commit'),
                            Commit.committerTime, hash(1463772798),
                            Commit.tree, tree,
