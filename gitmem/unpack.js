@@ -9,10 +9,10 @@ var extractFileOutput = new Uint32Array(2);
 Unpack.unpack = function (pack) {
     var numFiles = (pack[8] << 24) | (pack[9] << 16) | (pack[10] << 8) | pack[11];
 
-    var j = 12;
+    var packOffset = 12;
     var k;
     for (k = 0; k < numFiles; k++) {
-        PackData.extractFile(pack, j, extractFileOutput);
+        PackData.extractFile(pack, packOffset, extractFileOutput);
         var fileLength = extractFileOutput[0];
         var nextPackOffset = extractFileOutput[1];
 
@@ -102,7 +102,7 @@ Unpack.unpack = function (pack) {
             throw new Error('Commit and Tag not implemented, yet');
         }
 
-        j = nextPackOffset;
+        packOffset = nextPackOffset;
     }
 };
 

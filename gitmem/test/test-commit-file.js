@@ -34,7 +34,7 @@ var parentCommit = Commit.defaults;
 log(hexHash($table.hashes8, parentCommit));
 //=> efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
 
-var message = hash("My test commit");
+var message = hash('My test commit');
 $table.data8[Table.typeOffset(message)] |= Type.onServer;
 
 var data32 = new Uint32Array(5);

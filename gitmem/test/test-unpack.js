@@ -4,7 +4,7 @@ require('../../test/helper');
 global.$table = Table.create(32, Random.create(526926));
 global.$file = new Uint8Array(256);
 global.$mold = Mold.create(8, 512);
-global.$pack = new Uint8Array(425);
+global.$pack = new Uint8Array(64);
 
 Constants.initialize();
 Commit.initialize();
@@ -75,7 +75,7 @@ var info = set(Commit.Info.defaults,
                Commit.Info.committer, user);
 
 var commitPointer = commit(Commit.defaults,
-                           Commit.message, hash("My test commit"),
+                           Commit.message, hash('My test commit'),
                            Commit.committerTime, hash(1463772798),
                            Commit.tree, treePointer,
                            Commit.info, info,

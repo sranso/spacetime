@@ -2,60 +2,97 @@
 global.Pack = {};
 (function () {
 
-Pack.create = function (files) {
-    var pack = new Uint8Array(512);
-    pack[0] = 'P'.charCodeAt(0);
-    pack[1] = 'A'.charCodeAt(0);
-    pack[2] = 'C'.charCodeAt(0);
-    pack[3] = 'K'.charCodeAt(0);
+var packOffset = 0;
+var numFiles = 0;
 
-    pack[4] = 0;
-    pack[5] = 0;
-    pack[6] = 0;
-    pack[7] = 2;
+Pack.create = function (commitPointer) {
+    $pack[0] = 'P'.charCodeAt(0);
+    $pack[1] = 'A'.charCodeAt(0);
+    $pack[2] = 'C'.charCodeAt(0);
+    $pack[3] = 'K'.charCodeAt(0);
 
-    pack[8] = files.length >>> 24;
-    pack[9] = (files.length >>> 16) & 0xff;
-    pack[10] = (files.length >>> 8) & 0xff;
-    pack[11] = files.length & 0xff;
-    var j = 12;
+    $pack[4] = 0;
+    $pack[5] = 0;
+    $pack[6] = 0;
+    $pack[7] = 2;
 
-    var f;
-    for (f = 0; f < files.length; f++) {
-        // Guess that deflated length + header is less than 100
-        // bytes over file length (inflated with type header).
-        var targetLength = j + files[f].length + 100;
-        if (pack.length < targetLength) {
-            pack = resizePack(pack, targetLength);
-        }
+    packOffset = 12;
+    numFiles = 0;
+    packSingle(commitPointer);
 
-        var jOrNegativeNeededSpace = Pack._packFile(pack, j, files[f]);
-        if (jOrNegativeNeededSpace < 0) {
-            pack = resizePack(pack, pack.length + -jOrNegativeNeededSpace);
-            j = Pack._packFile(pack, j, files[f]);
-        } else {
-            j = jOrNegativeNeededSpace;
-        }
+    $pack[8]  =  numFiles >>> 24;
+    $pack[9]  = (numFiles >>> 16) & 0xff;
+    $pack[10] = (numFiles >>>  8) & 0xff;
+    $pack[11] =  numFiles         & 0xff;
+
+    Sha1.hash($pack, 0, packOffset, $pack, packOffset);
+
+    return packOffset + 20;
+};
+
+var packSingle = function (pointer) {
+    var typeOffset = Table.typeOffset(pointer);
+    var type = $table.data8[typeOffset];
+    if (type & Type.onServer) {
+        return;
     }
 
-    var remaining = pack.length - j;
-    if (remaining < 20) {
-        var newPack = new Uint8Array(pack.length + 20 - remaining);
+    $table.data8[typeOffset] = type | Type.onServer;
+    numFiles++;
+    var pointer32 = pointer >> 2;
+
+    type &= Type.mask;
+    if (type === Type.tree) {
+
+        // Pack tree
+
+        var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+        var mold8 = moldIndex * Mold.data8_size;
+        var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
+
+        // Write to mold
+        var mold32 = moldIndex * Mold.data32_size;
+        var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+        var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
+        Mold.fillHoles($mold, moldIndex, $table.data32, pointer32);
+
+        // Pack and recurse
+        packOffset = PackData.packFile(packOffset, $mold.fileArray, fileStart, fileEnd);
         var i;
-        for (i = 0; i < pack.length; i++) {
-            newPack[i] = pack[i];
+        for (i = 0; i < numChildren; i++) {
+            packSingle($table.data32[pointer32 + i]);
         }
-        pack = newPack;
+
+    } else if (type === Type.commit) {
+
+        // Pack commit
+        var fileLength = CommitFile.create($table.data32, pointer32);
+        packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
+        packSingle($table.data32[pointer32 + Commit.tree]);
+        var parent = $table.data32[pointer32 + Commit.parent];
+        if (parent) {
+            packSingle(parent);
+        }
+
+    } else {
+
+        // Pack blob
+
+        var value = val(pointer);
+        if (type === Type.string || type === Type.longString) {
+            var fileLength = Blob.create('"' + value);
+        } else {
+            var fileLength = Blob.create('' + value);
+        }
+        packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
     }
-
-    Sha1.hash(pack.subarray(0, j), pack, j);
-
-    return pack.subarray(0, j + 20);
 }
+
+var tempHash = new Uint8Array(20);
 
 Pack.validate = function (pack) {
     if (pack.length < 22) {
-        return 'pack length is too short';
+        return 'Pack length is too short';
     }
 
     if (
@@ -64,22 +101,20 @@ Pack.validate = function (pack) {
         pack[2] !== 'C'.charCodeAt(0) ||
         pack[3] !== 'K'.charCodeAt(0)
     ) {
-        return 'incorrect pack prefix';
+        return 'Incorrect pack prefix';
     }
 
     if (pack[7] !== 2) {
-        return 'unsupported pack version number (not 2)';
+        return 'Unsupported pack version number (not 2)';
     }
 
-    var packContent = pack.subarray(0, pack.length - 20);
-    var packHashComputed = new Uint8Array(20);
-    Sha1.hash(packContent, packHashComputed, 0);
-
     var j = pack.length - 20;
+    Sha1.hash(pack, 0, j, tempHash, 0);
+
     var i;
     for (i = 0; i < 20; i++) {
-        if (pack[j + i] !== packHashComputed[i]) {
-            return 'incorrect pack hash';
+        if (pack[j + i] !== tempHash[i]) {
+            return 'Incorrect pack hash';
         }
     }
 

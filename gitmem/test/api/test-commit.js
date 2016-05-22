@@ -53,7 +53,7 @@ var info = set(Commit.Info.defaults,
                Commit.Info.committer, user);
 
 var pointer = commit(Commit.defaults,
-                     Commit.message, hash("My test commit"),
+                     Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
                      Commit.tree, tree,
                      Commit.info, info,
