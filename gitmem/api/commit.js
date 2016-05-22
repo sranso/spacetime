@@ -18,33 +18,33 @@ Commit.User.email = 0;
 Commit.User.name = 1;
 Commit.User.timezoneOffset = 2;
 
-Commit.defaults = 0;
-Commit.Info.defaults = 0;
-Commit.User.defaults = 0;
+Commit.zero = 0;
+Commit.Info.zero = 0;
+Commit.User.zero = 0;
 
 var newPointers = new Uint32Array(5);
 var tempHash = new Uint8Array(20);
 
 Commit.initialize = function () {
-    var user = createDefaults({
+    var user = createZero({
         email: hash('test@example.com'),
         name: hash('User Name'),
         timezoneOffset: Constants.zero,
     });
-    Commit.User.defaults = user;
+    Commit.User.zero = user;
 
-    Commit.Info.defaults = createDefaults({
+    Commit.Info.zero = createZero({
         author: user,
         authorTime: Constants.zero,
         committer: user,
     });
 
     newPointers[Commit.committerTime] = Constants.zero;
-    newPointers[Commit.info] = Commit.Info.defaults;
+    newPointers[Commit.info] = Commit.Info.zero;
     newPointers[Commit.message] = hash('Commit message');
     newPointers[Commit.parent] = 0;
     newPointers[Commit.tree] = Constants.emptyTree;
-    Commit.defaults = create();
+    Commit.zero = create();
 };
 
 global.commit = function (pointer) {

@@ -255,12 +255,12 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
 
 
     // build info
-    var author = set(Commit.User.defaults,
+    var author = set(Commit.User.zero,
                      Commit.User.name, hash(authorName),
                      Commit.User.email, hash(authorEmail),
                      Commit.User.timezoneOffset, hash(authorTimezoneOffset));
 
-    var committer = set(Commit.User.defaults,
+    var committer = set(Commit.User.zero,
                         Commit.User.name, hash(committerName),
                         Commit.User.email, hash(committerEmail),
                         Commit.User.timezoneOffset, hash(committerTimezoneOffset));
@@ -270,7 +270,7 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
     } else {
         authorTime = hash(authorTime);
     }
-    var info = set(Commit.Info.defaults,
+    var info = set(Commit.Info.zero,
                    Commit.Info.author, author,
                    Commit.Info.committer, committer,
                    Commit.Info.authorTime, authorTime);

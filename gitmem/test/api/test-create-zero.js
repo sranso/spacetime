@@ -8,15 +8,15 @@ global.$mold = Mold.create(4, 256);
 var answer = hash(42);
 $table.data8[Table.typeOffset(answer)] |= Type.onServer;
 
-var defaults = createDefaults({
+var zero = createZero({
     message: hash('I <3 short messages'),
     answer: answer,
     pi: hash(3.141592653589793),
 });
 
-log(hexHash($table.hashes8, defaults));
+log(hexHash($table.hashes8, zero));
 //=> ff4ca8563dc70d98a16e7682f4e8c9d9ce2d0d0b
-var pointer32 = defaults >> 2;
+var pointer32 = zero >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
 //=> 1
@@ -25,23 +25,23 @@ var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
 var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
 log(pretty($mold.fileArray, fileStart, fileEnd));
 //=> tree 99\x00100644 answer\x00\xf7\x0d\x7b\xbaJ\xe1\xf0v\x82\xe05\x8b\xd7\xa2\x06\x80\x94\xfc\x02;100644 message\x00K\xca\xa359/O\x0f\xb3_\xdaX\x01\x7dA\xfa\x07\xdd\xeb\x8b100644 pi\x00\xe5\xc1\xce\xbc\xac\xfc\x81\xcfQ\xa6\x1c\x03\x1eqm\x87I\x816\x0e
-log($table.data8[Table.typeOffset(defaults)], Type.tree);
+log($table.data8[Table.typeOffset(zero)], Type.tree);
 //=> 9 9
-log($table.data32[pointer32 + 0], get(defaults, 0), hash(42));
+log($table.data32[pointer32 + 0], get(zero, 0), hash(42));
 //=> 260 260 260
-log(val(get(defaults, 0)));
+log(val(get(zero, 0)));
 //=> 42
-log(val(get(defaults, 1)));
+log(val(get(zero, 1)));
 //=> I <3 short messages
-log(val(get(defaults, 2)));
+log(val(get(zero, 2)));
 //=> 3.141592653589793
 
-var defaults2 = createDefaults({
-    child: defaults,
+var zero2 = createZero({
+    child: zero,
 });
-log(get(defaults2, 0), defaults);
+log(get(zero2, 0), zero);
 //=> 68 68
-pointer32 = defaults2 >> 2;
+pointer32 = zero2 >> 2;
 moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
 //=> 2

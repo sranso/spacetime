@@ -3,15 +3,15 @@
 
 var pointers = new Uint32Array(4);
 
-global.createDefaults = function (defaults) {
-    var names = Object.keys(defaults);
+global.createZero = function (childZeros) {
+    var names = Object.keys(childZeros);
     names.sort();
 
     var treeConfig = {};
     var i;
     for (i = 0; i < names.length; i++) {
         var name = names[i];
-        var pointer = defaults[name];
+        var pointer = childZeros[name];
         pointers[i] = pointer;
 
         var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
@@ -25,7 +25,7 @@ global.createDefaults = function (defaults) {
             treeConfig[name] = 'tree';
             break;
         default:
-            throw new Error('Unexpected defaults type: ' + type);
+            throw new Error('Unexpected zero type: ' + type);
         }
     }
 

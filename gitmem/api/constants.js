@@ -7,7 +7,7 @@ Constants.initialize = function () {
     Constants.zero = hash(0);
     Constants.one = hash(1);
 
-    Constants.emptyTree = createDefaults({
+    Constants.emptyTree = createZero({
         '.empty': Constants.emptyString,
     });
     var pointer32 = Constants.emptyTree >> 2;

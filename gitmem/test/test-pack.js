@@ -16,7 +16,7 @@ var bar1Hash = $table.hashes8.slice(bar1, bar1 + 20);
 log(hexHash($table.hashes8, foo1));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
 
-var tree1 = createDefaults({
+var tree1 = createZero({
     bar: bar1,
     foo: foo1,
 });
@@ -24,21 +24,21 @@ var tree1Hash = $table.hashes8.slice(tree1, tree1 + 20);
 log(hexHash($table.hashes8, tree1));
 //=> d222b927f53e49a12986fb4a7a87c51924e513b9
 
-var user = set(Commit.User.defaults,
+var user = set(Commit.User.zero,
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.defaults,
+var info = set(Commit.Info.zero,
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commit1 = commit(Commit.defaults,
+var commit1 = commit(Commit.zero,
                      Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
                      Commit.tree, tree1,
                      Commit.info, info,
-                     Commit.parent, Commit.defaults);
+                     Commit.parent, Commit.zero);
 var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 log(hexHash($table.hashes8, commit1));
 //=> 63020ad316949de76b718821be2f504c2bf4c706
@@ -57,7 +57,7 @@ var tree2Hash = $table.hashes8.slice(tree2, tree2 + 20);
 log(hexHash($table.hashes8, tree2));
 //=> 3f05d6879091601c20790de178067ecf33134c48
 
-var commit2 = commit(Commit.defaults,
+var commit2 = commit(Commit.zero,
                      Commit.message, hash('My second commit'),
                      Commit.committerTime, hash(1463930072),
                      Commit.tree, tree2,
@@ -67,7 +67,7 @@ var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 log(hexHash($table.hashes8, commit2));
 //=> f1cdfd6a34ba453d4a5b45d090b21a3a0fd72a5b
 
-$table.data8[Table.typeOffset(Commit.defaults)] |= Type.onServer;
+$table.data8[Table.typeOffset(Commit.zero)] |= Type.onServer;
 
 var packLength = Pack.create(commit2);
 log(packLength);

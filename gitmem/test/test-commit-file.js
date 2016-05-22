@@ -14,23 +14,23 @@ log(CommitFile.timezoneString(360));
 log(CommitFile.timezoneString(-90));
 //=> +0130
 
-var tree = createDefaults({
+var tree = createZero({
     bar: hash('bar'),
     foo: hash('foo'),
 });
 log(hexHash($table.hashes8, tree));
 //=> d222b927f53e49a12986fb4a7a87c51924e513b9
 
-var user = set(Commit.User.defaults,
+var user = set(Commit.User.zero,
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.defaults,
+var info = set(Commit.Info.zero,
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var parentCommit = Commit.defaults;
+var parentCommit = Commit.zero;
 log(hexHash($table.hashes8, parentCommit));
 //=> efdf2abb9ec81070fbbeb01f691aa9a54d60a0f3
 
@@ -76,13 +76,13 @@ log(val(data32[Commit.committerTime]));
 //=> 1463772798
 log($table.data8[Table.typeOffset(data32[Commit.tree])], Type.pending);
 //=> 1 1
-var tree = createDefaults({
+var tree = createZero({
     bar: hash('bar'),
     foo: hash('foo'),
 });
 log(data32[Commit.tree], tree);
 //=> 428 428
-log(data32[Commit.parent], Commit.defaults);
+log(data32[Commit.parent], Commit.zero);
 //=> 324 324
 log(val(get(get(data32[Commit.info], Commit.Info.author), Commit.User.name)));
 //=> Jake Sandlund

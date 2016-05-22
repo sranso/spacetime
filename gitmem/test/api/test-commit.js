@@ -8,56 +8,56 @@ global.$mold = Mold.create(8, 512);
 Constants.initialize();
 Commit.initialize();
 
-log(val(get(Commit.User.defaults, Commit.User.email)));
+log(val(get(Commit.User.zero, Commit.User.email)));
 //=> test@example.com
-log(val(get(Commit.User.defaults, Commit.User.name)));
+log(val(get(Commit.User.zero, Commit.User.name)));
 //=> User Name
-log(get(Commit.User.defaults, Commit.User.timezoneOffset), hash(360));
+log(get(Commit.User.zero, Commit.User.timezoneOffset), hash(360));
 //=> 388 44
-log(val(get(Commit.User.defaults, Commit.User.timezoneOffset)));
+log(val(get(Commit.User.zero, Commit.User.timezoneOffset)));
 //=> 0
 
-log(get(Commit.Info.defaults, Commit.Info.author), Commit.User.defaults);
+log(get(Commit.Info.zero, Commit.Info.author), Commit.User.zero);
 //=> 580 580
-log(get(Commit.Info.defaults, Commit.Info.committer), Commit.User.defaults);
+log(get(Commit.Info.zero, Commit.Info.committer), Commit.User.zero);
 //=> 580 580
-log(val(get(Commit.Info.defaults, Commit.Info.authorTime)));
+log(val(get(Commit.Info.zero, Commit.Info.authorTime)));
 //=> 0
 
-log($table.data8[Table.typeOffset(Commit.defaults)], Type.commit);
+log($table.data8[Table.typeOffset(Commit.zero)], Type.commit);
 //=> 2 2
-log(val(get(Commit.defaults, Commit.committerTime)));
+log(val(get(Commit.zero, Commit.committerTime)));
 //=> 0
-log(get(Commit.defaults, Commit.info), Commit.Info.defaults);
+log(get(Commit.zero, Commit.info), Commit.Info.zero);
 //=> 108 108
-log(val(get(Commit.defaults, Commit.message)));
+log(val(get(Commit.zero, Commit.message)));
 //=> Commit message
-log(get(Commit.defaults, Commit.parent));
+log(get(Commit.zero, Commit.parent));
 //=> 0
-log(get(Commit.defaults, Commit.tree), Constants.emptyTree);
+log(get(Commit.zero, Commit.tree), Constants.emptyTree);
 //=> 196 196
 
 
-var tree = createDefaults({
+var tree = createZero({
     bar: hash('bar'),
     foo: hash('foo'),
 });
 
-var user = set(Commit.User.defaults,
+var user = set(Commit.User.zero,
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
                Commit.User.name, hash('Jake Sandlund'));
 
-var info = set(Commit.Info.defaults,
+var info = set(Commit.Info.zero,
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var pointer = commit(Commit.defaults,
+var pointer = commit(Commit.zero,
                      Commit.message, hash('My test commit'),
                      Commit.committerTime, hash(1463772798),
                      Commit.tree, tree,
                      Commit.info, info,
-                     Commit.parent, Commit.defaults);
+                     Commit.parent, Commit.zero);
 
 log(hexHash($table.hashes8, pointer));
 //=> 63020ad316949de76b718821be2f504c2bf4c706
