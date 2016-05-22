@@ -9,16 +9,18 @@ global.$pack = new Uint8Array(256);
 Constants.initialize(-1, 1);
 Commit.initialize();
 
-var foo1 = hash('foo');
-var foo1Hash = $table.hashes8.slice(foo1, foo1 + 20);
-var bar1 = hash('bar');
-var bar1Hash = $table.hashes8.slice(bar1, bar1 + 20);
-log(hexHash($table.hashes8, foo1));
+var foo = hash('foo');
+var fooHash = $table.hashes8.slice(foo, foo + 20);
+log(hexHash($table.hashes8, foo));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
+var bar = hash('bar');
+var barHash = $table.hashes8.slice(bar, bar + 20);
+log(hexHash($table.hashes8, bar));
+//=> b5a955a315ea15b15e2fc13012b963e1ad360a2f
 
 var tree1 = createZero({
-    bar: bar1,
-    foo: foo1,
+    bar: bar,
+    foo: foo,
 });
 var tree1Hash = $table.hashes8.slice(tree1, tree1 + 20);
 log(hexHash($table.hashes8, tree1));
@@ -41,21 +43,12 @@ var commit1 = commit(Commit.zero,
                      Commit.parent, Commit.zero);
 var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 log(hexHash($table.hashes8, commit1));
-//=> 63020ad316949de76b718821be2f504c2bf4c706
+//=> 3368ce02c06b1bc2cfe8902ff9c8226953263986
 
-var foo2 = hash('FOO');
-var foo2Hash = $table.hashes8.slice(foo2, foo2 + 20);
-var bar2 = hash('BAR');
-var bar2Hash = $table.hashes8.slice(bar2, bar2 + 20);
-log(hexHash($table.hashes8, bar2));
-//=> a8ff268fe0e83bb3bac4a980c63d149374b6fa1e
-
-var tree2 = set(tree1,
-                0, bar2,
-                1, foo2);
+var tree2 = Constants.emptyTree;
 var tree2Hash = $table.hashes8.slice(tree2, tree2 + 20);
 log(hexHash($table.hashes8, tree2));
-//=> 3f05d6879091601c20790de178067ecf33134c48
+//=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 
 var commit2 = commit(Commit.zero,
                      Commit.message, hash('My second commit'),
@@ -65,25 +58,25 @@ var commit2 = commit(Commit.zero,
                      Commit.parent, commit1);
 var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 log(hexHash($table.hashes8, commit2));
-//=> f1cdfd6a34ba453d4a5b45d090b21a3a0fd72a5b
+//=> e6e4af78071e9a4ded7e7dfb2513722688e8b663
 
 $table.data8[Table.typeOffset(Commit.zero)] |= Type.onServer;
 
 var packLength = Pack.create(commit2);
 log(packLength);
-//=> 538
+//=> 498
 var numFiles = $pack[11];
 log(numFiles);
-//=> 8
+//=> 7
 log(hex($pack, 0, packLength));
-//=> 5041434b00000002000000089e0e789c9d8c4d0ac2301085f739c55c409964d2490222ae05579e204d26f8d756da74e1ed8de809dc3cdefbe07d7516012ad865f62e60d08c3a196c358b761ed9492a449a6cb25e3de32c630526341833690e366471dc3bedbdd1bd98d2a14da62f36396415d77a996638c6bbc0398ef9b18e1976b7360f9f587e689ba6610fda320542740636c888aad1e15aabfc2d50a7172c92a6f6f9bade2bce4752ae03789c33343030333151484a2c6258f15fadffc10bebcdbb8eac6c38662b32b964db2f394388745a7e3e83c6ddcc24add8e3abecaebdb82539afcc4065b5632c0021671a2534789c5372720c0200022600f834789c5372f3f70700024b01079c0e789c9d8c390ec23010007bbf623f00b2d7e74a08512351f18275bc165712943805bf27085e4033d24c316d128182889930566fc5111ba4146a761c39c5ce1b4227ded84ceac9930c0da4968a9c3349978c8ebae62c599b1ac830137b5782665dade2a55dc6098e7c1738f3501ecb5060775bf5f0c1fc4bdb6eecf7605cb03162a4041b1db4566bedafadc9df03757a4193b9c1f7f40643fe48f5ae03789c33343030333151484a2c62d8ba3274b1e82bd18d71fa070d8476263f5c6bc6a56f08914ecbcf67b8125ef4f868746690e92fb5fcb28cdd5df7b7c5360100b567189234789c534a4a2c020002e6015834789c534acbcf0700030b016790919f4faebe1f68d930e1dd094502d15f402dcb
+//=> 5041434b00000002000000079e0e789c9d8c4d0ac2301046f73d452ea04c66d29880886bc19527c84c26f8d756dab8f0f646f4046e3ef81ebc576755a34c62557ac510387116479a3320f440543059c7ecc472f748b38ed510f9200a28e0d9b2a0140d11b0942801d1c79ed0530cbe4bcf7a9e6673483735a734e6fb73cc667b6d77ff99e587d6320d3b635d9308608366051ea06b74b8d4aa7f07bae3cb2c2a5373bead37e4004949a202789c33343030333151d04bcd2d28a964989b31d9c6e5a365ebced792a27397bdb6fff0b4643f00cd3a0ebb31789c530200002300239c0e789c9d8e3b0ec23010057b9fc21700c5ebcf7a2584a891a838c1da5e8b5f12943805b727204e40f3a49962f4da24a20b002402acde8a23364031d4e4183962f686c0893736917af22443d3b94235242836100897841284c4620db600d5987c968259f1d22ee3a48f7c177de6a13c96a1e8dd6dc5c367e69fdae6b1df6be3824504a4a8375de83ab5dafeda9afc1d50a7976e32af87bfa53739b148fbae03789c33343030333151484a2c62d8ba3274b1e82bd18d71fa070d8476263f5c6bc6a56f08914ecbcf67b8125ef4f868746690e92fb5fcb28cdd5df7b7c5360100b567189234789c534a4a2c020002e6015834789c534acbcf0700030b01678de7aa72fd2bf50974c92b7139810bb5db01f997
 log($table.data8[Table.typeOffset(commit2)] & Type.onServer);
 //=> 128
 log($table.data8[Table.typeOffset(commit1)] & Type.onServer);
 //=> 128
-log($table.data8[Table.typeOffset(foo1)] & Type.onServer);
+log($table.data8[Table.typeOffset(foo)] & Type.onServer);
 //=> 128
-log($table.data8[Table.typeOffset(bar2)] & Type.onServer);
+log($table.data8[Table.typeOffset(bar)] & Type.onServer);
 //=> 128
 log($table.data8[Table.typeOffset(tree1)] & Type.onServer);
 //=> 128
@@ -98,8 +91,10 @@ Commit.initialize();
 Unpack.unpack($pack);
 
 commit2 = Table.findPointer($table, commit2Hash, 0);
+log($table.data8[Table.typeOffset(commit2)] & Type.onServer);
+//=> 128
 log(hexHash($table.hashes8, commit2));
-//=> f1cdfd6a34ba453d4a5b45d090b21a3a0fd72a5b
+//=> e6e4af78071e9a4ded7e7dfb2513722688e8b663
 log(val(get(commit2, Commit.message)));
 //=> My second commit
 log(val(get(get(get(commit2, Commit.info), Commit.Info.author), Commit.User.timezoneOffset)));
@@ -107,17 +102,22 @@ log(val(get(get(get(commit2, Commit.info), Commit.Info.author), Commit.User.time
 
 commit1 = Table.findPointer($table, commit1Hash, 0);
 log(hexHash($table.hashes8, commit1));
-//=> 63020ad316949de76b718821be2f504c2bf4c706
+//=> 3368ce02c06b1bc2cfe8902ff9c8226953263986
 log(val(get(commit1, Commit.message)));
 //=> My test commit
 log(val(get(get(get(commit1, Commit.info), Commit.Info.author), Commit.User.timezoneOffset)));
 //=> 360
 
 tree2 = Table.findPointer($table, tree2Hash, 0);
+log($table.data8[Table.typeOffset(tree2)] & Type.onServer);
+//=> 128
 log(hexHash($table.hashes8, tree2));
-//=> 3f05d6879091601c20790de178067ecf33134c48
-log(val(get(tree2, 1))); // foo
-//=> FOO
+//=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
+var empty = get(tree2, 0); // .empty
+log($table.data8[Table.typeOffset(empty)] & Type.onServer);
+//=> 128
+log(empty, Constants.emptyString);
+//=> 260 260
 
 tree1 = Table.findPointer($table, tree1Hash, 0);
 log(hexHash($table.hashes8, tree1));
@@ -125,16 +125,18 @@ log(hexHash($table.hashes8, tree1));
 log(val(get(tree1, 0))); // bar
 //=> bar
 
-bar2 = Table.findPointer($table, bar2Hash, 0);
-log(hexHash($table.hashes8, bar2));
-//=> a8ff268fe0e83bb3bac4a980c63d149374b6fa1e
-log(val(bar2));
-//=> BAR
+bar = Table.findPointer($table, barHash, 0);
+log($table.data8[Table.typeOffset(bar)] & Type.onServer);
+//=> 128
+log(hexHash($table.hashes8, bar));
+//=> b5a955a315ea15b15e2fc13012b963e1ad360a2f
+log(val(bar));
+//=> bar
 
-foo1 = Table.findPointer($table, foo1Hash, 0);
-log(hexHash($table.hashes8, foo1));
+foo = Table.findPointer($table, fooHash, 0);
+log(hexHash($table.hashes8, foo));
 //=> d45772e3c55b695235fa266f7668bb8adfb65d82
-log(val(foo1));
+log(val(foo));
 //=> foo
 
 

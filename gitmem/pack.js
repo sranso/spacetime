@@ -48,7 +48,7 @@ var packSingle = function (pointer) {
 
         var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
         var mold8 = moldIndex * Mold.data8_size;
-        var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
+        var numHoles = $mold.data8[mold8 + Mold.data8_numHoles];
 
         // Write to mold
         var mold32 = moldIndex * Mold.data32_size;
@@ -59,7 +59,7 @@ var packSingle = function (pointer) {
         // Pack and recurse
         packOffset = PackData.packFile(packOffset, $mold.fileArray, fileStart, fileEnd);
         var i;
-        for (i = 0; i < numChildren; i++) {
+        for (i = 0; i < numHoles; i++) {
             packSingle($table.data32[pointer32 + i]);
         }
 
