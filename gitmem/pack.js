@@ -20,10 +20,10 @@ Pack.create = function (commitPointer) {
     numFiles = 0;
     packSingle(commitPointer);
 
-    $pack[8]  =  numFiles >>> 24;
+    $pack[8]  = (numFiles >>> 24);
     $pack[9]  = (numFiles >>> 16) & 0xff;
     $pack[10] = (numFiles >>>  8) & 0xff;
-    $pack[11] =  numFiles         & 0xff;
+    $pack[11] = (numFiles       ) & 0xff;
 
     Sha1.hash($pack, 0, packOffset, $pack, packOffset);
 

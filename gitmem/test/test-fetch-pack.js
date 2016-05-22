@@ -1,6 +1,19 @@
 'use strict';
 require('../../test/helper');
 
+global.$table = Table.create(32, Random.create(6889162));
+global.$file = new Uint8Array(256);
+global.$mold = Mold.create(8, 512);
+global.$pack = new Uint8Array(256);
+
+Constants.initialize(-1, 1);
+Commit.initialize();
+
+log(FetchPack.postPath);
+//=> /git-upload-pack
+log(FetchPack.postContentType);
+//=> application/x-git-upload-pack-request
+
 var getResponseString = (
     '001e# service=git-upload-pack\n' +
     '000000d1c24691ec29fc2bde96ecbbe73ec0625cc3199966 HEAD\0multi_ack thin-pack side-band side-band-64k ofs-delta shallow no-progress include-tag multi_ack_detailed no-done symref=HEAD:refs/heads/master agent=git/2.6.2\n' +
@@ -15,26 +28,30 @@ log(FetchPack.validateGetResponse(getResponse));
 
 getResponse[4] = 'x';
 log(FetchPack.validateGetResponse(getResponse));
-//=> incorrect start of get response
+//=> Incorrect start of get response
 
-getResponse = Convert.stringToArray(getResponseString.replace('ofs-delta', 'xxx-xxxxx'));
+getResponse = Convert.stringToArray(getResponseString.replace('thin-pack', 'xxxx-xxxx'));
 log(FetchPack.validateGetResponse(getResponse));
-//=> missing fetch-pack capability: ofs-delta
+//=> Missing fetch-pack capability: thin-pack
+
 
 getResponse = Convert.stringToArray(getResponseString);
 
 var refs = FetchPack.refsFromGetResponse(getResponse);
 log(refs.length);
 //=> 3
-var ref = refs[0];
-log(ref[0], hex(ref[1]));
-//=> HEAD c24691ec29fc2bde96ecbbe73ec0625cc3199966
-ref = refs[1];
-log(ref[0], hex(ref[1]));
-//=> refs/heads/foo f058e064dc438ca61341d2ca56d0cbda04cac2a3
-ref = refs[2];
-log(ref[0], hex(ref[1]));
-//=> refs/heads/master c24691ec29fc2bde96ecbbe73ec0625cc3199966
+log(refs[0][0]);
+//=> HEAD
+log(hexHash($table.hashes8, refs[0][1]));
+//=> c24691ec29fc2bde96ecbbe73ec0625cc3199966
+log(refs[1][0]);
+//=> refs/heads/foo
+log(hexHash($table.hashes8, refs[1][1]));
+//=> f058e064dc438ca61341d2ca56d0cbda04cac2a3
+log(refs[2][0]);
+//=> refs/heads/master
+log(hexHash($table.hashes8, refs[2][1]));
+//=> c24691ec29fc2bde96ecbbe73ec0625cc3199966
 
 getResponseString = '001e# service=git-upload-pack\n00000000';
 getResponse = Convert.stringToArray(getResponseString);
@@ -60,82 +77,47 @@ log(singleRef.length, singleRef[0][0]);
 
 
 
-var commit1 = Commit.clone(Commit.none);
-commit1.author = commit1.committer = {
-    name: 'Jake Sandlund',
-    email: 'jake@jakesandlund.com',
-    time: 1454907687000,
-    timezoneOffset: 360,
-};
-commit1.tree = {hash: Tree._actuallyEmptyTreeHash, pointer: 0};
-commit1.parents = [];
-commit1.message = 'Initial commit\n';
-commit1.file = CommitFile.create(commit1);
-commit1.hash = new Uint8Array(20);
-Sha1.hash(commit1.file, commit1.hash, 0);
-log(hexHash(commit1.hash));
-//=> b11da54dece45e24d1bfefdba6b5e5ce38ec126b
+var user = set(Commit.User.zero,
+               Commit.User.email, hash('jake@jakesandlund.com'),
+               Commit.User.timezoneOffset, hash(360),
+               Commit.User.name, hash('Jake Sandlund'));
 
-var commit2 = Commit.clone(commit1);
-commit2.author = commit2.committer = {
-    name: 'snakes',
-    email: commit1.author.email,
-    time: 1454907943000,
-    timezoneOffset: commit1.author.timezoneOffset,
-};
-commit2.parents = [commit1];
-commit2.file = CommitFile.create(commit2);
-commit2.hash = new Uint8Array(20);
-Sha1.hash(commit2.file, commit2.hash, 0);
-log(hex(commit2.hash));
-//=> d278c413b49559191bd25b4f7bac2712b1eb325c
+var info = set(Commit.Info.zero,
+               Commit.Info.author, user,
+               Commit.Info.committer, user);
 
-var commit3 = Commit.clone(commit2);
-commit3.author = commit3.committer = {
-    name: commit1.author.name,
-    email: commit1.author.email,
-    time: 1455421909026,
-    timezoneOffset: commit1.author.timezoneOffset,
-};
-commit3.parents = [
-    commit2,
-    commit1,
-];
-commit3.file = CommitFile.create(commit3);
-commit3.hash = new Uint8Array(20);
-Sha1.hash(commit3.file, commit3.hash, 0);
-log(hex(commit3.hash));
-//=> b99282bfec6709ff37988fef2a3f7add47448343
+var commit1 = commit(Commit.zero,
+                     Commit.message, hash('My test commit'),
+                     Commit.committerTime, hash(1463772798),
+                     Commit.tree, Constants.emptyTree,
+                     Commit.info, info,
+                     Commit.parent, 0);
+log(hexHash($table.hashes8, commit1));
+//=> d445dd84cfb7cd6de47fc0c75bfb6943d7a7499a
 
-var pack = Pack.create([commit3.file, commit2.file, commit1.file, Tree._actuallyEmptyTree]);
-var index = PackIndex.create(pack);
-var table = Table.create(Random.create(1159769));
+var commit2 = commit(Commit.zero,
+                     Commit.message, hash('second commit'),
+                     Commit.committerTime, hash(1463930072),
+                     Commit.tree, Constants.emptyTree,
+                     Commit.info, info,
+                     Commit.parent, commit1);
+log(hexHash($table.hashes8, commit2));
+//=> a2270ed3a23dff04dc5810811c02ece68fee803b
 
-log(FetchPack.postPath);
-//=> /git-upload-pack
-log(FetchPack.postContentType);
-//=> application/x-git-upload-pack-request
+var packLength = Pack.create(commit2);
 
-var wants = [refs[1][1]];
-var have = null;
-var body = FetchPack.postBody([index], table, wants, have);
+var want = refs[1][1];
+var body = FetchPack.postBody(want, 0);
 log(pretty(body));
-//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
+//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 thin-pack agent=gitmem/0.0.0
 //=> 00000009done
 //=>
 
-wants = [refs[1][1], refs[2][1]];
-have = commit3;
-commit2.parents = null;
-body = FetchPack.postBody([index], table, wants, have);
-log(commit2.parents.length);
-//=> 1
+body = FetchPack.postBody(want, commit2);
 log(pretty(body));
-//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 ofs-delta agent=gitmem/0.0.0
-//=> 0032want c24691ec29fc2bde96ecbbe73ec0625cc3199966
-//=> 00000032have b99282bfec6709ff37988fef2a3f7add47448343
-//=> 0032have d278c413b49559191bd25b4f7bac2712b1eb325c
-//=> 0032have b11da54dece45e24d1bfefdba6b5e5ce38ec126b
+//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 thin-pack agent=gitmem/0.0.0
+//=> 00000032have a2270ed3a23dff04dc5810811c02ece68fee803b
+//=> 0032have d445dd84cfb7cd6de47fc0c75bfb6943d7a7499a
 //=> 0009done
 //=>
 

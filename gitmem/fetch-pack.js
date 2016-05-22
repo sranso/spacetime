@@ -9,13 +9,13 @@ FetchPack.postContentType = 'application/x-git-upload-pack-request';
 
 var getResponseStart = Convert.stringToArray('001e# service=git-upload-pack\n0000');
 
-var requiredCapabilites = ['multi_ack_detailed', 'ofs-delta', 'shallow', 'no-done'];
+var requiredCapabilites = ['thin-pack', 'shallow'];
 
 FetchPack.validateGetResponse = function (body) {
     var i;
     for (i = 0; i < getResponseStart.length; i++) {
         if (body[i] !== getResponseStart[i]) {
-            return 'incorrect start of get response';
+            return 'Incorrect start of get response';
         }
     }
 
@@ -28,12 +28,14 @@ FetchPack.validateGetResponse = function (body) {
 
     for (i = 0; i < requiredCapabilites.length; i++) {
         if (capabilities.indexOf(requiredCapabilites[i]) === -1) {
-            return 'missing fetch-pack capability: ' + requiredCapabilites[i];
+            return 'Missing fetch-pack capability: ' + requiredCapabilites[i];
         }
     }
 
     return null;
 };
+
+var tempHash = new Uint8Array(20);
 
 FetchPack.refsFromGetResponse = function (body) {
     if (getResponseStart.length + 4 >= body.length) {
@@ -44,10 +46,16 @@ FetchPack.refsFromGetResponse = function (body) {
     var firstRefEnd = body.indexOf(0, firstRefStart);
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
     var firstRefName = String.fromCharCode.apply(null, firstRefArray);
-    var firstHash = new Uint8Array(20);
-    Convert.hexToHash(body, getResponseStart.length + 4, firstHash, 0);
+    Convert.hexToHash(body, getResponseStart.length + 4, tempHash, 0);
+    var firstRef = Table.findPointer($table, tempHash, 0);
+    if (firstRef < 0) {
+        firstRef = ~firstRef;
+        Table.setHash($table, firstRef, tempHash, 0);
+        $table.data8[Table.typeOffset(firstRef)] = Type.pending;
+    }
 
-    var refs = [[firstRefName, firstHash]];
+
+    var refs = [[firstRefName, firstRef]];
 
     var j = Convert.pktLineToLength(body, getResponseStart.length) + getResponseStart.length;
 
@@ -55,9 +63,14 @@ FetchPack.refsFromGetResponse = function (body) {
         var lineLength = Convert.pktLineToLength(body, j);
         var refArray = body.subarray(j + 4 + 40 + 1, j + lineLength - 1);
         var refName = String.fromCharCode.apply(null, refArray);
-        var hash = new Uint8Array(20);
-        Convert.hexToHash(body, j + 4, hash, 0);
-        refs.push([refName, hash]);
+        Convert.hexToHash(body, j + 4, tempHash, 0);
+        var ref = Table.findPointer($table, tempHash, 0);
+        if (ref < 0) {
+            ref = ~ref;
+            Table.setHash($table, ref, tempHash, 0);
+            $table.data8[Table.typeOffset(ref)] = Type.pending;
+        }
+        refs.push([refName, ref]);
 
         j = j + lineLength;
     }
@@ -66,33 +79,29 @@ FetchPack.refsFromGetResponse = function (body) {
 };
 
 var maxHaves = 10;
-var capabilities = Convert.stringToArray('ofs-delta agent=gitmem/0.0.0');
+var capabilities = Convert.stringToArray('thin-pack agent=gitmem/0.0.0');
 
 var wantPrefix = Convert.stringToArray('want ');
 var havePrefix = Convert.stringToArray('have ');
 var doneLine = Convert.stringToArray('0009done\n');
-var firstLineLength = 4 + wantPrefix.length + 40 + 2 + capabilities.length + 1;
-var hexCharacters = Convert.stringToArray('0123456789abcdef');
 var wantLineLength = 4 + wantPrefix.length + 40 + 1;
+var firstLineLength = wantLineLength + 2 + capabilities.length;
+var hexCharacters = Convert.stringToArray('0123456789abcdef');
 
-FetchPack.postBody = function (packIndices, store, wants, have) {
+FetchPack.postBody = function (want, have) {
     var firstHave = have;
     var numHaves = 0;
-
     while (have && numHaves < maxHaves) {
         numHaves++;
-        if (!have.parents) {
-            Commit.checkoutParents(have, packIndices, store);
-        }
-        have = have.parents[0];
+        have = $table.data32[(have >> 2) + Commit.parent];
     }
 
-    var normalLinesLength = (wants.length - 1 + numHaves) * wantLineLength;
+    var normalLinesLength = numHaves * wantLineLength;
     var body = new Uint8Array(firstLineLength + normalLinesLength + 4 + doneLine.length);
-    body[0] = hexCharacters[firstLineLength >>> 12];
-    body[1] = hexCharacters[(firstLineLength >>> 8) & 0xf];
-    body[2] = hexCharacters[(firstLineLength >>> 4) & 0xf];
-    body[3] = hexCharacters[firstLineLength & 0xf];
+    body[0] = hexCharacters[(firstLineLength >>> 12)      ];
+    body[1] = hexCharacters[(firstLineLength >>>  8) & 0xf];
+    body[2] = hexCharacters[(firstLineLength >>>  4) & 0xf];
+    body[3] = hexCharacters[(firstLineLength       ) & 0xf];
 
     var j = 4;
     var i;
@@ -101,7 +110,7 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     }
 
     j += i;
-    Convert.hashToHex(wants[0], 0, body, j);
+    Convert.hashToHex($table.hashes8, want, body, j);
 
     j += 40;
     body[j] = 0;
@@ -114,37 +123,20 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
     body[j + i] = 0x0a;
 
     j += i + 1;
-    var k;
-    for (k = 1; k < wants.length; k++) {
-        body[j] = hexCharacters[wantLineLength >>> 12];
-        body[j + 1] = hexCharacters[(wantLineLength >>> 8) & 0xf];
-        body[j + 2] = hexCharacters[(wantLineLength >>> 4) & 0xf];
-        body[j + 3] = hexCharacters[wantLineLength & 0xf];
 
-        j += 4;
-        for (i = 0; i < wantPrefix.length; i++) {
-            body[j + i] = wantPrefix[i];
-        }
-
-        j += i;
-        Convert.hashToHex(wants[k], 0, body, j);
-        body[j + 40] = 0x0a;
-
-        j += 40 + 1;
-    }
-
-    body[j] = '0'.charCodeAt(0);
+    body[j]     = '0'.charCodeAt(0);
     body[j + 1] = '0'.charCodeAt(0);
     body[j + 2] = '0'.charCodeAt(0);
     body[j + 3] = '0'.charCodeAt(0);
 
     j += 4;
     var have = firstHave;
+    var k;
     for (k = 0; k < numHaves; k++) {
-        body[j] = hexCharacters[wantLineLength >>> 12];
-        body[j + 1] = hexCharacters[(wantLineLength >>> 8) & 0xf];
-        body[j + 2] = hexCharacters[(wantLineLength >>> 4) & 0xf];
-        body[j + 3] = hexCharacters[wantLineLength & 0xf];
+        body[j]     = hexCharacters[(wantLineLength >>> 12)      ];
+        body[j + 1] = hexCharacters[(wantLineLength >>>  8) & 0xf];
+        body[j + 2] = hexCharacters[(wantLineLength >>>  4) & 0xf];
+        body[j + 3] = hexCharacters[(wantLineLength       ) & 0xf];
 
         j += 4;
         for (i = 0; i < havePrefix.length; i++) {
@@ -152,11 +144,11 @@ FetchPack.postBody = function (packIndices, store, wants, have) {
         }
 
         j += i;
-        Convert.hashToHex(have.hash, have.pointer, body, j);
+        Convert.hashToHex($table.hashes8, have, body, j);
         body[j + 40] = 0x0a;
 
         j += 40 + 1;
-        have = have.parents[0];
+        have = $table.data32[(have >> 2) + Commit.parent];
     }
 
     for (i = 0; i < doneLine.length; i++) {

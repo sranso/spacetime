@@ -51,25 +51,25 @@ log(hexHash($table.hashes8, tree2));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 
 var commit2 = commit(Commit.zero,
-                     Commit.message, hash('My second commit'),
+                     Commit.message, hash('second commit'),
                      Commit.committerTime, hash(1463930072),
                      Commit.tree, tree2,
                      Commit.info, info,
                      Commit.parent, commit1);
 var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 log(hexHash($table.hashes8, commit2));
-//=> e6e4af78071e9a4ded7e7dfb2513722688e8b663
+//=> 1402c7d3e20a56af5ce96f7c199342593569715a
 
 $table.data8[Table.typeOffset(Commit.zero)] |= Type.onServer;
 
 var packLength = Pack.create(commit2);
 log(packLength);
-//=> 498
+//=> 493
 var numFiles = $pack[11];
 log(numFiles);
 //=> 7
 log(hex($pack, 0, packLength));
-//=> 5041434b00000002000000079e0e789c9d8c4d0ac2301046f73d452ea04c66d29880886bc19527c84c26f8d756dab8f0f646f4046e3ef81ebc576755a34c62557ac510387116479a3320f440543059c7ecc472f748b38ed510f9200a28e0d9b2a0140d11b0942801d1c79ed0530cbe4bcf7a9e6673483735a734e6fb73cc667b6d77ff99e587d6320d3b635d9308608366051ea06b74b8d4aa7f07bae3cb2c2a5373bead37e4004949a202789c33343030333151d04bcd2d28a964989b31d9c6e5a365ebced792a27397bdb6fff0b4643f00cd3a0ebb31789c530200002300239c0e789c9d8e3b0ec23010057b9fc21700c5ebcf7a2584a891a838c1da5e8b5f12943805b727204e40f3a49962f4da24a20b002402acde8a23364031d4e4183962f686c0893736917af22443d3b94235242836100897841284c4620db600d5987c968259f1d22ee3a48f7c177de6a13c96a1e8dd6dc5c367e69fdae6b1df6be3824504a4a8375de83ab5dafeda9afc1d50a7976e32af87bfa53739b148fbae03789c33343030333151484a2c62d8ba3274b1e82bd18d71fa070d8476263f5c6bc6a56f08914ecbcf67b8125ef4f868746690e92fb5fcb28cdd5df7b7c5360100b567189234789c534a4a2c020002e6015834789c534acbcf0700030b01678de7aa72fd2bf50974c92b7139810bb5db01f997
+//=> 5041434b00000002000000079b0e789c9d8c4b0ec2300c05f739452e0072ec34241242acd97282d871c4b7456d7a7f82e0046c9ef4469a69b3aa5526712a83628c9cb988272d05100620aa989d67f6e2d8bcf2ac63b344218a020a04762c28556302ac3549440c69200c946230796d9769b6a77c577bce6379ac63b1fb5bbfc7cf2c3fb495e979b0ce77890076683710004ca7cf6b6bfa77c02c2a5317bea1370c9f4863a202789c33343030333151d04bcd2d28a964989b31d9c6e5a365ebced792a27397bdb6fff0b4643f00cd3a0ebb31789c530200002300239c0e789c9d8e3b0ec23010057b9fc21700c5ebcf7a2584a891a838c1da5e8b5f12943805b727204e40f3a49962f4da24a20b002402acde8a23364031d4e4183962f686c0893736917af22443d3b94235242836100897841284c4620db600d5987c968259f1d22ee3a48f7c177de6a13c96a1e8dd6dc5c367e69fdae6b1df6be3824504a4a8375de83ab5dafeda9afc1d50a7976e32af87bfa53739b148fbae03789c33343030333151484a2c62d8ba3274b1e82bd18d71fa070d8476263f5c6bc6a56f08914ecbcf67b8125ef4f868746690e92fb5fcb28cdd5df7b7c5360100b567189234789c534a4a2c020002e6015834789c534acbcf0700030b016766565ba664ceca9a8ff1d2b45b21aeeb535bef41
 log($table.data8[Table.typeOffset(commit2)] & Type.onServer);
 //=> 128
 log($table.data8[Table.typeOffset(commit1)] & Type.onServer);
@@ -94,9 +94,9 @@ commit2 = Table.findPointer($table, commit2Hash, 0);
 log($table.data8[Table.typeOffset(commit2)] & Type.onServer);
 //=> 128
 log(hexHash($table.hashes8, commit2));
-//=> e6e4af78071e9a4ded7e7dfb2513722688e8b663
+//=> 1402c7d3e20a56af5ce96f7c199342593569715a
 log(val(get(commit2, Commit.message)));
-//=> My second commit
+//=> second commit
 log(val(get(get(get(commit2, Commit.info), Commit.Info.author), Commit.User.timezoneOffset)));
 //=> 360
 

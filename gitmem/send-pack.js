@@ -13,10 +13,10 @@ SendPack.postBody = function (branch, previousCommit, currentCommit, packLength)
     var firstLineLength = firstLineConstantLength + branch.length;
 
     var body = new Uint8Array(firstLineLength + 4 + packLength);
-    body[0] = hexCharacters[ firstLineLength >>> 12       ];
+    body[0] = hexCharacters[(firstLineLength >>> 12)      ];
     body[1] = hexCharacters[(firstLineLength >>>  8) & 0xf];
     body[2] = hexCharacters[(firstLineLength >>>  4) & 0xf];
-    body[3] = hexCharacters[ firstLineLength         & 0xf];
+    body[3] = hexCharacters[(firstLineLength       ) & 0xf];
 
     var j = 4;
     var i;
