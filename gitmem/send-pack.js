@@ -5,31 +5,28 @@ global.SendPack = {};
 SendPack.postPath = '/git-receive-pack';
 SendPack.postContentType = 'application/x-git-receive-pack-request';
 
-SendPack.zeroHash = new Uint8Array(20);
-SendPack.nonePack = new Uint8Array(0);
-
 var capabilities = Convert.stringToArray('report-status quiet agent=gitmem/0.0.0');
 var firstLineConstantLength = 4 + 40 + 1 + 40 + 1 + 2 + capabilities.length + 1;
 var hexCharacters = Convert.stringToArray('0123456789abcdef');
 
-SendPack.postBody = function (branch, previousHash, currentHash, pack) {
+SendPack.postBody = function (branch, previousCommit, currentCommit, packLength) {
     var firstLineLength = firstLineConstantLength + branch.length;
 
-    var body = new Uint8Array(firstLineLength + 4 + pack.length);
-    body[0] = hexCharacters[firstLineLength >>> 12];
-    body[1] = hexCharacters[(firstLineLength >>> 8) & 0xf];
-    body[2] = hexCharacters[(firstLineLength >>> 4) & 0xf];
-    body[3] = hexCharacters[firstLineLength & 0xf];
+    var body = new Uint8Array(firstLineLength + 4 + packLength);
+    body[0] = hexCharacters[ firstLineLength >>> 12       ];
+    body[1] = hexCharacters[(firstLineLength >>>  8) & 0xf];
+    body[2] = hexCharacters[(firstLineLength >>>  4) & 0xf];
+    body[3] = hexCharacters[ firstLineLength         & 0xf];
 
     var j = 4;
     var i;
-    Convert.hashToHex(previousHash, 0, body, j);
+    Convert.hashToHex($table.hashes8, previousCommit, body, j);
 
     j += 40;
     body[j] = 0x20;
 
     j += 1;
-    Convert.hashToHex(currentHash, 0, body, j);
+    Convert.hashToHex($table.hashes8, currentCommit, body, j);
 
     j += 40;
     body[j] = 0x20;
@@ -54,8 +51,8 @@ SendPack.postBody = function (branch, previousHash, currentHash, pack) {
     body[j + 3] = '0'.charCodeAt(0);
 
     j += 4;
-    for (i = 0; i < pack.length; i++) {
-        body[j + i] = pack[i];
+    for (i = 0; i < packLength; i++) {
+        body[j + i] = $pack[i];
     }
 
     return body;
