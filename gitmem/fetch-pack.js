@@ -47,15 +47,15 @@ FetchPack.refsFromGetResponse = function (body) {
     var firstRefArray = body.subarray(firstRefStart, firstRefEnd);
     var firstRefName = String.fromCharCode.apply(null, firstRefArray);
     Convert.hexToHash(body, getResponseStart.length + 4, tempHash, 0);
-    var firstRef = Table.findPointer($table, tempHash, 0);
-    if (firstRef < 0) {
-        firstRef = ~firstRef;
-        Table.setHash($table, firstRef, tempHash, 0);
-        $table.data8[Table.typeOffset(firstRef)] = Type.pending;
+    var refPointer = Table.findPointer($table, tempHash, 0);
+    if (refPointer < 0) {
+        refPointer = ~refPointer;
+        Table.setHash($table, refPointer, tempHash, 0);
+        $table.data8[Table.typeOffset(refPointer)] = Type.pending;
     }
 
 
-    var refs = [[firstRefName, firstRef]];
+    var refs = [[firstRefName, refPointer]];
 
     var j = Convert.pktLineToLength(body, getResponseStart.length) + getResponseStart.length;
 
@@ -64,13 +64,13 @@ FetchPack.refsFromGetResponse = function (body) {
         var refArray = body.subarray(j + 4 + 40 + 1, j + lineLength - 1);
         var refName = String.fromCharCode.apply(null, refArray);
         Convert.hexToHash(body, j + 4, tempHash, 0);
-        var ref = Table.findPointer($table, tempHash, 0);
-        if (ref < 0) {
-            ref = ~ref;
-            Table.setHash($table, ref, tempHash, 0);
-            $table.data8[Table.typeOffset(ref)] = Type.pending;
+        refPointer = Table.findPointer($table, tempHash, 0);
+        if (refPointer < 0) {
+            refPointer = ~refPointer;
+            Table.setHash($table, refPointer, tempHash, 0);
+            $table.data8[Table.typeOffset(refPointer)] = Type.pending;
         }
-        refs.push([refName, ref]);
+        refs.push([refName, refPointer]);
 
         j = j + lineLength;
     }

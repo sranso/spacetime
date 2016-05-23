@@ -123,6 +123,12 @@ log(pretty(body));
 //=> 0009done
 //=>
 
+body = FetchPack.postBody(want, 0);
+log(pretty(body));
+//=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 thin-pack agent=gitmem/0.0.0
+//=> 00000009done
+//=>
+
 
 
 
