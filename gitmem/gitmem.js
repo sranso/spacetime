@@ -23,8 +23,8 @@ GitMem.create = function () {
 
     return {
         $: $,
-        table: $table,
-        mold: $mold,
+        $table: $table,
+        $mold: $mold,
         'Constants.$positive': Constants.$positive,
         'Constants.$negative': Constants.$negative,
     };
@@ -32,8 +32,8 @@ GitMem.create = function () {
 
 GitMem.load = function (gitmem) {
     global.$ = gitmem.$;
-    global.$table = gitmem.table;
-    global.$mold = gitmem.mold;
+    global.$table = gitmem.$table;
+    global.$mold = gitmem.$mold;
     Constants.$positive = gitmem['Constants.$positive'];
     Constants.$negative = gitmem['Constants.$negative'];
 };

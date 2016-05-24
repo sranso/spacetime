@@ -27,9 +27,9 @@ log(gitmem.$.length);
 //=> 65536
 log(gitmem.$.nextIndex);
 //=> 6
-log(gitmem.table.n);
+log(gitmem.$table.n);
 //=> 262144
-log(gitmem.mold.n);
+log(gitmem.$mold.n);
 //=> 16384
 log(gitmem['Constants.$positive'].length);
 //=> 1001
@@ -54,9 +54,9 @@ GitMem.load(gitmem);
 
 log($ === gitmem.$);
 //=> true
-log($table === gitmem.table);
+log($table === gitmem.$table);
 //=> true
-log($mold === gitmem.mold);
+log($mold === gitmem.$mold);
 //=> true
 log(Constants.$positive === gitmem['Constants.$positive']);
 //=> true
