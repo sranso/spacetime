@@ -25,6 +25,8 @@ GitMem.create = function () {
         $: $,
         table: $table,
         mold: $mold,
+        'Constants.$positive': Constants.$positive,
+        'Constants.$negative': Constants.$negative,
     };
 };
 
@@ -32,6 +34,8 @@ GitMem.load = function (gitmem) {
     global.$ = gitmem.$;
     global.$table = gitmem.table;
     global.$mold = gitmem.mold;
+    Constants.$positive = gitmem['Constants.$positive'];
+    Constants.$negative = gitmem['Constants.$negative'];
 };
 
 GitMem._randomSeed = function () {

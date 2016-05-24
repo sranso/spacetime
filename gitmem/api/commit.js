@@ -29,20 +29,21 @@ Commit.initialize = function () {
     var user = createZero({
         email: $[Constants.emptyString],
         name: $[Constants.emptyString],
-        timezoneOffset: $[Constants.positive[0]],
+        timezoneOffset: Constants.$positive[0],
     });
     Commit.User.zero = $.nextIndex++;
     $[Commit.User.zero] = user;
 
-    Commit.Info.zero = $.nextIndex++;
-    $[Commit.Info.zero] = createZero({
+    var info = createZero({
         author: user,
-        authorTime: $[Constants.positive[0]],
+        authorTime: Constants.$positive[0],
         committer: user,
     });
+    Commit.Info.zero = $.nextIndex++;
+    $[Commit.Info.zero] = info;
 
-    newPointers[Commit.committerTime] = $[Constants.positive[0]];
-    newPointers[Commit.info] = $[Commit.Info.zero];
+    newPointers[Commit.committerTime] = Constants.$positive[0];
+    newPointers[Commit.info] = info;
     newPointers[Commit.message] = $[Constants.emptyString];
     newPointers[Commit.parent] = 0;
     newPointers[Commit.tree] = $[Constants.emptyTree];

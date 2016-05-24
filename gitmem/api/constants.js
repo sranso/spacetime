@@ -21,16 +21,14 @@ Constants.initialize = function (minNumber, maxPositive) {
     $table.data8[Table.typeOffset($[Constants.zeroHash])] = Type.pending;
 
     var maxNegative = -minNumber;
-    Constants.positive = new Uint32Array(maxPositive + 1);
-    Constants.negative = new Uint32Array(maxNegative + 1);
+    Constants.$positive = new Uint32Array(maxPositive + 1);
+    Constants.$negative = new Uint32Array(maxNegative + 1);
     var i;
     for (i = 0; i <= maxPositive; i++) {
-        Constants.positive[i] = $.nextIndex++;
-        $[Constants.positive[i]] = hash(i);
+        Constants.$positive[i] = hash(i);
     }
     for (i = 0; i <= maxNegative; i++) {
-        Constants.negative[i] = $.nextIndex++;
-        $[Constants.negative[i]] = hash(-i);
+        Constants.$negative[i] = hash(-i);
     }
 };
 
