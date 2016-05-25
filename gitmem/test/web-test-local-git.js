@@ -78,93 +78,43 @@ packLength = Pack.create(commit2);
 var pack2 = $pack.slice(0, packLength);
 
 
-// Check pack1
+// Check packs
 initialize();
 
 Unpack.unpack(pack1);
-
 var gotCommit1 = Table.findPointer($table, commit1Hash, 0);
 console.log('[checkPack] commit1 hash: ' + hexHash($table.hashes8, gotCommit1));
-var message = val(get(gotCommit1, Commit.message));
-console.log('[checkPack] commit1 message: ' + message);
-if (message !== 'Initial commit') {
-    return;
-}
 
-// Check pack2
 Unpack.unpack(pack2);
-
 var gotCommit2 = Table.findPointer($table, commit2Hash, 0);
 console.log('[checkPack] commit2 hash: ' + hexHash($table.hashes8, gotCommit2));
-message = val(get(gotCommit2, Commit.message));
-console.log('[checkPack] commit2 message: ' + message);
-if (message !== 'Change some stuff') {
-    return;
-}
 
 GitMem.load(oldGitMem);
 
 
-
-
-
-var initGet = function () {
+var ajax = function (callback) {
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
         if (this.status !== 200) {
             throw new Error(this.statusText);
         }
         var response = new Uint8Array(this.response);
-        console.log('[initGet] get received ' + response.length + ' bytes');
-        console.log(pretty(response));
-        var refs = FetchPack.refsFromGetResponse(response);
-        if (refs.length) {
-            initDelete(refs);
-        } else {
-            firstPush();
-        }
+        callback(response);
     });
     xhr.addEventListener('error', function (e) {
         throw new Error('connection level error');
     });
     xhr.responseType = 'arraybuffer';
-
-    // TODO: make this use SendPack.getPath
-    xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
-    console.log('[initGet] get');
-    xhr.send();
-};
-
-var initDelete = function (refs) {
-    var refPointer;
-    var i;
-    for (i = 0; i < refs.length; i++) {
-        if (refs[i][0] === 'refs/heads/test-branch') {
-            refPointer = refs[i][1];
-        }
-    }
-    if (!refPointer) {
-        throw new Error('refs/heads/test-branch not found in refs');
-    }
-
-    console.log('[initDelete] delete');
-    push(refPointer, $[Constants.zeroHash], 0, firstPush);
+    return xhr;
 };
 
 var push = function (previous, current, packLength, callback) {
     var body = SendPack.postBody('refs/heads/test-branch', previous, current, packLength);
 
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        if (this.status !== 200) {
-            throw new Error(this.statusText);
-        }
-        console.log('[push] received ' + this.responseText.length + ' bytes');
-        console.log(this.responseText);
-        callback();
-    });
-    xhr.addEventListener('error', function (e) {
-        throw new Error('connection level error');
+    var xhr = ajax(function (response) {
+        console.log('[push] received ' + response.length + ' bytes');
+        console.log(pretty(response));
+        callback(response);
     });
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + SendPack.postPath);
@@ -173,25 +123,8 @@ var push = function (previous, current, packLength, callback) {
     xhr.send(body);
 };
 
-var firstPush = function () {
-    console.log('[firstPush] pushing commit with hash', hexHash($table.hashes8, commit1));
-
-    console.log('[firstPush] pushing pack with hash', hexHash(pack1, pack1.length - 20));
-
-    global.$pack = pack1;
-    push($[Constants.zeroHash], commit1, pack1.length, function () {
-        var atCommit = 0;
-        fetchGet(0, afterClone);
-    });
-};
-
-var fetchGet = function (atCommit, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        if (this.status !== 200) {
-            throw new Error(this.statusText);
-        }
-        var response = new Uint8Array(this.response);
+var fetchGet = function (callback) {
+    var xhr = ajax(function (response) {
         console.log('[fetchGet] received ' + response.length + ' bytes');
         console.log(pretty(response));
         var errorMessage = FetchPack.validateGetResponse(response);
@@ -200,15 +133,11 @@ var fetchGet = function (atCommit, callback) {
             return;
         }
         var refs = FetchPack.refsFromGetResponse(response);
-        fetchPost(atCommit, refs, callback);
+        callback(refs);
     });
-    xhr.addEventListener('error', function (e) {
-        throw new Error('connection level error');
-    });
-    xhr.responseType = 'arraybuffer';
 
     xhr.open('GET', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.getPath);
-    console.log('[fetchGet] get');
+    console.log('[fetchGet] get refs');
     xhr.send();
 };
 
@@ -229,23 +158,13 @@ var fetchPost = function (atCommit, refs, callback) {
     }
     console.log('[fetchPost] fetching commit', hexHash($table.hashes8, refPointer));
 
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        if (this.status !== 200) {
-            throw new Error(this.statusText);
-        }
-        var response = new Uint8Array(this.response);
-        console.log('[fetchPost] received ' + response.length + ' bytes');
+    var xhr = ajax(function (response) {
         var pack = FetchPack.packFromPostResponse(response);
         if (!pack) {
             throw new Error('[fetchPost] pack not received');
         }
         callback(refPointer, pack);
     });
-    xhr.addEventListener('error', function (e) {
-        throw new Error('connection level error');
-    });
-    xhr.responseType = 'arraybuffer';
 
     var body = FetchPack.postBody(refPointer, atCommit);
 
@@ -253,6 +172,47 @@ var fetchPost = function (atCommit, refs, callback) {
     xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
     console.log('[fetchPost] post ' + body.length + ' bytes');
     xhr.send(body);
+};
+
+
+var initGet = function () {
+    console.log('[initGet] get');
+    fetchGet(function (refs) {
+        if (refs.length) {
+            initDelete(refs);
+        } else {
+            firstPush();
+        }
+    });
+};
+
+var initDelete = function (refs) {
+    var refPointer;
+    var i;
+    for (i = 0; i < refs.length; i++) {
+        if (refs[i][0] === 'refs/heads/test-branch') {
+            refPointer = refs[i][1];
+        }
+    }
+    if (!refPointer) {
+        throw new Error('refs/heads/test-branch not found in refs');
+    }
+
+    console.log('[initDelete] delete');
+    push(refPointer, $[Constants.zeroHash], 0, firstPush);
+};
+
+var firstPush = function () {
+    console.log('[firstPush] pushing commit with hash', hexHash($table.hashes8, commit1));
+
+    console.log('[firstPush] pushing pack with hash', hexHash(pack1, pack1.length - 20));
+
+    global.$pack = pack1;
+    push($[Constants.zeroHash], commit1, pack1.length, function () {
+        fetchGet(function (refs) {
+            fetchPost(0, refs, afterClone);
+        });
+    });
 };
 
 var afterClone = function (refPointer, pack) {
@@ -281,7 +241,9 @@ var afterClone = function (refPointer, pack) {
 
     global.$pack = pack2;
     push(commit1, commit2, pack2.length, function () {
-        fetchGet(commit1, afterFetch);
+        fetchGet(function (refs) {
+            fetchPost(commit1, refs, afterFetch);
+        });
     });
 };
 
