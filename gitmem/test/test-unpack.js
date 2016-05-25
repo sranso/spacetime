@@ -2,7 +2,7 @@
 require('../../test/helper');
 
 global.$file = new Uint8Array(256);
-global.$pack = new Uint8Array(64);
+global.$pack = new Uint8Array(512);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(526926));

@@ -10,16 +10,6 @@ var pakoOptions = {level: 6, chunkSize: 4096};
 var maxPackHeaderSize = 8;
 var packExtraSize = maxPackHeaderSize + 20; // SHA-1 at end of pack
 
-var resizePack = function () {
-    var newPack = new Uint8Array($pack.length * 2);
-    var i;
-    for (i = 0; i < $pack.length; i++) {
-        newPack[i] = $pack[i];
-    }
-
-    global.$pack = newPack;
-};
-
 PackData.packFile = function (packOffset, file, fileStart, fileEnd) {
     var contentStart = file.indexOf(0, fileStart + 5) + 1;
     var length = fileEnd - contentStart;
@@ -48,33 +38,31 @@ PackData.packFile = function (packOffset, file, fileStart, fileEnd) {
     packOffset++;
 
     var deflate = new pako.Deflate(pakoOptions);
-    deflate.onData = onDeflateData;
+    deflate.onData = onData;
     deflate.onEnd = onEnd;
-    deflate.packOffset = packOffset;
+    deflate.array = $pack;
+    deflate.j = packOffset;
     deflate.push(file.subarray(contentStart, fileEnd), true);
 
-    return deflate.packOffset;
+    return deflate.j;
 };
 
-var onDeflateData = function (chunk) {
-    var packOffset = this.packOffset;
-    if (packOffset + chunk.length + packExtraSize > $pack.length) {
-        resizePack();
-    }
+var onData = function (chunk) {
     var i;
     for (i = 0; i < chunk.length; i++) {
-        $pack[packOffset + i] = chunk[i];
+        this.array[this.j + i] = chunk[i];
     }
-    this.packOffset += i;
+    this.j += i;
 };
 
 var onEnd = function (status) {
-    if (status !== 0) throw new Error(this.strm.msg);
-}
+    if (status !== 0) {
+        throw new Error(this.strm.msg);
+    }
+};
 
 PackData.extractFile = function (pack, packOffset, extractFileOutput) {
-    var pack_j = packOffset;
-    var typeBits = pack[pack_j] & 0x70;
+    var typeBits = pack[packOffset] & 0x70;
     var prefix;
     if (typeBits === 0x30) {
         prefix = blobPrefix;
@@ -86,14 +74,14 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
         throw new Error('Unknown type: 0x' + typeBits.toString(16));
     }
 
-    var length = pack[pack_j] & 0xf;
+    var length = pack[packOffset] & 0xf;
     var shift = 4;
-    while (pack[pack_j] & 0x80) {
-        pack_j++;
-        length |= (pack[pack_j] & 0x7f) << shift;
+    while (pack[packOffset] & 0x80) {
+        packOffset++;
+        length |= (pack[packOffset] & 0x7f) << shift;
         shift += 7;
     }
-    pack_j++;
+    packOffset++;
 
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
@@ -112,24 +100,16 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
     j += i + 1;
 
     var inflate = new pako.Inflate(pakoOptions);
-    inflate.j = j;
-    inflate.onData = onInflateData;
+    inflate.onData = onData;
     inflate.onEnd = onEnd;
+    inflate.array = $file;
+    inflate.j = j;
 
-    inflate.push(pack.subarray(pack_j), true);
+    inflate.push(pack.subarray(packOffset), true);
 
-    var nextPackOffset = pack_j + inflate.strm.next_in;
+    var nextPackOffset = packOffset + inflate.strm.next_in;
     extractFileOutput[0] = fileLength;
     extractFileOutput[1] = nextPackOffset;
-};
-
-var onInflateData = function (chunk) {
-    var j = this.j;
-    var i;
-    for (i = 0; i < chunk.length; i++) {
-        $file[j + i] = chunk[i];
-    }
-    this.j += i;
 };
 
 })();
