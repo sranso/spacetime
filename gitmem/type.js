@@ -15,8 +15,7 @@ Type.string = 4;
 Type.longString = 5;
 Type.integer = 6;
 Type.float = 7;
-Type.boolean = 8;
 
-Type.tree = 9;
+Type.tree = 8;
 
 })();

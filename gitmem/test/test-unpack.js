@@ -185,7 +185,7 @@ log(hexHash($table.hashes8, tree));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
 var type = $table.data8[Table.typeOffset(tree)];
 log(type & Type.mask, Type.tree);
-//=> 9 9
+//=> 8 8
 log(type & Type.onServer);
 //=> 128
 var pointer32 = tree >> 2;

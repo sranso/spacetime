@@ -41,10 +41,8 @@ var packSingle = function (pointer) {
     numFiles++;
     var pointer32 = pointer >> 2;
 
-    type &= Type.mask;
-    if (type === Type.tree) {
-
-        // Pack tree
+    switch (type & Type.mask) {
+    case Type.tree:
 
         var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
         var mold8 = moldIndex * Mold.data8_size;
@@ -62,10 +60,10 @@ var packSingle = function (pointer) {
         for (i = 0; i < numHoles; i++) {
             packSingle($table.data32[pointer32 + i]);
         }
+        break;
 
-    } else if (type === Type.commit) {
+    case Type.commit:
 
-        // Pack commit
         var fileLength = CommitFile.create($table.data32, pointer32);
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
         packSingle($table.data32[pointer32 + Commit.tree]);
@@ -73,18 +71,22 @@ var packSingle = function (pointer) {
         if (parent) {
             packSingle(parent);
         }
+        break;
 
-    } else {
-
-        // Pack blob
-
-        var value = val(pointer);
-        if (type === Type.string || type === Type.longString) {
-            var fileLength = Blob.create('"' + value);
-        } else {
-            var fileLength = Blob.create('' + value);
-        }
+    case Type.string:
+    case Type.longString:
+        var fileLength = Blob.create('"' + val(pointer));
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
+        break;
+
+    case Type.integer:
+    case Type.float:
+        var fileLength = Blob.create('' + val(pointer));
+        packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
+        break;
+
+    default:
+        throw new Error('Unpackable type: ' + (type & Type.mask));
     }
 }
 
