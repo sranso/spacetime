@@ -50,14 +50,14 @@ log(hex($pack, 0, packLength));
 // Delete branch
 var body = SendPack.postBody(branch, commitPointer, $[Constants.zeroHash], 0);
 log(pretty(body));
-//=> 0090060699f289dd37f29a4ced62d2da9fed169fed74 0000000000000000000000000000000000000000 refs/heads/master\x00 report-status quiet agent=gitmem/0.0.0
+//=> 008a060699f289dd37f29a4ced62d2da9fed169fed74 0000000000000000000000000000000000000000 refs/heads/master\x00 report-status agent=gitmem/0.0.0
 //=> 0000
 
 // Create branch
 body = SendPack.postBody(branch, $[Constants.zeroHash], commitPointer, packLength);
 log(pretty(body, 0, 175));
-//=> 00900000000000000000000000000000000000000000 060699f289dd37f29a4ced62d2da9fed169fed74 refs/heads/master\x00 report-status quiet agent=gitmem/0.0.0
+//=> 008a0000000000000000000000000000000000000000 060699f289dd37f29a4ced62d2da9fed169fed74 refs/heads/master\x00 report-status agent=gitmem/0.0.0
 //=> 0000PACK\x00\x00\x00\x02\x00\x00\x00\x04\x9c\x0bx\x9c\x9d\x8cK
-//=> \xc20\x10@\xf79\xc5
-log(hex(body, 375));
-//=> 4acbcf0700030b0167617cf2413598024ef7fd549cfecf2d6135c771a9
+//=> \xc20\x10@\xf79\xc5\@I\x26\x9f\xc9
+log(hex(body, 370));
+//=> cbcf0700030b0167617cf2413598024ef7fd549cfecf2d6135c771a9

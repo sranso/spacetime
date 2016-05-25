@@ -1,122 +1,108 @@
 'use strict';
-Loader.loadWeb('../..', function (event) {
+Loader.loadWeb('../..', function () {
 
-var loadTable = Table.create(Random.create(9699637));
+GitMem.initialize();
 
 global.Thing = {};
-
-Thing.clone = function (original) {
-    return {
-        name: original.name,
-        file: original.file.slice(),
-        hash: null,
-        pointer: 0,
-    };
+Thing.name = 0;
+Thing.initialize = function () {
+    Thing.zero = $.nextIndex++;
+    $[Thing.zero] = createZero({
+        name: $[Constants.emptyString],
+    });
 };
-
-Thing.none = Thing.clone({
-    name: '',
-    file: new Uint8Array(0),
-    hash: new Uint8Array(20),
-    pointer: 0,
-});
-
-Thing.offsets = {};
-
-Thing.none.file = Tree.createSkeleton(Thing.offsets, {
-    name: 'blob',
-});
-
-// Normally we would need to store the Thing.none properties
-// like so, but all the properties are overridden later.
-// BaseTreeObject.set(Thing.none, 'name', Thing.none.name, Thing.offsets.name, 'string');
-// Thing.none.hash = new Uint8Array(20);
-// Sha1.hash(Thing.none.file, Thing.none.hash, 0);
-// Table.save($table, Thing.none);
-
-Thing.checkout = function (packIndices, table, hash, pointer) {
-    var thing = Table.get(table, hash, pointer);
-    if (thing) {
-        return thing;
-    }
-
-    var file = PackIndex.lookupFileMultiple(packIndices, hash, pointer);
-
-    thing = Thing.clone(Thing.none);
-    thing.file = file;
-    thing.hash = hash;
-    thing.pointer = pointer;
-    Table.save(table, thing);
-
-    thing.name = Value.checkoutString(packIndices, table, file, Thing.offsets.name);
-
-    return thing;
-};
-
-var oldProject = Project;
 
 global.Project = {};
-
-Project.clone = function (original) {
-    return {
-        thing: original.thing,
-        text: original.text,
-        xPosition: original.xPosition,
-        hasStuff: original.hasStuff,
-        file: original.file.slice(),
-        hash: null,
-        pointer: 0,
-    };
+Project.text  = 0;
+Project.thing = 1;
+Project.x     = 2;
+Project.initialize = function () {
+    Project.zero = $.nextIndex++;
+    $[Project.zero] = createZero({
+        text: $[Constants.emptyString],
+        thing: $[Thing.zero],
+        x: Constants.$positive[0],
+    });
 };
 
-Project.none = Project.clone({
-    thing: Thing.none,
-    text: '',
-    xPosition: 0,
-    hasStuff: false,
-    file: new Uint8Array(0),
-    hash: new Uint8Array(20),
-    pointer: 0,
-});
+var initialize = function () {
+    var gitmem = GitMem.create();
 
-Project.offsets = {};
-
-Project.none.file = Tree.createSkeleton(Project.offsets, {
-    hasStuff: 'blob',
-    thing: 'tree',
-    text: 'blob',
-    xPosition: 'blob',
-});
-
-Project.checkout = function (packIndices, table, hash, pointer) {
-    var project = Table.get(table, hash, pointer);
-    if (project) {
-        return project;
-    }
-
-    var packs = packIndices;
-    var file = PackIndex.lookupFileMultiple(packs, hash, pointer);
-
-    var ofs = Project.offsets;
-    project = Project.clone(Project.none);
-    project.file = file;
-    project.hash = hash;
-    project.pointer = pointer;
-    Table.save(table, project);
-
-    project.thing = Thing.checkout(packs, table, file, ofs.thing);
-    project.text = Value.checkoutString(packs, table, file, ofs.text);
-    project.xPosition = Value.checkoutNumber(packs, table, file, ofs.xPosition);
-    project.hasStuff = Value.checkoutBoolean(packs, table, file, ofs.hasStuff);
-
-    return project;
+    Thing.initialize();
+    Project.initialize();
+    return gitmem;
 };
 
+var oldGitMem = initialize();
+var newGitMem;
+
+var thing = set($[Thing.zero], Thing.name, hash('name1'));
+
+var project1 = set($[Project.zero],
+                   Project.thing, thing,
+                   Project.text, hash('a bit of text\n'));
+
+var user = set($[Commit.User.zero],
+                Commit.User.name, hash('Jake Sandlund'),
+                Commit.User.email, hash('jake@jakesandlund.com'),
+                Commit.User.timezoneOffset, hash(360));
+
+var info = set($[Commit.Info.zero],
+                Commit.Info.author, user,
+                Commit.Info.committer, user);
+
+var commit1 = commit($[Commit.zero],
+                     Commit.info, info,
+                     Commit.tree, project1,
+                     Commit.parent, 0,
+                     Commit.committerTime, hash(1463960469),
+                     Commit.message, hash('Initial commit'));
+var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
+
+var packLength = Pack.create(commit1);
+var pack1 = $pack.slice(0, packLength);
 
 
+var project2 = set(project1,
+                   Project.x, hash(-2362.8589701),
+                   Project.text, hash('different text than before\n'));
+
+var commit2 = commit(commit1,
+                     Commit.tree, project2,
+                     Commit.parent, commit1,
+                     Commit.committerTime, hash(1463970341),
+                     Commit.message, hash('Change some stuff'));
+var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
+
+packLength = Pack.create(commit2);
+var pack2 = $pack.slice(0, packLength);
 
 
+// Check pack1
+initialize();
 
+Unpack.unpack(pack1);
+
+var gotCommit1 = Table.findPointer($table, commit1Hash, 0);
+console.log('[checkPack] commit1 hash: ' + hexHash($table.hashes8, gotCommit1));
+var message = val(get(gotCommit1, Commit.message));
+console.log('[checkPack] commit1 message: ' + message);
+if (message !== 'Initial commit') {
+    return;
+}
+
+// Check pack2
+Unpack.unpack(pack2);
+
+var gotCommit2 = Table.findPointer($table, commit2Hash, 0);
+console.log('[checkPack] commit2 hash: ' + hexHash($table.hashes8, gotCommit2));
+message = val(get(gotCommit2, Commit.message));
+console.log('[checkPack] commit2 message: ' + message);
+if (message !== 'Change some stuff') {
+    return;
+}
+
+GitMem.load(oldGitMem);
 
 
 
@@ -150,24 +136,23 @@ var initGet = function () {
 };
 
 var initDelete = function (refs) {
-    var refHash;
+    var refPointer;
     var i;
     for (i = 0; i < refs.length; i++) {
         if (refs[i][0] === 'refs/heads/test-branch') {
-            refHash = refs[i][1];
+            refPointer = refs[i][1];
         }
     }
-    if (!refHash) {
+    if (!refPointer) {
         throw new Error('refs/heads/test-branch not found in refs');
     }
 
-    push(refHash, SendPack.zeroHash, SendPack.nonePack, firstPush);
+    console.log('[initDelete] delete');
+    push(refPointer, $[Constants.zeroHash], 0, firstPush);
 };
 
-var push = function (previousHash, currentHash, pack, callback) {
-    var branch = 'refs/heads/test-branch';
-
-    var body = SendPack.postBody(branch, previousHash, currentHash, pack);
+var push = function (previous, current, packLength, callback) {
+    var body = SendPack.postBody('refs/heads/test-branch', previous, current, packLength);
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
@@ -189,71 +174,14 @@ var push = function (previousHash, currentHash, pack, callback) {
 };
 
 var firstPush = function () {
-    var project = Project.clone(Project.none);
+    console.log('[firstPush] pushing commit with hash', hexHash($table.hashes8, commit1));
 
-    var thing = Thing.clone(Thing.none);
-    thing.name = 'name1';
-    var nameBlob = Value.createBlob(thing.name, 'string', []);
-    Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
+    console.log('[firstPush] pushing pack with hash', hexHash(pack1, pack1.length - 20));
 
-    thing.hash = project.file;
-    thing.pointer = Project.offsets.thing;
-    Sha1.hash(thing.file, thing.hash, thing.pointer);
-
-    project.thing = thing;
-    project.text = (
-        'a bit of text\n' +
-        'that hopefully\n' +
-        'causes\n' +
-        'some delta compresssion\n' +
-        'when we change project.text below\n'
-    );
-    var textBlob = Value.createBlob(project.text, 'string', []);
-    Sha1.hash(textBlob, project.file, Project.offsets.text);
-
-    project.xPosition = 0;
-    var positionBlob = Value.createBlob(project.xPosition, 'number', []);
-    Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
-
-    project.hasStuff = false;
-    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean', []);
-    Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
-
-    project.hash = new Uint8Array(20);
-    Sha1.hash(project.file, project.hash, 0);
-
-    var commit = Commit.clone(Commit.none);
-    commit.author = commit.committer = {
-        name: 'Jake Sandlund',
-        email: 'jake@jakesandlund.com',
-        time: 1454284683000,
-        timezoneOffset: 360,
-    };
-    commit.message = 'Initial commit with first values\n';
-    commit.tree = project;
-    commit.parents = [];
-
-    commit.file = CommitFile.create(commit);
-    commit.hash = new Uint8Array(20);
-    Sha1.hash(commit.file, commit.hash, 0);
-    console.log('[firstPush] created commit with hash', hex(commit.hash));
-
-    var files = [
-        commit.file,
-        project.file,
-        thing.file,
-        nameBlob,
-        textBlob,
-        positionBlob,
-        hasStuffBlob,
-    ];
-
-    var pack = Pack.create(files);
-    console.log('[firstPush] created pack with hash', hex(pack.subarray(pack.length - 20)));
-
-    push(SendPack.zeroHash, commit.hash, pack, function () {
-        var atCommit = null;
-        fetchGet(atCommit, afterClone);
+    global.$pack = pack1;
+    push($[Constants.zeroHash], commit1, pack1.length, function () {
+        var atCommit = 0;
+        fetchGet(0, afterClone);
     });
 };
 
@@ -289,17 +217,17 @@ var fetchPost = function (atCommit, refs, callback) {
         throw new Error('Expected refs for fetch');
     }
 
-    var refHash;
+    var refPointer;
     var i;
     for (i = 0; i < refs.length; i++) {
         if (refs[i][0] === 'refs/heads/test-branch') {
-            refHash = refs[i][1];
+            refPointer = refs[i][1];
         }
     }
-    if (!refHash) {
+    if (!refPointer) {
         throw new Error('refs/heads/test-branch not found in refs');
     }
-    console.log('[fetchPost] fetching commit', hex(refHash));
+    console.log('[fetchPost] fetching commit', hexHash($table.hashes8, refPointer));
 
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('load', function () {
@@ -312,14 +240,14 @@ var fetchPost = function (atCommit, refs, callback) {
         if (!pack) {
             throw new Error('[fetchPost] pack not received');
         }
-        callback(refHash, pack);
+        callback(refPointer, pack);
     });
     xhr.addEventListener('error', function (e) {
         throw new Error('connection level error');
     });
     xhr.responseType = 'arraybuffer';
 
-    var body = FetchPack.postBody([], null, [refHash], atCommit);
+    var body = FetchPack.postBody(refPointer, atCommit);
 
     xhr.open('POST', 'http://localhost:8080/local-git/testrepo.git' + FetchPack.postPath);
     xhr.setRequestHeader('Content-Type', FetchPack.postContentType);
@@ -327,135 +255,56 @@ var fetchPost = function (atCommit, refs, callback) {
     xhr.send(body);
 };
 
-var afterClone = function (refHash, pack) {
-    var index = PackIndex.create(pack);
-    var commit = Commit.checkout([index], loadTable, refHash, 0);
-    console.log('[afterClone] commit message: ' + commit.message);
-    console.log('[afterClone] commit time: ' + new Date(commit.committer.time));
+var afterClone = function (refPointer, pack) {
+    var commitHash = $table.hashes8.slice(refPointer, refPointer + 20);
+    console.log(hexHash(commitHash, 0));
+    newGitMem = initialize();
 
-    Commit.checkoutTree(commit, [index], loadTable);
+    Unpack.unpack(pack);
 
-    console.log('[afterClone] loaded tree:', hex(commit.tree.hash));
-    console.log('[afterClone] project text:', commit.tree.text.slice(0, 12) + '...');
-    console.log('[afterClone] project x:', commit.tree.xPosition);
-    console.log('[afterClone] project hasStuff:', commit.tree.hasStuff);
-    console.log('[afterClone] thing pointer:', commit.tree.thing.pointer);
-    console.log('[afterClone] thing name type:', typeof commit.tree.thing.name);
+    var gotCommit = Table.findPointer($table, commitHash, 0);
+    console.log('[afterClone] commit hash: ' + hexHash($table.hashes8, gotCommit));
+    console.log('[afterClone] commit message: ' + val(get(gotCommit, Commit.message)));
+    console.log('[afterClone] commit time: ' + new Date(1000 * val(get(gotCommit, Commit.committerTime))));
 
-    var project = Project.clone(commit.tree);
+    var project = get(gotCommit, Commit.tree);
+    console.log('[afterClone] project text:', val(get(project, Project.text)));
+    console.log('[afterClone] project x:', val(get(project, Project.x)));
+    var thing = get(project, Project.thing);
+    console.log('[afterClone] thing name:', val(get(thing, Thing.name)));
 
-    var thing = Thing.clone(commit.tree.thing);
-    thing.name = 'thingname';
-    var nameBlob = Value.createBlob(thing.name, 'string', []);
-    Sha1.hash(nameBlob, thing.file, Thing.offsets.name);
+    GitMem.load(oldGitMem);
 
-    thing.hash = project.file;
-    thing.pointer = Project.offsets.thing;
-    Sha1.hash(thing.file, thing.hash, thing.pointer);
+    console.log('[afterClone] pushing commit with hash', hexHash($table.hashes8, commit2));
 
-    project.thing = thing;
-    project.text = (
-        'a bit of text\n' +
-        'that hopefully\n' +
-        'causes\n' +
-        'Nay, caused!\n' +
-        'some delta compresssion\n' +
-        'when we change project.text below\n'
-    );
-    var textBlob = Value.createBlob(project.text, 'string', []);
-    Sha1.hash(textBlob, project.file, Project.offsets.text);
+    console.log('[afterClone] pushing pack with hash', hexHash(pack2, pack2.length - 20));
 
-    project.xPosition = -2362.8589701;
-    var positionBlob = Value.createBlob(project.xPosition, 'number', []);
-    Sha1.hash(positionBlob, project.file, Project.offsets.xPosition);
-
-    project.hasStuff = true;
-    var hasStuffBlob = Value.createBlob(project.hasStuff, 'boolean', []);
-    Sha1.hash(hasStuffBlob, project.file, Project.offsets.hasStuff);
-
-    project.hash = new Uint8Array(20);
-    Sha1.hash(project.file, project.hash, 0);
-
-    var commit2 = Commit.clone(Commit.none);
-    commit2.author = commit2.committer = {
-        name: 'Jake Sandlund',
-        email: 'jake@jakesandlund.com',
-        time: 1455501462000,
-        timezoneOffset: 360,
-    };
-    commit2.message = 'Commit with values filled in\n';
-    commit2.tree = project;
-    commit2.parents = [commit];
-
-    commit2.file = CommitFile.create(commit2);
-    commit2.hash = new Uint8Array(20);
-    Sha1.hash(commit2.file, commit2.hash, 0);
-    console.log('[afterClone] created commit2 with hash', hex(commit2.hash));
-
-    var files = [
-        commit2.file,
-        project.file,
-        thing.file,
-        nameBlob,
-        textBlob,
-        positionBlob,
-        hasStuffBlob,
-    ];
-
-    var pack = Pack.create(files);
-    console.log('[afterClone] created pack with hash', hex(pack.subarray(pack.length - 20)));
-
-    push(commit.hash, commit2.hash, pack, function () {
-        fetchGet(commit, afterFetch);
+    global.$pack = pack2;
+    push(commit1, commit2, pack2.length, function () {
+        fetchGet(commit1, afterFetch);
     });
 };
 
-var afterFetch = function (refHash, pack) {
-    var index = PackIndex.create(pack);
-    var commit = Commit.checkout([index], loadTable, refHash, 0);
-    console.log('[afterFetch] commit message: ' + commit.message);
-    console.log('[afterFetch] commit time: ' + new Date(commit.committer.time));
+var afterFetch = function (refPointer, pack) {
+    var commitHash = $table.hashes8.slice(refPointer, refPointer + 20);
+    GitMem.load(newGitMem);
 
-    Commit.checkoutTree(commit, [index], loadTable);
+    Unpack.unpack(pack);
 
-    console.log('[afterFetch] loaded tree:', hex(commit.tree.hash));
-    console.log('[afterFetch] project text:', commit.tree.text.slice(0, 12) + '...');
-    console.log('[afterFetch] project x:', commit.tree.xPosition);
-    console.log('[afterFetch] project hasStuff:', commit.tree.hasStuff);
-    console.log('[afterFetch] thing pointer:', commit.tree.thing.pointer);
-    console.log('[afterFetch] thing name:', commit.tree.thing.name);
+    var gotCommit = Table.findPointer($table, commitHash, 0);
+    console.log('[afterFetch] commit hash: ' + hexHash($table.hashes8, gotCommit));
+    console.log('[afterFetch] commit message: ' + val(get(gotCommit, Commit.message)));
+    console.log('[afterFetch] commit time: ' + new Date(1000 * val(get(gotCommit, Commit.committerTime))));
 
-    Commit.checkoutParents(commit, [index], loadTable);
-    var parentCommit = commit.parents[0];
-    console.log('[afterFetch] commit parent hash:', hex(parentCommit.hash));
-    console.log('[afterFetch] commit parent message:', parentCommit.message);
-    console.log('[afterFetch] parent project text:', parentCommit.tree.text.slice(0, 12) + '...');
+    var project = get(gotCommit, Commit.tree);
+    console.log('[afterFetch] project text:', val(get(project, Project.text)));
+    console.log('[afterFetch] project x:', val(get(project, Project.x)));
+    var thing = get(project, Project.thing);
+    console.log('[afterFetch] thing name:', val(get(thing, Thing.name)));
 
-    fetchGet(null, lastClone);
-};
-
-var lastClone = function (refHash, pack) {
-    var index = PackIndex.create(pack);
-    var table = Table.create(Random.create(868869));
-    var commit = Commit.checkout([index], table, refHash, 0);
-    console.log('[lastClone] commit message: ' + commit.message);
-    console.log('[lastClone] commit time: ' + new Date(commit.committer.time));
-
-    Commit.checkoutTree(commit, [index], table);
-
-    console.log('[lastClone] loaded tree:', hex(commit.tree.hash));
-    console.log('[lastClone] project text:', commit.tree.text.slice(0, 12) + '...');
-    console.log('[lastClone] thing name:', commit.tree.thing.name);
-
-    Commit.checkoutParents(commit, [index], table);
-    var parentCommit = commit.parents[0];
-    console.log('[lastClone] commit parent hash:', hex(commit1.hash));
-    console.log('[lastClone] commit parent message:', commit1.message);
-
-    Commit.checkoutTree(parentCommit, [index], table);
-
-    console.log('[lastClone] parent project text:', parentCommit.tree.text.slice(0, 12) + '...');
-    console.log('[lastClone] parent thing name:', parentCommit.tree.thing.name);
+    var commitParent = get(gotCommit, Commit.parent);
+    console.log('[afterFetch] parent commit hash: ' + hexHash($table.hashes8, commitParent));
+    console.log('[afterFetch] parent commit message: ' + val(get(commitParent, Commit.message)));
 };
 
 initGet();
