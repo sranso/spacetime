@@ -2,6 +2,9 @@
 global.PackData = {};
 (function () {
 
+var baseFileArray = new Uint8Array(512);
+var deltaData = new Uint8Array(512);
+
 var blobPrefix = Convert.stringToArray('blob ');
 var treePrefix = Convert.stringToArray('tree ');
 var commitPrefix = Convert.stringToArray('commit ');
@@ -63,16 +66,6 @@ var onEnd = function (status) {
 
 PackData.extractFile = function (pack, packOffset, extractFileOutput) {
     var typeBits = pack[packOffset] & 0x70;
-    var prefix;
-    if (typeBits === 0x30) {
-        prefix = blobPrefix;
-    } else if (typeBits === 0x20) {
-        prefix = treePrefix;
-    } else if (typeBits === 0x10) {
-        prefix = commitPrefix;
-    } else {
-        throw new Error('Unknown type: 0x' + typeBits.toString(16));
-    }
 
     var length = pack[packOffset] & 0xf;
     var shift = 4;
@@ -83,6 +76,168 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
     }
     packOffset++;
 
+    if (typeBits === 0x70) {
+
+        // Delta object
+
+        var deltaDataLength = length;
+
+        var base = Table.findPointer($table, pack, packOffset);
+        if (base < 0) {
+            throw new Error('Delta base not found');
+        }
+        packOffset += 20;
+
+        var type = $table.data8[Table.typeOffset(base)];
+        var pointer32 = base >> 2;
+
+        var oldFile = $file;
+        global.$file = baseFileArray;
+        var baseFile = baseFileArray;
+        var baseFileStart = 0;
+        var prefix;
+
+        // Recreate baseFile
+
+        switch (type & Type.mask) {
+        case Type.tree:
+            var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+            var mold32 = moldIndex * Mold.data32_size;
+            baseFileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+            Mold.fillHoles($mold, moldIndex, $table.data32, pointer32);
+            baseFile = $mold.fileArray;
+            prefix = treePrefix;
+            break;
+
+        case Type.commit:
+            CommitFile.create($table.data32, pointer32);
+            prefix = commitPrefix;
+            break;
+        case Type.string: case Type.longString:
+            Blob.create('"' + val(base));
+            prefix = blobPrefix;
+            break;
+        case Type.integer:
+        case Type.float:
+            Blob.create('' + val(base));
+            prefix = blobPrefix;
+            break;
+        }
+
+        var baseFileContentStart = baseFile.indexOf(0, baseFileStart + 6) + 1;
+        global.$file = oldFile;
+
+        // Inflate delta data
+
+        var inflate = new pako.Inflate(pakoOptions);
+        inflate.onData = onData;
+        inflate.onEnd = onEnd;
+        inflate.array = deltaData;
+        inflate.j = 0;
+
+        inflate.push(pack.subarray(packOffset), true);
+
+        // Skip base object length
+        var delta_j = 0;
+        while (deltaData[delta_j] & 0x80) {
+            delta_j++;
+        }
+        delta_j++;
+
+        // Compute resultLength
+        var resultLength = 0;
+        var shift = 0;
+        while (deltaData[delta_j] & 0x80) {
+            delta_j++;
+            resultLength |= (deltaData[delta_j] & 0x7f) << shift;
+            shift += 7;
+        }
+        delta_j++;
+
+        var file_j = writeHeader(prefix, resultLength);
+
+        // Construct file from deltas
+        while (delta_j < deltaDataLength) {
+            var opcode = deltaData[delta_j];
+            delta_j++;
+
+            if (opcode & 0x80) {
+
+                // Copy
+
+                var copyOffset = 0;
+                if (opcode & 0x01) {
+                    copyOffset = deltaData[delta_j];
+                    delta_j++;
+                }
+                if (opcode & 0x02) {
+                    copyOffset |= deltaData[delta_j] << 8;
+                    delta_j++;
+                }
+                copyOffset += baseFileContentStart;
+
+                var copyLength = 0;
+                if (opcode & 0x10) {
+                    copyLength = deltaData[delta_j];
+                    delta_j++;
+                }
+                if (opcode & 0x20) {
+                    copyLength |= deltaData[delta_j] << 8;
+                    delta_j++;
+                }
+
+                var i;
+                for (i = 0; i < copyLength; i++) {
+                    $file[file_j + i] = baseFile[copyOffset + i];
+                }
+                file_j += i;
+            } else {
+
+                // Insert
+
+                var i;
+                for (i = 0; i < opcode; i++) {
+                    $file[file_j + i] = deltaData[delta_j + i];
+                }
+                file_j += i;
+                delta_j += i;
+            }
+        }
+
+    } else {
+
+        // Full object
+
+        var prefix;
+        if (typeBits === 0x30) {
+            prefix = blobPrefix;
+        } else if (typeBits === 0x20) {
+            prefix = treePrefix;
+        } else if (typeBits === 0x10) {
+            prefix = commitPrefix;
+        } else {
+            throw new Error('Unknown type: 0x' + typeBits.toString(16));
+        }
+
+        var file_j = writeHeader(prefix, length);
+
+        var inflate = new pako.Inflate(pakoOptions);
+        inflate.onData = onData;
+        inflate.onEnd = onEnd;
+        inflate.array = $file;
+        inflate.j = file_j;
+
+        inflate.push(pack.subarray(packOffset), true);
+        file_j = inflate.j;
+    }
+
+    var fileLength = file_j;
+    var nextPackOffset = packOffset + inflate.strm.next_in;
+    extractFileOutput[0] = fileLength;
+    extractFileOutput[1] = nextPackOffset;
+};
+
+var writeHeader = function (prefix, length) {
     var lengthString = '' + length;
     var fileLength = prefix.length + lengthString.length + 1 + length;
 
@@ -95,21 +250,11 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
     for (i = 0; i < lengthString.length; i++) {
         $file[j + i] = lengthString.charCodeAt(i);
     }
-    $file[j + i] = 0;
 
-    j += i + 1;
+    j += i;
+    $file[j] = 0;
 
-    var inflate = new pako.Inflate(pakoOptions);
-    inflate.onData = onData;
-    inflate.onEnd = onEnd;
-    inflate.array = $file;
-    inflate.j = j;
-
-    inflate.push(pack.subarray(packOffset), true);
-
-    var nextPackOffset = packOffset + inflate.strm.next_in;
-    extractFileOutput[0] = fileLength;
-    extractFileOutput[1] = nextPackOffset;
+    return j + 1;
 };
 
 })();

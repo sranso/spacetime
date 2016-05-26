@@ -3,6 +3,7 @@ require('../../test/helper');
 
 global.$file = new Uint8Array(512);
 global.$pack = new Uint8Array(1024);
+global.$table = Table.create(4, Random.create(19223554));
 
 var blobLength = Blob.create('foo bar\n');
 var blob = $file.subarray(0, blobLength);
@@ -20,7 +21,6 @@ log(pretty(inflate.result));
 //=>
 log(inflate.strm.next_in);
 //=> 23
-
 
 
 var packOffset = 0;
@@ -50,4 +50,24 @@ log(fileLength, nextPackOffset);
 //=> 15 34
 log(pretty($file, 0, fileLength));
 //=> blob 8\x00foo bar
+//=>
+
+
+var baseText = hash('a bit of text that hopefully causes some\n' +
+                    'IT DID\n' +
+                    'delta compression when we change it below\n');
+log(hexHash($table.hashes8, baseText));
+//=> dbb16741a33f67e17ae6abd9cd9ede3ecde4cce9
+
+// Constructed with web-test-local-git.js and git 2.6.4
+var pack = new Uint8Array([0x77,0xdb,0xb1,0x67,0x41,0xa3,0x3f,0x67,0xe1,0x7a,0xe6,0xab,0xd9,0xcd,0x9e,0xde,0x3e,0xcd,0xe4,0xcc,0xe9,0x78,0x9c,0x8b,0x0e,0x99,0xa0,0x35,0xd1,0x50,0x0b,0x00,0x0a,0x33,0x02,0x56]);
+
+PackData.extractFile(pack, 0, extractFileOutput);
+var fileLength = extractFileOutput[0];
+var nextPackOffset = extractFileOutput[1];
+log(fileLength, nextPackOffset);
+//=> 91 36
+log(pretty($file, 0, fileLength));
+//=> blob 0\x00"a bit of text that hopefully causes some
+//=> delta compression when we change it below
 //=>

@@ -38,9 +38,11 @@ var newGitMem;
 
 var thing = set($[Thing.zero], Thing.name, hash('name1'));
 
+var text1 = hash('a bit of text that hopefully causes some\n' +
+                 'delta compression when we change it below\n');
 var project1 = set($[Project.zero],
                    Project.thing, thing,
-                   Project.text, hash('a bit of text\n'));
+                   Project.text, text1);
 
 var user = set($[Commit.User.zero],
                 Commit.User.name, hash('Jake Sandlund'),
@@ -63,9 +65,12 @@ var packLength = Pack.create(commit1);
 var pack1 = $pack.slice(0, packLength);
 
 
+var text2 = hash('a bit of text that hopefully causes some\n' +
+                 'IT DID\n' +
+                 'delta compression when we change it below\n');
 var project2 = set(project1,
                    Project.x, hash(-2362.8589701),
-                   Project.text, hash('different text than before\n'));
+                   Project.text, text2);
 
 var commit2 = commit(commit1,
                      Commit.tree, project2,
@@ -267,6 +272,25 @@ var afterFetch = function (refPointer, pack) {
     var commitParent = get(gotCommit, Commit.parent);
     console.log('[afterFetch] parent commit hash: ' + hexHash($table.hashes8, commitParent));
     console.log('[afterFetch] parent commit message: ' + val(get(commitParent, Commit.message)));
+
+    GitMem.load(oldGitMem);
+
+    fetchGet(function (refs) {
+        fetchPost(0, refs, afterLastClone);
+    });
+};
+
+var afterLastClone = function (refPointer, pack) {
+    var commitHash = $table.hashes8.slice(refPointer, refPointer + 20);
+    GitMem.load(newGitMem);
+
+    Unpack.unpack(pack);
+
+    var gotCommit = Table.findPointer($table, commitHash, 0);
+    console.log('[afterLastClone] commit hash: ' + hexHash($table.hashes8, gotCommit));
+
+    var project = get(gotCommit, Commit.tree);
+    console.log('[afterLastClone] project text:', val(get(project, Project.text)));
 };
 
 initGet();
