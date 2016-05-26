@@ -37,6 +37,17 @@ var packSingle = function (pointer) {
         return;
     }
 
+    // Maybe resize pack
+    if (packOffset + 512 > $pack.length) {
+        var newPack = new Uint8Array($pack.length * 2);
+        var i;
+        for (i = 0; i < $pack.length; i++) {
+            newPack[i] = $pack[i];
+        }
+
+        global.$pack = newPack;
+    }
+
     $table.data8[typeOffset] = type | Type.onServer;
     numFiles++;
     var pointer32 = pointer >> 2;

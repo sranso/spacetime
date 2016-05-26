@@ -2,7 +2,7 @@
 require('../../test/helper');
 
 global.$file = new Uint8Array(256);
-global.$pack = new Uint8Array(512);
+global.$pack = new Uint8Array(256);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(6889162));
@@ -65,8 +65,8 @@ log(hexHash($table.hashes8, commit2));
 $table.data8[Table.typeOffset($[Commit.zero])] |= Type.onServer;
 
 var packLength = Pack.create(commit2);
-log(packLength);
-//=> 493
+log(packLength, $pack.length);
+//=> 493 1024
 var numFiles = $pack[11];
 log(numFiles);
 //=> 7
