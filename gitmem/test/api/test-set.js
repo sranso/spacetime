@@ -5,7 +5,7 @@ global.$file = new Uint8Array(512);
 global.$table = Table.create(16, Random.create(29923321));
 global.$mold = Mold.create(4, 128);
 
-var treeLength = Tree.create({
+var treeLength = Tree.create($file, {
     bar: 'blob',
     foo: 'blob',
     www: 'blob',

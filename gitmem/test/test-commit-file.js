@@ -46,7 +46,7 @@ data32[Commit.tree] = tree;
 data32[Commit.info] = info;
 data32[Commit.parent] = parentCommit;
 
-var commitLength = CommitFile.create(data32, 0);
+var commitLength = CommitFile.create($file, data32, 0);
 log(pretty($file, 0, commitLength));
 //=> commit 236\x00tree d222b927f53e49a12986fb4a7a87c51924e513b9
 //=> parent cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c

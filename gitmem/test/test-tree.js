@@ -3,7 +3,7 @@ require('../../test/helper');
 
 global.$file = new Uint8Array(512);
 
-var treeLength = Tree.create({
+var treeLength = Tree.create($file, {
     foo: 'blob',
     bar: 'tree',
     www: 'blob',

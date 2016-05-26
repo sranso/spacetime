@@ -29,7 +29,7 @@ global.createZero = function (childZeros) {
         }
     }
 
-    var treeLength = Tree.create(treeConfig);
+    var treeLength = Tree.create($file, treeConfig);
     var moldIndex = Mold.process($mold, treeLength);
     return ApiSet._create(moldIndex, pointers);
 };

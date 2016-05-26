@@ -6,7 +6,7 @@ var treePrefix = Convert.stringToArray('tree ');
 var treeMode = Convert.stringToArray('40000');
 var blobMode = Convert.stringToArray('100644');
 
-Tree.create = function (props) {
+Tree.create = function (file, props) {
     var names = Object.keys(props);
     names.sort();
 
@@ -28,14 +28,14 @@ Tree.create = function (props) {
 
     var i;
     for (i = 0; i < treePrefix.length; i++) {
-        $file[i] = treePrefix[i];
+        file[i] = treePrefix[i];
     }
 
     var tree_j = i;
     for (i = 0; i < lengthString.length; i++) {
-        $file[tree_j + i] = lengthString.charCodeAt(i);
+        file[tree_j + i] = lengthString.charCodeAt(i);
     }
-    $file[tree_j + i] = 0;
+    file[tree_j + i] = 0;
 
     tree_j += i + 1;
     for (n = 0; n < names.length; n++) {
@@ -47,19 +47,19 @@ Tree.create = function (props) {
         }
 
         for (i = 0; i < mode.length; i++) {
-            $file[tree_j + i] = mode[i];
+            file[tree_j + i] = mode[i];
         }
-        $file[tree_j + i] = 0x20;
+        file[tree_j + i] = 0x20;
 
         tree_j += i + 1;
         for (i = 0; i < name.length; i++) {
-            $file[tree_j + i] = name.charCodeAt(i);
+            file[tree_j + i] = name.charCodeAt(i);
         }
-        $file[tree_j + i] = 0;
+        file[tree_j + i] = 0;
 
         tree_j += i + 1;
         for (i = 0; i < 20; i++) {
-            $file[tree_j + i] = 0;
+            file[tree_j + i] = 0;
         }
 
         tree_j += 20;

@@ -16,7 +16,7 @@ log(mold.fileArray.length);
 log(mold.nextArrayOffset);
 //=> 0
 
-var treeLength = Tree.create({
+var treeLength = Tree.create($file, {
     foo: 'blob',
     bar: 'blob',
 });
@@ -52,7 +52,7 @@ moldIndex = Mold.process(mold, treeLength);
 log(moldIndex);
 //=> 1
 
-treeLength = Tree.create({
+treeLength = Tree.create($file, {
     notTheSame: 'blob',
     properties: 'tree',
 }, []);

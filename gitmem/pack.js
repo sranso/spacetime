@@ -75,7 +75,7 @@ var packSingle = function (pointer) {
 
     case Type.commit:
 
-        var fileLength = CommitFile.create($table.data32, pointer32);
+        var fileLength = CommitFile.create($file, $table.data32, pointer32);
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
         packSingle($table.data32[pointer32 + Commit.tree]);
         var parent = $table.data32[pointer32 + Commit.parent];
@@ -86,13 +86,13 @@ var packSingle = function (pointer) {
 
     case Type.string:
     case Type.longString:
-        var fileLength = Blob.create('"' + val(pointer));
+        var fileLength = Blob.create($file, '"' + val(pointer));
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
         break;
 
     case Type.integer:
     case Type.float:
-        var fileLength = Blob.create('' + val(pointer));
+        var fileLength = Blob.create($file, '' + val(pointer));
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);
         break;
 

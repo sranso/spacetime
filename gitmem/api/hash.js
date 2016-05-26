@@ -9,7 +9,7 @@ global.hash = function (value) {
     var type;
     switch (typeof value) {
     case 'string':
-        blobLength = Blob.create('"' + value);
+        blobLength = Blob.create($file, '"' + value);
         if (value.length > Table.dataLongStrings_maxLength) {
             throw new Error('String too long: ' + value.length);
         } else if (value.length > Table.data8_stringLength) {
@@ -19,7 +19,7 @@ global.hash = function (value) {
         }
         break;
     case 'number':
-        blobLength = Blob.create('' + value);
+        blobLength = Blob.create($file, '' + value);
         if (value === (value | 0)) {
             type = Type.integer;
         } else {

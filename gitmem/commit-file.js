@@ -24,7 +24,7 @@ var constantLength = 'tree \nauthor  <>  -0600\ncommitter  <>  -0600\n\n'.length
 constantLength += 40;
 var perParentLength = parentPrefix.length + 40 + 1;
 
-CommitFile.create = function (data32, pointer32) {
+CommitFile.create = function (file, data32, pointer32) {
     var tree = data32[pointer32 + Commit.tree];
     var parent = data32[pointer32 + Commit.parent];
     var info = data32[pointer32 + Commit.info];
@@ -64,114 +64,114 @@ CommitFile.create = function (data32, pointer32) {
 
     var i;
     for (i = 0; i < commitPrefix.length; i++) {
-        $file[i] = commitPrefix[i];
+        file[i] = commitPrefix[i];
     }
 
     var commit_j = i;
     for (i = 0; i < lengthString.length; i++) {
-        $file[commit_j + i] = lengthString.charCodeAt(i);
+        file[commit_j + i] = lengthString.charCodeAt(i);
     }
-    $file[commit_j + i] = 0;
+    file[commit_j + i] = 0;
 
     // tree
     commit_j += i + 1;
     for (i = 0; i < treePrefix.length; i++) {
-        $file[commit_j + i] = treePrefix[i];
+        file[commit_j + i] = treePrefix[i];
     }
 
     commit_j += i;
-    Convert.hashToHex($table.hashes8, tree, $file, commit_j);
-    $file[commit_j + 40] = 0x0a;
+    Convert.hashToHex($table.hashes8, tree, file, commit_j);
+    file[commit_j + 40] = 0x0a;
 
     // parent
     if (parent) {
         commit_j += 40 + 1;
         for (i = 0; i < parentPrefix.length; i++) {
-            $file[commit_j + i] = parentPrefix[i];
+            file[commit_j + i] = parentPrefix[i];
         }
 
         commit_j += i;
-        Convert.hashToHex($table.hashes8, parent, $file, commit_j);
-        $file[commit_j + 40] = 0x0a;
+        Convert.hashToHex($table.hashes8, parent, file, commit_j);
+        file[commit_j + 40] = 0x0a;
     }
 
     // author
     commit_j += 40 + 1;
     for (i = 0; i < authorPrefix.length; i++) {
-        $file[commit_j + i] = authorPrefix[i];
+        file[commit_j + i] = authorPrefix[i];
     }
 
     commit_j += i;
-    commit_j = writeString(commit_j, authorName);
-    $file[commit_j] = 0x20;
-    $file[commit_j + 1] = '<'.charCodeAt(0);
+    commit_j = writeString(file, commit_j, authorName);
+    file[commit_j] = 0x20;
+    file[commit_j + 1] = '<'.charCodeAt(0);
 
     commit_j += 2;
-    commit_j = writeString(commit_j, authorEmail);
-    $file[commit_j] = '>'.charCodeAt(0);
-    $file[commit_j + 1] = 0x20;
+    commit_j = writeString(file, commit_j, authorEmail);
+    file[commit_j] = '>'.charCodeAt(0);
+    file[commit_j + 1] = 0x20;
 
     commit_j += 2;
     for (i = 0; i < authorTime.length; i++) {
-        $file[commit_j + i] = authorTime.charCodeAt(i);
+        file[commit_j + i] = authorTime.charCodeAt(i);
     }
-    $file[commit_j + i] = 0x20;
+    file[commit_j + i] = 0x20;
 
     commit_j += i + 1;
     for (i = 0; i < authorTimezone.length; i++) {
-        $file[commit_j + i] = authorTimezone.charCodeAt(i);
+        file[commit_j + i] = authorTimezone.charCodeAt(i);
     }
-    $file[commit_j + i] = 0x0a;
+    file[commit_j + i] = 0x0a;
 
     // committer
     commit_j += i + 1;
     for (i = 0; i < committerPrefix.length; i++) {
-        $file[commit_j + i] = committerPrefix[i];
+        file[commit_j + i] = committerPrefix[i];
     }
 
     commit_j += i;
-    commit_j = writeString(commit_j, committerName);
-    $file[commit_j] = 0x20;
-    $file[commit_j + 1] = '<'.charCodeAt(0);
+    commit_j = writeString(file, commit_j, committerName);
+    file[commit_j] = 0x20;
+    file[commit_j + 1] = '<'.charCodeAt(0);
 
     commit_j += 2;
-    commit_j = writeString(commit_j, committerEmail);
-    $file[commit_j] = '>'.charCodeAt(0);
-    $file[commit_j + 1] = 0x20;
+    commit_j = writeString(file, commit_j, committerEmail);
+    file[commit_j] = '>'.charCodeAt(0);
+    file[commit_j + 1] = 0x20;
 
     commit_j += 2;
     for (i = 0; i < committerTime.length; i++) {
-        $file[commit_j + i] = committerTime.charCodeAt(i);
+        file[commit_j + i] = committerTime.charCodeAt(i);
     }
-    $file[commit_j + i] = 0x20;
+    file[commit_j + i] = 0x20;
 
     commit_j += i + 1;
     for (i = 0; i < committerTimezone.length; i++) {
-        $file[commit_j + i] = committerTimezone.charCodeAt(i);
+        file[commit_j + i] = committerTimezone.charCodeAt(i);
     }
-    $file[commit_j + i] = 0x0a;
-    $file[commit_j + i + 1] = 0x0a;
+    file[commit_j + i] = 0x0a;
+    file[commit_j + i + 1] = 0x0a;
 
     // message
     commit_j += i + 2;
-    writeString(commit_j, message);
+    writeString(file, commit_j, message);
 
     return commitLength;
 };
 
-var writeString = function (commit_j, pointer) {
+var writeString = function (file, commit_j, pointer) {
     var i;
     var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
     if (type === Type.longString) {
         var longStringI = $table.data32[pointer >> 2];
         var string = $table.dataLongStrings[longStringI];
         for (i = 0; i < string.length; i++) {
-            $file[commit_j + i] = string.charCodeAt(i);
+            file[commit_j + i] = string.charCodeAt(i);
         }
     } else if (type === Type.string) {
         var length = $table.data8[pointer + Table.data8_stringLength];
         for (i = 0; i < length; i++) {
-            $file[commit_j + i] = $table.data8[pointer + i];
+            file[commit_j + i] = $table.data8[pointer + i];
         }
     } else {
         throw new Error('Trying to write non-string type: ' + type);

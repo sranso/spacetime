@@ -5,7 +5,7 @@ global.$file = new Uint8Array(512);
 global.$table = Table.create(16, Random.create(926081));
 
 var messageString = 'I <3 short messages';
-var messageBlobLength = Blob.create('"' + messageString);
+var messageBlobLength = Blob.create($file, '"' + messageString);
 var messageHash = new Uint8Array(20);
 Sha1.hash($file, 0, messageBlobLength, messageHash, 0);
 
@@ -20,7 +20,7 @@ log(val(message).length, messageString.length);
 //=> 19 19
 
 var longMessageString = 'I am a long message!';
-var longMessageBlobLength = Blob.create('"' + longMessageString);
+var longMessageBlobLength = Blob.create($file, '"' + longMessageString);
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageBlobLength, longMessageHash, 0);
 
@@ -36,7 +36,7 @@ log(val(longMessage).length, longMessageString.length);
 //=> 20 20
 
 var answerValue = 42;
-var answerBlobLength = Blob.create('' + answerValue);
+var answerBlobLength = Blob.create($file, '' + answerValue);
 var answerHash = new Uint8Array(20);
 Sha1.hash($file, 0, answerBlobLength, answerHash, 0);
 
@@ -49,7 +49,7 @@ log(val(answer), val(answer) === answerValue);
 //=> 42 true
 
 var piValue = 3.141592653589793;
-var piBlobLength = Blob.create('' + piValue);
+var piBlobLength = Blob.create($file, '' + piValue);
 var piHash = new Uint8Array(20);
 Sha1.hash($file, 0, piBlobLength, piHash, 0);
 

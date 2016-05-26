@@ -14,35 +14,35 @@ Commit.initialize();
 $pack[11] = 6;  // Number of packed files.
 var packOffset = 12;
 
-var messageLength = Blob.create('"I <3 short messages');
+var messageLength = Blob.create($file, '"I <3 short messages');
 var messageHash = new Uint8Array(20);
 Sha1.hash($file, 0, messageLength, messageHash, 0);
 log(hexHash(messageHash, 0));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
 packOffset = PackData.packFile(packOffset, $file, 0, messageLength);
 
-var longMessageLength = Blob.create('"I am a long message!');
+var longMessageLength = Blob.create($file, '"I am a long message!');
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageLength, longMessageHash, 0);
 log(hexHash(longMessageHash, 0));
 //=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
 packOffset = PackData.packFile(packOffset, $file, 0, longMessageLength);
 
-var answerLength = Blob.create('42');
+var answerLength = Blob.create($file, '42');
 var answerHash = new Uint8Array(20);
 Sha1.hash($file, 0, answerLength, answerHash, 0);
 log(hexHash(answerHash, 0));
 //=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
 packOffset = PackData.packFile(packOffset, $file, 0, answerLength);
 
-var piLength = Blob.create('3.141592653589793');
+var piLength = Blob.create($file, '3.141592653589793');
 var piHash = new Uint8Array(20);
 Sha1.hash($file, 0, piLength, piHash, 0);
 log(hexHash(piHash, 0));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
 packOffset = PackData.packFile(packOffset, $file, 0, piLength);
 
-var treeLength = Tree.create({
+var treeLength = Tree.create($file, {
     answer: 'blob',
     message: 'blob',
     missing: 'tree',

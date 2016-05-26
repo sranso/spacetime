@@ -91,8 +91,6 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
         var type = $table.data8[Table.typeOffset(base)];
         var pointer32 = base >> 2;
 
-        var oldFile = $file;
-        global.$file = baseFileArray;
         var baseFile = baseFileArray;
         var baseFileStart = 0;
         var prefix;
@@ -110,22 +108,21 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
             break;
 
         case Type.commit:
-            CommitFile.create($table.data32, pointer32);
+            CommitFile.create(baseFile, $table.data32, pointer32);
             prefix = commitPrefix;
             break;
         case Type.string: case Type.longString:
-            Blob.create('"' + val(base));
+            Blob.create(baseFile, '"' + val(base));
             prefix = blobPrefix;
             break;
         case Type.integer:
         case Type.float:
-            Blob.create('' + val(base));
+            Blob.create(baseFile, '' + val(base));
             prefix = blobPrefix;
             break;
         }
 
         var baseFileContentStart = baseFile.indexOf(0, baseFileStart + 6) + 1;
-        global.$file = oldFile;
 
         // Inflate delta data
 

@@ -71,7 +71,7 @@ global.commit = function (pointer) {
 
 var create = function () {
     // Create commit file
-    var commitLength = CommitFile.create(newPointers, 0);
+    var commitLength = CommitFile.create($file, newPointers, 0);
 
     // Hash and store in table
     Sha1.hash($file, 0, commitLength, tempHash, 0);

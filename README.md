@@ -52,8 +52,8 @@ $ git push http://localhost:8080/local-git/testrepo.git master
 Testing is done by logging values with `log`. The values are written to the test file below the log line (in addition to the terminal). Any changes to the logged values will create a diff. This means logged values must be deterministic. An example (from [test-blob.js](https://github.com/getspacetime/spacetime/blob/master/test/gitmem/test-blob.js)):
 
 ``` js
-var blobRange = Blob.create('foo', []);
-log(pretty($h, blobRange[0], blobRange[1]));
+var blobLength = Blob.create(file, 'foo');
+log(pretty(file, 0, blobLength));
 //=> blob 3\x00foo
 ```
 

@@ -5,7 +5,7 @@ global.$file = new Uint8Array(512);
 global.$pack = new Uint8Array(1024);
 global.$table = Table.create(4, Random.create(19223554));
 
-var blobLength = Blob.create('foo bar\n');
+var blobLength = Blob.create($file, 'foo bar\n');
 var blob = $file.subarray(0, blobLength);
 
 var deflated = pako.deflate(blob, {level: 1, chunkSize: 4096});
