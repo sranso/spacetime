@@ -1,7 +1,7 @@
 'use strict';
 require('../../test/helper');
 
-global.$file = new Uint8Array(16);
+global.$file = new Uint8Array(512);
 
 var blobLength = Blob.create('foo');
 log(blobLength);

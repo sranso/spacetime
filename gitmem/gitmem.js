@@ -3,7 +3,7 @@ global.GitMem = {};
 (function () {
 
 GitMem.initialize = function () {
-    global.$file = new Uint8Array(4096);
+    global.$file = new Uint8Array(512);
     global.$pack = new Uint8Array(4096);
 };
 

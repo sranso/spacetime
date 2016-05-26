@@ -1,8 +1,8 @@
 'use strict';
 require('../../test/helper');
 
-global.$file = new Uint8Array(256);
-global.$pack = new Uint8Array(256);
+global.$file = new Uint8Array(512);
+global.$pack = new Uint8Array(1024);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(6889162));

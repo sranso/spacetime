@@ -1,7 +1,7 @@
 'use strict';
 require('../../test/helper');
 
-global.$file = new Uint8Array(128);
+global.$file = new Uint8Array(512);
 
 var treeLength = Tree.create({
     foo: 'blob',

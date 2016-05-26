@@ -17,7 +17,7 @@ log(GitMem._randomSeed() !== GitMem._randomSeed());
 GitMem.initialize();
 
 log($file.length);
-//=> 4096
+//=> 512
 log($pack.length);
 //=> 4096
 

@@ -1,7 +1,7 @@
 'use strict';
 require('../../test/helper');
 
-global.$file = new Uint8Array(256);
+global.$file = new Uint8Array(512);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(73440121));
@@ -65,7 +65,7 @@ log(hexHash(commitHash, 0));
 data32 = new Uint32Array(5);
 global.$table = Table.create(32, Random.create(73440121));
 var oldFile = $file;
-global.$file = new Uint8Array(256);
+global.$file = new Uint8Array(512);
 Constants.initialize(-1, 1);
 Commit.initialize();
 global.$file = oldFile;

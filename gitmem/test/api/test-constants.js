@@ -1,7 +1,7 @@
 'use strict';
 require('../../../test/helper');
 
-global.$file = new Uint8Array(256);
+global.$file = new Uint8Array(512);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(7961050));
