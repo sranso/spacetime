@@ -6,19 +6,21 @@ Constants.initialize = function (minNumber, maxPositive) {
     Constants.emptyString = $.nextIndex++;
     $[Constants.emptyString] = hash('');
 
-    Constants.emptyTree = $.nextIndex++;
-    $[Constants.emptyTree] = createZero({
+    var emptyTree = createZero({
         '.empty': $[Constants.emptyString],
     });
-    var pointer32 = $[Constants.emptyTree] >> 2;
+    var pointer32 = emptyTree >> 2;
     var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
     $mold.data8[moldIndex * Mold.data8_size + Mold.data8_numChildren] = 0;
+    Constants.emptyTree = $.nextIndex++;
+    $[Constants.emptyTree] = emptyTree;
 
-    var emptyHash = new Uint8Array(20);
+    var zeroHashArray = new Uint8Array(20);
+    var zeroHash = ~Table.findPointer($table, zeroHashArray, 0);
+    Table.setHash($table, zeroHash, zeroHashArray, 0);
+    $table.data8[Table.typeOffset(zeroHash)] = Type.pending;
     Constants.zeroHash = $.nextIndex++;
-    $[Constants.zeroHash] = ~Table.findPointer($table, emptyHash, 0);
-    Table.setHash($table, $[Constants.zeroHash], emptyHash, 0);
-    $table.data8[Table.typeOffset($[Constants.zeroHash])] = Type.pending;
+    $[Constants.zeroHash] = zeroHash;
 
     var maxNegative = -minNumber;
     Constants.$positive = new Uint32Array(maxPositive + 1);
