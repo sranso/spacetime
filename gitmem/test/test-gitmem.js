@@ -36,7 +36,7 @@ log(gitmem['Constants.$positive'].length);
 log(gitmem['Constants.$negative'].length);
 //=> 2001
 log(gitmem['ArrayTree.$zeros'].length);
-//=> 106
+//=> 58
 
 log(hexHash($table.hashes8, Constants.$positive[2000]));
 //=> 9463411b62f21b7ed88bbe711c958b3b66153330

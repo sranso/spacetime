@@ -3,11 +3,10 @@ global.ArrayTree = {};
 (function () {
 
 ArrayTree.blobType = 0;
-ArrayTree.treeType = 1;
+ArrayTree.treeType = 5;  // 5 because tree types start at $zeros[5]
 
 ArrayTree.initialize = function (levels) {
-    var zeros = new Uint32Array(6 * levels + 4);
-    ArrayTree.$zeros = zeros;
+    ArrayTree.$zeros = new Uint32Array(3 * levels + 2 + ArrayTree.treeType);
 
     // Empty array tree
     var emptyArrayTree = createZero({
@@ -20,61 +19,45 @@ ArrayTree.initialize = function (levels) {
     $mold.data8[mold8 + Mold.data8_treeType] = Type.arrayTree;
     $mold.data8[mold8 + Mold.data8_numChildren] = 0;
     $mold.data8[mold8 + Mold.data8_arrayTreeLevel] = 0;
-    zeros[0] = emptyArrayTree;
-    zeros[1] = emptyArrayTree;
+    ArrayTree.$zeros[0 + ArrayTree.blobType] = emptyArrayTree;
+    ArrayTree.$zeros[0 + ArrayTree.treeType] = emptyArrayTree;
 
-    // The rest of blob zeros and tree levels >= 1
-    var fullLowerLevel = Constants.$positive[0];
-    var i;
+    var fullLowerLevel = writeLevel(0, 1, Constants.$positive[0], ArrayTree.blobType);
+    writeLevel(0, 1, $[Constants.emptyTree], ArrayTree.treeType);
+
     var level;
-    var numChildren = 1;
-    for (level = 0; level < levels; level++) {
-        var j;
-        while (numChildren <= 4) {
-            j = 6 * level + 2 * numChildren;
+    for (level = 1; level < levels; level++) {
+        fullLowerLevel = writeLevel(level, 2, fullLowerLevel, ArrayTree.treeType);
+    };
+};
 
-            var config = {};
-            config['0:L' + level] = fullLowerLevel;
-            for (i = 1; i < numChildren; i++) {
-                config['' + i] = fullLowerLevel;
-            }
-            zeros[j] = createZero(config);
-            zeros[j + 1] = zeros[j];
-            $table.data8[Table.typeOffset(zeros[j])] = Type.arrayTree;
-            var pointer32 = zeros[j] >> 2;
-            var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
-            var mold8 = moldIndex * Mold.data8_size;
-            $mold.data8[mold8 + Mold.data8_treeType] = Type.arrayTree;
-            $mold.data8[mold8 + Mold.data8_numChildren] = numChildren;
-            $mold.data8[mold8 + Mold.data8_arrayTreeLevel] = level;
-            numChildren++;
-        }
-
-        fullLowerLevel = zeros[j];
-        numChildren = 2;
-    }
-
-    // treeZeros level 0
-    var emptyTree = $[Constants.emptyTree];
+var writeLevel = function (level, startNumChildren, fullLowerLevel, arrayType) {
+    var zero;
     var config = {};
-    config['0:L0'] = emptyTree;
-    for (numChildren = 1; numChildren <= 4; numChildren++) {
-        var zero = createZero(config);
-        zeros[2 * numChildren + ArrayTree.treeType] = zero;
+    config['0:L' + level] = fullLowerLevel;
+    if (startNumChildren === 2) {
+        config['1'] = fullLowerLevel;
+    }
+    var numChildren;
+    for (numChildren = startNumChildren; numChildren <= 4; numChildren++) {
+        zero = createZero(config);
+        ArrayTree.$zeros[3 * level + numChildren + arrayType] = zero;
         $table.data8[Table.typeOffset(zero)] = Type.arrayTree;
         var pointer32 = zero >> 2;
         var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
         var mold8 = moldIndex * Mold.data8_size;
         $mold.data8[mold8 + Mold.data8_treeType] = Type.arrayTree;
         $mold.data8[mold8 + Mold.data8_numChildren] = numChildren;
-        $mold.data8[mold8 + Mold.data8_arrayTreeLevel] = 0;
+        $mold.data8[mold8 + Mold.data8_arrayTreeLevel] = level;
 
-        config[numChildren] = emptyTree;
+        config['' + numChildren] = fullLowerLevel;
     }
+    return zero;
 };
 
-ArrayTree.zeroFor = function (level, numChildren, type) {
-    return ArrayTree.$zeros[6 * level + 2 * numChildren + type];
+ArrayTree.moldIndexFor = function (level, numChildren, type) {
+    var zero = ArrayTree.$zeros[3 * level + numChildren + type];
+    return $table.data32[(zero >> 2) + Table.data32_moldIndex];
 };
 
 })();

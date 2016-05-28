@@ -10,27 +10,28 @@ global.$mold = Mold.create(32, 2048);
 Constants.initialize(-1, 1);
 ArrayTree.initialize(4);
 
-log(len(ArrayTree.zeroFor(0, 0, ArrayTree.blobType)));
+log(len(ArrayTree.$zeros[0 + ArrayTree.blobType]));
 //=> 0
 
-log(len(ArrayTree.zeroFor(0, 1, ArrayTree.blobType)));
+log(len(ArrayTree.$zeros[1 + ArrayTree.blobType]));
 //=> 1
 
-log(len(ArrayTree.zeroFor(0, 4, ArrayTree.treeType)));
+log(len(ArrayTree.$zeros[4 + ArrayTree.treeType]));
 //=> 4
 
-log(len(ArrayTree.zeroFor(1, 2, ArrayTree.blobType)));
+var level = 1;
+log(len(ArrayTree.$zeros[3 * level + 2 + ArrayTree.treeType]));
 //=> 8
 
-log(len(ArrayTree.zeroFor(2, 4, ArrayTree.treeType)));
-//=> 64
+level = 3;
+log(len(ArrayTree.$zeros[3 * level + 4 + ArrayTree.treeType]));
+//=> 256
 
-var array1 = ArrayTree.zeroFor(0, 4, ArrayTree.blobType);
-var array2 = ArrayTree.zeroFor(0, 2, ArrayTree.blobType);
-var pointer32 = ArrayTree.zeroFor(1, 3, ArrayTree.blobType) >> 2;
+var array1 = ArrayTree.$zeros[4 + ArrayTree.blobType];
+var array2 = ArrayTree.$zeros[2 + ArrayTree.blobType];
+level = 1;
+var pointer32 = ArrayTree.$zeros[3 * level + 3 + ArrayTree.treeType] >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
-log(moldIndex);
-//=> 8
 var data32 = new Uint32Array([array1, array1, array2]);
 Mold.fillHoles($mold, moldIndex, data32, 0);
 var mold32 = moldIndex * Mold.data32_size;
@@ -49,8 +50,10 @@ $table.data8[Table.typeOffset(array3)] = Type.arrayTree;
 log(len(array3));
 //=> 10
 
-var array4 = ArrayTree.zeroFor(2, 4, ArrayTree.treeType);
-var pointer32 = ArrayTree.zeroFor(3, 2, ArrayTree.treeType) >> 2;
+level = 2;
+var array4 = ArrayTree.$zeros[3 * level + 4 + ArrayTree.treeType];
+level = 3;
+var pointer32 = ArrayTree.$zeros[3 * level + 2 + ArrayTree.treeType] >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var data32 = new Uint32Array([array4, array3]);
 Mold.fillHoles($mold, moldIndex, data32, 0);
