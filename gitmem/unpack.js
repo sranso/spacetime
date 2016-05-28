@@ -35,8 +35,9 @@ Unpack.unpack = function (pack) {
             var mold32 = Mold.data32_size * moldIndex;
             var mold8 = Mold.data8_size * moldIndex;
             var mold8Holes = mold8 + Mold.data8_holeOffsets;
+            var treeType = $mold.data8[mold8 + Mold.data8_treeType];
             var numHoles = $mold.data8[mold8 + Mold.data8_numHoles];
-            $table.data8[typeOffset] = Type.tree | Type.onServer;
+            $table.data8[typeOffset] = treeType | Type.onServer;
             $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
 
             // Set child pointers

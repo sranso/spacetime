@@ -6,12 +6,13 @@ global.$pack = new Uint8Array(1024);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
 global.$table = Table.create(32, Random.create(526926));
-global.$mold = Mold.create(8, 512);
+global.$mold = Mold.create(16, 2048);
 
 Constants.initialize(-1, 1);
 Commit.initialize();
+ArrayTree.initialize(1);
 
-$pack[11] = 6;  // Number of packed files.
+$pack[11] = 7;  // Number of packed files.
 var packOffset = 12;
 
 var messageLength = Blob.create($file, '"I <3 short messages');
@@ -42,6 +43,7 @@ log(hexHash(piHash, 0));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
 packOffset = PackData.packFile(packOffset, $file, 0, piLength);
 
+// Tree
 var treeLength = Tree.create($file, {
     answer: 'blob',
     message: 'blob',
@@ -67,6 +69,21 @@ var treePointer = ~Table.findPointer($table, treeHash, 0);
 Table.setHash($table, treePointer, treeHash, 0);
 packOffset = PackData.packFile(packOffset, $file, 0, treeLength);
 
+// ArrayTree
+var pointer = ArrayTree.$zeros[0];
+var pointer32 = pointer >> 2;
+var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+var mold32 = moldIndex * Mold.data32_size;
+var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
+var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
+var arrayTreeHash = $table.hashes8.slice(pointer, pointer + 20);
+log(hexHash(arrayTreeHash, 0));
+//=> 177f17fca445dd21024bcd401d52fb0fa07d4905
+log(pretty($mold.fileArray, fileStart, fileEnd));
+//=> tree 43\x00100644 .empty-array:L0\x00\x9dh\x93<D\xf19\x85\xb9\xeb\x19\x15\x9d\xa6\xeb?\xf0\xe5t\xbf
+packOffset = PackData.packFile(packOffset, $mold.fileArray, fileStart, fileEnd);
+
+// Commit
 var user = set($[Commit.User.zero],
                Commit.User.email, hash('jake@jakesandlund.com'),
                Commit.User.timezoneOffset, hash(360),
@@ -97,10 +114,10 @@ log(pretty($file, 0, commitLength));
 packOffset = PackData.packFile(packOffset, $file, 0, commitLength);
 
 log(packOffset);
-//=> 406
+//=> 460
 Sha1.hash($pack, 0, packOffset, $pack, packOffset);
 log(hexHash($pack, packOffset));
-//=> 01be5bf82d0290f2e1de0c1bb54c50be09edf7e8
+//=> 3171a1b58cdab67f91040a6342e9168aea3ef61c
 
 
 
@@ -191,7 +208,7 @@ log(type & Type.onServer);
 var pointer32 = tree >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex);
-//=> 4
+//=> 13
 var mold32 = Mold.data32_size * moldIndex;
 var fileStart = $mold.data32[mold32 + Mold.data32_fileStart];
 var fileEnd = $mold.data32[mold32 + Mold.data32_fileEnd];
@@ -216,6 +233,17 @@ log($table.data8[Table.typeOffset(missing)], Type.pending);
 childPointer = $table.data32[pointer32 + 3];
 log(childPointer, pi);
 //=> 44 44
+
+
+// arrayTree
+var arrayTree = Table.findPointer($table, arrayTreeHash, 0);
+log(hexHash($table.hashes8, arrayTree));
+//=> 177f17fca445dd21024bcd401d52fb0fa07d4905
+var type = $table.data8[Table.typeOffset(arrayTree)];
+log(type & Type.mask, Type.arrayTree);
+//=> 9 9
+log(type & Type.onServer);
+//=> 128
 
 
 // commit

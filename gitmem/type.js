@@ -17,5 +17,6 @@ Type.integer = 6;
 Type.float = 7;
 
 Type.tree = 8;
+Type.arrayTree = 9;
 
 })();

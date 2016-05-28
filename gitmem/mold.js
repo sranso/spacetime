@@ -30,12 +30,13 @@ Mold.create = function (n, arrayCapacity) {
 // data32/8 layout (in bytes):
 //
 // |-- 4 --|-- 4 --|-1-|-1-|-1-|-1-|-1-|-1-|-1-|-1-|
-// |       |       |   |   |   |               |
-// |       |       |   |   |   |               | unused
-// |       |       |   |   |   | holeOffsets (x4) = data8[11 - 14]
-// |       |       |   |   | treeHeight = data8[10]
-// |       |       |   | numChildren = data8[9]
-// |       |       | numHoles = data8[8]
+// |       |       |   |   |   |   |               |
+// |       |       |   |   |   |   |               |
+// |       |       |   |   |   |   | holeOffsets (x4) = data8[12 - 15]
+// |       |       |   |   |   | arrayTreeLevel = data8[11]
+// |       |       |   |   | numChildren = data8[10]
+// |       |       |   | numHoles = data8[9]
+// |       |       | treeType = data8[8]
 // |       | fileEnd = data32[1]
 // | fileStart = data32[0]
 
@@ -43,10 +44,11 @@ Mold.data32_size = 4;
 Mold.data32_fileStart = 0;
 Mold.data32_fileEnd = 1;
 Mold.data8_size = 16;
-Mold.data8_numHoles = 8
-Mold.data8_numChildren = 9;
-Mold.data8_treeHeight = 10;
-Mold.data8_holeOffsets = 11;
+Mold.data8_treeType = 8
+Mold.data8_numHoles = 9
+Mold.data8_numChildren = 10;
+Mold.data8_arrayTreeLevel = 11;
+Mold.data8_holeOffsets = 12;
 
 var holeOffsets = new Uint32Array(10);
 
@@ -149,8 +151,10 @@ Mold.process = function (mold, fileLength) {
     var mold32 = moldIndex * Mold.data32_size;
     mold.data32[mold32 + Mold.data32_fileStart] = moldFileStart;
     mold.data32[mold32 + Mold.data32_fileEnd] = moldFileEnd;
+    mold.data8[mold8 + Mold.data8_treeType] = Type.tree;
     mold.data8[mold8 + Mold.data8_numHoles] = numHoles;
     mold.data8[mold8 + Mold.data8_numChildren] = numHoles;
+    mold.data8[mold8 + Mold.data8_arrayTreeLevel] = 0;
 
     var mold8Holes = mold8 + Mold.data8_holeOffsets;
     for (j = 0; j < numHoles; j++) {

@@ -18,8 +18,11 @@ GitMem.create = function () {
     // 140 is higher than average tree size
     global.$mold = Mold.create(16384, 140 * 16384); // 2.8 MB
 
-    Constants.initialize(-1000, 1000);
+    Constants.initialize(-2000, 2000);
     Commit.initialize();
+
+    // 17 levels is enough for 9 years of data at 60 fps
+    ArrayTree.initialize(17);
 
     return {
         $: $,
@@ -27,6 +30,7 @@ GitMem.create = function () {
         $mold: $mold,
         'Constants.$positive': Constants.$positive,
         'Constants.$negative': Constants.$negative,
+        'ArrayTree.$zeros': ArrayTree.$zeros,
     };
 };
 
@@ -36,6 +40,7 @@ GitMem.load = function (gitmem) {
     global.$mold = gitmem.$mold;
     Constants.$positive = gitmem['Constants.$positive'];
     Constants.$negative = gitmem['Constants.$negative'];
+    ArrayTree.$zeros = gitmem['ArrayTree.$zeros'];
 };
 
 GitMem._randomSeed = function () {

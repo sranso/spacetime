@@ -54,6 +54,7 @@ var packSingle = function (pointer) {
 
     switch (type & Type.mask) {
     case Type.tree:
+    case Type.arrayTree:
 
         var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
         var mold8 = moldIndex * Mold.data8_size;

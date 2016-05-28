@@ -32,14 +32,16 @@ log(gitmem.$table.n);
 log(gitmem.$mold.n);
 //=> 16384
 log(gitmem['Constants.$positive'].length);
-//=> 1001
+//=> 2001
 log(gitmem['Constants.$negative'].length);
-//=> 1001
+//=> 2001
+log(gitmem['ArrayTree.$zeros'].length);
+//=> 106
 
-log(hexHash($table.hashes8, Constants.$positive[1000]));
-//=> e37d32abba426c06b752a5e53f48c595c84e9270
-log(hexHash($table.hashes8, Constants.$negative[1000]));
-//=> 889416e072d65f95c4a307be998e78b918b03f5b
+log(hexHash($table.hashes8, Constants.$positive[2000]));
+//=> 9463411b62f21b7ed88bbe711c958b3b66153330
+log(hexHash($table.hashes8, Constants.$negative[2000]));
+//=> f6d894c8bdd2c9357686f44bc1673759b9ee343b
 log(hexHash($table.hashes8, $[Commit.zero]));
 //=> cf2f19e7e3692eadb7e6e9e37f63d29f8b5ced7c
 
@@ -49,6 +51,7 @@ global.$table = null;
 global.$mold = null;
 Constants.$positive = null;
 Constants.$negative = null;
+ArrayTree.$zeros = null;
 
 GitMem.load(gitmem);
 
@@ -61,4 +64,6 @@ log($mold === gitmem.$mold);
 log(Constants.$positive === gitmem['Constants.$positive']);
 //=> true
 log(Constants.$negative === gitmem['Constants.$negative']);
+//=> true
+log(ArrayTree.$zeros === gitmem['ArrayTree.$zeros']);
 //=> true
