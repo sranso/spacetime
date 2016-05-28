@@ -4,8 +4,8 @@ require('../../test/helper');
 global.$file = new Uint8Array(512);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
-global.$table = Table.create(64, Random.create(625772001));
-global.$mold = Mold.create(64, 2048);
+global.$table = Table.create(32, Random.create(625772001));
+global.$mold = Mold.create(32, 2048);
 
 Constants.initialize(-1, 1);
 var levels = 4;
@@ -92,4 +92,20 @@ log($mold.data8[mold8 + Mold.data8_numChildren]);
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
 //=> 0
 log(prettyMold(moldIndex));
-//=> tree 87\x0040000 0:L1\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b40000 1\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b40000 2\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b
+//=> tree 87\x0040000 0:L0\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b40000 1\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b40000 2\x00\xeb<\x1e\xc5\xe2\x88\xba\xbd\xc4>\xdd\x02\x05\x03?\x2a\x14\xbbL\x1b
+
+// blob 2:L1
+pointer = ArrayTree.zeroFor(1, 2, ArrayTree.blobType);
+pointer32 = pointer >> 2;
+log($table.data8[Table.typeOffset(pointer)], Type.arrayTree);
+//=> 9 9
+moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+mold8 = moldIndex * Mold.data8_size;
+log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
+//=> 9 9
+log($mold.data8[mold8 + Mold.data8_numChildren]);
+//=> 2
+log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
+//=> 1
+log(prettyMold(moldIndex));
+//=> tree 59\x0040000 0:L1\x003\xd1\xfd\xadZ[\xa4\xd11\xb0\x1a5\x7e\xc7\x15.\x09\xdd=:40000 1\x003\xd1\xfd\xadZ[\xa4\xd11\xb0\x1a5\x7e\xc7\x15.\x09\xdd=:

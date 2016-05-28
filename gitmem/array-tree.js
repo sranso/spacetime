@@ -54,10 +54,10 @@ ArrayTree.initialize = function (levels) {
         numChildren = 2;
     }
 
-    // treeZeros level 1
+    // treeZeros level 0
     var emptyTree = $[Constants.emptyTree];
     var config = {};
-    config['0:L1'] = emptyTree;
+    config['0:L0'] = emptyTree;
     for (numChildren = 1; numChildren <= 4; numChildren++) {
         var zero = createZero(config);
         zeros[2 * numChildren + ArrayTree.treeType] = zero;
