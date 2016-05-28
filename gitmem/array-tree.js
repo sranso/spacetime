@@ -73,4 +73,8 @@ ArrayTree.initialize = function (levels) {
     }
 };
 
+ArrayTree.zeroFor = function (level, numChildren, type) {
+    return ArrayTree.$zeros[6 * level + 2 * numChildren + type];
+};
+
 })();

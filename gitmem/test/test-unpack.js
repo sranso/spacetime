@@ -70,7 +70,7 @@ Table.setHash($table, treePointer, treeHash, 0);
 packOffset = PackData.packFile(packOffset, $file, 0, treeLength);
 
 // ArrayTree
-var pointer = ArrayTree.$zeros[0];
+var pointer = ArrayTree.zeroFor(0, 0, ArrayTree.blobType);
 var pointer32 = pointer >> 2;
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold32 = moldIndex * Mold.data32_size;

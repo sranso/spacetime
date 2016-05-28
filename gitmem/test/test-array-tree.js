@@ -30,7 +30,7 @@ log(hexHash($table.hashes8, $[Constants.emptyTree]));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 
 // Empty blob/tree
-var pointer = ArrayTree.$zeros[0];
+var pointer = ArrayTree.zeroFor(0, 0, ArrayTree.blobType);
 var pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.arrayTree);
 //=> 9 9
@@ -46,7 +46,7 @@ log(prettyMold(moldIndex));
 //=> tree 43\x00100644 .empty-array:L0\x00\x9dh\x93<D\xf19\x85\xb9\xeb\x19\x15\x9d\xa6\xeb?\xf0\xe5t\xbf
 
 // blob 1:L0
-pointer = ArrayTree.$zeros[2 * 2 + ArrayTree.blobType];
+pointer = ArrayTree.zeroFor(0, 2, ArrayTree.blobType);
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.arrayTree);
 //=> 9 9
@@ -63,7 +63,7 @@ log(prettyMold(moldIndex));
 
 // blob/tree 3:L3
 var level = 3;
-pointer = ArrayTree.$zeros[6 * level + 2 * 4];
+pointer = ArrayTree.zeroFor(level, 4, ArrayTree.treeType);
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.arrayTree);
 //=> 9 9
@@ -79,7 +79,7 @@ log(prettyMold(moldIndex));
 //=> tree 115\x0040000 0:L3\x00\x87\xd1Y\xf5\x90rd\xd6\x8e\xd6G\xcc\x27\x9b\x1c\x13\x8d\x96C740000 1\x00\x87\xd1Y\xf5\x90rd\xd6\x8e\xd6G\xcc\x27\x9b\x1c\x13\x8d\x96C740000 2\x00\x87\xd1Y\xf5\x90rd\xd6\x8e\xd6G\xcc\x27\x9b\x1c\x13\x8d\x96C740000 3\x00\x87\xd1Y\xf5\x90rd\xd6\x8e\xd6G\xcc\x27\x9b\x1c\x13\x8d\x96C7
 
 // tree 2:L0
-pointer = ArrayTree.$zeros[2 * 3 + ArrayTree.treeType];
+pointer = ArrayTree.zeroFor(0, 3, ArrayTree.treeType);
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.arrayTree);
 //=> 9 9
