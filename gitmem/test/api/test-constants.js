@@ -26,7 +26,10 @@ log(Constants.emptyTree);
 //=> 1
 log(hexHash($table.hashes8, $[Constants.emptyTree]));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
-log(numChildren($[Constants.emptyTree]));
+var pointer32 = $[Constants.emptyTree] >> 2;
+var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+var numChildren = $mold.data8[moldIndex * Mold.data8_size + Mold.data8_numChildren];
+log(numChildren);
 //=> 0
 
 log(hexHash($table.hashes8, $[Constants.zeroHash]));
