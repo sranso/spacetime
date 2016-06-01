@@ -7,51 +7,15 @@
 </head>
 <body>
 
-<canvas id="canvas"></canvas>
-<div id="full-screen-text"></div>
-<div id="grid">
-  <div id="cells"></div>
-  <div id="areas"></div>
-  <div id="levels"></div>
-  <div id="grid-bottom-container">
-    <div id="grid-bottom">
-      <div id="play">
-        <div id="play-bar"></div>
-        <div id="play-marker"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script id="vertex-shader" type="x-shader/x-vertex">
-attribute vec2 a_position;
-uniform mat3 u_matrix;
-void main() {
-  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
-}
-</script>
-
-<script id="fragment-shader" type="x-shader/x-fragment">
-precision mediump float;
-uniform vec4 u_color;
-void main() {
-  gl_FragColor = u_color;
-}
-</script>
-
 <script src="./app/global-shim.js"></script>
 
 <script src="./app/undebug.js"></script>
 <!-- Only used in development -->
 <script src="./gitmem/test/debug.js"></script>
 
-<script src="./app/vendor/underscore.js"></script>
 <script src="./app/vendor/d3.js"></script>
-<script src="./app/vendor/gl-matrix.js"></script>
 
 <script src="./gitmem/vendor/pako.js"></script>
-
-<script src="./app/underscore-exports.js"></script>
 
 <script src="./gitmem/convert.js"></script>
 <script src="./gitmem/sha1.js"></script>
@@ -86,42 +50,6 @@ void main() {
 <script src="./gitmem/send-pack.js"></script>
 <script src="./gitmem/github.js"></script>
 <script src="./gitmem/gitmem.js"></script>
-
-<script src="./app/models/result.js"></script>
-<script src="./app/models/input.js"></script>
-<script src="./app/models/quads.js"></script>
-<script src="./app/models/operation.js"></script>
-<script src="./app/models/transformation.js"></script>
-<script src="./app/models/group.js"></script>
-<script src="./app/models/area.js"></script>
-<script src="./app/models/grid.js"></script>
-<script src="./app/models/cell.js"></script>
-<script src="./app/models/project.js"></script>
-
-<script src="./app/library/math-library.js"></script>
-<script src="./app/library/quads-library.js"></script>
-<script src="./app/library/library.js"></script>
-
-<script src="./app/autocomplete.js"></script>
-<script src="./app/execute.js"></script>
-<script src="./app/global.js"></script>
-
-<script src="./app/do/do.js"></script>
-
-<script src="./app/ui/keyboard.js"></script>
-<script src="./app/ui/webgl.js"></script>
-<script src="./app/ui/cell-ui.js"></script>
-<script src="./app/ui/area-ui.js"></script>
-<script src="./app/ui/play-ui.js"></script>
-<script src="./app/ui/level-ui.js"></script>
-<script src="./app/ui/grid-ui.js"></script>
-<script src="./app/ui/full-screen.js"></script>
-<script src="./app/ui/ui.js"></script>
-
-<script src="./app/main.js"></script>
-<script>
-Main.initialize();
-</script>
 
 </body>
 </html>
