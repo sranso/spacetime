@@ -19,12 +19,8 @@ var buildAll = function (buildCallback) {
     async.series([
         async.apply(fs.mkdir, 'dist'),
         async.apply(fs.mkdir, 'dist/vendor'),
-        function (callback) {
-            fs.readdir('spacetime/app/vendor', function (err, vendorFiles) {
-                if (err) throw err;
-                async.eachLimit(vendorFiles, 8, buildVendor, callback);
-            });
-        },
+        async.apply(buildVendorDir, 'app/vendor'),
+        async.apply(buildVendorDir, 'gitmem/vendor'),
         buildAllHtml
     ], buildCallback);
 };
@@ -32,12 +28,20 @@ var buildAll = function (buildCallback) {
 var concatenatedShas = {};
 var concatenatedVendors = {};
 
-var buildVendor = function (vendor, callback) {
-    concatenate(['spacetime/app/vendor/' + vendor], function (err, result) {
+var buildVendorDir = function (dir, callback) {
+    fs.readdir('spacetime/' + dir, function (err, vendorFiles) {
+        if (err) throw err;
+        var build = async.apply(buildVendor, dir);
+        async.eachLimit(vendorFiles, 8, build, callback);
+    });
+};
+
+var buildVendor = function (dir, vendor, callback) {
+    concatenate(['spacetime/' + dir + '/' + vendor], function (err, result) {
         if (err) throw err;
         var vendorPrefix = vendor.slice(0, vendor.length - 3);
         var name = 'vendor/' + vendorPrefix + '-' + result.sha + '.js';
-        concatenatedVendors['./app/vendor/' + vendor] = name;
+        concatenatedVendors['./' + dir + '/' + vendor] = name;
         fs.writeFile('dist/' + name, result.text, 'utf8', callback);
     });
 };
@@ -187,7 +191,7 @@ var buildHtml = function (htmlFile, html, htmlCallback) {
                 if (!src) {
                     return;
                 }
-                if (src.indexOf('./app/vendor/') === 0) {
+                if (src.indexOf('/vendor/') !== -1) {
                     $(this).attr('src', PREFIX + concatenatedVendors[src]);
                 } else if (first) {
                     $(this).attr('src', PREFIX + name);
