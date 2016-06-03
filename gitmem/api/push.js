@@ -6,7 +6,7 @@ var tempHash = new Uint8Array(20);
 
 global.push = function (array, element) {
     var elementType = $table.data8[Table.typeOffset(element)];
-    if (elementType === Type.tree || elementType === Type.arrayTree) {
+    if (elementType === Type.tree) {
         elementType = ArrayTree.treeType;
     } else {
         elementType = ArrayTree.blobType;

@@ -30,7 +30,6 @@ global.set = function (pointer) {
 
 ApiSet._create = function (moldIndex, newPointers) {
     var mold8 = moldIndex * Mold.data8_size;
-    var treeType = $mold.data8[mold8 + Mold.data8_treeType];
     var numChildren = $mold.data8[mold8 + Mold.data8_numChildren];
 
     // Write to mold
@@ -49,7 +48,7 @@ ApiSet._create = function (moldIndex, newPointers) {
     pointer = ~pointer;
     Table.setHash($table, pointer, tempHash, 0);
     var pointer32 = pointer >> 2;
-    $table.data8[Table.typeOffset(pointer)] = treeType
+    $table.data8[Table.typeOffset(pointer)] = Type.tree;
     $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
     var i;
     for (i = 0; i < numChildren; i++) {

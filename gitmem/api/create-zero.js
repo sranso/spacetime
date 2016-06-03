@@ -22,7 +22,6 @@ global.createZero = function (childZeros) {
             treeConfig[name] = 'blob';
             break;
         case Type.tree:
-        case Type.arrayTree:
             treeConfig[name] = 'tree';
             break;
         default:

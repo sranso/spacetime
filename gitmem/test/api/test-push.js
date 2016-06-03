@@ -35,12 +35,12 @@ var array5 = push(array4, num0);
 log(len(array5));
 //=> 5
 var pointer32 = array5 >> 2;
-log($table.data8[Table.typeOffset(array5)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array5)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 2
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
@@ -54,12 +54,12 @@ var array6 = push(array5, num0);
 log(len(array6));
 //=> 6
 var pointer32 = array6 >> 2;
-log($table.data8[Table.typeOffset(array6)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array6)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 2
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
@@ -73,12 +73,12 @@ var array9 = push(push(push(array6, num0), num0), num0);
 log(len(array9));
 //=> 9
 var pointer32 = array9 >> 2;
-log($table.data8[Table.typeOffset(array9)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array9)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 3
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
@@ -107,12 +107,12 @@ var array17 = push(array16, num0);
 log(len(array17));
 //=> 17
 var pointer32 = array17 >> 2;
-log($table.data8[Table.typeOffset(array17)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array17)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 2
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
@@ -132,12 +132,12 @@ var array21 = array;
 log(len(array21));
 //=> 21
 var pointer32 = array21 >> 2;
-log($table.data8[Table.typeOffset(array21)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array21)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 2
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
@@ -157,12 +157,12 @@ var array33 = array;
 log(len(array33));
 //=> 33
 var pointer32 = array33 >> 2;
-log($table.data8[Table.typeOffset(array33)], Type.arrayTree);
-//=> 9 9
+log($table.data8[Table.typeOffset(array33)], Type.tree);
+//=> 8 8
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 var mold8 = moldIndex * Mold.data8_size;
 log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
-//=> 9 9
+//=> 1 1
 log($mold.data8[mold8 + Mold.data8_numChildren]);
 //=> 3
 log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);

@@ -33,8 +33,8 @@ log(pretty(mold.fileArray, fileStart, fileEnd));
 //=> tree 62\x00100644 bar\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00100644 foo\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 
 var mold8 = Mold.data8_size * moldIndex;
-log(mold.data8[mold8 + Mold.data8_treeType], Type.tree);
-//=> 8 8
+log(mold.data8[mold8 + Mold.data8_treeType], Type.fixedTree);
+//=> 0 0
 log(mold.data8[mold8 + Mold.data8_numHoles]);
 //=> 2
 log(mold.data8[mold8 + Mold.data8_numChildren]);

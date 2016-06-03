@@ -46,7 +46,7 @@ $table.data32[pointer32 + 0] = array1;
 $table.data32[pointer32 + 1] = array1;
 $table.data32[pointer32 + 2] = array2;
 $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
-$table.data8[Table.typeOffset(array3)] = Type.arrayTree;
+$table.data8[Table.typeOffset(array3)] = Type.tree;
 log(len(array3));
 //=> 10
 
@@ -68,6 +68,6 @@ var pointer32 = array5 >> 2;
 $table.data32[pointer32 + 0] = array4;
 $table.data32[pointer32 + 1] = array3;
 $table.data32[pointer32 + Table.data32_moldIndex] = moldIndex;
-$table.data8[Table.typeOffset(array5)] = Type.arrayTree;
+$table.data8[Table.typeOffset(array5)] = Type.tree;
 log(len(array5));
 //=> 74

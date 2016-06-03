@@ -2,8 +2,12 @@
 global.Type = {};
 (function () {
 
+// Flags
+
 Type.mask = 0xf;
 Type.onServer = 1 << 7;
+
+// Major types
 
 Type.deleted = 0;
 Type.pending = 1;
@@ -17,6 +21,10 @@ Type.integer = 6;
 Type.float = 7;
 
 Type.tree = 8;
-Type.arrayTree = 9;
+
+// Minor types
+
+Type.fixedTree = 0;
+Type.arrayTree = 1;
 
 })();

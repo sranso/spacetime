@@ -240,8 +240,8 @@ var arrayTree = Table.findPointer($table, arrayTreeHash, 0);
 log(hexHash($table.hashes8, arrayTree));
 //=> 177f17fca445dd21024bcd401d52fb0fa07d4905
 var type = $table.data8[Table.typeOffset(arrayTree)];
-log(type & Type.mask, Type.arrayTree);
-//=> 9 9
+log(type & Type.mask, Type.tree);
+//=> 8 8
 log(type & Type.onServer);
 //=> 128
 
