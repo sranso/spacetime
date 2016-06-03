@@ -111,7 +111,8 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
             CommitFile.create(baseFile, $table.data32, pointer32);
             prefix = commitPrefix;
             break;
-        case Type.string: case Type.longString:
+        case Type.string:
+        case Type.longString:
             Blob.create(baseFile, '"' + val(base));
             prefix = blobPrefix;
             break;
