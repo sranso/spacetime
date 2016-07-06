@@ -53,12 +53,12 @@ var info = set($[Commit.Info.zero],
                 Commit.Info.author, user,
                 Commit.Info.committer, user);
 
-var commit1 = commit($[Commit.zero],
-                     Commit.info, info,
-                     Commit.tree, project1,
-                     Commit.parent, 0,
-                     Commit.committerTime, hash(1463960469),
-                     Commit.message, hash('Initial commit'));
+var commit1 = createCommit($[Commit.zero],
+                           Commit.info, info,
+                           Commit.tree, project1,
+                           Commit.parent, 0,
+                           Commit.committerTime, hash(1463960469),
+                           Commit.message, hash('Initial commit'));
 var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 
 var packLength = Pack.create(commit1);
@@ -72,11 +72,11 @@ var project2 = set(project1,
                    Project.x, hash(-2362.8589701),
                    Project.text, text2);
 
-var commit2 = commit(commit1,
-                     Commit.tree, project2,
-                     Commit.parent, commit1,
-                     Commit.committerTime, hash(1463970341),
-                     Commit.message, hash('Change some stuff'));
+var commit2 = createCommit(commit1,
+                           Commit.tree, project2,
+                           Commit.parent, commit1,
+                           Commit.committerTime, hash(1463970341),
+                           Commit.message, hash('Change some stuff'));
 var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 
 packLength = Pack.create(commit2);

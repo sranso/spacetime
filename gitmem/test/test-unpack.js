@@ -93,12 +93,12 @@ var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commitPointer = commit($[Commit.zero],
-                           Commit.message, hash('My test commit'),
-                           Commit.committerTime, hash(1463772798),
-                           Commit.tree, treePointer,
-                           Commit.info, info,
-                           Commit.parent, $[Commit.zero]);
+var commitPointer = createCommit($[Commit.zero],
+        Commit.message, hash('My test commit'),
+        Commit.committerTime, hash(1463772798),
+        Commit.tree, treePointer,
+        Commit.info, info,
+        Commit.parent, $[Commit.zero]);
 var commitHash = $table.hashes8.slice(commitPointer, commitPointer + 20);
 log(hexHash(commitHash, 0));
 //=> eab45eefb16fc80f6276b62192229e41799d4c30

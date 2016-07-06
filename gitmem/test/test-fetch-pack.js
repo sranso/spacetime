@@ -88,21 +88,21 @@ var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commit1 = commit($[Commit.zero],
-                     Commit.message, hash('My test commit'),
-                     Commit.committerTime, hash(1463772798),
-                     Commit.tree, $[Constants.emptyTree],
-                     Commit.info, info,
-                     Commit.parent, 0);
+var commit1 = createCommit($[Commit.zero],
+        Commit.message, hash('My test commit'),
+        Commit.committerTime, hash(1463772798),
+        Commit.tree, $[Constants.emptyTree],
+        Commit.info, info,
+        Commit.parent, 0);
 log(hexHash($table.hashes8, commit1));
 //=> d445dd84cfb7cd6de47fc0c75bfb6943d7a7499a
 
-var commit2 = commit($[Commit.zero],
-                     Commit.message, hash('second commit'),
-                     Commit.committerTime, hash(1463930072),
-                     Commit.tree, $[Constants.emptyTree],
-                     Commit.info, info,
-                     Commit.parent, commit1);
+var commit2 = createCommit($[Commit.zero],
+        Commit.message, hash('second commit'),
+        Commit.committerTime, hash(1463930072),
+        Commit.tree, $[Constants.emptyTree],
+        Commit.info, info,
+        Commit.parent, commit1);
 log(hexHash($table.hashes8, commit2));
 //=> a2270ed3a23dff04dc5810811c02ece68fee803b
 

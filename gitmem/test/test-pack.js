@@ -37,12 +37,12 @@ var info = set($[Commit.Info.zero],
                Commit.Info.author, user,
                Commit.Info.committer, user);
 
-var commit1 = commit($[Commit.zero],
-                     Commit.message, hash('My test commit'),
-                     Commit.committerTime, hash(1463772798),
-                     Commit.tree, tree1,
-                     Commit.info, info,
-                     Commit.parent, $[Commit.zero]);
+var commit1 = createCommit($[Commit.zero],
+        Commit.message, hash('My test commit'),
+        Commit.committerTime, hash(1463772798),
+        Commit.tree, tree1,
+        Commit.info, info,
+        Commit.parent, $[Commit.zero]);
 var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 log(hexHash($table.hashes8, commit1));
 //=> 3368ce02c06b1bc2cfe8902ff9c8226953263986
@@ -52,12 +52,12 @@ var tree2Hash = $table.hashes8.slice(tree2, tree2 + 20);
 log(hexHash($table.hashes8, tree2));
 //=> eb3c1ec5e288babdc43edd0205033f2a14bb4c1b
 
-var commit2 = commit($[Commit.zero],
-                     Commit.message, hash('second commit'),
-                     Commit.committerTime, hash(1463930072),
-                     Commit.tree, tree2,
-                     Commit.info, info,
-                     Commit.parent, commit1);
+var commit2 = createCommit($[Commit.zero],
+        Commit.message, hash('second commit'),
+        Commit.committerTime, hash(1463930072),
+        Commit.tree, tree2,
+        Commit.info, info,
+        Commit.parent, commit1);
 var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 log(hexHash($table.hashes8, commit2));
 //=> 1402c7d3e20a56af5ce96f7c199342593569715a
