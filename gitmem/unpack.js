@@ -61,15 +61,19 @@ Unpack.unpack = function (pack) {
             var length = fileLength - stringStart;
             if (length > Table.dataLongStrings_maxLength) {
                 throw new Error('String too long: ' + length);
-            } else if (length > Table.data8_stringLength) {
+            } else if (length > 20) {
                 $table.data8[typeOffset] = Type.longString | Type.onServer;
                 var array = $file.subarray(stringStart, fileLength);
                 var string = String.fromCharCode.apply(null, array);
                 $table.data32[pointer32] = $table.dataLongStrings.length;
                 $table.dataLongStrings.push(string);
             } else {
-                $table.data8[typeOffset] = Type.string | Type.onServer;
-                $table.data8[pointer + Table.data8_stringLength] = length;
+                if (length < 20) {
+                    $table.data8[typeOffset] = Type.string | Type.onServer;
+                    $table.data8[pointer + Table.data8_stringLength] = length;
+                } else {
+                    $table.data8[typeOffset] = Type.string20 | Type.onServer;
+                }
                 var i;
                 for (i = 0; i < length; i++) {
                     $table.data8[pointer + i] = $file[stringStart + i];

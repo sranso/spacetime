@@ -85,6 +85,7 @@ var packSingle = function (pointer) {
         break;
 
     case Type.string:
+    case Type.string20:
     case Type.longString:
         var fileLength = Blob.create($file, '"' + val(pointer));
         packOffset = PackData.packFile(packOffset, $file, 0, fileLength);

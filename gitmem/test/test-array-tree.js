@@ -31,7 +31,7 @@ log(hexHash($table.hashes8, $[Constants.emptyTree]));
 var pointer = ArrayTree.$zeros[0];
 var pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.tree);
-//=> 8 8
+//=> 9 9
 var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex, ArrayTree.moldIndexFor(0, 0, ArrayTree.blobType));
 //=> 2 2
@@ -49,7 +49,7 @@ log(prettyMold(moldIndex));
 pointer = ArrayTree.$zeros[4 + ArrayTree.blobType];
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.tree);
-//=> 8 8
+//=> 9 9
 moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex, ArrayTree.moldIndexFor(0, 2, ArrayTree.blobType));
 //=> 6 4
@@ -70,7 +70,7 @@ var level = 1;
 pointer = ArrayTree.$zeros[3 * level + 2 + ArrayTree.treeType];
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.tree);
-//=> 8 8
+//=> 9 9
 moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex, ArrayTree.moldIndexFor(level, 2, ArrayTree.treeType));
 //=> 11 11
@@ -89,7 +89,7 @@ var level = 3;
 pointer = ArrayTree.$zeros[3 * level + 4 + ArrayTree.treeType];
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.tree);
-//=> 8 8
+//=> 9 9
 moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex, ArrayTree.moldIndexFor(level, 4, ArrayTree.treeType));
 //=> 19 19
@@ -107,7 +107,7 @@ log(prettyMold(moldIndex));
 pointer = ArrayTree.$zeros[3 + ArrayTree.treeType];
 pointer32 = pointer >> 2;
 log($table.data8[Table.typeOffset(pointer)], Type.tree);
-//=> 8 8
+//=> 9 9
 moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
 log(moldIndex, ArrayTree.moldIndexFor(0, 3, ArrayTree.blobType));
 //=> 9 5

@@ -19,7 +19,21 @@ log(val(message));
 log(val(message).length, messageString.length);
 //=> 19 19
 
-var longMessageString = 'I am a long message!';
+var message20String = 'I am a string20 msg!';
+var message20BlobLength = Blob.create($file, '"' + message20String);
+var message20Hash = new Uint8Array(20);
+Sha1.hash($file, 0, message20BlobLength, message20Hash, 0);
+
+var message20 = ~Table.findPointer($table, message20Hash, 0);
+Table.setHash($table, message20, message20Hash, 0);
+Convert.stringToExistingArray($table.data8, message20, message20String);
+$table.data8[Table.typeOffset(message20)] = Type.string20;
+log(val(message20));
+//=> I am a string20 msg!
+log(val(message20).length, message20String.length);
+//=> 20 20
+
+var longMessageString = 'I am a longer message';
 var longMessageBlobLength = Blob.create($file, '"' + longMessageString);
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageBlobLength, longMessageHash, 0);
@@ -31,9 +45,9 @@ $table.data8[Table.typeOffset(longMessage)] = Type.longString;
 $table.data32[longMessage >> 2] = $table.dataLongStrings.length;
 $table.dataLongStrings.push(longMessageString);
 log(val(longMessage));
-//=> I am a long message!
+//=> I am a longer message
 log(val(longMessage).length, longMessageString.length);
-//=> 20 20
+//=> 21 21
 
 var answerValue = 42;
 var answerBlobLength = Blob.create($file, '' + answerValue);

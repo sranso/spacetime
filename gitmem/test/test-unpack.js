@@ -12,7 +12,7 @@ Constants.initialize(-1, 1);
 Commit.initialize();
 ArrayTree.initialize(1);
 
-$pack[11] = 7;  // Number of packed files.
+$pack[11] = 8;  // Number of packed files.
 var packOffset = 12;
 
 var messageLength = Blob.create($file, '"I <3 short messages');
@@ -22,11 +22,18 @@ log(hexHash(messageHash, 0));
 //=> 4bcaa335392f4f0fb35fda58017d41fa07ddeb8b
 packOffset = PackData.packFile(packOffset, $file, 0, messageLength);
 
-var longMessageLength = Blob.create($file, '"I am a long message!');
+var message20Length = Blob.create($file, '"I am a string20 msg!');
+var message20Hash = new Uint8Array(20);
+Sha1.hash($file, 0, message20Length, message20Hash, 0);
+log(hexHash(message20Hash, 0));
+//=> 41b606864613f7dabff68d2fc548c208d457ca6d
+packOffset = PackData.packFile(packOffset, $file, 0, message20Length);
+
+var longMessageLength = Blob.create($file, '"I am a longer message');
 var longMessageHash = new Uint8Array(20);
 Sha1.hash($file, 0, longMessageLength, longMessageHash, 0);
 log(hexHash(longMessageHash, 0));
-//=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
+//=> c6de9479651cdd8de13f3ae1f521a9ad68a4c484
 packOffset = PackData.packFile(packOffset, $file, 0, longMessageLength);
 
 var answerLength = Blob.create($file, '42');
@@ -114,10 +121,10 @@ log(pretty($file, 0, commitLength));
 packOffset = PackData.packFile(packOffset, $file, 0, commitLength);
 
 log(packOffset);
-//=> 460
+//=> 492
 Sha1.hash($pack, 0, packOffset, $pack, packOffset);
 log(hexHash($pack, packOffset));
-//=> 3171a1b58cdab67f91040a6342e9168aea3ef61c
+//=> df0f78675d85bcbba92e6ce1eca754f4cbe24bbb
 
 
 
@@ -152,20 +159,39 @@ log($table.data8[message + 18], 's'.charCodeAt(0));
 //=> 115 115
 
 
+// message20
+var message20 = Table.findPointer($table, message20Hash, 0);
+log(hexHash($table.hashes8, message20));
+//=> 41b606864613f7dabff68d2fc548c208d457ca6d
+var type = $table.data8[Table.typeOffset(message20)];
+log(type & Type.mask, Type.string20);
+//=> 5 5
+log(type & Type.onServer);
+//=> 128
+log($table.data8[message20 + Table.data8_stringLength]);
+//=> 33
+log($table.data8[message20 + 0], 'I'.charCodeAt(0));
+//=> 73 73
+log($table.data8[message20 + 1], ' '.charCodeAt(0));
+//=> 32 32
+log($table.data8[message20 + 19], '!'.charCodeAt(0));
+//=> 33 33
+
+
 // longMessage
 var longMessage = Table.findPointer($table, longMessageHash, 0);
 log(hexHash($table.hashes8, longMessage));
-//=> 1bdef86a177d4feccf0a534ee7257255ba89e8ec
+//=> c6de9479651cdd8de13f3ae1f521a9ad68a4c484
 var type = $table.data8[Table.typeOffset(longMessage)];
 log(type & Type.mask, Type.longString);
-//=> 5 5
+//=> 6 6
 log(type & Type.onServer);
 //=> 128
 var longStringI = $table.data32[(longMessage >> 2) + 0];
 log(longStringI);
 //=> 0
 log($table.dataLongStrings[longStringI]);
-//=> I am a long message!
+//=> I am a longer message
 
 
 // answer
@@ -175,7 +201,7 @@ log(hexHash($table.hashes8, answer));
 //=> f70d7bba4ae1f07682e0358bd7a2068094fc023b
 var type = $table.data8[Table.typeOffset(answer)];
 log(type & Type.mask, Type.integer);
-//=> 6 6
+//=> 7 7
 log(type & Type.onServer);
 //=> 128
 log($table.dataInt32[(answer >> 2) + 0]);
@@ -189,7 +215,7 @@ log(hexHash($table.hashes8, pi));
 //=> e5c1cebcacfc81cf51a61c031e716d874981360e
 var type = $table.data8[Table.typeOffset(pi)];
 log(type & Type.mask, Type.float);
-//=> 7 7
+//=> 8 8
 log(type & Type.onServer);
 //=> 128
 log($table.dataFloat64[(pi + 4) >> 3]);
@@ -202,7 +228,7 @@ log(hexHash($table.hashes8, tree));
 //=> e92993fcf3ac79777e33c872279a15956a3df4d9
 var type = $table.data8[Table.typeOffset(tree)];
 log(type & Type.mask, Type.tree);
-//=> 8 8
+//=> 9 9
 log(type & Type.onServer);
 //=> 128
 var pointer32 = tree >> 2;
@@ -241,7 +267,7 @@ log(hexHash($table.hashes8, arrayTree));
 //=> 177f17fca445dd21024bcd401d52fb0fa07d4905
 var type = $table.data8[Table.typeOffset(arrayTree)];
 log(type & Type.mask, Type.tree);
-//=> 8 8
+//=> 9 9
 log(type & Type.onServer);
 //=> 128
 

@@ -8,6 +8,9 @@ global.val = function (pointer) {
         var length = $table.data8[pointer + Table.data8_stringLength];
         var array = $table.data8.subarray(pointer, pointer + length);
         return String.fromCharCode.apply(null, array);
+    case Type.string20:
+        var array = $table.data8.subarray(pointer, pointer + 20);
+        return String.fromCharCode.apply(null, array);
     case Type.longString:
         return $table.dataLongStrings[$table.data32[pointer >> 2]];
     case Type.integer:

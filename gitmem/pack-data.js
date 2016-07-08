@@ -112,6 +112,7 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
             prefix = commitPrefix;
             break;
         case Type.string:
+        case Type.string20:
         case Type.longString:
             Blob.create(baseFile, '"' + val(base));
             prefix = blobPrefix;

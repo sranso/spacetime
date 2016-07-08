@@ -16,11 +16,12 @@ Type.commit = 2;
 Type.tag = 3;
 
 Type.string = 4;
-Type.longString = 5;
-Type.integer = 6;
-Type.float = 7;
+Type.string20 = 5;
+Type.longString = 6;
+Type.integer = 7;
+Type.float = 8;
 
-Type.tree = 8;
+Type.tree = 9;
 
 // Minor types
 

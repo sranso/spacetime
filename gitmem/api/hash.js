@@ -12,8 +12,10 @@ global.hash = function (value) {
         blobLength = Blob.create($file, '"' + value);
         if (value.length > Table.dataLongStrings_maxLength) {
             throw new Error('String too long: ' + value.length);
-        } else if (value.length > Table.data8_stringLength) {
+        } else if (value.length > 20) {
             type = Type.longString;
+        } else if (value.length === 20) {
+            type = Type.string20;
         } else {
             type = Type.string;
         }
@@ -44,6 +46,7 @@ global.hash = function (value) {
     switch (type) {
     case Type.string:
         $table.data8[pointer + Table.data8_stringLength] = value.length;
+    case Type.string20:
         var i;
         for (i = 0; i < value.length; i++) {
             $table.data8[pointer + i] = value.charCodeAt(i);

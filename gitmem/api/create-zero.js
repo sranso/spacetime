@@ -17,6 +17,8 @@ global.createZero = function (childZeros) {
         var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
         switch (type) {
         case Type.string:
+        case Type.string20:
+        case Type.longString:
         case Type.integer:
         case Type.float:
             treeConfig[name] = 'blob';

@@ -161,19 +161,24 @@ CommitFile.create = function (file, data32, pointer32) {
 
 var writeString = function (file, commit_j, pointer) {
     var i;
+    var length = 20;
     var type = $table.data8[Table.typeOffset(pointer)] & Type.mask;
-    if (type === Type.longString) {
+    switch (type) {
+    case Type.longString:
         var longStringI = $table.data32[pointer >> 2];
         var string = $table.dataLongStrings[longStringI];
         for (i = 0; i < string.length; i++) {
             file[commit_j + i] = string.charCodeAt(i);
         }
-    } else if (type === Type.string) {
-        var length = $table.data8[pointer + Table.data8_stringLength];
+        break;
+    case Type.string:
+        length = $table.data8[pointer + Table.data8_stringLength];
+    case Type.string20:
         for (i = 0; i < length; i++) {
             file[commit_j + i] = $table.data8[pointer + i];
         }
-    } else {
+        break;
+    default:
         throw new Error('Trying to write non-string type: ' + type);
     }
     return commit_j + i;
