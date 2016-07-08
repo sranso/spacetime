@@ -3,6 +3,8 @@ global.Main = {};
 (function () {
 
 global.$head = -1;
+global.$r = -1;
+global.$c = -1;
 
 var gitmem;
 
@@ -14,19 +16,19 @@ Main.initialize = function () {
     Project.initialize();
 
     var cell = set($[Cell.zero],
-                   Cell.text, hash('Wust some jhort txm'));
+                   Cell.text, hash('Wust some jhort txmM'));
 
     var cell2 = set($[Cell.zero],
                     Cell.text, hash('+'));
 
     var cell3 = set($[Cell.zero],
-                    Cell.text, hash('scale'));
+                    Cell.text, hash('delete right columns'));
 
     var cell4 = set($[Cell.zero],
                     Cell.text, hash('mouse x'));
 
     var cell5 = set($[Cell.zero],
-                    Cell.text, hash('CAPS are OK'));
+                    Cell.text, hash('juxtapose'));
 
     var column = push(ArrayTree.$zeros[0], cell);
     column = push(push(push(push(column, cell2), cell5), cell3), cell4);

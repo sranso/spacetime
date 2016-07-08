@@ -5,5 +5,28 @@ html, body {
   overflow: hidden;
 }
 
-#canvas {
+#autocomplete {
+  width: 152px;
+  position: fixed;
+  display: none;
+
+  font-family: monospace;
+  font-size: 12px;
+}
+
+input#autocomplete-entry {
+  font-family: monospace;
+  font-size: 12px;
+  padding-left: 3px;
+  width: 144px;
+}
+
+ul#autocomplete-results {
+  margin: 0;
+  padding-left: 5px;
+  background-color: rgba(200,200,200,0.8);
+}
+
+#autocomplete-results li {
+  list-style: none;
 }
