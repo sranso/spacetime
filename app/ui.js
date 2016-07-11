@@ -30,6 +30,24 @@ Ui.initialize = function () {
         var y = Math.round(e.clientY / zoom) - yTranslation;
         $c = Math.floor(x / xSpacing);
         $r = Math.floor(y / ySpacing);
+
+        var project = get($head, Commit.tree);
+        var parentCell = get(project, Project.cell);
+        var columns = get(parentCell, Cell.columns);
+        var lenColumns = len(columns);
+        if (lenColumns > 0) {
+            var lenCells = len(getAt(columns, 0));
+        } else {
+            var lenCells = 0;
+        }
+
+        if ($c >= lenColumns && $r >= 0 && $r < lenCells) {
+            $c = lenColumns;
+        }
+        if ($r >= lenCells && $c >= 0 && $c < lenColumns) {
+            $r = lenCells;
+        }
+
         Main.update();
         Autocomplete.selectCell();
         e.preventDefault();
@@ -40,9 +58,13 @@ Ui.draw = function () {
     console.time('UI.draw');
     var project = get($head, Commit.tree);
     var parentCell = get(project, Project.cell);
-
     var columns = get(parentCell, Cell.columns);
     var lenColumns = len(columns);
+    if (lenColumns > 0) {
+        var lenCells = len(getAt(columns, 0));
+    } else {
+        var lenCells = 0;
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#ccc';
@@ -52,7 +74,6 @@ Ui.draw = function () {
     var j;
     for (j = 0; j < lenColumns; j++) {
         var cells = getAt(columns, j);
-        var lenCells = len(cells);
         var x = xSpacing * j + xHalfGap;
 
         var i;
@@ -80,6 +101,21 @@ Ui.draw = function () {
             var text = val(get(cell, Cell.text));
             ctx.fillText(text, x + 2, y + 11);
         }
+    }
+
+    var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
+    var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+    if (newColumn || newRow) {
+        ctx.strokeStyle = '#080';
+        ctx.fillStyle = 'rgba(26,138,249,0.2)';
+        ctx.lineWidth = 4;
+
+        var x = xSpacing * $c + xHalfGap;
+        var y = ySpacing * $r + yHalfGap;
+        ctx.beginPath();
+        ctx.rect(x - 1, y + 14, 148, 94);
+        ctx.fill();
+        ctx.stroke();
     }
     console.timeEnd('UI.draw');
 };

@@ -6,7 +6,6 @@ var autocompleteContainer;
 var autocompleteInput;
 var autocompleteOriginal;
 var autocompleteResults;
-var selectedCell;
 var matches;
 var selectedMatchIndex = 0;
 
@@ -26,7 +25,9 @@ var entries = [
     'mouse x',
     'mouse y',
     'rotate',
+];
 
+var actionEntries = [
     'go into',
     'go up',
     'delete row',
@@ -39,6 +40,12 @@ var entries = [
 
     'undo',
 ];
+
+entries = entries.concat(actionEntries);
+var actionEntriesMap = {};
+actionEntries.forEach(function (entry) {
+    actionEntriesMap[entry] = true;
+});
 
 var defaultEntries = [
     '',
@@ -53,26 +60,41 @@ Autocomplete.initialize = function () {
     autocompleteResults = document.getElementById('autocomplete-results');
     autocompleteOriginal = document.getElementById('autocomplete-original');
 
-    autocompleteInput.addEventListener('input', onInput);
+    autocompleteInput.addEventListener('input', updateMatches);
     autocompleteInput.addEventListener('keydown', onKeyDown);
 
     matches = [];
 };
 
-Autocomplete.selectCell = function () {
+var getSelectedCell = function () {
     var project = get($head, Commit.tree);
     var parentCell = get(project, Project.cell);
-
     var columns = get(parentCell, Cell.columns);
     var lenColumns = len(columns);
+    if (lenColumns > 0) {
+        var lenCells = len(getAt(columns, 0));
+    } else {
+        var lenCells = 0;
+    }
 
-    selectedCell = null;
+    var selectedCell = null;
     if ($c >= 0 && $c < lenColumns) {
         var selectedColumn = getAt(columns, $c);
         if ($r >= 0 && $r < len(selectedColumn)) {
-            selectedCell = getAt(selectedColumn, $r);
+            return getAt(selectedColumn, $r);
         }
     }
+
+    var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
+    var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+    if (newColumn || newRow) {
+        return $[Cell.zero];
+    }
+    return null;
+};
+
+Autocomplete.selectCell = function () {
+    var selectedCell = getSelectedCell();
     if (selectedCell) {
         autocompleteContainer.style.display = 'block';
         Ui.moveAutocomplete(autocompleteContainer);
@@ -81,39 +103,32 @@ Autocomplete.selectCell = function () {
         autocompleteInput.value = text;
         autocompleteInput.focus();
         autocompleteInput.setSelectionRange(0, text.length);
-        autocompleteOriginal.style.display = 'none';
 
-        matches = [];
-        selectedMatchIndex = 0;
-        drawMatches();
+        updateMatches();
     } else {
         autocompleteContainer.style.display = 'none';
     }
 };
 
-var onInput = function (e) {
+var updateMatches = function () {
+    var selectedCell = getSelectedCell();
     if (!selectedCell) {
         return;
     }
-
     var originalText = val(get(selectedCell, Cell.text));
     var text = autocompleteInput.value;
 
-    if (text === originalText) {
+    if (text === originalText || originalText === '') {
         autocompleteOriginal.style.display = 'none';
-        return;
+    } else {
+        autocompleteOriginal.style.display = 'block';
+        autocompleteOriginal.innerText = originalText;
     }
 
-    autocompleteOriginal.style.display = 'block';
-    autocompleteOriginal.innerText = originalText;
-
-    updateMatches();
-};
-
-var updateMatches = function () {
-    var text = autocompleteInput.value;
     if (text === '') {
         matches = defaultEntries;
+    } else if (text === originalText) {
+        matches = [];
     } else {
         matches = [];
         var i;
@@ -174,10 +189,16 @@ var onKeyDown = function (e) {
 
     if (e.keyCode === 13) { // enter
         selectMatch();
+    } else if (e.keyCode === 27) { // esc
+        $c = -1;
+        $r = -1;
+        autocompleteContainer.style.display = 'none';
+        Main.update();
     }
 };
 
 var selectMatch = function () {
+    var selectedCell = getSelectedCell();
     if (!selectedCell) {
         return;
     }
@@ -189,18 +210,51 @@ var selectMatch = function () {
         var matchText = matches[selectedMatchIndex];
     }
 
-    if (matchText === 'undo') {
-        var parent = get($head, Commit.parent);
-        if (parent) {
-            $head = parent;
+    var isAction = actionEntriesMap[matchText];
+
+    if (isAction) {
+        if (matchText === 'undo') {
+            var parent = get($head, Commit.parent);
+            if (parent) {
+                $head = parent;
+            }
         }
+
         autocompleteInput.value = matchText;
         autocompleteInput.setSelectionRange(0, matchText.length);
         updateMatches();
+
     } else {
         var project = get($head, Commit.tree);
         var parentCell = get(project, Project.cell);
         var columns = get(parentCell, Cell.columns);
+        var lenColumns = len(columns);
+        if (lenColumns > 0) {
+            var lenCells = len(getAt(columns, 0));
+        } else {
+            var lenCells = 0;
+        }
+
+        var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
+        if (newColumn) {
+            var cells = ArrayTree.$zeros[0];
+            var i;
+            for (i = 0; i < lenCells; i++) {
+                cells = push(cells, $[Cell.zero]);
+            }
+            columns = push(columns, cells);
+        }
+
+        var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+        if (newRow) {
+            var i;
+            for (i = 0; i < lenColumns; i++) {
+                var column = getAt(columns, i);
+                column = push(column, $[Cell.zero]);
+                columns = setAt(columns, i, column);
+            }
+        }
+
         var selectedColumn = getAt(columns, $c);
         selectedCell = set(selectedCell, Cell.text, hash(matchText));
         selectedColumn = setAt(selectedColumn, $r, selectedCell);
@@ -213,6 +267,7 @@ var selectMatch = function () {
                             Commit.parent, $head,
                             Commit.committerTime, now);
 
+        $r++;
         Autocomplete.selectCell();
     }
 
