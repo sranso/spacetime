@@ -2,8 +2,6 @@
 global.Ui = {};
 (function () {
 
-var autocomplete;
-var autocompleteEntry;
 var canvas;
 var ctx;
 
@@ -27,15 +25,13 @@ Ui.initialize = function () {
     ctx.scale(2 * zoom, 2 * zoom);
     ctx.translate(xTranslation, yTranslation);
 
-    autocomplete = document.getElementById('autocomplete');
-    autocompleteEntry = document.getElementById('autocomplete-entry');
-
     canvas.addEventListener('mousedown', function (e) {
         var x = Math.round(e.clientX / zoom) - xTranslation;
         var y = Math.round(e.clientY / zoom) - yTranslation;
         $c = Math.floor(x / xSpacing);
         $r = Math.floor(y / ySpacing);
         Main.update();
+        Autocomplete.selectCell();
         e.preventDefault();
     });
 };
@@ -47,26 +43,6 @@ Ui.draw = function () {
 
     var columns = get(parentCell, Cell.columns);
     var lenColumns = len(columns);
-
-    if ($c >= 0 && $c < lenColumns) {
-        var selectedColumn = getAt(columns, $c);
-        if ($r >= 0 && $r < len(selectedColumn)) {
-            var selectedCell = getAt(selectedColumn, $r);
-        }
-    }
-    if (selectedCell) {
-        var x = ($c * xSpacing + xTranslation) * zoom + 2;
-        var y = ($r * ySpacing + yTranslation) * zoom - 1;
-        autocomplete.style.display = 'block';
-        autocomplete.style.top = y + 'px';
-        autocomplete.style.left = x + 'px';
-        var text = val(get(selectedCell, Cell.text));
-        autocompleteEntry.value = text;
-        autocompleteEntry.focus();
-        autocompleteEntry.setSelectionRange(0, text.length);
-    } else {
-        autocomplete.style.display = 'none';
-    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#ccc';
@@ -86,7 +62,7 @@ Ui.draw = function () {
 
             if (j === $c && i === $r) {
                 ctx.strokeStyle = '#333';
-                ctx.fillStyle = 'rgba(0,100,255,0.2)';
+                ctx.fillStyle = 'rgba(26,138,249,0.2)';
                 ctx.lineWidth = 4;
 
                 ctx.beginPath();
@@ -106,6 +82,13 @@ Ui.draw = function () {
         }
     }
     console.timeEnd('UI.draw');
+};
+
+Ui.moveAutocomplete = function (autocompleteContainer) {
+    var x = ($c * xSpacing + xTranslation) * zoom + 2;
+    var y = ($r * ySpacing + yTranslation) * zoom - 1;
+    autocompleteContainer.style.top = y + 'px';
+    autocompleteContainer.style.left = x + 'px';
 };
 
 })();

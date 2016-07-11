@@ -58,6 +58,7 @@ Main.initialize = function () {
                          Commit.message, hash('Initial commit'));
 
     Ui.initialize();
+    Autocomplete.initialize();
     Main.update();
 };
 
