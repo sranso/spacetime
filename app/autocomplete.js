@@ -210,31 +210,36 @@ var selectMatch = function () {
         var matchText = matches[selectedMatchIndex];
     }
 
+    var project = get($head, Commit.tree);
+    var parentCell = get(project, Project.cell);
+    var columns = get(parentCell, Cell.columns);
+    var lenColumns = len(columns);
+    if (lenColumns > 0) {
+        var lenCells = len(getAt(columns, 0));
+    } else {
+        var lenCells = 0;
+    }
+
     var isAction = actionEntriesMap[matchText];
 
+    var makeCommit = true;
+
     if (isAction) {
-        if (matchText === 'undo') {
+        switch (matchText) {
+        case 'undo':
             var parent = get($head, Commit.parent);
             if (parent) {
                 $head = parent;
             }
+            makeCommit = false;
+            break;
+        case 'copy column':
+            // TODO: copy current column, not just last one.
+            var column = getAt(columns, lenColumns - 1);
+            columns = push(columns, column);
         }
-
-        autocompleteInput.value = matchText;
-        autocompleteInput.setSelectionRange(0, matchText.length);
-        updateMatches();
 
     } else {
-        var project = get($head, Commit.tree);
-        var parentCell = get(project, Project.cell);
-        var columns = get(parentCell, Cell.columns);
-        var lenColumns = len(columns);
-        if (lenColumns > 0) {
-            var lenCells = len(getAt(columns, 0));
-        } else {
-            var lenCells = 0;
-        }
-
         var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
         if (newColumn) {
             var cells = ArrayTree.$zeros[0];
@@ -259,6 +264,9 @@ var selectMatch = function () {
         selectedCell = set(selectedCell, Cell.text, hash(matchText));
         selectedColumn = setAt(selectedColumn, $r, selectedCell);
         columns = setAt(columns, $c, selectedColumn);
+    }
+
+    if (makeCommit) {
         parentCell = set(parentCell, Cell.columns, columns);
         project = set(project, Project.cell, parentCell);
         var now = hash(Math.floor(+Date.now() / 1000));
@@ -266,7 +274,13 @@ var selectMatch = function () {
                             Commit.tree, project,
                             Commit.parent, $head,
                             Commit.committerTime, now);
+    }
 
+    if (isAction) {
+        autocompleteInput.value = matchText;
+        autocompleteInput.setSelectionRange(0, matchText.length);
+        updateMatches();
+    } else {
         $r++;
         Autocomplete.selectCell();
     }
