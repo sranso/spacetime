@@ -233,17 +233,41 @@ var selectMatch = function () {
             }
             makeCommit = false;
             break;
+
         case 'copy column':
             // TODO: copy current column, not just last one.
             var column = getAt(columns, lenColumns - 1);
             columns = push(columns, column);
+            break;
+
+        case 'delete column':
+            if ($c < lenColumns) {
+                columns = deleteAt(columns, $c);
+            }
+            break;
+
+        case 'delete row':
+            if ($r === lenCells) {
+                break;
+            }
+
+            var i;
+            for (i = 0; i < lenColumns; i++) {
+                var column = getAt(columns, i);
+                column = deleteAt(column, $r);
+                columns = setAt(columns, i, column);
+            }
+            break;
+
         case 'delete right columns':
             if ($c < lenColumns - 1) {
                 columns = take(columns, $c + 1);
             }
+            break;
         }
 
     } else {
+
         var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
         if (newColumn) {
             var cells = ArrayTree.$zeros[0];
