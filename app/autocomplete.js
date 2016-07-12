@@ -237,6 +237,10 @@ var selectMatch = function () {
             // TODO: copy current column, not just last one.
             var column = getAt(columns, lenColumns - 1);
             columns = push(columns, column);
+        case 'delete right columns':
+            if ($c < lenColumns - 1) {
+                columns = take(columns, $c + 1);
+            }
         }
 
     } else {
@@ -268,12 +272,16 @@ var selectMatch = function () {
 
     if (makeCommit) {
         parentCell = set(parentCell, Cell.columns, columns);
+        var oldProject = project;
         project = set(project, Project.cell, parentCell);
-        var now = hash(Math.floor(+Date.now() / 1000));
-        $head = createCommit($head,
-                            Commit.tree, project,
-                            Commit.parent, $head,
-                            Commit.committerTime, now);
+
+        if (project !== oldProject) {
+            var now = hash(Math.floor(+Date.now() / 1000));
+            $head = createCommit($head,
+                                Commit.tree, project,
+                                Commit.parent, $head,
+                                Commit.committerTime, now);
+        }
     }
 
     if (isAction) {
