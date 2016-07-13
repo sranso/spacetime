@@ -4,7 +4,7 @@ require('../../../test/helper');
 global.$file = new Uint8Array(512);
 global.$ = new Uint32Array(32);
 global.$.nextIndex = 0;
-global.$table = Table.create(64, Random.create(1118295));
+global.$table = Table.create(128, Random.create(1118295));
 global.$mold = Mold.create(32, 2048);
 
 Constants.initialize(-1, 1);
@@ -172,4 +172,30 @@ log($table.data32[pointer32 + 0] === array16);
 log($table.data32[pointer32 + 1] === array16);
 //=> true
 log($table.data32[pointer32 + 2] === array1);
+//=> true
+
+var array = array33;
+var i;
+for (i = 33; i < 64; i++) {
+    array = push(array, num0);
+}
+
+var array64 = array;
+var array65 = push(array64, num0);
+log(len(array65));
+//=> 65
+var pointer32 = array65 >> 2;
+log($table.data8[Table.typeOffset(array65)], Type.tree);
+//=> 9 9
+var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
+var mold8 = moldIndex * Mold.data8_size;
+log($mold.data8[mold8 + Mold.data8_treeType], Type.arrayTree);
+//=> 1 1
+log($mold.data8[mold8 + Mold.data8_numChildren]);
+//=> 2
+log($mold.data8[mold8 + Mold.data8_arrayTreeLevel]);
+//=> 3
+log($table.data32[pointer32 + 0] === array64);
+//=> true
+log($table.data32[pointer32 + 1] === array1);
 //=> true
