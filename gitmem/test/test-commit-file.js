@@ -41,7 +41,7 @@ $table.data8[Table.typeOffset(message)] |= Type.onServer;
 
 var data32 = new Uint32Array(5);
 data32[Commit.message] = message;
-data32[Commit.committerTime] = hash(1463772798);
+data32[Commit.committerTime] = 1463772798;
 data32[Commit.tree] = tree;
 data32[Commit.info] = info;
 data32[Commit.parent] = parentCommit;
@@ -74,7 +74,7 @@ CommitFile.unpack(commitLength, data32, 0);
 
 log(val(data32[Commit.message]));
 //=> My test commit
-log(val(data32[Commit.committerTime]));
+log(data32[Commit.committerTime]);
 //=> 1463772798
 log($table.data8[Table.typeOffset(data32[Commit.tree])], Type.pending);
 //=> 1 1

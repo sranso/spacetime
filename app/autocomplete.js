@@ -300,7 +300,7 @@ var selectMatch = function () {
         project = set(project, Project.cell, parentCell);
 
         if (project !== oldProject) {
-            var now = hash(Math.floor(+Date.now() / 1000));
+            var now = Math.floor(+Date.now() / 1000);
             $head = createCommit($head,
                                 Commit.tree, project,
                                 Commit.parent, $head,

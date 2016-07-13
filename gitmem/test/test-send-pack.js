@@ -32,7 +32,7 @@ var info = set($[Commit.Info.zero],
 
 var commitPointer = createCommit($[Commit.zero],
         Commit.message, hash('My test commit'),
-        Commit.committerTime, hash(1463772798),
+        Commit.committerTime, 1463772798,
         Commit.tree, tree,
         Commit.info, info,
         Commit.parent, 0);

@@ -41,7 +41,7 @@ Commit.initialize = function () {
     Commit.Info.zero = $.nextIndex++;
     $[Commit.Info.zero] = info;
 
-    newPointers[Commit.committerTime] = Constants.$positive[0];
+    newPointers[Commit.committerTime] = 0;
     newPointers[Commit.info] = info;
     newPointers[Commit.message] = $[Constants.emptyString];
     newPointers[Commit.parent] = 0;

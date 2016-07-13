@@ -39,7 +39,7 @@ var info = set($[Commit.Info.zero],
 
 var commit1 = createCommit($[Commit.zero],
         Commit.message, hash('My test commit'),
-        Commit.committerTime, hash(1463772798),
+        Commit.committerTime, 1463772798,
         Commit.tree, tree1,
         Commit.info, info,
         Commit.parent, $[Commit.zero]);
@@ -54,7 +54,7 @@ log(hexHash($table.hashes8, tree2));
 
 var commit2 = createCommit($[Commit.zero],
         Commit.message, hash('second commit'),
-        Commit.committerTime, hash(1463930072),
+        Commit.committerTime, 1463930072,
         Commit.tree, tree2,
         Commit.info, info,
         Commit.parent, commit1);

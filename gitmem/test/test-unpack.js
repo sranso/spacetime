@@ -102,7 +102,7 @@ var info = set($[Commit.Info.zero],
 
 var commitPointer = createCommit($[Commit.zero],
         Commit.message, hash('My test commit'),
-        Commit.committerTime, hash(1463772798),
+        Commit.committerTime, 1463772798,
         Commit.tree, treePointer,
         Commit.info, info,
         Commit.parent, $[Commit.zero]);
@@ -285,7 +285,7 @@ log(type & Type.onServer);
 //=> 128
 log(val(get(commitPointer, Commit.message)));
 //=> My test commit
-log(val(get(commitPointer, Commit.committerTime)));
+log(get(commitPointer, Commit.committerTime));
 //=> 1463772798
 log(val(get(get(commitPointer, Commit.tree), 1))); // message
 //=> I <3 short messages

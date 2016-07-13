@@ -57,7 +57,7 @@ var commit1 = createCommit($[Commit.zero],
                            Commit.info, info,
                            Commit.tree, project1,
                            Commit.parent, 0,
-                           Commit.committerTime, hash(1463960469),
+                           Commit.committerTime, 1463960469,
                            Commit.message, hash('Initial commit'));
 var commit1Hash = $table.hashes8.slice(commit1, commit1 + 20);
 
@@ -75,7 +75,7 @@ var project2 = set(project1,
 var commit2 = createCommit(commit1,
                            Commit.tree, project2,
                            Commit.parent, commit1,
-                           Commit.committerTime, hash(1463970341),
+                           Commit.committerTime, 1463970341,
                            Commit.message, hash('Change some stuff'));
 var commit2Hash = $table.hashes8.slice(commit2, commit2 + 20);
 
@@ -230,7 +230,7 @@ var afterClone = function (refPointer, pack) {
     var gotCommit = Table.findPointer($table, commitHash, 0);
     console.log('[afterClone] commit hash: ' + hexHash($table.hashes8, gotCommit));
     console.log('[afterClone] commit message: ' + val(get(gotCommit, Commit.message)));
-    console.log('[afterClone] commit time: ' + new Date(1000 * val(get(gotCommit, Commit.committerTime))));
+    console.log('[afterClone] commit time: ' + new Date(1000 * get(gotCommit, Commit.committerTime)));
 
     var project = get(gotCommit, Commit.tree);
     console.log('[afterClone] project text:', val(get(project, Project.text)));
@@ -261,7 +261,7 @@ var afterFetch = function (refPointer, pack) {
     var gotCommit = Table.findPointer($table, commitHash, 0);
     console.log('[afterFetch] commit hash: ' + hexHash($table.hashes8, gotCommit));
     console.log('[afterFetch] commit message: ' + val(get(gotCommit, Commit.message)));
-    console.log('[afterFetch] commit time: ' + new Date(1000 * val(get(gotCommit, Commit.committerTime))));
+    console.log('[afterFetch] commit time: ' + new Date(1000 * get(gotCommit, Commit.committerTime)));
 
     var project = get(gotCommit, Commit.tree);
     console.log('[afterFetch] project text:', val(get(project, Project.text)));

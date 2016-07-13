@@ -48,7 +48,7 @@ Main.initialize = function () {
                     Commit.Info.author, user,
                     Commit.Info.committer, user);
 
-    var now = hash(Math.round(+Date.now() / 1000));
+    var now = Math.round(+Date.now() / 1000);
 
     $head = createCommit($[Commit.zero],
                          Commit.info, info,

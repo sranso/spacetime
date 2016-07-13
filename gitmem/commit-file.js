@@ -33,7 +33,7 @@ CommitFile.create = function (file, data32, pointer32) {
     var author = get(info, Commit.Info.author);
     var committer = get(info, Commit.Info.committer);
 
-    var committerTime = val(data32[pointer32 + Commit.committerTime]);
+    var committerTime = data32[pointer32 + Commit.committerTime];
     var authorTime = val(get(info, Commit.Info.authorTime)) || committerTime;
 
     var authorName = get(author, Commit.User.name);
@@ -282,7 +282,7 @@ CommitFile.unpack = function (fileLength, data32, pointer32) {
 
     // save back to data32
     data32[pointer32 + Commit.info] = info;
-    data32[pointer32 + Commit.committerTime] = hash(committerTime);
+    data32[pointer32 + Commit.committerTime] = committerTime;
     data32[pointer32 + Commit.message] = hash(message);
 };
 

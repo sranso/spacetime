@@ -33,7 +33,7 @@ log(val(get($[Commit.Info.zero], Commit.Info.authorTime)));
 
 log($table.data8[Table.typeOffset($[Commit.zero])], Type.commit);
 //=> 2 2
-log(val(get($[Commit.zero], Commit.committerTime)));
+log(get($[Commit.zero], Commit.committerTime));
 //=> 0
 log(get($[Commit.zero], Commit.info), $[Commit.Info.zero]);
 //=> 324 324

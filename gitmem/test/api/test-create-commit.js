@@ -28,7 +28,7 @@ var info = set($[Commit.Info.zero],
 
 var pointer = createCommit($[Commit.zero],
                            Commit.message, hash('My test commit'),
-                           Commit.committerTime, hash(1463772798),
+                           Commit.committerTime, 1463772798,
                            Commit.tree, tree,
                            Commit.info, info,
                            Commit.parent, $[Commit.zero]);
@@ -44,11 +44,11 @@ log(pretty($file, 0, 247));
 //=> My test commit
 log(val(get(pointer, Commit.message)));
 //=> My test commit
-log(val(get(pointer, Commit.committerTime)));
+log(get(pointer, Commit.committerTime));
 //=> 1463772798
 log(val(get(get(pointer, Commit.tree), 0)));
 //=> bar
-log(val(get(get(pointer, Commit.parent), Commit.committerTime)));
+log(get(get(pointer, Commit.parent), Commit.committerTime));
 //=> 0
 log(val(get(get(get(pointer, Commit.info), Commit.Info.author), Commit.User.email)));
 //=> jake@jakesandlund.com
