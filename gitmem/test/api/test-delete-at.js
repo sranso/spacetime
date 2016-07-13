@@ -91,5 +91,8 @@ var array33 = arrayOf(nums33);
 log(deleteAt(array33, 32) === arrayOf(nums33.slice(0, 32)));
 //=> true
 nums33.splice(8, 1);
-log(deleteAt(array33, 8) === arrayOf(nums33));
+var deletedArray32 = deleteAt(array33, 8);
+log(len(deletedArray32));
+//=> 32
+log(deletedArray32 === arrayOf(nums33));
 //=> true
