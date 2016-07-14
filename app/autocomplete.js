@@ -34,6 +34,7 @@ var actionEntries = [
     'delete column',
     'delete right columns',
     'copy column',
+    'copy row',
     'copy over right cols',
     'insert row',
     'insert column',
@@ -241,6 +242,21 @@ var selectMatch = function () {
             var column = getAt(columns, lenColumns - 1);
             columns = insertAt(columns, $c, column);
             $c++;
+            Ui.moveAutocomplete(autocompleteContainer);
+            break;
+
+        case 'copy row':
+            if ($r === lenCells) {
+                break;
+            }
+            var i;
+            for (i = 0; i < lenColumns; i++) {
+                var column = getAt(columns, i);
+                var cell = getAt(column, $r);
+                column = insertAt(column, $r, cell);
+                columns = setAt(columns, i, column);
+            }
+            $r++;
             Ui.moveAutocomplete(autocompleteContainer);
             break;
 
