@@ -86,8 +86,8 @@ var getSelectedCell = function () {
         }
     }
 
-    var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
-    var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+    var newColumn = $c === lenColumns;
+    var newRow = $r === lenCells;
     if (newColumn || newRow) {
         return $[Cell.zero];
     }
@@ -312,7 +312,7 @@ var selectMatch = function () {
 
     } else {
 
-        var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
+        var newColumn = $c === lenColumns;
         if (newColumn) {
             var cells = ArrayTree.$zeros[0];
             var i;
@@ -320,9 +320,10 @@ var selectMatch = function () {
                 cells = push(cells, $[Cell.zero]);
             }
             columns = push(columns, cells);
+            lenColumns++;
         }
 
-        var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+        var newRow = $r === lenCells;
         if (newRow) {
             var i;
             for (i = 0; i < lenColumns; i++) {
@@ -330,6 +331,7 @@ var selectMatch = function () {
                 column = push(column, $[Cell.zero]);
                 columns = setAt(columns, i, column);
             }
+            lenCells++;
         }
 
         var selectedColumn = getAt(columns, $c);

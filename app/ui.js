@@ -41,11 +41,17 @@ Ui.initialize = function () {
             var lenCells = 0;
         }
 
-        if ($c >= lenColumns && $r >= 0 && $r < lenCells) {
+        if ($c >= lenColumns) {
             $c = lenColumns;
         }
-        if ($r >= lenCells && $c >= 0 && $c < lenColumns) {
+        if ($c < 0) {
+            $c = 0;
+        }
+        if ($r >= lenCells) {
             $r = lenCells;
+        }
+        if ($r < 0) {
+            $r = 0;
         }
 
         Main.update();
@@ -103,8 +109,8 @@ Ui.draw = function () {
         }
     }
 
-    var newColumn = $c === lenColumns && $r >= 0 && $r < lenCells;
-    var newRow = $r === lenCells && $c >= 0 && $c < lenColumns;
+    var newColumn = $c === lenColumns;
+    var newRow = $r === lenCells;
     if (newColumn || newRow) {
         ctx.strokeStyle = '#080';
         ctx.fillStyle = 'rgba(26,138,249,0.2)';
