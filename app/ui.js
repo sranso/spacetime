@@ -103,6 +103,14 @@ Ui.initialize = function () {
             Ui.draw();
         }
     });
+
+    window.addEventListener('wheel', function (e) {
+        var absDelta = Math.abs(e.deltaY);
+        var sign = e.deltaY < 0 ? +1 : -1;
+        var zoomFactor = 1.0 + (sign * Math.sqrt(absDelta) / 100.0);
+        zoom *= zoomFactor;
+        Ui.draw();
+    });
 };
 
 Ui.draw = function () {
