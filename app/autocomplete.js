@@ -235,9 +235,37 @@ var selectMatch = function () {
             break;
 
         case 'copy column':
-            // TODO: copy current column, not just last one.
+            if ($c === lenColumns) {
+                break;
+            }
             var column = getAt(columns, lenColumns - 1);
-            columns = push(columns, column);
+            columns = insertAt(columns, $c, column);
+            $c++;
+            Ui.moveAutocomplete(autocompleteContainer);
+            break;
+
+        case 'insert column':
+            if ($c === lenColumns) {
+                break;
+            }
+            var cells = ArrayTree.$zeros[0];
+            var i;
+            for (i = 0; i < lenCells; i++) {
+                cells = push(cells, $[Cell.zero]);
+            }
+            columns = insertAt(columns, $c, cells);
+            break;
+
+        case 'insert row':
+            if ($r === lenCells) {
+                break;
+            }
+            var i;
+            for (i = 0; i < lenColumns; i++) {
+                var column = getAt(columns, i);
+                column = insertAt(column, $r, $[Cell.zero]);
+                columns = setAt(columns, i, column);
+            }
             break;
 
         case 'delete column':
