@@ -98,7 +98,6 @@ Autocomplete.selectCell = function () {
     var selectedCell = getSelectedCell();
     if (selectedCell) {
         autocompleteContainer.style.display = 'block';
-        Ui.moveAutocomplete(autocompleteContainer);
 
         var text = val(get(selectedCell, Cell.text));
         autocompleteInput.value = text;
@@ -242,7 +241,7 @@ var selectMatch = function () {
             var column = getAt(columns, lenColumns - 1);
             columns = insertAt(columns, $c, column);
             $c++;
-            Ui.moveAutocomplete(autocompleteContainer);
+            Ui.moveAutocomplete();
             break;
 
         case 'copy row':
@@ -257,7 +256,7 @@ var selectMatch = function () {
                 columns = setAt(columns, i, column);
             }
             $r++;
-            Ui.moveAutocomplete(autocompleteContainer);
+            Ui.moveAutocomplete();
             break;
 
         case 'insert column':

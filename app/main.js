@@ -37,8 +37,8 @@ Main.initialize = function () {
 
     Ui.initialize();
     Autocomplete.initialize();
-    Main.update();
     Autocomplete.selectCell();
+    Main.update();
 };
 
 Main.update = function () {

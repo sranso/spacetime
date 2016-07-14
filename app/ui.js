@@ -3,6 +3,9 @@ global.Ui = {};
 (function () {
 
 var canvas;
+var autocompleteContainer;
+var autocompleteInput;
+
 var ctx;
 
 var zoom = 1;
@@ -13,6 +16,12 @@ var yHalfGap = 2;
 var xTranslation = 60;
 var yTranslation = 40;
 
+var mouseDown = false;
+var mouseXAtDown = 0;
+var mouseYAtDown = 0;
+var mouseX = 0;
+var mouseY = 0;
+
 Ui.initialize = function () {
     canvas = document.getElementById('canvas');
     canvas.width = window.devicePixelRatio * window.innerWidth;
@@ -20,14 +29,21 @@ Ui.initialize = function () {
     canvas.style.width = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';
 
+    autocompleteContainer = document.getElementById('autocomplete');
+    autocompleteInput = document.getElementById('autocomplete-input');
+
     ctx = canvas.getContext('2d');
     ctx.font = '12px monospace';
-    ctx.scale(2 * zoom, 2 * zoom);
-    ctx.translate(xTranslation, yTranslation);
 
-    canvas.addEventListener('mousedown', function (e) {
-        var x = Math.round(e.clientX / zoom) - xTranslation;
-        var y = Math.round(e.clientY / zoom) - yTranslation;
+    canvas.addEventListener('click', function (e) {
+        if (mouseDown) {
+            if (    Math.abs(mouseX - mouseXAtDown) > 20 ||
+                    Math.abs(mouseY - mouseYAtDown) > 20) {
+                return;
+            }
+        }
+        var x = Math.round((e.clientX - xTranslation) / zoom);
+        var y = Math.round((e.clientY - yTranslation) / zoom);
         $c = Math.floor(x / xSpacing);
         $r = Math.floor(y / ySpacing);
 
@@ -54,14 +70,52 @@ Ui.initialize = function () {
             $r = 0;
         }
 
-        Main.update();
         Autocomplete.selectCell();
+        Main.update();
         e.preventDefault();
+    });
+
+    canvas.addEventListener('mousedown', function (e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        mouseXAtDown = mouseX;
+        mouseYAtDown = mouseY;
+        mouseDown = true;
+        setTimeout(function () {
+            autocompleteInput.focus();
+        });
+    });
+
+    canvas.addEventListener('mouseup', function (e) {
+        setTimeout(function () {
+            mouseDown = false;
+        });
+    });
+
+    canvas.addEventListener('mousemove', function (e) {
+        if (mouseDown) {
+            var xDiff = e.clientX - mouseX;
+            var yDiff = e.clientY - mouseY;
+            xTranslation += xDiff;
+            yTranslation += yDiff;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            Ui.draw();
+        }
     });
 };
 
 Ui.draw = function () {
     console.time('UI.draw');
+
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    ctx.translate(xTranslation, yTranslation);
+    ctx.scale(zoom, zoom);
+
+    Ui.moveAutocomplete();
+
     var project = get($head, Commit.tree);
     var parentCell = get(project, Project.cell);
     var columns = get(parentCell, Cell.columns);
@@ -72,7 +126,6 @@ Ui.draw = function () {
         var lenCells = 0;
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#ccc';
     ctx.fillStyle = '#333';
     ctx.lineWidth = 2;
@@ -123,12 +176,15 @@ Ui.draw = function () {
         ctx.fill();
         ctx.stroke();
     }
+
+    ctx.restore();
+
     console.timeEnd('UI.draw');
 };
 
-Ui.moveAutocomplete = function (autocompleteContainer) {
-    var x = ($c * xSpacing + xTranslation) * zoom + 2;
-    var y = ($r * ySpacing + yTranslation) * zoom - 1;
+Ui.moveAutocomplete = function () {
+    var x = ($c * xSpacing * zoom) + xTranslation + 2;
+    var y = ($r * ySpacing * zoom) + yTranslation - 1;
     autocompleteContainer.style.top = y + 'px';
     autocompleteContainer.style.left = x + 'px';
 };
