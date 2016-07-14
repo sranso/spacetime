@@ -25,6 +25,7 @@ var entries = [
     'mouse x',
     'mouse y',
     'rotate',
+    'combine',
 ];
 
 var actionEntries = [
@@ -42,7 +43,7 @@ var actionEntries = [
     'undo',
 ];
 
-entries = entries.concat(actionEntries);
+entries = actionEntries.concat(entries);
 var actionEntriesMap = {};
 actionEntries.forEach(function (entry) {
     actionEntriesMap[entry] = true;
@@ -56,7 +57,7 @@ var defaultEntries = [
 ];
 
 Autocomplete.initialize = function () {
-    autocompleteContainer = document.getElementById('autocomplete');
+    autocompleteContainer = document.getElementById('autocomplete-container');
     autocompleteInput = document.getElementById('autocomplete-input');
     autocompleteResults = document.getElementById('autocomplete-results');
     autocompleteOriginal = document.getElementById('autocomplete-original');
@@ -238,7 +239,7 @@ var selectMatch = function () {
             if ($c === lenColumns) {
                 break;
             }
-            var column = getAt(columns, lenColumns - 1);
+            var column = getAt(columns, $c);
             columns = insertAt(columns, $c, column);
             $c++;
             Ui.moveAutocomplete();

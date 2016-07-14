@@ -8,7 +8,7 @@ var autocompleteInput;
 
 var ctx;
 
-var zoom = 1;
+global.zoom = 1;
 var xSpacing = 160;
 var ySpacing = 112;
 var xHalfGap = 5;
@@ -29,7 +29,7 @@ Ui.initialize = function () {
     canvas.style.width = window.innerWidth + 'px';
     canvas.style.height = window.innerHeight + 'px';
 
-    autocompleteContainer = document.getElementById('autocomplete');
+    autocompleteContainer = document.getElementById('autocomplete-container');
     autocompleteInput = document.getElementById('autocomplete-input');
 
     ctx = canvas.getContext('2d');
@@ -105,10 +105,16 @@ Ui.initialize = function () {
     });
 
     window.addEventListener('wheel', function (e) {
+        var x = Math.round((e.clientX - xTranslation) / zoom);
+        var y = Math.round((e.clientY - yTranslation) / zoom);
+
         var absDelta = Math.abs(e.deltaY);
         var sign = e.deltaY < 0 ? +1 : -1;
         var zoomFactor = 1.0 + (sign * Math.sqrt(absDelta) / 100.0);
         zoom *= zoomFactor;
+
+        xTranslation = e.clientX - x * zoom;
+        yTranslation = e.clientY - y * zoom;
         Ui.draw();
     });
 };
@@ -191,10 +197,14 @@ Ui.draw = function () {
 };
 
 Ui.moveAutocomplete = function () {
+    var autocompleteZoom = Math.max(0.6, Math.min(zoom, 3.0)) * 0.5;
+
     var x = ($c * xSpacing * zoom) + xTranslation + 2;
     var y = ($r * ySpacing * zoom) + yTranslation - 1;
     autocompleteContainer.style.top = y + 'px';
     autocompleteContainer.style.left = x + 'px';
+
+    autocompleteContainer.style.transform = 'scale(' + autocompleteZoom + ')';
 };
 
 })();

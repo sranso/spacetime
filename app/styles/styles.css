@@ -5,33 +5,36 @@ html, body {
   overflow: hidden;
 }
 
-#autocomplete {
-  width: 152px;
+#autocomplete-container {
+  width: 304px;
   position: fixed;
   display: none;
+  transform-origin: 0 0;
 
   font-family: monospace;
-  font-size: 12px;
+  font-size: 24px;
 }
 
 #autocomplete-original {
-  padding: 1px 3px 5px 3px;
-  background-color: rgba(200,200,200,0.8);
+  padding: 2px 6px 10px 6px;
+  background-color: rgba(200,200,200,0.9);
   color: #a00;
   position: absolute;
-  top: -19px;
-  left: 2px;
+  top: -38px;
+  left: 4px;
   display: none;
   white-space: nowrap;
 }
 
 input#autocomplete-input {
   font-family: monospace;
-  font-size: 12px;
-  padding-left: 3px;
-  width: 144px;
+  font-size: 30px;
+  padding-left: 6px;
+  width: 362px;
   position: relative;
+  left: -33px;
   z-index: 1;
+  margin-top: -2px;
 }
 
 ul#autocomplete-results {
@@ -40,12 +43,15 @@ ul#autocomplete-results {
 }
 
 #autocomplete-results li {
-  height: 14px;
-  padding-left: 5px;
   list-style: none;
-  background-color: rgba(200,200,200,0.8);
+  background-color: rgba(200,200,200,0.9);
+  font-size: 30px;
+  height: 40px;
+  width: 364px;
+  margin-left: -32px;
+  padding-left: 9px;
 }
 
 #autocomplete-results li.selected {
-  background-color: rgba(165,255,165,0.8);
+  background-color: rgba(165,255,165,0.9);
 }
