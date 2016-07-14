@@ -17,8 +17,7 @@ var xTranslation = 60;
 var yTranslation = 40;
 
 var mouseDown = false;
-var mouseXAtDown = 0;
-var mouseYAtDown = 0;
+var movingGrid = false;
 var mouseX = 0;
 var mouseY = 0;
 
@@ -36,11 +35,8 @@ Ui.initialize = function () {
     ctx.font = '12px monospace';
 
     canvas.addEventListener('click', function (e) {
-        if (mouseDown) {
-            if (    Math.abs(mouseX - mouseXAtDown) > 20 ||
-                    Math.abs(mouseY - mouseYAtDown) > 20) {
-                return;
-            }
+        if (movingGrid) {
+            return;
         }
         var x = Math.round((e.clientX - xTranslation) / zoom);
         var y = Math.round((e.clientY - yTranslation) / zoom);
@@ -78,8 +74,6 @@ Ui.initialize = function () {
     canvas.addEventListener('mousedown', function (e) {
         mouseX = e.clientX;
         mouseY = e.clientY;
-        mouseXAtDown = mouseX;
-        mouseYAtDown = mouseY;
         mouseDown = true;
         setTimeout(function () {
             autocompleteInput.focus();
@@ -87,13 +81,25 @@ Ui.initialize = function () {
     });
 
     canvas.addEventListener('mouseup', function (e) {
+        mouseDown = false;
         setTimeout(function () {
-            mouseDown = false;
+            movingGrid = false;
+            autocompleteInput.focus();
+            autocompleteInput.setSelectionRange(0, autocompleteInput.value.length);
         });
     });
 
     canvas.addEventListener('mousemove', function (e) {
-        if (mouseDown) {
+        if (!movingGrid) {
+            var moved = (
+                Math.abs(e.clientX - mouseX) > 2 ||
+                Math.abs(e.clientY - mouseY) > 2
+            );
+            if (mouseDown && moved) {
+                movingGrid = true;
+            }
+        }
+        if (movingGrid) {
             var xDiff = e.clientX - mouseX;
             var yDiff = e.clientY - mouseY;
             xTranslation += xDiff;
