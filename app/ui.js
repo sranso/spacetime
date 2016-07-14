@@ -146,13 +146,22 @@ Ui.draw = function () {
     ctx.fillStyle = '#333';
     ctx.lineWidth = 2;
 
+    var minX = Math.round(-xTranslation / zoom) - 2 * xHalfGap;
+    var maxX = Math.round((window.innerWidth - xTranslation) / zoom) + 2 * xHalfGap;
+    var minY = Math.round(-yTranslation / zoom) - 2 * yHalfGap;
+    var maxY = Math.round((window.innerHeight - yTranslation) / zoom) + 2 * yHalfGap;
+    var minC = Math.max(Math.floor(minX / xSpacing), 0);
+    var maxC = Math.min(Math.floor(maxX / xSpacing), lenColumns - 1);
+    var minR = Math.max(Math.floor(minY / ySpacing), 0);
+    var maxR = Math.min(Math.floor(maxY / ySpacing), lenCells - 1);
+
     var j;
-    for (j = 0; j < lenColumns; j++) {
+    for (j = minC; j <= maxC; j++) {
         var cells = getAt(columns, j);
         var x = xSpacing * j + xHalfGap;
 
         var i;
-        for (i = 0; i < lenCells; i++) {
+        for (i = minR; i <= maxR; i++) {
             var cell = getAt(cells, i);
             var y = ySpacing * i + yHalfGap;
 
