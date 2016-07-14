@@ -75,17 +75,13 @@ Ui.initialize = function () {
         mouseX = e.clientX;
         mouseY = e.clientY;
         mouseDown = true;
-        setTimeout(function () {
-            autocompleteInput.focus();
-        });
+        e.preventDefault();
     });
 
     canvas.addEventListener('mouseup', function (e) {
         mouseDown = false;
         setTimeout(function () {
             movingGrid = false;
-            autocompleteInput.focus();
-            autocompleteInput.setSelectionRange(0, autocompleteInput.value.length);
         });
     });
 
