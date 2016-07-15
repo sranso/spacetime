@@ -142,6 +142,29 @@ Ui.draw = function () {
         var lenCells = 0;
     }
 
+    var selectedCell = null;
+    if ($c >= 0 && $c < lenColumns) {
+        var selectedColumn = getAt(columns, $c);
+        if ($r >= 0 && $r < len(selectedColumn)) {
+            selectedCell = getAt(selectedColumn, $r);
+        }
+    }
+
+    var argCs = [];
+    var argRs = [];
+    if (selectedCell) {
+        var args = get(selectedCell, Cell.args);
+        var numArgs = len(args);
+        var i;
+        for (i = 0; i < numArgs; i++) {
+            var arg = getAt(args, i);
+            var c = val(get(arg, Cell.Arg.c));
+            var r = val(get(arg, Cell.Arg.r));
+            argCs[i] = $c + c;
+            argRs[i] = $r + r;
+        }
+    }
+
     ctx.strokeStyle = '#ccc';
     ctx.fillStyle = '#333';
     ctx.lineWidth = 2;
@@ -155,25 +178,43 @@ Ui.draw = function () {
     var minR = Math.max(Math.floor(minY / ySpacing), 0);
     var maxR = Math.min(Math.floor(maxY / ySpacing), lenCells - 1);
 
-    var j;
-    for (j = minC; j <= maxC; j++) {
-        var cells = getAt(columns, j);
-        var x = xSpacing * j + xHalfGap;
+    var argRsForC = [-1, -1, -1, -1];
+
+    var c;
+    for (c = minC; c <= maxC; c++) {
+        var cells = getAt(columns, c);
+        var x = xSpacing * c + xHalfGap;
 
         var i;
-        for (i = minR; i <= maxR; i++) {
-            var cell = getAt(cells, i);
-            var y = ySpacing * i + yHalfGap;
+        for (i = 0; i < argCs.length; i++) {
+            if (argCs[i] === c) {
+                argRsForC[i] = argRs[i];
+            } else {
+                argRsForC[i] = -1;
+            }
+        }
 
-            if (j === $c && i === $r) {
+        var r;
+        for (r = minR; r <= maxR; r++) {
+            var cell = getAt(cells, r);
+            var y = ySpacing * r + yHalfGap;
+
+            if (argRsForC.indexOf(r) >= 0) {
+                ctx.strokeStyle = '#777';
+                ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
+
+                ctx.strokeRect(x, y + 15, 146, 92);
+                ctx.fillRect(x - 8, y + 9, 162, 104);
+
+                ctx.strokeStyle = '#ccc';
+                ctx.fillStyle = '#333';
+            } else if (c === $c && r === $r) {
                 ctx.strokeStyle = '#333';
-                ctx.fillStyle = 'rgba(26,138,249,0.2)';
+                ctx.fillStyle = 'rgba(26, 138, 249, 0.2)';
                 ctx.lineWidth = 4;
 
-                ctx.beginPath();
-                ctx.rect(x - 1, y + 14, 148, 94);
-                ctx.fill();
-                ctx.stroke();
+                ctx.strokeRect(x - 1, y + 14, 148, 94);
+                ctx.fillRect(x - 8, y + 9, 162, 104);
 
                 ctx.strokeStyle = '#ccc';
                 ctx.fillStyle = '#333';
@@ -184,6 +225,24 @@ Ui.draw = function () {
 
             var text = val(get(cell, Cell.text));
             ctx.fillText(text, x + 2, y + 11);
+
+            // draw result
+            ctx.save();
+
+            ctx.beginPath();
+            ctx.rect(x + 1, y + 16, 144, 90);
+            ctx.clip();
+
+            ctx.textAlign = 'center';
+            ctx.font = '18px monospace';
+            ctx.fillStyle = '#492e85';
+
+            var resultText = Evaluate.evaluate(columns, c, r);
+            if (resultText) {
+                ctx.fillText(resultText, x + 73, y + 64, 144);
+            }
+
+            ctx.restore();
         }
     }
 
@@ -196,10 +255,12 @@ Ui.draw = function () {
 
         var x = xSpacing * $c + xHalfGap;
         var y = ySpacing * $r + yHalfGap;
-        ctx.beginPath();
-        ctx.rect(x - 1, y + 14, 148, 94);
-        ctx.fill();
-        ctx.stroke();
+
+        ctx.fillRect(x - 8, y + 9, 162, 104);
+
+        ctx.lineDashOffset = 2.0;
+        ctx.setLineDash([16, 4]);
+        ctx.strokeRect(x - 1, y + 14, 148, 94);
     }
 
     ctx.restore();

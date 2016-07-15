@@ -43,6 +43,24 @@ var actionEntries = [
     'undo',
 ];
 
+var numArgsTable = {
+    '+': 2,
+    '-': 2,
+    '*': 2,
+    '/': 2,
+
+    'pixel': 0,
+    'scale': 2,
+    'scale x': 2,
+    'scale y': 2,
+    'move x': 2,
+    'move y': 2,
+    'mouse x': 0,
+    'mouse y': 0,
+    'rotate': 2,
+    'combine': 2,
+};
+
 entries = actionEntries.concat(entries);
 var actionEntriesMap = {};
 actionEntries.forEach(function (entry) {
@@ -79,7 +97,6 @@ var getSelectedCell = function () {
         var lenCells = 0;
     }
 
-    var selectedCell = null;
     if ($c >= 0 && $c < lenColumns) {
         var selectedColumn = getAt(columns, $c);
         if ($r >= 0 && $r < len(selectedColumn)) {
@@ -189,7 +206,8 @@ var onKeyDown = function (e) {
     }
 
     if (e.keyCode === 13) { // enter
-        selectMatch();
+        var keepCellSelected = e.shiftKey;
+        selectMatch(keepCellSelected);
     } else if (e.keyCode === 27) { // esc
         $c = -1;
         $r = -1;
@@ -198,7 +216,7 @@ var onKeyDown = function (e) {
     }
 };
 
-var selectMatch = function () {
+var selectMatch = function (keepCellSelected) {
     var selectedCell = getSelectedCell();
     if (!selectedCell) {
         return;
@@ -334,8 +352,21 @@ var selectMatch = function () {
             lenCells++;
         }
 
+        var numArgs = numArgsTable[matchText];
+        var args = ArrayTree.$zeros[0];
+        var i;
+        for (i = 0; i < numArgs; i++) {
+            var arg = set($[Cell.Arg.zero],
+                          Cell.Arg.c, Constants.$positive[0],
+                          Cell.Arg.r, Constants.$negative[numArgs - i]);
+            args = push(args, arg);
+        }
+
+        selectedCell = set(selectedCell,
+                           Cell.text, hash(matchText),
+                           Cell.args, args);
+
         var selectedColumn = getAt(columns, $c);
-        selectedCell = set(selectedCell, Cell.text, hash(matchText));
         selectedColumn = setAt(selectedColumn, $r, selectedCell);
         columns = setAt(columns, $c, selectedColumn);
     }
@@ -359,7 +390,9 @@ var selectMatch = function () {
         autocompleteInput.setSelectionRange(0, matchText.length);
         updateMatches();
     } else {
-        $r++;
+        if (!keepCellSelected) {
+            $r++;
+        }
         Autocomplete.selectCell();
     }
 
