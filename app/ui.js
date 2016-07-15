@@ -6,7 +6,7 @@ var canvas;
 var autocompleteContainer;
 var autocompleteInput;
 
-var ctx;
+global.ctx = null;
 
 global.zoom = 1;
 var xSpacing = 160;
@@ -304,13 +304,16 @@ Ui.draw = function () {
             ctx.rect(x + 1, y + 16, 144, 90);
             ctx.clip();
 
+            ctx.translate(x + 73, y + 61);
+            ctx.scale(0.1, 0.1);
+
             ctx.textAlign = 'center';
-            ctx.font = '18px monospace';
+            ctx.font = '180px monospace';
             ctx.fillStyle = '#492e85';
 
             var result = Evaluate.evaluate(columns, c, r);
-            if (result || result === 0) {
-                ctx.fillText('' + result, x + 73, y + 64, 144);
+            if (typeof result === 'number') {
+                ctx.fillText('' + result, 0, 0, 1440);
             }
 
             ctx.restore();

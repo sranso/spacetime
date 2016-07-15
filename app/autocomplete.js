@@ -16,7 +16,8 @@ var entries = [
     '*',
     '/',
 
-    'pixel',
+    'square',
+    'circle',
     'scale',
     'scale x',
     'scale y',
@@ -26,6 +27,7 @@ var entries = [
     'mouse y',
     'rotate',
     'combine',
+    'color',
 ];
 
 var actionEntries = [
@@ -49,7 +51,8 @@ var numArgsTable = {
     '*': 2,
     '/': 2,
 
-    'pixel': 0,
+    'square': 0,
+    'circle': 0,
     'scale': 2,
     'scale x': 2,
     'scale y': 2,
@@ -59,6 +62,7 @@ var numArgsTable = {
     'mouse y': 0,
     'rotate': 2,
     'combine': 2,
+    'color': 2,
 };
 
 entries = actionEntries.concat(entries);
@@ -241,6 +245,7 @@ var selectMatch = function (keepCellSelected) {
 
     var isAction = actionEntriesMap[matchText];
 
+    var originalText = val(get(selectedCell, Cell.text));
     var makeCommit = true;
 
     if (isAction) {
@@ -328,6 +333,8 @@ var selectMatch = function (keepCellSelected) {
             break;
         }
 
+    } else if (matchText === originalText && !isAction) {
+        // do nothing
     } else {
 
         var newColumn = $c === lenColumns;
