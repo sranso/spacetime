@@ -112,7 +112,7 @@ var getSelectedCell = function () {
     return null;
 };
 
-Autocomplete.selectCell = function () {
+Autocomplete.setSelectedCell = function () {
     var selectedCell = getSelectedCell();
     if (selectedCell) {
         autocompleteContainer.style.display = 'block';
@@ -357,8 +357,8 @@ var selectMatch = function (keepCellSelected) {
         var i;
         for (i = 0; i < numArgs; i++) {
             var arg = set($[Cell.Arg.zero],
-                          Cell.Arg.c, Constants.$positive[0],
-                          Cell.Arg.r, Constants.$negative[numArgs - i]);
+                          Cell.Arg.cDiff, Constants.$positive[0],
+                          Cell.Arg.rDiff, Constants.$negative[numArgs - i]);
             args = push(args, arg);
         }
 
@@ -393,8 +393,10 @@ var selectMatch = function (keepCellSelected) {
         if (!keepCellSelected) {
             $r++;
         }
-        Autocomplete.selectCell();
+        Autocomplete.setSelectedCell();
     }
+
+    $argIndex = 0;
 
     Main.update();
 };

@@ -5,6 +5,7 @@ global.Main = {};
 global.$head = -1;
 global.$r = 0;
 global.$c = 0;
+global.$argIndex = 0;
 
 var gitmem;
 
@@ -37,7 +38,7 @@ Main.initialize = function () {
 
     Ui.initialize();
     Autocomplete.initialize();
-    Autocomplete.selectCell();
+    Autocomplete.setSelectedCell();
     Main.update();
 };
 

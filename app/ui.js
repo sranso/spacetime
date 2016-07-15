@@ -38,10 +38,12 @@ Ui.initialize = function () {
         if (movingGrid) {
             return;
         }
+        e.preventDefault();
+
         var x = Math.round((e.clientX - xTranslation) / zoom);
         var y = Math.round((e.clientY - yTranslation) / zoom);
-        $c = Math.floor(x / xSpacing);
-        $r = Math.floor(y / ySpacing);
+        var c = Math.floor(x / xSpacing);
+        var r = Math.floor(y / ySpacing);
 
         var project = get($head, Commit.tree);
         var parentCell = get(project, Project.cell);
@@ -53,22 +55,91 @@ Ui.initialize = function () {
             var lenCells = 0;
         }
 
-        if ($c >= lenColumns) {
-            $c = lenColumns;
+        if (c >= lenColumns) {
+            c = lenColumns;
         }
-        if ($c < 0) {
-            $c = 0;
+        if (c < 0) {
+            c = 0;
         }
-        if ($r >= lenCells) {
-            $r = lenCells;
+        if (r >= lenCells) {
+            r = lenCells;
         }
-        if ($r < 0) {
-            $r = 0;
+        if (r < 0) {
+            r = 0;
         }
 
-        Autocomplete.selectCell();
+        if (e.shiftKey) {
+            var selectedCell = null;
+            var selectedColumn = null;
+            if ($c >= 0 && $c < lenColumns) {
+                selectedColumn = getAt(columns, $c);
+                if ($r >= 0 && $r < len(selectedColumn)) {
+                    selectedCell = getAt(selectedColumn, $r);
+                }
+            }
+
+            if (!selectedCell) {
+                return;
+            }
+
+            var args = get(selectedCell, Cell.args);
+            var lenArgs = len(args);
+            if (lenArgs === 0) {
+                return;
+            }
+
+            if (c > $c || (c === $c && r >= $r)) {
+                return;
+            }
+
+            var i;
+            for (i = 0; i < lenArgs; i++) {
+                var arg = getAt(args, i);
+                var argC = $c + val(get(arg, Cell.Arg.cDiff));
+                var argR = $r + val(get(arg, Cell.Arg.rDiff));
+                if (c === argC && r === argR) {
+                    $argIndex = i;
+                    return;
+                }
+            }
+
+            var cDiff = c - $c;
+            var rDiff = r - $r;
+            var arg = getAt(args, $argIndex);
+
+            arg = set(arg,
+                      Cell.Arg.cDiff, hash(cDiff),
+                      Cell.Arg.rDiff, hash(rDiff));
+
+            args = setAt(args, $argIndex, arg);
+            selectedCell = set(selectedCell, Cell.args, args);
+            selectedColumn = setAt(selectedColumn, $r, selectedCell);
+            columns = setAt(columns, $c, selectedColumn);
+            parentCell = set(parentCell, Cell.columns, columns);
+            var oldProject = project;
+            project = set(project, Project.cell, parentCell);
+
+            if (project !== oldProject) {
+                var now = Math.floor(+Date.now() / 1000);
+                $head = createCommit($head,
+                                    Commit.tree, project,
+                                    Commit.parent, $head,
+                                    Commit.committerTime, now);
+            }
+
+            $argIndex++;
+            if ($argIndex === lenArgs) {
+                $argIndex = 0;
+            }
+
+        } else {
+            $c = c;
+            $r = r;
+            $argIndex = 0;
+            Autocomplete.setSelectedCell();
+        }
+
         Main.update();
-        e.preventDefault();
     });
 
     canvas.addEventListener('mousedown', function (e) {
@@ -154,14 +225,12 @@ Ui.draw = function () {
     var argRs = [];
     if (selectedCell) {
         var args = get(selectedCell, Cell.args);
-        var numArgs = len(args);
+        var lenArgs = len(args);
         var i;
-        for (i = 0; i < numArgs; i++) {
+        for (i = 0; i < lenArgs; i++) {
             var arg = getAt(args, i);
-            var c = val(get(arg, Cell.Arg.c));
-            var r = val(get(arg, Cell.Arg.r));
-            argCs[i] = $c + c;
-            argRs[i] = $r + r;
+            argCs[i] = $c + val(get(arg, Cell.Arg.cDiff));
+            argRs[i] = $r + val(get(arg, Cell.Arg.rDiff));
         }
     }
 
