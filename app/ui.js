@@ -99,6 +99,7 @@ Ui.initialize = function () {
                 var argR = $r + val(get(arg, Cell.Arg.rDiff));
                 if (c === argC && r === argR) {
                     $argIndex = i;
+                    Ui.draw();
                     return;
                 }
             }
@@ -125,11 +126,6 @@ Ui.initialize = function () {
                                     Commit.tree, project,
                                     Commit.parent, $head,
                                     Commit.committerTime, now);
-            }
-
-            $argIndex++;
-            if ($argIndex === lenArgs) {
-                $argIndex = 0;
             }
 
         } else {
@@ -268,16 +264,24 @@ Ui.draw = function () {
             var cell = getAt(cells, r);
             var y = ySpacing * r + yHalfGap;
 
-            if (argRsForC.indexOf(r) >= 0) {
+            var argIndex = argRsForC.indexOf(r);
+            if (argIndex >= 0) {
+                ctx.save();
                 ctx.strokeStyle = '#777';
                 ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
 
-                ctx.strokeRect(x, y + 15, 146, 92);
                 ctx.fillRect(x - 8, y + 9, 162, 104);
 
-                ctx.strokeStyle = '#ccc';
-                ctx.fillStyle = '#333';
+                if (argIndex === $argIndex) {
+                    ctx.lineDashOffset = 2.0;
+                    ctx.setLineDash([16, 4]);
+                }
+
+                ctx.strokeRect(x, y + 15, 146, 92);
+
+                ctx.restore();
             } else if (c === $c && r === $r) {
+                ctx.save();
                 ctx.strokeStyle = '#333';
                 ctx.fillStyle = 'rgba(26, 138, 249, 0.2)';
                 ctx.lineWidth = 4;
@@ -285,9 +289,7 @@ Ui.draw = function () {
                 ctx.strokeRect(x - 1, y + 14, 148, 94);
                 ctx.fillRect(x - 8, y + 9, 162, 104);
 
-                ctx.strokeStyle = '#ccc';
-                ctx.fillStyle = '#333';
-                ctx.lineWidth = 2;
+                ctx.restore();
             } else {
                 ctx.strokeRect(x, y + 15, 146, 92);  // 144 by 90 internal area
             }
@@ -306,9 +308,9 @@ Ui.draw = function () {
             ctx.font = '18px monospace';
             ctx.fillStyle = '#492e85';
 
-            var resultText = Evaluate.evaluate(columns, c, r);
-            if (resultText) {
-                ctx.fillText(resultText, x + 73, y + 64, 144);
+            var result = Evaluate.evaluate(columns, c, r);
+            if (result || result === 0) {
+                ctx.fillText('' + result, x + 73, y + 64, 144);
             }
 
             ctx.restore();
