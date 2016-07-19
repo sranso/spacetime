@@ -8,6 +8,7 @@ global.$c = 0;
 global.$argIndex = 0;
 global.$playFrame = -1;
 global.$nextTickTime = 0;
+global.$fullscreen = false;
 
 var gitmem;
 
@@ -41,7 +42,6 @@ Main.initialize = function () {
 
     Ui.initialize();
     Autocomplete.initialize();
-    Autocomplete.setSelectedCell();
     Ui.draw();
 };
 
@@ -66,6 +66,7 @@ Main.tick = function (now) {
     $playFrame++;
     if ($playFrame >= len(columns)) {
         $playFrame = -1;
+        Autocomplete.show();
         return;
     }
 

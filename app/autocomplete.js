@@ -44,6 +44,8 @@ var actionEntries = [
 
     'undo',
     'play',
+    'fullscreen',
+    'exit fullscreen',
 ];
 
 var numArgsTable = {
@@ -90,6 +92,14 @@ Autocomplete.initialize = function () {
     autocompleteInput.addEventListener('keydown', onKeyDown);
 
     matches = [];
+    Autocomplete.setSelectedCell();
+    Autocomplete.show();
+};
+
+Autocomplete.show = function () {
+    autocompleteContainer.style.display = 'block';
+    autocompleteInput.focus();
+    autocompleteInput.setSelectionRange(0, autocompleteInput.value.length);
 };
 
 var getSelectedCell = function () {
@@ -110,35 +120,24 @@ var getSelectedCell = function () {
         }
     }
 
-    var newColumn = $c === lenColumns;
-    var newRow = $r === lenCells;
-    if (newColumn || newRow) {
-        return $[Cell.zero];
-    }
-    return null;
+    return $[Cell.zero];
 };
 
 Autocomplete.setSelectedCell = function () {
-    var selectedCell = getSelectedCell();
-    if (selectedCell) {
-        autocompleteContainer.style.display = 'block';
-
+    if ($c !== -1) {
+        var selectedCell = getSelectedCell();
         var text = val(get(selectedCell, Cell.text));
         autocompleteInput.value = text;
-        autocompleteInput.focus();
-        autocompleteInput.setSelectionRange(0, text.length);
-
-        updateMatches();
-    } else {
-        autocompleteContainer.style.display = 'none';
     }
+
+    autocompleteInput.focus();
+    autocompleteInput.setSelectionRange(0, autocompleteInput.value.length);
+
+    updateMatches();
 };
 
 var updateMatches = function () {
     var selectedCell = getSelectedCell();
-    if (!selectedCell) {
-        return;
-    }
     var originalText = val(get(selectedCell, Cell.text));
     var text = autocompleteInput.value;
 
@@ -149,9 +148,7 @@ var updateMatches = function () {
         autocompleteOriginal.innerText = originalText;
     }
 
-    if (text === '') {
-        matches = defaultEntries;
-    } else if (text === originalText) {
+    if (text === originalText || text === '') {
         matches = [];
     } else {
         matches = [];
@@ -214,19 +211,21 @@ var onKeyDown = function (e) {
     if (e.keyCode === 13) { // enter
         var keepCellSelected = e.shiftKey;
         selectMatch(keepCellSelected);
-    } else if (e.keyCode === 27) { // esc
-        $c = -1;
-        $r = -1;
-        autocompleteContainer.style.display = 'none';
+    } else if (e.keyCode === 27) { // escape
+        escape();
         Ui.draw();
     }
 };
 
+var escape = function () {
+    $c = -1;
+    $r = -1;
+    autocompleteInput.value = '';
+    Autocomplete.setSelectedCell();
+};
+
 var selectMatch = function (keepCellSelected) {
     var selectedCell = getSelectedCell();
-    if (!selectedCell) {
-        return;
-    }
 
     var text = autocompleteInput.value;
     if (selectedMatchIndex >= matches.length) {
@@ -249,6 +248,7 @@ var selectMatch = function (keepCellSelected) {
 
     var originalText = val(get(selectedCell, Cell.text));
     var makeCommit = true;
+    var keepCommandSelected = true;
 
     if (isAction) {
         switch (matchText) {
@@ -269,7 +269,22 @@ var selectMatch = function (keepCellSelected) {
 
             // commit will be mutated into final after-play state
             makeCommit = true;
+            autocompleteContainer.style.display = 'none';
             window.requestAnimationFrame(Main.tick);
+            break;
+
+        case 'fullscreen':
+            escape();
+            $fullscreen = true;
+            makeCommit = false;
+            keepCommandSelected = false;
+            break;
+
+        case 'exit fullscreen':
+            autocompleteInput.value = '';
+            $fullscreen = false;
+            makeCommit = false;
+            keepCommandSelected = false;
             break;
 
         case 'copy column':
@@ -407,8 +422,10 @@ var selectMatch = function (keepCellSelected) {
     }
 
     if (isAction) {
-        autocompleteInput.value = matchText;
-        autocompleteInput.setSelectionRange(0, matchText.length);
+        if (keepCommandSelected) {
+            autocompleteInput.value = matchText;
+            autocompleteInput.setSelectionRange(0, matchText.length);
+        }
         updateMatches();
     } else {
         if (!keepCellSelected) {

@@ -41,7 +41,7 @@ Ui.initialize = function () {
     ctx.font = '12px monospace';
 
     canvas.addEventListener('click', function (e) {
-        if (movingGrid) {
+        if ($fullscreen || movingGrid) {
             return;
         }
         e.preventDefault();
@@ -199,13 +199,56 @@ Ui.initialize = function () {
 Ui.draw = function () {
     console.time('UI.draw');
 
+    Ui.moveAutocomplete();
+
     ctx.save();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    if ($fullscreen) {
+        drawFullscreen();
+    } else {
+        drawGrid();
+    }
+
+    ctx.restore();
+
+    console.timeEnd('UI.draw');
+}
+
+var drawFullscreen = function () {
+    var centerX = Math.floor(window.innerWidth / 2);
+    var centerY = Math.floor(window.innerHeight / 2);
+    ctx.translate(centerX, centerY);
+    ctx.scale(1440 / window.innerWidth, 900 / window.innerHeight);
+
+    var project = get($head, Commit.tree);
+    var parentCell = get(project, Project.cell);
+    var columns = get(parentCell, Cell.columns);
+    var lenColumns = len(columns);
+    if (lenColumns > 0) {
+        var lenCells = len(getAt(columns, 0));
+    } else {
+        var lenCells = 0;
+    }
+
+    if ($playFrame === -1) {
+        var c = lenColumns - 1;
+    } else {
+        var c = $playFrame;
+    }
+    var r = lenCells - 1;
+
+    ctx.fillStyle = '#492e85';
+
+    if (c >= 0 && c < lenColumns) {
+        Evaluate.evaluate(parentCell, columns, c, r);
+    }
+};
+
+var drawGrid = function () {
     ctx.translate(xTranslation, yTranslation);
     ctx.scale(zoom, zoom);
-
-    Ui.moveAutocomplete();
 
     var project = get($head, Commit.tree);
     var parentCell = get(project, Project.cell);
@@ -345,19 +388,33 @@ Ui.draw = function () {
         ctx.strokeRect(x - 1, y + 14, 148, 94);
     }
 
-    ctx.restore();
+    var emptyEscaped = $c === -1 && lenColumns === 0;
+    if (emptyEscaped) {
+        ctx.strokeStyle = '#080';
+        ctx.fillStyle = 'rgba(26,138,249,0.2)';
+        ctx.lineWidth = 2;
 
-    console.timeEnd('UI.draw');
+        ctx.lineDashOffset = 4.0;
+        ctx.setLineDash([16, 4]);
+        ctx.strokeRect(xHalfGap, yHalfGap + 15, 146, 92);
+    }
 };
 
 Ui.moveAutocomplete = function () {
-    var autocompleteZoom = Math.max(0.6, Math.min(zoom, 3.0)) * 0.5;
+    if ($c === -1) {
+        var autocompleteZoom = 0.7;
+        var x = Math.floor(window.innerWidth / 2) - 100;
+        var y = 30;
+    } else {
+        var autocompleteZoom = Math.max(0.6, Math.min(zoom, 3.0)) * 0.5;
 
-    var x = ($c * xSpacing * zoom) + xTranslation + 2;
-    var y = ($r * ySpacing * zoom) + yTranslation - 1;
+        var x = ($c * xSpacing * zoom) + xTranslation + 2;
+        var y = ($r * ySpacing * zoom) + yTranslation - 1;
+
+    }
+
     autocompleteContainer.style.top = y + 'px';
     autocompleteContainer.style.left = x + 'px';
-
     autocompleteContainer.style.transform = 'scale(' + autocompleteZoom + ')';
 };
 
