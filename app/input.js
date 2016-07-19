@@ -37,8 +37,8 @@ Input.capture = function () {
         }
     }
 
-    var scaledX = Math.floor(mouseX / window.innerWidth * 1440 - 720);
-    var scaledY = Math.floor(mouseY / window.innerHeight * 900 - 450);
+    var scaledX = Math.floor(mouseX / window.innerWidth * 1440) - 720;
+    var scaledY = Math.floor(mouseY / window.innerHeight * 900) - 450;
     mouseXs = setAt(mouseXs, $playFrame, hash(scaledX));
     mouseYs = setAt(mouseYs, $playFrame, hash(scaledY));
 

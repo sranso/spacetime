@@ -220,7 +220,7 @@ var drawFullscreen = function () {
     var centerX = Math.floor(window.innerWidth / 2);
     var centerY = Math.floor(window.innerHeight / 2);
     ctx.translate(centerX, centerY);
-    ctx.scale(1440 / window.innerWidth, 900 / window.innerHeight);
+    ctx.scale(window.innerWidth / 1440, window.innerHeight / 900);
 
     var project = get($head, Commit.tree);
     var parentCell = get(project, Project.cell);

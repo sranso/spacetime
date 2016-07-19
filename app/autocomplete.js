@@ -98,6 +98,7 @@ Autocomplete.initialize = function () {
 
 Autocomplete.show = function () {
     autocompleteContainer.style.display = 'block';
+    document.body.style.cursor = null;
     autocompleteInput.focus();
     autocompleteInput.setSelectionRange(0, autocompleteInput.value.length);
 };
@@ -248,6 +249,7 @@ var selectMatch = function (keepCellSelected) {
 
     var originalText = val(get(selectedCell, Cell.text));
     var makeCommit = true;
+    var forceMakeCommit = false;
     var keepCommandSelected = true;
 
     if (isAction) {
@@ -268,8 +270,9 @@ var selectMatch = function (keepCellSelected) {
             $playFrame = 0;
 
             // commit will be mutated into final after-play state
-            makeCommit = true;
+            forceMakeCommit = true;
             autocompleteContainer.style.display = 'none';
+            document.body.style.cursor = 'none';
             window.requestAnimationFrame(Main.tick);
             break;
 
@@ -412,7 +415,7 @@ var selectMatch = function (keepCellSelected) {
         var oldProject = project;
         project = set(project, Project.cell, parentCell);
 
-        if (project !== oldProject) {
+        if (project !== oldProject || forceMakeCommit) {
             var now = Math.floor(+Date.now() / 1000);
             $head = createCommit($head,
                                  Commit.tree, project,
