@@ -9,17 +9,20 @@ var autocompleteInput;
 global.ctx = null;
 
 global.zoom = 1;
+global.mouseX = 0;
+global.mouseY = 0;
+
 var xSpacing = 160;
 var ySpacing = 112;
 var xHalfGap = 5;
 var yHalfGap = 2;
-var xTranslation = 60;
-var yTranslation = 40;
+var xTranslation = 0;
+var yTranslation = 0;
+var mouseXAtDown = 0;
+var mouseYAtDown = 0;
 
 var mouseDown = false;
 var movingGrid = false;
-var mouseX = 0;
-var mouseY = 0;
 
 Ui.initialize = function () {
     canvas = document.getElementById('canvas');
@@ -30,6 +33,9 @@ Ui.initialize = function () {
 
     autocompleteContainer = document.getElementById('autocomplete-container');
     autocompleteInput = document.getElementById('autocomplete-input');
+
+    xTranslation = Math.floor(window.innerWidth / 3 - xSpacing / 2);
+    yTranslation = Math.floor(window.innerHeight / 4 - ySpacing / 2);
 
     ctx = canvas.getContext('2d');
     ctx.font = '12px monospace';
@@ -123,9 +129,9 @@ Ui.initialize = function () {
             if (project !== oldProject) {
                 var now = Math.floor(+Date.now() / 1000);
                 $head = createCommit($head,
-                                    Commit.tree, project,
-                                    Commit.parent, $head,
-                                    Commit.committerTime, now);
+                                     Commit.tree, project,
+                                     Commit.parent, $head,
+                                     Commit.committerTime, now);
             }
 
         } else {
@@ -135,12 +141,14 @@ Ui.initialize = function () {
             Autocomplete.setSelectedCell();
         }
 
-        Main.update();
+        Ui.draw();
     });
 
     canvas.addEventListener('mousedown', function (e) {
         mouseX = e.clientX;
         mouseY = e.clientY;
+        mouseXAtDown = mouseX;
+        mouseYAtDown = mouseY;
         mouseDown = true;
         e.preventDefault();
     });
@@ -155,8 +163,8 @@ Ui.initialize = function () {
     canvas.addEventListener('mousemove', function (e) {
         if (!movingGrid) {
             var moved = (
-                Math.abs(e.clientX - mouseX) > 2 ||
-                Math.abs(e.clientY - mouseY) > 2
+                Math.abs(e.clientX - mouseXAtDown) > 2 ||
+                Math.abs(e.clientY - mouseYAtDown) > 2
             );
             if (mouseDown && moved) {
                 movingGrid = true;
@@ -167,10 +175,10 @@ Ui.initialize = function () {
             var yDiff = e.clientY - mouseY;
             xTranslation += xDiff;
             yTranslation += yDiff;
-            mouseX = e.clientX;
-            mouseY = e.clientY;
             Ui.draw();
         }
+        mouseX = e.clientX;
+        mouseY = e.clientY;
     });
 
     window.addEventListener('wheel', function (e) {
@@ -311,9 +319,9 @@ Ui.draw = function () {
             ctx.font = '180px monospace';
             ctx.fillStyle = '#492e85';
 
-            var result = Evaluate.evaluate(columns, c, r);
+            var result = Evaluate.evaluate(parentCell, columns, c, r);
             if (typeof result === 'number') {
-                ctx.fillText('' + result, 0, 0, 1440);
+                ctx.fillText('' + result, 0, 50, 1440);
             }
 
             ctx.restore();

@@ -2,11 +2,11 @@
 global.Evaluate = {};
 (function () {
 
-Evaluate.evaluate = function (columns, c, r) {
+Evaluate.evaluate = function (parentCell, columns, c, r) {
     var cells = getAt(columns, c);
     var cell = getAt(cells, r);
     var text = val(get(cell, Cell.text));
-    if (!isNaN(+text)) {
+    if (!isNaN(+text) && text !== '') {
         return +text;
     }
 
@@ -16,7 +16,7 @@ Evaluate.evaluate = function (columns, c, r) {
         var arg = getAt(args, i);
         var argC = c + val(get(arg, Cell.Arg.cDiff));
         var argR = r + val(get(arg, Cell.Arg.rDiff));
-        return Evaluate.evaluate(columns, argC, argR);
+        return Evaluate.evaluate(parentCell, columns, argC, argR);
     };
 
     switch (text) {
@@ -89,6 +89,22 @@ Evaluate.evaluate = function (columns, c, r) {
         argResult(0);
         ctx.restore();
         break;
+
+    case 'mouse x':
+        var input = get(parentCell, Cell.input);
+        var mouseXs = get(input, Input.mouseXs);
+        if (c >= len(mouseXs)) {
+            return 0;
+        }
+        return val(getAt(mouseXs, c));
+
+    case 'mouse y':
+        var input = get(parentCell, Cell.input);
+        var mouseYs = get(input, Input.mouseYs);
+        if (c >= len(mouseYs)) {
+            return 0;
+        }
+        return val(getAt(mouseYs, c));
     }
 
     return text;

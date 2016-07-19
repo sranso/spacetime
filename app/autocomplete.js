@@ -43,9 +43,11 @@ var actionEntries = [
     'insert column',
 
     'undo',
+    'play',
 ];
 
 var numArgsTable = {
+    '': 0,
     '+': 2,
     '-': 2,
     '*': 2,
@@ -216,7 +218,7 @@ var onKeyDown = function (e) {
         $c = -1;
         $r = -1;
         autocompleteContainer.style.display = 'none';
-        Main.update();
+        Ui.draw();
     }
 };
 
@@ -256,6 +258,18 @@ var selectMatch = function (keepCellSelected) {
                 $head = parent;
             }
             makeCommit = false;
+            break;
+
+        case 'play':
+            if (lenColumns === 0) {
+                break;
+            }
+            $nextTickTime = 0;
+            $playFrame = 0;
+
+            // commit will be mutated into final after-play state
+            makeCommit = true;
+            window.requestAnimationFrame(Main.tick);
             break;
 
         case 'copy column':
@@ -333,7 +347,7 @@ var selectMatch = function (keepCellSelected) {
             break;
         }
 
-    } else if (matchText === originalText && !isAction) {
+    } else if (matchText === originalText && originalText !== '') {
         // do nothing
     } else {
 
@@ -386,9 +400,9 @@ var selectMatch = function (keepCellSelected) {
         if (project !== oldProject) {
             var now = Math.floor(+Date.now() / 1000);
             $head = createCommit($head,
-                                Commit.tree, project,
-                                Commit.parent, $head,
-                                Commit.committerTime, now);
+                                 Commit.tree, project,
+                                 Commit.parent, $head,
+                                 Commit.committerTime, now);
         }
     }
 
@@ -405,7 +419,7 @@ var selectMatch = function (keepCellSelected) {
 
     $argIndex = 0;
 
-    Main.update();
+    Ui.draw();
 };
 
 })();
