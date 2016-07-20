@@ -4,7 +4,7 @@
 var newPointers = new Uint32Array(4 * 25); // 25 is > max levels
 
 global.insertAt = function (array, insertIndex, element, pop) {
-    var elementType = $table.data8[Table.typeOffset(element)];
+    var elementType = $table.data8[Table.typeOffset(element)] & Type.mask;
     if (elementType === Type.tree) {
         elementType = ArrayTree.treeType;
     } else {

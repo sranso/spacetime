@@ -30,6 +30,10 @@ log(len(treeArray2));
 //=> 2
 log(treeArray2 === ArrayTree.$zeros[2 + ArrayTree.treeType]);
 //=> true
+$table.data8[Table.typeOffset(emptyTree)] |= Type.onServer;
+var treeArray3 = push(treeArray2, emptyTree);
+log(treeArray3 === ArrayTree.$zeros[3 + ArrayTree.treeType]);
+//=> true
 
 var array5 = push(array4, num0);
 log(len(array5));

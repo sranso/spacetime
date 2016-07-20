@@ -88,7 +88,7 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
         }
         packOffset += 20;
 
-        var type = $table.data8[Table.typeOffset(base)];
+        var type = $table.data8[Table.typeOffset(base)] & Type.mask;
         var pointer32 = base >> 2;
 
         var baseFile = baseFileArray;
@@ -97,7 +97,7 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
 
         // Recreate baseFile
 
-        switch (type & Type.mask) {
+        switch (type) {
         case Type.tree:
             var moldIndex = $table.data32[pointer32 + Table.data32_moldIndex];
             var mold32 = moldIndex * Mold.data32_size;

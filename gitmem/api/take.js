@@ -34,7 +34,7 @@ global.take = function (array, numToTake) {
             var elementType = ArrayTree.treeType;
         } else {
             var element = $table.data32[pointer32];
-            var elementType = $table.data8[Table.typeOffset(element)];
+            var elementType = $table.data8[Table.typeOffset(element)] & Type.mask;
             if (elementType === Type.tree) {
                 elementType = ArrayTree.treeType;
             } else {

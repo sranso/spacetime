@@ -5,7 +5,7 @@ var newPointers = new Uint32Array(4);
 var tempHash = new Uint8Array(20);
 
 global.push = function (array, element) {
-    var elementType = $table.data8[Table.typeOffset(element)];
+    var elementType = $table.data8[Table.typeOffset(element)] & Type.mask;
     if (elementType === Type.tree) {
         elementType = ArrayTree.treeType;
     } else {
