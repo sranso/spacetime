@@ -1,6 +1,12 @@
 'use strict';
 (function () {
 
+if (!global.log) {
+    global.log = function () {
+        return console.log(console, arguments);
+    };
+}
+
 global.pretty = function (array, start, end) {
     array = array.subarray(start, end);
     var pretty = [];
