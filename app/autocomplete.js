@@ -380,28 +380,6 @@ var selectMatch = function (keepCellSelected) {
         // do nothing
     } else {
 
-        var newColumn = $c === lenColumns;
-        if (newColumn) {
-            var cells = ArrayTree.$zeros[0];
-            var i;
-            for (i = 0; i < lenCells; i++) {
-                cells = push(cells, $[Cell.zero]);
-            }
-            columns = push(columns, cells);
-            lenColumns++;
-        }
-
-        var newRow = $r === lenCells;
-        if (newRow) {
-            var i;
-            for (i = 0; i < lenColumns; i++) {
-                var column = getAt(columns, i);
-                column = push(column, $[Cell.zero]);
-                columns = setAt(columns, i, column);
-            }
-            lenCells++;
-        }
-
         var numArgs = numArgsTable[matchText];
         var args = ArrayTree.$zeros[0];
         var i;
@@ -416,8 +394,37 @@ var selectMatch = function (keepCellSelected) {
                            Cell.text, hash(matchText),
                            Cell.args, args);
 
-        var selectedColumn = getAt(columns, $c);
-        selectedColumn = setAt(selectedColumn, $r, selectedCell);
+        var newColumn = $c === lenColumns;
+        if (newColumn) {
+            var cells = ArrayTree.$zeros[0];
+            var i;
+            for (i = 0; i < lenCells; i++) {
+                cells = push(cells, $[Cell.zero]);
+            }
+            columns = push(columns, cells);
+            lenColumns++;
+        }
+
+        var newRow = $r === lenCells;
+        if (newRow && lenColumns === 1) {
+            var selectedColumn = getAt(columns, 0);
+            selectedColumn = push(selectedColumn, selectedCell);
+            lenCells++;
+        } else {
+            if (newRow) {
+                var i;
+                for (i = 0; i < lenColumns; i++) {
+                    var column = getAt(columns, i);
+                    column = push(column, $[Cell.zero]);
+                    columns = setAt(columns, i, column);
+                }
+                lenCells++;
+            }
+
+            var selectedColumn = getAt(columns, $c);
+            selectedColumn = setAt(selectedColumn, $r, selectedCell);
+        }
+
         columns = setAt(columns, $c, selectedColumn);
     }
 
