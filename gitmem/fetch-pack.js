@@ -9,8 +9,6 @@ FetchPack.postContentType = 'application/x-git-upload-pack-request';
 
 var getResponseStart = Convert.stringToArray('001e# service=git-upload-pack\n0000');
 
-var requiredCapabilites = ['thin-pack', 'shallow'];
-
 FetchPack.validateGetResponse = function (body) {
     var i;
     for (i = 0; i < getResponseStart.length; i++) {
@@ -19,6 +17,10 @@ FetchPack.validateGetResponse = function (body) {
         }
     }
 
+    return null;
+};
+
+FetchPack.validateCapabilities = function (body, requiredCapabilites) {
     var lineLength = Convert.pktLineToLength(body, getResponseStart.length);
     var capabilitiesEnd = lineLength + getResponseStart.length - 1;
     var capabilitiesStart = body.indexOf(0, getResponseStart.length + 4 + 40 + 1) + 1;
@@ -26,6 +28,7 @@ FetchPack.validateGetResponse = function (body) {
     var capabilitiesString = String.fromCharCode.apply(null, capabilitiesArray);
     var capabilities = capabilitiesString.split(' ');
 
+    var i;
     for (i = 0; i < requiredCapabilites.length; i++) {
         if (capabilities.indexOf(requiredCapabilites[i]) === -1) {
             return 'Missing fetch-pack capability: ' + requiredCapabilites[i];
@@ -91,9 +94,11 @@ var hexCharacters = Convert.stringToArray('0123456789abcdef');
 FetchPack.postBody = function (want, have) {
     var firstHave = have;
     var numHaves = 0;
-    while (have && numHaves < maxHaves) {
-        numHaves++;
-        have = $table.data32[(have >> 2) + Commit.parent];
+    if (have !== $[Constants.zeroHash]) {
+        while (have && numHaves < maxHaves) {
+            numHaves++;
+            have = $table.data32[(have >> 2) + Commit.parent];
+        }
     }
 
     var normalLinesLength = numHaves * wantLineLength;

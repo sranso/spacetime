@@ -13,6 +13,9 @@ global.$fullscreen = false;
 
 var gitmem;
 
+var gitUrl = 'http://localhost:8080/local-git/spacetime1.git';
+var refName = 'refs/heads/master';
+
 Main.initialize = function () {
     GitMem.initialize();
     gitmem = GitMem.create();
@@ -21,6 +24,29 @@ Main.initialize = function () {
     Cell.initialize();
     Project.initialize();
 
+    initializeRepo(function () {
+        Ui.initialize();
+        Autocomplete.initialize();
+        Ui.draw();
+    });
+};
+
+var initializeRepo = function (callback) {
+    Remote.queryRef(gitUrl, refName, function (remoteCommit) {
+        if (remoteCommit === $[Constants.zeroHash]) {
+            initializeNew();
+            callback();
+        } else {
+            Remote.fetch(gitUrl, remoteCommit, $[Constants.zeroHash], function () {
+                $head = remoteCommit;
+                $redoHead = $head;
+                callback();
+            });
+        }
+    });
+};
+
+var initializeNew = function () {
     var project = $[Project.zero];
 
     var user = set($[Commit.User.zero],
@@ -41,10 +67,15 @@ Main.initialize = function () {
                          Commit.committerTime, now,
                          Commit.message, hash('automatic commit'));
     $redoHead = $head;
+};
 
-    Ui.initialize();
-    Autocomplete.initialize();
-    Ui.draw();
+Main.save = function () {
+    Remote.queryRef(gitUrl, refName, function (remoteCommit) {
+        var packLength = Pack.create($head);
+        Remote.push(gitUrl, refName, remoteCommit, $head, packLength, function (response) {
+            // TODO: error handling
+        });
+    });
 };
 
 Main.tick = function (now) {

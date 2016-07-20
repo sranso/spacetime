@@ -47,6 +47,7 @@ var actionEntries = [
     'play',
     'fullscreen',
     'exit fullscreen',
+    'save',
 ];
 
 var numArgsTable = {
@@ -293,6 +294,11 @@ var selectMatch = function (keepCellSelected) {
             $fullscreen = false;
             makeCommit = false;
             keepCommandSelected = false;
+            break;
+
+        case 'save':
+            makeCommit = false;
+            Main.save();
             break;
 
         case 'copy column':

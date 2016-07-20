@@ -33,7 +33,8 @@ log(FetchPack.validateGetResponse(getResponse));
 //=> Incorrect start of get response
 
 getResponse = Convert.stringToArray(getResponseString.replace('thin-pack', 'xxxx-xxxx'));
-log(FetchPack.validateGetResponse(getResponse));
+var requiredCapabilites = ['thin-pack', 'shallow'];
+log(FetchPack.validateCapabilities(getResponse, requiredCapabilites));
 //=> Missing fetch-pack capability: thin-pack
 
 
@@ -109,7 +110,7 @@ log(hexHash($table.hashes8, commit2));
 var packLength = Pack.create(commit2);
 
 var want = refs[1][1];
-var body = FetchPack.postBody(want, 0);
+var body = FetchPack.postBody(want, $[Constants.zeroHash]);
 log(pretty(body));
 //=> 0050want f058e064dc438ca61341d2ca56d0cbda04cac2a3\x00 thin-pack agent=gitmem/0.0.0
 //=> 00000009done

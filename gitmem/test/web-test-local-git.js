@@ -215,7 +215,7 @@ var firstPush = function () {
     global.$pack = pack1;
     push($[Constants.zeroHash], commit1, pack1.length, function () {
         fetchGet(function (refs) {
-            fetchPost(0, refs, afterClone);
+            fetchPost($[Constants.zeroHash], refs, afterClone);
         });
     });
 };
@@ -276,7 +276,7 @@ var afterFetch = function (refPointer, pack) {
     GitMem.load(oldGitMem);
 
     fetchGet(function (refs) {
-        fetchPost(0, refs, afterLastClone);
+        fetchPost($[Constants.zeroHash], refs, afterLastClone);
     });
 };
 
