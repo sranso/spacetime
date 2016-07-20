@@ -43,6 +43,7 @@ var actionEntries = [
     'insert column',
 
     'undo',
+    'redo',
     'play',
     'fullscreen',
     'exit fullscreen',
@@ -74,13 +75,6 @@ var actionEntriesMap = {};
 actionEntries.forEach(function (entry) {
     actionEntriesMap[entry] = true;
 });
-
-var defaultEntries = [
-    '',
-    'go into',
-    'undo',
-    'go up',
-];
 
 Autocomplete.initialize = function () {
     autocompleteContainer = document.getElementById('autocomplete-container');
@@ -262,6 +256,17 @@ var selectMatch = function (keepCellSelected) {
             makeCommit = false;
             break;
 
+        case 'redo':
+            var head = $redoHead;
+            var childHead = head;
+            while (head !== $head) {
+                childHead = head;
+                head = get(head, Commit.parent);
+            }
+            $head = childHead;
+            makeCommit = false;
+            break;
+
         case 'play':
             if (lenColumns === 0) {
                 break;
@@ -421,6 +426,7 @@ var selectMatch = function (keepCellSelected) {
                                  Commit.tree, project,
                                  Commit.parent, $head,
                                  Commit.committerTime, now);
+            $redoHead = $head;
         }
     }
 

@@ -132,6 +132,7 @@ Ui.initialize = function () {
                                      Commit.tree, project,
                                      Commit.parent, $head,
                                      Commit.committerTime, now);
+                $redoHead = $head;
             }
 
         } else {

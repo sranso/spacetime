@@ -2,7 +2,8 @@
 global.Main = {};
 (function () {
 
-global.$head = -1;
+global.$head = 0;
+global.$redoHead = 0;
 global.$r = 0;
 global.$c = 0;
 global.$argIndex = 0;
@@ -39,6 +40,7 @@ Main.initialize = function () {
                          Commit.parent, 0,
                          Commit.committerTime, now,
                          Commit.message, hash('automatic commit'));
+    $redoHead = $head;
 
     Ui.initialize();
     Autocomplete.initialize();

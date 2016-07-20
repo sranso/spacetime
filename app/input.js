@@ -53,6 +53,7 @@ Input.capture = function () {
     $head = createCommit($head,
                          Commit.tree, project,
                          Commit.committerTime, now);
+    $redoHead = $head;
 };
 
 })();
