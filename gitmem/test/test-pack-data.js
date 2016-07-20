@@ -66,8 +66,8 @@ PackData.extractFile(pack, 0, extractFileOutput);
 var fileLength = extractFileOutput[0];
 var nextPackOffset = extractFileOutput[1];
 log(fileLength, nextPackOffset);
-//=> 91 36
+//=> 92 36
 log(pretty($file, 0, fileLength));
-//=> blob 0\x00"a bit of text that hopefully causes some
+//=> blob 84\x00"a bit of text that hopefully causes some
 //=> delta compression when we change it below
 //=>

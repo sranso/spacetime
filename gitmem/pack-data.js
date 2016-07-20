@@ -144,12 +144,12 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
         delta_j++;
 
         // Compute resultLength
-        var resultLength = 0;
+        var resultLength = deltaData[delta_j] & 0x7f;
         var shift = 0;
         while (deltaData[delta_j] & 0x80) {
             delta_j++;
-            resultLength |= (deltaData[delta_j] & 0x7f) << shift;
             shift += 7;
+            resultLength |= (deltaData[delta_j] & 0x7f) << shift;
         }
         delta_j++;
 
@@ -238,7 +238,6 @@ PackData.extractFile = function (pack, packOffset, extractFileOutput) {
 
 var writeHeader = function (prefix, length) {
     var lengthString = '' + length;
-    var fileLength = prefix.length + lengthString.length + 1 + length;
 
     var i;
     for (i = 0; i < prefix.length; i++) {
