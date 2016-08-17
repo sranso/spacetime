@@ -240,14 +240,19 @@ var selectMatch = function (keepCellSelected) {
         var matchText = matches[selectedMatchIndex];
     }
 
-    var project = get($head, Commit.tree);
-    var parentCell = get(project, Project.cell);
-    var columns = get(parentCell, Cell.columns);
-    var lenColumns = len(columns);
-    if (lenColumns > 0) {
-        var lenCells = len(getAt(columns, 0));
+    if ($showResults) {
+        var lenColumns = $results.length;
+        var lenCells = lenColumns > 0 ? $results[0].length : 0;
     } else {
-        var lenCells = 0;
+        var project = get($head, Commit.tree);
+        var parentCell = get(project, Project.cell);
+        var columns = get(parentCell, Cell.columns);
+        var lenColumns = len(columns);
+        if (lenColumns > 0) {
+            var lenCells = len(getAt(columns, 0));
+        } else {
+            var lenCells = 0;
+        }
     }
 
     var isAction = actionEntriesMap[matchText];
@@ -307,11 +312,12 @@ var selectMatch = function (keepCellSelected) {
             break;
 
         case 'go into':
-            if ($showResults) {
+            if ($listRepos) {
                 var result = $results[$c][$r];
                 var gitUrl = GitHub.baseGitUrl(window.sessionStorage.githubAccessToken) + '/' + result.fullName + '.git';
                 window.sessionStorage.setItem('gitUrl', gitUrl);
                 $showResults = false;
+                $listRepos = false;
                 Main.initializeRepo();
                 return;
             } else {
@@ -320,6 +326,7 @@ var selectMatch = function (keepCellSelected) {
             break;
 
         case 'list repositories':
+            window.sessionStorage.removeItem('gitUrl');
             return Main.listRepos(null);
 
         case 'save':
@@ -403,7 +410,7 @@ var selectMatch = function (keepCellSelected) {
         }
 
     } else if (matchText === originalText && originalText !== '') {
-        // do nothing
+        makeCommit = false;  // do nothing
     } else {
 
         var numArgs = numArgsTable[matchText];
@@ -421,37 +428,65 @@ var selectMatch = function (keepCellSelected) {
                            Cell.args, args);
 
         var newColumn = $c === lenColumns;
-        if (newColumn) {
-            var cells = ArrayTree.$zeros[0];
-            var i;
-            for (i = 0; i < lenCells; i++) {
-                cells = push(cells, $[Cell.zero]);
-            }
-            columns = push(columns, cells);
-            lenColumns++;
-        }
-
         var newRow = $r === lenCells;
-        if (newRow && lenColumns === 1) {
-            var selectedColumn = getAt(columns, 0);
-            selectedColumn = push(selectedColumn, selectedCell);
-            lenCells++;
-        } else {
-            if (newRow) {
-                var i;
-                for (i = 0; i < lenColumns; i++) {
-                    var column = getAt(columns, i);
-                    column = push(column, $[Cell.zero]);
-                    columns = setAt(columns, i, column);
-                }
-                lenCells++;
+
+        if ($listRepos) {
+            if (newColumn || newRow) {
+                var username = window.sessionStorage.githubUsername;
+                var fullName = username + '/' + matchText;
+                var accessToken = window.sessionStorage.githubAccessToken;
+                var gitUrl = GitHub.baseGitUrl(accessToken) + '/' + fullName + '.git';
+                window.sessionStorage.setItem('gitUrl', gitUrl);
+
+                var repoConfig = {
+                    name: matchText,
+                    homepage: 'https://www.getspacetime.com/' + fullName,
+                };
+                GitHub.createRepo(repoConfig, accessToken, function (err, repo, xhr) {
+                    Main.initializeNewRepo();
+                    $listRepos = false;
+                    $showResults = false;
+                    $c = 0;
+                    $r = 0;
+                    Autocomplete.setSelectedCell();
+                    Ui.draw();
+                });
+                return;
             }
 
-            var selectedColumn = getAt(columns, $c);
-            selectedColumn = setAt(selectedColumn, $r, selectedCell);
-        }
+        } else {
 
-        columns = setAt(columns, $c, selectedColumn);
+            if (newColumn) {
+                var cells = ArrayTree.$zeros[0];
+                var i;
+                for (i = 0; i < lenCells; i++) {
+                    cells = push(cells, $[Cell.zero]);
+                }
+                columns = push(columns, cells);
+                lenColumns++;
+            }
+
+            if (newRow && lenColumns === 1) {
+                var selectedColumn = getAt(columns, 0);
+                selectedColumn = push(selectedColumn, selectedCell);
+                lenCells++;
+            } else {
+                if (newRow) {
+                    var i;
+                    for (i = 0; i < lenColumns; i++) {
+                        var column = getAt(columns, i);
+                        column = push(column, $[Cell.zero]);
+                        columns = setAt(columns, i, column);
+                    }
+                    lenCells++;
+                }
+
+                var selectedColumn = getAt(columns, $c);
+                selectedColumn = setAt(selectedColumn, $r, selectedCell);
+            }
+
+            columns = setAt(columns, $c, selectedColumn);
+        }
     }
 
     if (makeCommit) {

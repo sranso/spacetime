@@ -53,14 +53,19 @@ Ui.initialize = function () {
         var c = Math.floor(x / xSpacing);
         var r = Math.floor(y / ySpacing);
 
-        var project = get($head, Commit.tree);
-        var parentCell = get(project, Project.cell);
-        var columns = get(parentCell, Cell.columns);
-        var lenColumns = len(columns);
-        if (lenColumns > 0) {
-            var lenCells = len(getAt(columns, 0));
+        if ($showResults) {
+            var lenColumns = $results.length;
+            var lenCells = lenColumns > 0 ? $results[0].length : 0;
         } else {
-            var lenCells = 0;
+            var project = get($head, Commit.tree);
+            var parentCell = get(project, Project.cell);
+            var columns = get(parentCell, Cell.columns);
+            var lenColumns = len(columns);
+            if (lenColumns > 0) {
+                var lenCells = len(getAt(columns, 0));
+            } else {
+                var lenCells = 0;
+            }
         }
 
         if (c >= lenColumns) {
@@ -76,7 +81,7 @@ Ui.initialize = function () {
             r = 0;
         }
 
-        if (e.shiftKey) {
+        if (e.shiftKey && !$showResults) {
             var selectedCell = null;
             var selectedColumn = null;
             if ($c >= 0 && $c < lenColumns) {

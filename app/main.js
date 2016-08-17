@@ -10,9 +10,11 @@ global.$argIndex = 0;
 global.$playFrame = -1;
 global.$nextTickTime = 0;
 global.$fullscreen = false;
+
 global.$showResults = false;
 global.$resultTitle = '';
 global.$results = [];
+global.$listRepos = false;
 
 var gitmem;
 
@@ -112,6 +114,7 @@ Main.listRepos = function (username) {
         }
 
         $showResults = true;
+        $listRepos = true;
         $resultTitle = 'List of repositories';
         $results = [];
         var lenCells = Math.floor((window.innerHeight - 200) / Ui.ySpacing);
@@ -159,7 +162,7 @@ Main.initializeRepo = function () {
 
     Remote.queryRef(gitUrl, refName, function (remoteCommit) {
         if (remoteCommit === $[Constants.zeroHash]) {
-            initializeNew();
+            Main.initializeNewRepo();
             firstDraw();
         } else {
             Remote.fetch(gitUrl, remoteCommit, $[Constants.zeroHash], function () {
@@ -171,7 +174,7 @@ Main.initializeRepo = function () {
     });
 };
 
-var initializeNew = function () {
+Main.initializeNewRepo = function () {
     var project = $[Project.zero];
 
     var user = set($[Commit.User.zero],

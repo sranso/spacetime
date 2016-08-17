@@ -57,6 +57,26 @@ var get = function (url, accessToken, callback) {
     return xhr;
 };
 
+var post = function (url, data, accessToken, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('load', function () {
+        if (xhr.status === 401) {
+            callback(new Error('Unauthorized'), null, xhr);
+        } else {
+            callback(null, this.response, xhr);
+        }
+    });
+
+    xhr.open('POST', url);
+    xhr.responseType = 'json';
+    xhr.setRequestHeader('Authorization', 'token ' + accessToken);
+    xhr.setRequestHeader('Accept', 'application/vnd.github.v3+json');
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    xhr.send(JSON.stringify(data));
+
+    return xhr;
+};
+
 GitHub.repos = function (username, accessToken, callback) {
     var reposCallback = function (err, allRepos, xhr) {
         if (err) {
@@ -97,6 +117,10 @@ GitHub.repos = function (username, accessToken, callback) {
 
 GitHub.user = function (accessToken, callback) {
     get(apiUrl + '/user', accessToken, callback);
+};
+
+GitHub.createRepo = function (repoConfig, accessToken, callback) {
+    post(apiUrl + '/user/repos', repoConfig, accessToken, callback);
 };
 
 })();
