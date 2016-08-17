@@ -54,6 +54,8 @@ var getGitHubAccessToken = function (callback) {
                     throw err;
                 }
                 window.sessionStorage.setItem('githubUsername', user.login);
+                window.sessionStorage.setItem('gitUserName', user.name);
+                window.sessionStorage.setItem('gitUserEmail', user.email);
                 propogateSessionStorage();
                 callback();
             });
@@ -80,6 +82,8 @@ var propogateSessionStorage = function () {
     window.localStorage.setItem('sessionStorage', JSON.stringify({
         githubAccessToken: window.sessionStorage.githubAccessToken,
         githubUsername: window.sessionStorage.githubUsername,
+        gitUserName: window.sessionStorage.gitUserName,
+        gitUserEmail: window.sessionStorage.gitUserEmail,
     }));
     window.localStorage.removeItem('sessionStorage');
 };
@@ -177,10 +181,14 @@ Main.initializeRepo = function () {
 Main.initializeNewRepo = function () {
     var project = $[Project.zero];
 
+    var userName = window.sessionStorage.gitUserName;
+    var userEmail = window.sessionStorage.gitUserEmail;
+    var timezoneOffset = (new Date()).getTimezoneOffset();
+
     var user = set($[Commit.User.zero],
-                    Commit.User.name, hash('Jake Sandlund'),
-                    Commit.User.email, hash('jake@jakesandlund.com'),
-                    Commit.User.timezoneOffset, hash(360));
+                    Commit.User.name, hash(userName),
+                    Commit.User.email, hash(userEmail),
+                    Commit.User.timezoneOffset, hash(timezoneOffset));
 
     var info = set($[Commit.Info.zero],
                     Commit.Info.author, user,
