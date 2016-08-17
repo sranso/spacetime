@@ -87,8 +87,6 @@ Autocomplete.initialize = function () {
     autocompleteInput.addEventListener('keydown', onKeyDown);
 
     matches = [];
-    Autocomplete.setSelectedCell();
-    Autocomplete.show();
 };
 
 Autocomplete.show = function () {
@@ -99,20 +97,31 @@ Autocomplete.show = function () {
 };
 
 var getSelectedCell = function () {
-    var project = get($head, Commit.tree);
-    var parentCell = get(project, Project.cell);
-    var columns = get(parentCell, Cell.columns);
-    var lenColumns = len(columns);
-    if (lenColumns > 0) {
-        var lenCells = len(getAt(columns, 0));
-    } else {
-        var lenCells = 0;
-    }
+    if ($showResults) {
+        var lenColumns = $results.length;
+        var lenCells = lenColumns > 0 ? $results[0].length : 0;
 
-    if ($c >= 0 && $c < lenColumns) {
-        var selectedColumn = getAt(columns, $c);
-        if ($r >= 0 && $r < len(selectedColumn)) {
-            return getAt(selectedColumn, $r);
+        if ($c >= 0 && $c < lenColumns) {
+            var result = $results[$c][$r];
+            return set($[Cell.zero],
+                       Cell.text, hash(result.text));
+        }
+    } else {
+        var project = get($head, Commit.tree);
+        var parentCell = get(project, Project.cell);
+        var columns = get(parentCell, Cell.columns);
+        var lenColumns = len(columns);
+        if (lenColumns > 0) {
+            var lenCells = len(getAt(columns, 0));
+        } else {
+            var lenCells = 0;
+        }
+
+        if ($c >= 0 && $c < lenColumns) {
+            var selectedColumn = getAt(columns, $c);
+            if ($r >= 0 && $r < len(selectedColumn)) {
+                return getAt(selectedColumn, $r);
+            }
         }
     }
 
@@ -294,6 +303,19 @@ var selectMatch = function (keepCellSelected) {
             $fullscreen = false;
             makeCommit = false;
             keepCommandSelected = false;
+            break;
+
+        case 'go into':
+            if ($showResults) {
+                var result = $results[$c][$r];
+                var gitUrl = GitHub.baseGitUrl(window.sessionStorage.githubAccessToken) + '/' + result.fullName + '.git';
+                window.sessionStorage.setItem('gitUrl', gitUrl);
+                $showResults = false;
+                Main.initializeRepo();
+                return;
+            } else {
+                // TODO
+            }
             break;
 
         case 'save':

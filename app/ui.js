@@ -14,6 +14,8 @@ global.mouseY = 0;
 
 var xSpacing = 160;
 var ySpacing = 112;
+Ui.ySpacing = ySpacing;
+
 var xHalfGap = 5;
 var yHalfGap = 2;
 var xTranslation = 0;
@@ -251,18 +253,23 @@ var drawGrid = function () {
     ctx.translate(xTranslation, yTranslation);
     ctx.scale(zoom, zoom);
 
-    var project = get($head, Commit.tree);
-    var parentCell = get(project, Project.cell);
-    var columns = get(parentCell, Cell.columns);
-    var lenColumns = len(columns);
-    if (lenColumns > 0) {
-        var lenCells = len(getAt(columns, 0));
+    if ($showResults) {
+        var lenColumns = $results.length;
+        var lenCells = lenColumns > 0 ? $results[0].length : 0;
     } else {
-        var lenCells = 0;
+        var project = get($head, Commit.tree);
+        var parentCell = get(project, Project.cell);
+        var columns = get(parentCell, Cell.columns);
+        var lenColumns = len(columns);
+        if (lenColumns > 0) {
+            var lenCells = len(getAt(columns, 0));
+        } else {
+            var lenCells = 0;
+        }
     }
 
     var selectedCell = null;
-    if ($c >= 0 && $c < lenColumns) {
+    if (!$showResults && $c >= 0 && $c < lenColumns) {
         var selectedColumn = getAt(columns, $c);
         if ($r >= 0 && $r < len(selectedColumn)) {
             selectedCell = getAt(selectedColumn, $r);
@@ -346,29 +353,35 @@ var drawGrid = function () {
                 ctx.strokeRect(x, y + 15, 146, 92);  // 144 by 90 internal area
             }
 
-            var text = val(get(cell, Cell.text));
-            ctx.fillText(text, x + 2, y + 11);
+            if ($showResults) {
+                var result = $results[c][r];
+                var text = result.text;
+            } else {
+                var text = val(get(cell, Cell.text));
 
-            // draw result
-            ctx.save();
+                // draw result
+                ctx.save();
 
-            ctx.beginPath();
-            ctx.rect(x + 1, y + 16, 144, 90);
-            ctx.clip();
+                ctx.beginPath();
+                ctx.rect(x + 1, y + 16, 144, 90);
+                ctx.clip();
 
-            ctx.translate(x + 73, y + 61);
-            ctx.scale(0.1, 0.1);
+                ctx.translate(x + 73, y + 61);
+                ctx.scale(0.1, 0.1);
 
-            ctx.textAlign = 'center';
-            ctx.font = '180px monospace';
-            ctx.fillStyle = '#492e85';
+                ctx.textAlign = 'center';
+                ctx.font = '180px monospace';
+                ctx.fillStyle = '#492e85';
 
-            var result = Evaluate.evaluate(parentCell, columns, c, r);
-            if (typeof result === 'number') {
-                ctx.fillText('' + result, 0, 50, 1440);
+                var result = Evaluate.evaluate(parentCell, columns, c, r);
+                if (typeof result === 'number') {
+                    ctx.fillText('' + result, 0, 50, 1440);
+                }
+
+                ctx.restore();
             }
 
-            ctx.restore();
+            ctx.fillText(text, x + 2, y + 11);
         }
     }
 
