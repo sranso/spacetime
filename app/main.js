@@ -47,8 +47,14 @@ var getGitHubAccessToken = function (callback) {
         window.history.replaceState({}, '', window.location.pathname);
         GitHub.getAccessToken(params.code, function (accessToken) {
             window.sessionStorage.setItem('githubAccessToken', accessToken);
-            propogateSessionStorage();
-            callback();
+            GitHub.user(accessToken, function (err, user, xhr) {
+                if (err) {
+                    throw err;
+                }
+                window.sessionStorage.setItem('githubUsername', user.login);
+                propogateSessionStorage();
+                callback();
+            });
         });
         return;
     } else if (!window.sessionStorage.length) {
@@ -71,6 +77,7 @@ var getGitHubAccessToken = function (callback) {
 var propogateSessionStorage = function () {
     window.localStorage.setItem('sessionStorage', JSON.stringify({
         githubAccessToken: window.sessionStorage.githubAccessToken,
+        githubUsername: window.sessionStorage.githubUsername,
     }));
     window.localStorage.removeItem('sessionStorage');
 };
@@ -92,14 +99,14 @@ var postGitHubInit = function () {
     if (window.sessionStorage.gitUrl) {
         Main.initializeRepo();
     } else {
-        Main.listRepos();
+        Main.listRepos(null);
     }
 };
 
-Main.listRepos = function () {
+Main.listRepos = function (username) {
     var accessToken = window.sessionStorage.githubAccessToken;
 
-    GitHub.repos(accessToken, function (err, repos, xhr) {
+    GitHub.repos(username, accessToken, function (err, repos, xhr) {
         if (err && xhr.status === 401) {
             return GitHub.authorize();
         }
@@ -134,18 +141,6 @@ var firstDraw = function () {
     Autocomplete.setSelectedCell();
     Autocomplete.show();
     Ui.draw();
-
-    /*
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener('load', function () {
-        console.log(this.responseText);
-    });
-
-    //var url = GitHub.baseGitUrl($githubAccessToken) + '/jakesandlund/golangoutyet.git/info/refs?service=git-upload-pack';
-    xhr.open('GET', url);
-
-    xhr.send();
-    */
 };
 
 var parseParams = function () {
@@ -200,6 +195,8 @@ var initializeNew = function () {
 };
 
 Main.save = function () {
+    var gitUrl = window.sessionStorage.gitUrl;
+
     Remote.queryRef(gitUrl, refName, function (remoteCommit) {
         var packLength = Pack.create($head);
         Remote.push(gitUrl, refName, remoteCommit, $head, packLength, function (response) {

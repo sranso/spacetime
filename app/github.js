@@ -57,7 +57,7 @@ var get = function (url, accessToken, callback) {
     return xhr;
 };
 
-GitHub.repos = function (accessToken, callback) {
+GitHub.repos = function (username, accessToken, callback) {
     var reposCallback = function (err, allRepos, xhr) {
         if (err) {
             return callback(err, null, xhr);
@@ -87,7 +87,16 @@ GitHub.repos = function (accessToken, callback) {
         callback(null, spacetimeRepos, xhr);
     };
 
-    get(apiUrl + '/user/repos', accessToken, reposCallback);
+    if (username) {
+        var url = '/users/' + username + '/repos';
+    } else {
+        var url = '/user/repos';
+    }
+    get(apiUrl + url, accessToken, reposCallback);
+};
+
+GitHub.user = function (accessToken, callback) {
+    get(apiUrl + '/user', accessToken, callback);
 };
 
 })();

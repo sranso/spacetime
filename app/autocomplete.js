@@ -48,6 +48,7 @@ var actionEntries = [
     'fullscreen',
     'exit fullscreen',
     'save',
+    'list repositories',
 ];
 
 var numArgsTable = {
@@ -101,7 +102,7 @@ var getSelectedCell = function () {
         var lenColumns = $results.length;
         var lenCells = lenColumns > 0 ? $results[0].length : 0;
 
-        if ($c >= 0 && $c < lenColumns) {
+        if ($c >= 0 && $c < lenColumns && $r >= 0 && $r < lenCells) {
             var result = $results[$c][$r];
             return set($[Cell.zero],
                        Cell.text, hash(result.text));
@@ -317,6 +318,9 @@ var selectMatch = function (keepCellSelected) {
                 // TODO
             }
             break;
+
+        case 'list repositories':
+            return Main.listRepos(null);
 
         case 'save':
             makeCommit = false;
